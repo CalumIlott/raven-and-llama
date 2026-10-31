@@ -61,6 +61,31 @@ html.theme-light [class*="border-zinc-800"] { border-color: #cbd5e1 !important; 
 html.theme-light [class*="border-slate-700"],
 html.theme-light [class*="border-zinc-700"] { border-color: #94a3b8 !important; }
 
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"]) {
+  background-color: #dcfce7 !important;
+}
+
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"]) {
+  background-color: #e0f2fe !important;
+}
+
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"]) {
+  background-color: #fef3c7 !important;
+}
+
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"]) {
+  background-color: #ede9fe !important;
+}
+
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]) {
+  background-color: #ffe4e6 !important;
+}
+
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"], [class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"], [class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"], [class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"], [class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]),
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"], [class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"], [class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"], [class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"], [class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]) * {
+  color: #0f172a !important;
+}
+
 h1, h2, h3, h4, .font-ninja {
   font-family: var(--font-display);
 }
@@ -1349,6 +1374,12 @@ html.theme-light #profile-modal #account-submit-button {
 html.theme-light #profile-modal .account-avatar-picker__save { color: #fff; background: #187c57; }
 #profile-modal #account-avatar-options > label:focus-within { outline: 2px solid var(--app-accent); outline-offset: 2px; }
 #profile-modal #delete-account-toggle { color: #e48686 !important; }
+html.theme-light #profile-modal #delete-account-toggle { color: #9f1239 !important; }
+html.theme-light #profile-modal #delete-account-toggle:hover { background: #ffe4e6 !important; }
+html.theme-light #profile-modal #delete-account-confirmation button[type="submit"] {
+  color: #881337 !important;
+  background: #ffe4e6 !important;
+}
 #profile-modal .account-delete-confirmation {
   border-color: #9c4a4a !important;
   border-radius: 0.6rem;
