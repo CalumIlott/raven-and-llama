@@ -666,6 +666,22 @@ html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-40
 #app-main[data-page="home"] button[data-action="games-hub"]:hover { transform: translateY(-2px); }
 
 /* Learning: bright, welcoming academy with clear program choices */
+#app-main[data-page="learning"] {
+  --learning-maths: #49365f;
+  --learning-times: #1d5a50;
+  --learning-science: #235577;
+  --learning-spelling: #603b50;
+  --learning-score: #293d62;
+}
+
+html.theme-light #app-main[data-page="learning"] {
+  --learning-maths: #fff0c2;
+  --learning-times: #d5f5e8;
+  --learning-science: #d7efff;
+  --learning-spelling: #f8e0ef;
+  --learning-score: #e8efff;
+}
+
 #app-main[data-page="learning"] > div:first-child > button:first-child,
 #app-main[data-page="games"] > div:first-child > button:first-child,
 #app-main[data-page="critter-catch"] > div:first-child > button:first-child {
@@ -712,13 +728,23 @@ html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-40
   background: var(--page-panel);
 }
 
+#app-main[data-page="learning"] section[class*="bg-slate-950"] {
+  border-color: #687db0;
+  border-radius: 1.25rem;
+  background: var(--learning-score);
+}
+
+html.theme-light #app-main[data-page="learning"] section[class*="bg-slate-950"] {
+  border-color: #a9b9e2;
+}
+
 #app-main[data-page="learning"] .app-card-link,
 #app-main[data-page="learning"] #learning-modules-grid > button {
   min-width: 0;
-  border: 1px solid var(--page-edge);
-  border-radius: 0.5rem;
+  border: 2px solid var(--page-edge);
+  border-radius: 1.5rem;
   background: var(--page-panel);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
@@ -746,13 +772,39 @@ html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-40
   transform: rotate(-6deg) scale(1.06);
 }
 
-#app-main[data-page="learning"] .app-card-link:nth-child(1) { border-top: 4px solid #e8a947; }
-#app-main[data-page="learning"] .app-card-link:nth-child(2) { border-top: 4px solid #45b994; }
-#app-main[data-page="learning"] #learning-modules-grid > button:nth-child(3) { border-top: 4px solid #56a8dd; }
-#app-main[data-page="learning"] #learning-modules-grid > button:nth-child(4) { border-top: 4px solid #dc7791; }
+#app-main[data-page="learning"] .app-card-link:nth-child(1),
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(1) {
+  border-color: #e8a947;
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--learning-maths), var(--page-panel));
+}
+
+#app-main[data-page="learning"] .app-card-link:nth-child(2),
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(2) {
+  border-color: #45b994;
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--learning-times), var(--page-panel));
+}
+
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(3) {
+  border-color: #56a8dd;
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--learning-science), var(--page-panel));
+}
+
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(4) {
+  border-color: #dc7791;
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--learning-spelling), var(--page-panel));
+}
+
+html.theme-light #app-main[data-page="learning"] #learning-modules-grid > * {
+  color: #26352c;
+}
+
 #app-main[data-page="learning"] #learning-modules-grid [class*="bg-slate-950/70"] {
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   background: var(--page-panel-raised);
 }
 

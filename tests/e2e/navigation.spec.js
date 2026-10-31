@@ -111,6 +111,32 @@ test('parent progress report and trophy room render their full states', async ({
   await expect(page.getByText('No Grand Master certificates earned yet.')).toBeVisible();
 });
 
+test('learning hub uses colorful, rounded program cards', async ({ page }) => {
+  await openLearningHub(page);
+
+  const getCardStyles = () => page.locator('#learning-modules-grid > *').evaluateAll(elements =>
+    elements.map(element => ({
+      borderRadius: getComputedStyle(element).borderRadius,
+      backgroundImage: getComputedStyle(element).backgroundImage
+    }))
+  );
+  const expectColorfulRoundedCards = async () => {
+    const cards = await getCardStyles();
+    expect(cards).toHaveLength(4);
+    cards.forEach(card => {
+      expect(card.borderRadius).toBe('24px');
+      expect(card.backgroundImage).toContain('linear-gradient');
+    });
+    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(4);
+  };
+
+  await expectColorfulRoundedCards();
+  await expect(page.locator('#app-main section[aria-label="Learning Hub Leaderboard"]'))
+    .toHaveCSS('border-radius', '20px');
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await expectColorfulRoundedCards();
+});
+
 test('certificate text cannot create markup and mobile zoom remains available', async ({ page }) => {
   const certificateText = '<em data-injected>Injected markup</em>';
   await page.evaluate(value => {
