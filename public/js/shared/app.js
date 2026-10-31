@@ -35,6 +35,7 @@ class App {
     const subBadge = document.getElementById('header-sub-badge');
     const homeBtn = document.getElementById('nav-btn-home');
     const learningBtn = document.getElementById('nav-btn-learning');
+    const gamesBtn = document.getElementById('nav-btn-games');
 
     if (nameEl) nameEl.textContent = ProfileManager.account?.username || 'Guest';
     if (accountButton) accountButton.title = ProfileManager.isAuthenticated() ? 'Account settings' : 'Sign in or create an account';
@@ -65,6 +66,9 @@ class App {
       } else if (this.currentView === 'learning') {
         subBadge.textContent = 'Learning';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'games') {
+        subBadge.textContent = 'Games';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'dojo' || this.currentView === 'belt_detail') {
         subBadge.textContent = 'Maths Dojo';
         subBadge.classList.remove('hidden');
@@ -76,14 +80,16 @@ class App {
       }
     }
 
-    if (homeBtn && learningBtn) {
-      if (this.currentView === 'home') {
-        homeBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-white bg-zinc-800 transition';
-        learningBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition flex items-center gap-1';
-      } else {
-        homeBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition';
-        learningBtn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-cyan-300 bg-cyan-950/80 border border-cyan-500/30 transition flex items-center gap-1';
-      }
+    if (homeBtn && learningBtn && gamesBtn) {
+      homeBtn.className = this.currentView === 'home'
+        ? 'px-3 py-1 rounded-lg text-xs font-semibold text-white bg-zinc-800 transition'
+        : 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition';
+      learningBtn.className = this.currentView !== 'home' && this.currentView !== 'games'
+        ? 'px-3 py-1 rounded-lg text-xs font-semibold text-cyan-300 bg-cyan-950/80 border border-cyan-500/30 transition flex items-center gap-1'
+        : 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-cyan-300 hover:bg-zinc-800/80 transition flex items-center gap-1';
+      gamesBtn.className = this.currentView === 'games'
+        ? 'px-3 py-1 rounded-lg text-xs font-semibold text-violet-300 bg-violet-950/80 border border-violet-500/30 transition flex items-center gap-1'
+        : 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-violet-300 hover:bg-zinc-800/80 transition flex items-center gap-1';
     }
   }
 
@@ -103,6 +109,8 @@ class App {
       this.showRavenAndLlamaHome();
     } else if (this.currentView === 'learning') {
       this.showLearningHub();
+    } else if (this.currentView === 'games') {
+      this.showGamesHub();
     } else if (this.currentView === 'dojo') {
       this.showDojoHub();
     } else if (this.currentView === 'belt_detail' && this.selectedBeltId) {
