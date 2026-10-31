@@ -1,6 +1,7 @@
 Object.assign(App.prototype, {
   showLearningHub() {
     this.currentView = 'learning';
+    this.rememberModule('learning');
     const main = document.getElementById('app-main');
     if (!main) return;
 

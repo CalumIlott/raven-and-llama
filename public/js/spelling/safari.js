@@ -112,6 +112,7 @@ window.SpellingSafari = SpellingSafari;
 Object.assign(App.prototype, {
   showSpellingSafari() {
     this.currentView = 'spelling';
+    this.rememberModule('spelling');
     const main = document.getElementById('app-main');
     if (!main) return;
     this.updateHeader();

@@ -1,6 +1,7 @@
 Object.assign(App.prototype, {
   showTimesTables() {
     this.currentView = 'timetables';
+    this.rememberModule('timetables');
     const main = document.getElementById('app-main');
     if (!main) return;
 

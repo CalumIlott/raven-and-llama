@@ -1,6 +1,7 @@
 Object.assign(App.prototype, {
   showRavenAndLlamaHome() {
     this.currentView = 'home';
+    this.showHomeRoute();
     const main = document.getElementById('app-main');
     if (!main) return;
 

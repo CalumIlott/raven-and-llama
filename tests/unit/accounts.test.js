@@ -149,6 +149,17 @@ test('profile normalization drops invalid endless high score values', async () =
   assert.deepEqual({ ...accounts.getActiveProfile().endlessHighScores }, { white: 7, timetables: 4 });
 });
 
+test('last module is restored only from an allowlisted account preference', async () => {
+  const { accounts } = loadAccounts(async () => response({
+    user: { id: 'account-7', username: 'jordan' },
+    profile: { lastModule: 'timetables' }
+  }));
+  await accounts.initialize();
+
+  assert.equal(accounts.getActiveProfile().lastModule, 'timetables');
+  assert.equal(accounts.normalizeProfile({ lastModule: '/private/path' }).lastModule, null);
+});
+
 test('session restore loads only the signed-in user and saved progress', async () => {
   const account = { id: 'account-3', username: 'casey' };
   const { accounts } = loadAccounts(async () => response({

@@ -8,8 +8,52 @@ class App {
   async init() {
     await ProfileManager.initialize();
     this.updateHeader();
-    this.showRavenAndLlamaHome();
+    const module = this.moduleForPath();
+    const profileModule = this.isHomePage() && ProfileManager.isAuthenticated()
+      ? ProfileManager.getActiveProfile().lastModule
+      : null;
+    this.showModule(module || profileModule);
     this.attachEventListeners();
+  }
+
+  moduleForPath() {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    return {
+      '/learning': 'learning',
+      '/dojo': 'dojo',
+      '/timetables': 'timetables',
+      '/spelling': 'spelling'
+    }[path] || null;
+  }
+
+  isHomePage() {
+    const { pathname, search, hash } = window.location;
+    return (pathname === '/' || pathname === '/index.html') && !search && !hash;
+  }
+
+  showModule(module) {
+    const views = {
+      learning: () => this.showLearningHub(),
+      dojo: () => this.showDojoHub(),
+      timetables: () => this.showTimesTables(),
+      spelling: () => this.showSpellingSafari()
+    };
+    (views[module] || (() => this.showRavenAndLlamaHome()))();
+  }
+
+  rememberModule(module) {
+    const profile = ProfileManager.getActiveProfile();
+    if (window.location.pathname !== `/${module}`) window.history.replaceState(null, '', `/${module}`);
+    if (ProfileManager.isAuthenticated() && profile.lastModule !== module) {
+      void ProfileManager.updateProfile({ ...profile, lastModule: module });
+    }
+  }
+
+  showHomeRoute() {
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    if (['/learning', '/dojo', '/timetables', '/spelling'].includes(path)) {
+      window.history.replaceState(null, '', '/');
+    }
   }
 
   attachEventListeners() {

@@ -178,7 +178,7 @@ test('leaderboards expose only the top ten usernames and scoped scores', async (
   assert.equal((await request(store, '/api/leaderboards')).status, 400);
 });
 
-test('theme preferences persist independently on each account', async () => {
+test('theme and last-module preferences persist independently on each account', async () => {
   const store = new MemoryAccountStore();
   const first = await request(store, '/api/auth/register', 'POST', { username: 'theme_one', password: 'a secure password 123' });
   const second = await request(store, '/api/auth/register', 'POST', { username: 'theme_two', password: 'another secure pass 123' });
@@ -187,19 +187,27 @@ test('theme preferences persist independently on each account', async () => {
   const firstProfile = (await first.json()).profile;
 
   const update = await request(store, '/api/progress', 'PUT', {
-    profile: { ...firstProfile, theme: 'light' }
+    profile: { ...firstProfile, theme: 'light', lastModule: 'timetables' }
   }, firstCookie);
-  assert.equal((await update.json()).profile.theme, 'light');
+  const updatedProfile = (await update.json()).profile;
+  assert.equal(updatedProfile.theme, 'light');
+  assert.equal(updatedProfile.lastModule, 'timetables');
 
   const firstSession = await request(store, '/api/auth/session', 'GET', undefined, firstCookie);
   const secondSession = await request(store, '/api/auth/session', 'GET', undefined, secondCookie);
-  assert.equal((await firstSession.json()).profile.theme, 'light');
-  assert.equal((await secondSession.json()).profile.theme, 'dark');
+  const firstRestoredProfile = (await firstSession.json()).profile;
+  const secondRestoredProfile = (await secondSession.json()).profile;
+  assert.equal(firstRestoredProfile.theme, 'light');
+  assert.equal(firstRestoredProfile.lastModule, 'timetables');
+  assert.equal(secondRestoredProfile.theme, 'dark');
+  assert.equal(secondRestoredProfile.lastModule, null);
 
   const invalidTheme = await request(store, '/api/progress', 'PUT', {
-    profile: { ...firstProfile, theme: 'system' }
+    profile: { ...firstProfile, theme: 'system', lastModule: '/private/path' }
   }, firstCookie);
-  assert.equal((await invalidTheme.json()).profile.theme, 'light');
+  const invalidPreferenceProfile = (await invalidTheme.json()).profile;
+  assert.equal(invalidPreferenceProfile.theme, 'light');
+  assert.equal(invalidPreferenceProfile.lastModule, 'timetables');
 });
 
 test('login uses a generic credential error and logout revokes the session', async () => {
