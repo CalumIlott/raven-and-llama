@@ -457,6 +457,8 @@ class GameEngine {
     this.stopTimer();
     const feedback = document.getElementById('feedback-banner');
     const qCard = document.getElementById('question-card');
+    const q = this.questions[this.currentIndex];
+    const canRetry = !this.mode.startsWith('belt_test') && this.mode !== 'endless';
 
     if (isCorrect) {
       this.score += 1;
@@ -487,8 +489,27 @@ class GameEngine {
 
       if (feedback) {
         feedback.className = 'play-feedback mt-6 p-4 rounded-2xl text-center font-ninja text-base sm:text-lg font-bold bg-rose-950/80 border-2 border-rose-500 text-rose-300 animate-pop block';
-        feedback.innerHTML = `The correct answer was: <span class="text-yellow-400 font-bold ml-1">${expectedAnswer}</span>`;
+        feedback.innerHTML = canRetry
+          ? 'Not quite! Keep exploring!'
+          : `The correct answer was: <span class="text-yellow-400 font-bold ml-1">${expectedAnswer}</span>`;
       }
+    }
+
+    if (!isCorrect && canRetry) {
+      this.pendingAnswer = null;
+      if (q.type === 'order_drag') {
+        this.userOrder.forEach(({ btnId }) => {
+          const button = document.getElementById(btnId);
+          if (!button) return;
+          button.disabled = false;
+          button.classList.remove('opacity-30', 'scale-90');
+        });
+        this.userOrder = [];
+        this.updateOrderSlots();
+      }
+      this.isAnswering = false;
+      this.startTimer(q.timeLimitSeconds || 16);
+      return;
     }
 
     this.pendingAnswer = isCorrect;
