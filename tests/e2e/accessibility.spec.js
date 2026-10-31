@@ -187,7 +187,7 @@ test('Science Explorers success message has readable contrast in dark theme', as
   const scienceAnswer = await page.evaluate(() => window.app.scienceGame.mission.questions[0].answer);
   await page.locator(`[data-science-choice="${scienceAnswer}"]`).click();
 
-  const messageColors = await page.locator('.science-feedback p').evaluate(element => ({
+  const messageColors = await page.locator('.science-feedback > p.font-bold').evaluate(element => ({
     foreground: getComputedStyle(element).color,
     background: getComputedStyle(element.parentElement).backgroundColor
   }));
