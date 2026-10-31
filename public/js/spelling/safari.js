@@ -3867,6 +3867,7 @@ Object.assign(App.prototype, {
       index: 0,
       score: 0,
       selectedLetters: [],
+      selectedAnswer: null,
       mistakes: []
     };
     this.currentView = 'spelling';
@@ -3902,6 +3903,7 @@ Object.assign(App.prototype, {
 
     const question = game.questions[game.index];
     const selected = game.selectedLetters.map(index => question.scramble[index]).join('');
+    const selectedAnswerClass = game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect';
     const choices = question.type === 'scramble'
       ? `
         <div class="spelling-answer min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold" aria-label="Your word">
@@ -3919,7 +3921,7 @@ Object.assign(App.prototype, {
         <div class="grid grid-cols-2 gap-3 mt-6">
           ${question.options.map(option => `
             <button data-action="spelling-answer" data-answer="${encodeURIComponent(String(option))}" ${game.answered ? 'disabled' : ''}
-                    class="spelling-choice p-4 rounded-xl border-2 font-ninja text-lg font-bold disabled:opacity-60">${option}</button>
+                    class="spelling-choice p-4 rounded-xl border-2 font-ninja text-lg font-bold disabled:opacity-60 ${game.answered && String(option).toLowerCase() === String(game.selectedAnswer).toLowerCase() ? selectedAnswerClass : ''}">${option}</button>
           `).join('')}
         </div>
       `;
@@ -3954,6 +3956,7 @@ Object.assign(App.prototype, {
     if (!game || game.answered) return;
     const question = game.questions[game.index];
     game.answered = true;
+    game.selectedAnswer = answer;
     game.lastAnswerCorrect = String(answer).toLowerCase() === question.answer.toLowerCase();
     if (game.lastAnswerCorrect) game.score++;
     else game.mistakes.push(question.answer);
@@ -3984,6 +3987,7 @@ Object.assign(App.prototype, {
     if (!game?.answered) return;
     game.index++;
     game.answered = false;
+    game.selectedAnswer = null;
     game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   }
