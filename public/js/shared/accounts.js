@@ -207,6 +207,50 @@ class ProfileManager {
     return ProfileManager.saveQueue;
   }
 
+  static renderLeaderboard(scope, title) {
+    const id = `leaderboard-${scope.replace(/[^a-z0-9-]/gi, '-')}`;
+    return `
+      <section class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4" aria-label="${title}">
+        <h3 class="font-ninja text-lg text-yellow-400 font-bold mb-3">🏆 ${title}</h3>
+        <ol id="${id}" class="space-y-2 text-sm text-slate-300" aria-live="polite">
+          <li class="text-slate-500">Loading scores…</li>
+        </ol>
+      </section>
+    `;
+  }
+
+  static async loadLeaderboard(scope) {
+    const id = `leaderboard-${scope.replace(/[^a-z0-9-]/gi, '-')}`;
+    const list = document.getElementById(id);
+    if (!list) return;
+
+    try {
+      const { entries } = await ProfileManager.requestApi(`/api/leaderboards?scope=${encodeURIComponent(scope)}`);
+      const currentList = document.getElementById(id);
+      if (!currentList) return;
+      currentList.replaceChildren();
+      if (!entries.length) {
+        currentList.textContent = 'No scores yet—be the first to train!';
+        return;
+      }
+      entries.forEach((entry, index) => {
+        const row = document.createElement('li');
+        row.className = 'flex items-center justify-between gap-3';
+        const username = document.createElement('span');
+        username.className = 'truncate';
+        username.textContent = `${index + 1}. ${entry.username}`;
+        const score = document.createElement('strong');
+        score.className = 'text-amber-300 whitespace-nowrap';
+        score.textContent = `${entry.score} points`;
+        row.append(username, score);
+        currentList.append(row);
+      });
+    } catch {
+      const currentList = document.getElementById(id);
+      if (currentList) currentList.textContent = 'Leaderboard is currently unavailable.';
+    }
+  }
+
   static recordTrainingScore(skillId, score, total = 10) {
     const profile = ProfileManager.getActiveProfile();
     if (!profile.skillsProgress[skillId]) {

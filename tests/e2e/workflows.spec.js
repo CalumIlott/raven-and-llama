@@ -1,8 +1,10 @@
 const { expect, test } = require('@playwright/test');
 const {
   chooseQuestionAnswer,
+  openLearningHub,
   openMathsDojo,
   openTimesTables,
+  registerAccount,
   setupApp
 } = require('./support');
 
@@ -27,6 +29,32 @@ test('a perfect practice round records mastery and updates the dojo', async ({ p
   await expect(page.locator('#game-arena')).toContainText('10 / 10');
   await page.getByRole('button', { name: 'Dojo Skills' }).click();
   await expect(page.getByText('10 / 10', { exact: true }).first()).toBeVisible();
+});
+
+test('leaderboards show the top saved scores throughout the learning hubs', async ({ page }) => {
+  const { username } = await registerAccount(page);
+  await page.evaluate(async () => {
+    const profile = window.ProfileManager.getActiveProfile();
+    profile.stars = 42;
+    profile.skillsProgress.white_subitising = { correct: 8, total: 10, bestScore: 8, timesTrained: 1, stars: 2 };
+    profile.skillsProgress.timetable_practice = { correct: 12, total: 12, bestScore: 12, timesTrained: 1, stars: 3 };
+    window.ProfileManager.updateProfile(profile);
+    await window.ProfileManager.flush();
+  });
+  await page.reload();
+
+  await expect(page.locator('#leaderboard-all')).toContainText(username);
+  await expect(page.locator('#leaderboard-all')).toContainText('42 points');
+  await openLearningHub(page);
+  await expect(page.locator('#leaderboard-learning')).toContainText('42 points');
+  await expect(page.locator('#leaderboard-maths')).toContainText(username);
+  await expect(page.locator('#leaderboard-times-tables')).toContainText('12 points');
+
+  await page.getByText('Open Maths Masters Dojo', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
+  await expect(page.locator('#leaderboard-maths')).toContainText('8 points');
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await expect(page.locator('#leaderboard-belt-white')).toContainText(username);
 });
 
 test('individual, mixed, and mastery Times Tables quizzes advance questions', async ({ page }) => {
