@@ -26,7 +26,7 @@ test('science missions have unique IDs and complete answer data', () => {
 
   for (const mission of missions) {
     assert.ok(mission.title);
-    assert.equal(mission.questions.length, 5);
+    assert.ok(mission.questions.length >= 100);
     for (const question of mission.questions) {
       assert.ok(question.prompt);
       assert.ok(question.fact);
@@ -46,7 +46,9 @@ test('science mission scores correct answers once and awards stars on completion
   assert.match(context.main.innerHTML, /Choose a Mission/);
   app.startScienceMission(mission.id);
 
-  for (const question of Array.from(mission.questions)) {
+  const sessionQuestions = Array.from(app.scienceGame.mission.questions);
+  assert.equal(sessionQuestions.length, 5);
+  for (const question of sessionQuestions) {
     app.answerScienceQuestion(question.answer);
     app.answerScienceQuestion(question.answer);
     app.continueScienceMission();
@@ -56,4 +58,32 @@ test('science mission scores correct answers once and awards stars on completion
   assert.match(context.main.innerHTML, /Mission Complete!/);
   app.finishScienceMission();
   assert.equal(context.profile.stars, 5);
+});
+
+test('science missions randomly select 5 questions per quiz session', () => {
+  const context = createScienceContext();
+  const mission = context.SCIENCE_MISSIONS[0];
+  const app = context.app;
+
+  app.startScienceMission(mission.id);
+  assert.equal(app.scienceGame.mission.questions.length, 5);
+  for (const q of app.scienceGame.mission.questions) {
+    assert.ok(mission.questions.some(item => item.prompt === q.prompt));
+  }
+});
+
+test('incorrect answer does not reveal the correct answer or fact in feedback', () => {
+  const context = createScienceContext();
+  const mission = context.SCIENCE_MISSIONS[0];
+  const app = context.app;
+
+  app.startScienceMission(mission.id);
+  const currentQuestion = app.scienceGame.mission.questions[0];
+  const wrongChoice = (currentQuestion.answer + 1) % currentQuestion.choices.length;
+  app.answerScienceQuestion(wrongChoice);
+
+  assert.equal(app.scienceGame.lastAnswerCorrect, false);
+  assert.match(context.main.innerHTML, /Not quite! Keep exploring!/);
+  assert.doesNotMatch(context.main.innerHTML, /The answer is/);
+  assert.doesNotMatch(context.main.innerHTML, new RegExp(currentQuestion.fact));
 });

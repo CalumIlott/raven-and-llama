@@ -8,13 +8,13 @@ function loadSafari() {
   return loadBrowserScripts(context, 'public/js/spelling/safari.js');
 }
 
-test('Spelling Safari activities have unique ids and enough questions for a full round', () => {
+test('Spelling Safari activities have unique ids and at least 100 questions', () => {
   const context = loadSafari();
   const activities = context.SpellingSafari.getActivities();
 
   assert.equal(activities.length, 4);
   assert.equal(new Set(Array.from(activities, activity => activity.id)).size, activities.length);
-  assert.ok(activities.every(activity => activity.questions.length >= 6));
+  assert.ok(activities.every(activity => activity.questions.length >= 100));
 });
 
 test('Phonics Trail identifies chick as a young bird', () => {
@@ -58,5 +58,34 @@ test('unknown activities and invalid round counts return no questions', () => {
   assert.deepEqual(Array.from(safari.createQuestions('not-an-activity')), []);
   assert.deepEqual(Array.from(safari.createQuestions('spelling-sprint', 0)), []);
   assert.deepEqual(Array.from(safari.createQuestions('spelling-sprint', NaN)), []);
-  assert.equal(safari.createQuestions('spelling-sprint', 99).length, 8);
+  assert.equal(safari.createQuestions('spelling-sprint', 99).length, 99);
+  assert.equal(safari.createQuestions('spelling-sprint', 999).length, safari.getActivity('spelling-sprint').questions.length);
+});
+
+test('incorrect answer in Spelling Safari does not reveal the correct answer', () => {
+  const context = createBrowserContext();
+  context.main = { innerHTML: '', dataset: {} };
+  context.arena = { innerHTML: '' };
+  context.document = {
+    getElementById: id => {
+      if (id === 'app-main') return context.main;
+      if (id === 'safari-arena') return context.arena;
+      return null;
+    }
+  };
+  context.App = class {
+    rememberModule() {}
+    updateHeader() {}
+  };
+  loadBrowserScripts(context, 'public/js/spelling/safari.js');
+
+  const app = new context.App();
+  app.startSpellingSafari('spelling-sprint');
+  const question = app.spellingSafariGame.questions[0];
+  const wrongAnswer = question.options.find(opt => opt.toLowerCase() !== question.answer.toLowerCase());
+  app.submitSpellingSafariAnswer(wrongAnswer);
+
+  assert.equal(app.spellingSafariGame.lastAnswerCorrect, false);
+  assert.match(context.arena.innerHTML, /Not quite! Keep exploring!/);
+  assert.doesNotMatch(context.arena.innerHTML, /The answer was/);
 });
