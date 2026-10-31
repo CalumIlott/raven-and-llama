@@ -59,7 +59,7 @@ The repository is configured for Cloudflare Workers Builds with static assets in
 3. Apply the schema to both databases with `npx wrangler d1 migrations apply raven-llama-accounts --remote` and `npx wrangler d1 migrations apply raven-llama-accounts-preview --remote --config wrangler.preview-migrations.jsonc`.
 4. Keep the Workers Builds Preview deploy command as `npx wrangler preview`; it requires the Preview-safe D1 binding above.
 
-Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
+Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. Signed-in users can choose a dark or light theme in account settings; this preference is stored with that account's progress and syncs across browsers. Guest sessions use the default dark theme without saving it. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
 
 ## Account API
 

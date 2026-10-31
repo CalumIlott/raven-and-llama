@@ -5,6 +5,7 @@ test.beforeEach(async ({ page }) => {
   await setupApp(page);
 });
 
+
 test('guest can create an account, change password, sign out, sign in, and delete the account', async ({ page }) => {
   const { username, password } = await registerAccount(page);
   await expect(page.locator('#account-status-banner')).toBeHidden();
@@ -72,6 +73,26 @@ test('progress syncs to another browser context without exposing it to a differe
     const second = await registerAccount(otherPage);
     expect(second.username).not.toBe(first.username);
     await expect(otherPage.locator('#header-stars-count')).toHaveText('0');
+  } finally {
+    await otherDevice.close();
+  }
+});
+
+test('theme preference syncs to another browser context for the signed-in account', async ({ browser, page }) => {
+  const account = await registerAccount(page);
+  await openAccountModal(page);
+  await page.locator('#account-theme').selectOption('light');
+  await page.evaluate(() => window.ProfileManager.flush());
+  await expect(page.locator('html')).toHaveClass(/theme-light/);
+
+  const otherDevice = await browser.newContext();
+  try {
+    const otherPage = await otherDevice.newPage();
+    await setupApp(otherPage);
+    await loginAccount(otherPage, account.username, account.password);
+    await expect(otherPage.locator('html')).toHaveClass(/theme-light/);
+    await openAccountModal(otherPage);
+    await expect(otherPage.locator('#account-theme')).toHaveValue('light');
   } finally {
     await otherDevice.close();
   }

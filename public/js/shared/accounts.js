@@ -30,6 +30,7 @@ class ProfileManager {
       id: 'guest',
       name: 'Guest',
       avatar: ProfileManager.getAvatar('raven'),
+      theme: 'dark',
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -51,6 +52,7 @@ class ProfileManager {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
       avatar: ProfileManager.getAvatar(avatarId),
+      theme: source.theme === 'light' ? 'light' : 'dark',
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
       stage2PassedBelts: Array.isArray(source.stage2PassedBelts) ? source.stage2PassedBelts : [],
@@ -67,14 +69,22 @@ class ProfileManager {
   static setGuest() {
     ProfileManager.account = null;
     ProfileManager.currentProfile = ProfileManager.createGuestProfile();
+    ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.lastSaveError = '';
   }
 
   static acceptSession(data) {
     ProfileManager.account = data.user;
     ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, data.user);
+    ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.accountServiceAvailable = true;
     ProfileManager.lastSaveError = '';
+  }
+
+  static applyTheme(theme) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('theme-light', theme === 'light');
+    document.documentElement.classList.toggle('dark', theme !== 'light');
   }
 
   static async requestApi(url, method = 'GET', body) {
@@ -172,11 +182,20 @@ class ProfileManager {
     return Boolean(ProfileManager.account);
   }
 
+  static setTheme(theme) {
+    if (theme !== 'dark' && theme !== 'light') return Promise.resolve(false);
+    const profile = ProfileManager.getActiveProfile();
+    profile.theme = theme;
+    ProfileManager.applyTheme(theme);
+    return ProfileManager.updateProfile(profile);
+  }
+
   static updateProfile(updatedProfile) {
     const account = ProfileManager.account;
     const normalized = ProfileManager.normalizeProfile(updatedProfile, account);
     normalized.updatedAt = new Date().toISOString();
     ProfileManager.currentProfile = normalized;
+    ProfileManager.applyTheme(normalized.theme);
 
     if (!account) {
       window.app?.updateHeader();
