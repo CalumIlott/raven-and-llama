@@ -10,6 +10,16 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const accountStore = new LocalAccountStore(DATA_DIR);
 const accountHandler = import('./lib/account-api.mjs').then(module => module.handleAccountRequest);
 const MAX_REQUEST_BYTES = 65536;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_RATE_LIMIT_BUCKETS = 10000;
+const rateLimitBuckets = new Map();
+const SECURITY_HEADERS = {
+  'Content-Security-Policy': "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'",
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY'
+};
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -62,7 +72,34 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+function allowAuthAttempt(action, username, remoteAddress) {
+  const limits = action === 'register'
+    ? [[`register:${remoteAddress}`, 30]]
+    : [[`login:source:${remoteAddress}`, 60], [`login:account:${remoteAddress}:${username}`, 10]];
+  const now = Date.now();
+
+  for (const [key, limit] of limits) {
+    let bucket = rateLimitBuckets.get(key);
+    if (!bucket || now - bucket.startedAt >= RATE_LIMIT_WINDOW_MS) {
+      if (!bucket && rateLimitBuckets.size >= MAX_RATE_LIMIT_BUCKETS) {
+        for (const [oldKey, oldBucket] of rateLimitBuckets) {
+          if (now - oldBucket.startedAt >= RATE_LIMIT_WINDOW_MS) rateLimitBuckets.delete(oldKey);
+        }
+        if (rateLimitBuckets.size >= MAX_RATE_LIMIT_BUCKETS) return false;
+      }
+      bucket = { startedAt: now, count: 0 };
+      rateLimitBuckets.set(key, bucket);
+    }
+    if (bucket.count >= limit) return false;
+    bucket.count++;
+  }
+
+  return true;
+}
+
 const server = http.createServer(async (req, res) => {
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) res.setHeader(name, value);
+
   let pathname;
   try {
     pathname = decodeURIComponent(new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname);
@@ -75,7 +112,9 @@ const server = http.createServer(async (req, res) => {
     try {
       const request = await toFetchRequest(req);
       const handler = await accountHandler;
-      const response = await handler(request, accountStore);
+      const response = await handler(request, accountStore, {
+        rateLimit: ({ action, username }) => allowAuthAttempt(action, username, req.socket.remoteAddress || 'unknown')
+      });
       const headers = Object.fromEntries(response.headers.entries());
       res.writeHead(response.status, headers);
       res.end(Buffer.from(await response.arrayBuffer()));
@@ -126,7 +165,7 @@ const server = http.createServer(async (req, res) => {
       headers.Pragma = 'no-cache';
       headers.Expires = '0';
     } else {
-      headers['Cache-Control'] = 'public, max-age=86400';
+      headers['Cache-Control'] = 'public, max-age=0, must-revalidate';
     }
 
     fs.readFile(safePath, (readErr, data) => {

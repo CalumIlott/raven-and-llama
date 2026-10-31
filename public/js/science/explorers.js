@@ -74,11 +74,11 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
         <div class="flex items-center justify-between mb-6">
-          <button onclick="window.app.showLearningHub()" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
+          <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
             <span>Back to Raven &amp; Llama Learning</span>
           </button>
-          <button onclick="window.app.showRavenAndLlamaHome()" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
+          <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
 
         <div class="relative bg-gradient-to-r from-sky-950 via-slate-900 to-emerald-950 border-2 border-sky-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 overflow-hidden">
@@ -103,7 +103,7 @@ Object.assign(App.prototype, {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           ${SCIENCE_MISSIONS.map(mission => `
-            <button type="button" onclick="window.app.startScienceMission('${mission.id}')"
+            <button type="button" data-action="science-start" data-mission-id="${mission.id}"
                     class="group w-full text-left relative bg-slate-900 border-2 border-slate-700 ${mission.theme.border} rounded-3xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               <div class="flex items-start gap-4">
                 <div class="w-14 h-14 rounded-2xl ${mission.theme.icon} border flex items-center justify-center text-3xl">${mission.icon}</div>
@@ -143,7 +143,7 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-3xl mx-auto px-4 py-6 sm:py-8">
         <div class="flex items-center justify-between mb-6">
-          <button onclick="window.app.showScienceExplorers()" class="text-sm text-sky-300 hover:text-white font-bold">← Back to missions</button>
+          <button data-action="science-home" class="text-sm text-sky-300 hover:text-white font-bold">← Back to missions</button>
           <span class="text-xs text-slate-400">${game.mission.icon} ${game.mission.title}</span>
         </div>
         <div class="bg-slate-900 border-2 border-sky-800/70 rounded-3xl p-5 sm:p-8 shadow-2xl">
@@ -151,16 +151,14 @@ Object.assign(App.prototype, {
             <span class="text-xs uppercase tracking-wider text-sky-300 font-bold">${game.mission.topic}</span>
             <span class="text-sm text-slate-300 font-bold">Clue ${game.index + 1} of ${game.mission.questions.length} <span class="text-amber-300 ml-2">⭐ ${game.correct}</span></span>
           </div>
-          <div class="w-full h-2 rounded-full bg-slate-800 mb-6" role="progressbar" aria-label="Mission progress" aria-valuenow="${game.index + 1}" aria-valuemin="1" aria-valuemax="${game.mission.questions.length}">
-            <div class="h-2 rounded-full bg-gradient-to-r from-sky-400 to-emerald-400 transition-all" style="width: ${progress}%"></div>
-          </div>
+          <progress class="science-progress w-full mb-6" aria-label="Mission progress" max="${game.mission.questions.length}" value="${game.index + 1}"></progress>
           <div class="text-center mb-6">
             <div class="text-5xl mb-3">${game.mission.icon}</div>
             <h2 class="font-ninja text-2xl sm:text-3xl text-white font-bold">${question.prompt}</h2>
           </div>
           <div class="grid grid-cols-1 gap-3">
             ${question.choices.map((choice, index) => `
-              <button type="button" data-science-choice="${index}" onclick="window.app.answerScienceQuestion(${index})" ${game.answered ? 'disabled' : ''}
+              <button type="button" data-action="science-answer" data-index="${index}" data-science-choice="${index}" ${game.answered ? 'disabled' : ''}
                       class="w-full text-left px-4 py-3 rounded-xl border-2 ${game.answered && index === question.answer ? 'border-emerald-400 bg-emerald-950/50 text-emerald-100' : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-white'} disabled:cursor-default font-semibold transition">
                 <span class="inline-flex w-7 h-7 rounded-lg bg-slate-800 items-center justify-center text-xs text-sky-300 mr-2">${String.fromCharCode(65 + index)}</span>${choice}
               </button>
@@ -171,7 +169,7 @@ Object.assign(App.prototype, {
               <p class="font-bold ${game.lastAnswerCorrect ? 'text-emerald-300' : 'text-amber-200'}">${game.lastAnswerCorrect ? 'Great discovery! +1 star ⭐' : `Not quite! The answer is ${question.choices[question.answer]}.`}</p>
               <p class="text-sm text-slate-200 mt-1">${question.fact}</p>
             </div>
-            <button type="button" onclick="window.app.continueScienceMission()" class="btn-ninja w-full mt-4 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-ninja font-bold">
+            <button type="button" data-action="science-continue" class="btn-ninja w-full mt-4 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-ninja font-bold">
               ${game.index + 1 === game.mission.questions.length ? 'Finish Mission 🏁' : 'Next Clue →'}
             </button>
           ` : ''}
@@ -222,8 +220,8 @@ Object.assign(App.prototype, {
           <p class="text-slate-300 mt-3">You solved <strong class="text-white">${game.correct} of ${game.mission.questions.length}</strong> clues and earned <strong class="text-amber-300">⭐ ${game.correct} ${game.correct === 1 ? 'star' : 'stars'}</strong>.</p>
           <p class="text-sm text-slate-400 mt-2">${game.correct === game.mission.questions.length ? 'Fantastic science detective work!' : 'Every clue is a chance to discover something new!'}</p>
           <div class="flex flex-col sm:flex-row gap-3 mt-7">
-            <button type="button" onclick="window.app.startScienceMission('${game.mission.id}')" class="btn-ninja flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Play Again 🔁</button>
-            <button type="button" onclick="window.app.showScienceExplorers()" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold">Choose Another Mission</button>
+            <button type="button" data-action="science-start" data-mission-id="${game.mission.id}" class="btn-ninja flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Play Again 🔁</button>
+            <button type="button" data-action="science-home" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold">Choose Another Mission</button>
           </div>
         </div>
       </div>

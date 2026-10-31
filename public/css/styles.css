@@ -1,7 +1,11 @@
-﻿/* Custom CSS for Maths Masters Dojo */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
-
+﻿/* Shared application tokens and game-specific styles. */
 :root {
+  --app-canvas: #090d16;
+  --app-surface: #111827;
+  --app-border: #334155;
+  --app-text: #f8fafc;
+  --app-accent: #22d3ee;
+  --app-radius: 0.5rem;
   --font-display: 'Fredoka', cursive, sans-serif;
   --font-body: 'Quicksand', sans-serif;
 }
@@ -16,10 +20,8 @@ html.theme-light {
 
 body {
   font-family: var(--font-body);
-  background-color: #090d16;
-  color: #f8fafc;
-  user-select: none;
-  -webkit-user-select: none;
+  background-color: var(--app-canvas);
+  color: var(--app-text);
   touch-action: manipulation;
 }
 
@@ -56,6 +58,89 @@ html.theme-light [class*="border-zinc-700"] { border-color: #94a3b8 !important; 
 
 h1, h2, h3, h4, .font-ninja {
   font-family: var(--font-display);
+}
+
+.app-card-link {
+  display: block;
+  min-width: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background-color: var(--app-surface);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.app-card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgb(0 0 0 / 24%);
+}
+
+.question-timer,
+.boss-health-progress {
+  appearance: none;
+  display: block;
+  height: 0.75rem;
+  border: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: #1e293b;
+}
+
+.science-progress {
+  appearance: none;
+  display: block;
+  height: 0.5rem;
+  border: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: #1e293b;
+}
+
+.science-progress::-webkit-progress-bar { background-color: #1e293b; }
+.science-progress::-webkit-progress-value,
+.science-progress::-moz-progress-bar { background: linear-gradient(90deg, #38bdf8, #34d399); }
+
+.question-timer::-webkit-progress-bar,
+.boss-health-progress::-webkit-progress-bar {
+  border-radius: 9999px;
+  background-color: #1e293b;
+}
+
+.question-timer::-webkit-progress-value,
+.question-timer::-moz-progress-bar {
+  background-color: #34d399;
+  transition: width 0.1s linear;
+}
+
+.question-timer[data-tone="warning"]::-webkit-progress-value,
+.question-timer[data-tone="warning"]::-moz-progress-bar {
+  background-color: #fbbf24;
+}
+
+.question-timer[data-tone="critical"]::-webkit-progress-value,
+.question-timer[data-tone="critical"]::-moz-progress-bar,
+.boss-health-progress::-webkit-progress-value,
+.boss-health-progress::-moz-progress-bar {
+  background-color: #f43f5e;
+}
+
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--app-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Belt Gradient Glows */

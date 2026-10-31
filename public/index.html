@@ -5,43 +5,27 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Raven &amp; Llama Learning — Educational Portal &amp; Games</title>
-  <link rel="icon" type="image/svg+xml" href="assets/raven-llama-logo.svg?v=20261031">
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            ninja: ['Fredoka', 'cursive', 'sans-serif'],
-            body: ['Quicksand', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="icon" type="image/svg+xml" href="assets/raven-llama-logo.svg">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="js/vendor/confetti.js"></script>
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/styles.css?v=20261031d">
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-yellow-400 selection:text-slate-900">
+<body class="min-h-screen flex flex-col selection:bg-yellow-400 selection:text-slate-900">
 
   <!-- Top Navigation Bar -->
   <header class="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 shadow-sm transition-colors">
-    <div class="max-w-6xl mx-auto px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-1 sm:gap-4">
 
       <!-- Brand Logo & Home Link -->
-      <div onclick="window.app.showRavenAndLlamaHome()" class="cursor-pointer flex items-center gap-2.5 sm:gap-3 group">
+      <button type="button" data-action="home" aria-label="Raven &amp; Llama home" class="flex items-center gap-2.5 sm:gap-3 group cursor-pointer border-0 bg-transparent p-0 text-left">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl p-0.5 bg-gradient-to-tr from-zinc-700 to-zinc-900 flex items-center justify-center shadow border border-zinc-700/80 group-hover:border-zinc-500 transition-all flex-shrink-0">
           <img src="assets/raven-llama-logo.svg" alt="Raven &amp; Llama" class="w-full h-full object-contain rounded-lg bg-zinc-950" />
         </div>
@@ -49,23 +33,23 @@
           <span class="font-sans text-base sm:text-lg font-extrabold tracking-tight text-white group-hover:text-zinc-200 transition">RAVEN &amp; LLAMA</span>
           <span id="header-sub-badge" class="hidden text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/30"></span>
         </div>
-      </div>
+      </button>
 
       <!-- Center Quick Navigation Buttons -->
       <div class="hidden md:flex items-center gap-1.5 bg-zinc-900/80 p-1 rounded-xl border border-zinc-800">
-        <button onclick="window.app.showRavenAndLlamaHome()" id="nav-btn-home" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition">
+        <button data-action="home" id="nav-btn-home" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition">
           Home
         </button>
-        <button onclick="window.app.showLearningHub()" id="nav-btn-learning" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-cyan-300 hover:bg-zinc-800/80 transition flex items-center gap-1">
+        <button data-action="learning" id="nav-btn-learning" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-cyan-300 hover:bg-zinc-800/80 transition flex items-center gap-1">
           <span>🎓</span> <span>Learning</span>
         </button>
-        <button onclick="window.app.showGamesHub()" id="nav-btn-games" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-violet-300 hover:bg-zinc-800/80 transition flex items-center gap-1">
+        <button data-action="games-hub" id="nav-btn-games" class="px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-violet-300 hover:bg-zinc-800/80 transition flex items-center gap-1">
           <span>🎮</span> <span>Games</span>
         </button>
       </div>
 
       <!-- Right HUD (Stars, Active Profile, Sound Toggle) -->
-      <div class="flex items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-1 sm:gap-3">
 
         <!-- Stars Count (Subtle pill) -->
         <div id="header-stars-pill" class="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-2.5 sm:px-3 py-1 rounded-xl shadow-inner">
@@ -74,19 +58,19 @@
         </div>
 
         <!-- Sound Toggle -->
-        <button id="header-sound-btn" onclick="window.app.toggleSound()" title="Toggle Sound"
+        <button id="header-sound-btn" data-action="sound-toggle" title="Toggle Sound"
                 class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-sm sm:text-base transition text-zinc-300 hover:text-white">
           🔊
         </button>
 
         <!-- Account Button -->
-        <button onclick="window.app.openProfileModal()"
+        <button data-action="account-open"
                 class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800/90 border border-zinc-800 pl-1.5 pr-2.5 sm:pr-3 py-1 rounded-xl transition text-left"
           title="Account">
           <div id="header-profile-avatar" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black border border-zinc-700 flex items-center justify-center text-xs sm:text-sm shadow">
             🪶
           </div>
-          <span id="header-profile-name" class="font-sans text-xs sm:text-sm font-medium text-zinc-200 max-w-[80px] sm:max-w-[120px] truncate">
+          <span id="header-profile-name" class="font-sans text-xs sm:text-sm font-medium text-zinc-200 max-w-[64px] sm:max-w-[120px] truncate">
             Profile
           </span>
           <span class="text-[10px] text-zinc-500 font-bold">⇄</span>
@@ -98,7 +82,7 @@
 
   <div id="account-status-banner" class="hidden px-4 py-2 bg-amber-950/70 border-b border-amber-700/50 text-amber-200 text-xs sm:text-sm flex items-center justify-center gap-3" role="status" aria-live="polite">
     <span id="account-status-message"></span>
-    <button onclick="window.app.openProfileModal()" id="account-status-action" class="font-bold underline underline-offset-2">Sign in</button>
+    <button data-action="account-open" id="account-status-action" class="font-bold underline underline-offset-2">Sign in</button>
   </div>
 
   <!-- Main View Area -->
@@ -129,18 +113,18 @@
           <h3 id="account-modal-title" class="font-sans text-xl text-white font-bold tracking-tight">Account</h3>
           <p id="account-modal-description" class="text-xs text-zinc-400 mt-0.5">Sign in to save progress across your devices.</p>
         </div>
-        <button onclick="window.app.closeProfileModal()" aria-label="Close account dialog" class="text-zinc-400 hover:text-white text-xl font-bold">✕</button>
+        <button data-action="account-close" aria-label="Close account dialog" class="text-zinc-400 hover:text-white text-xl font-bold">✕</button>
       </div>
 
       <p id="account-message" class="hidden mb-4 p-3 rounded-lg text-sm" role="status" aria-live="polite"></p>
 
       <div id="account-guest-panel">
         <div class="grid grid-cols-2 gap-1 p-1 mb-5 rounded-lg bg-zinc-950 border border-zinc-800" role="group" aria-label="Account access mode">
-          <button type="button" id="account-login-tab" onclick="window.app.setAccountMode('login')" aria-pressed="true" class="px-3 py-2 rounded-md text-sm font-semibold bg-zinc-700 text-white">Sign in</button>
-          <button type="button" id="account-register-tab" onclick="window.app.setAccountMode('register')" aria-pressed="false" class="px-3 py-2 rounded-md text-sm font-semibold text-zinc-400 hover:text-white">Create account</button>
+          <button type="button" data-action="account-mode" data-mode="login" id="account-login-tab" aria-pressed="true" class="px-3 py-2 rounded-md text-sm font-semibold bg-zinc-700 text-white">Sign in</button>
+          <button type="button" data-action="account-mode" data-mode="register" id="account-register-tab" aria-pressed="false" class="px-3 py-2 rounded-md text-sm font-semibold text-zinc-400 hover:text-white">Create account</button>
         </div>
 
-        <form id="account-auth-form" onsubmit="window.app.submitAccountForm(event)" class="space-y-4">
+        <form id="account-auth-form" data-submit-action="account-auth" class="space-y-4">
           <div>
             <label for="account-username" class="block text-xs text-zinc-300 mb-1">Username</label>
             <input id="account-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_]+" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
@@ -162,7 +146,7 @@
 
       <div id="account-signed-in-panel" class="hidden">
         <p class="mb-5 text-sm text-zinc-300">Signed in as <strong id="account-username-display" class="text-white"></strong></p>
-        <form id="account-avatar-form" onsubmit="window.app.changeAvatarSubmit(event)" class="mb-5 pb-5 border-b border-zinc-800">
+      <form id="account-avatar-form" data-submit-action="account-avatar" class="mb-5 pb-5 border-b border-zinc-800">
           <fieldset>
             <legend class="text-sm font-bold text-white mb-3">Change avatar</legend>
             <div id="account-avatar-options" class="grid grid-cols-3 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Choose an avatar"></div>
@@ -171,12 +155,12 @@
         </form>
         <div class="mb-5">
           <label for="account-theme" class="block text-xs text-zinc-300 mb-1">Color theme</label>
-          <select id="account-theme" onchange="window.app.setTheme(this.value)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+          <select id="account-theme" data-action="theme-select" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
             <option value="dark">Dark</option>
             <option value="light">Light</option>
           </select>
         </div>
-        <form id="account-password-form" onsubmit="window.app.changePasswordSubmit(event)" class="space-y-3">
+        <form id="account-password-form" data-submit-action="account-password" class="space-y-3">
           <h4 class="text-sm font-bold text-white">Change password</h4>
           <div>
             <label for="account-current-password" class="block text-xs text-zinc-300 mb-1">Current password</label>
@@ -193,17 +177,17 @@
           <button type="submit" class="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-sm">Update password</button>
         </form>
         <div class="mt-5 pt-4 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3">
-          <button onclick="window.app.logoutAccount()" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-sm">Sign out</button>
-          <button id="delete-account-toggle" onclick="window.app.showDeleteAccountConfirmation()" class="px-3 py-2 rounded-lg text-rose-300 hover:bg-rose-950/60 font-semibold text-xs">Delete account</button>
+          <button data-action="account-logout" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-sm">Sign out</button>
+          <button id="delete-account-toggle" data-action="account-delete-show" class="px-3 py-2 rounded-lg text-rose-300 hover:bg-rose-950/60 font-semibold text-xs">Delete account</button>
         </div>
-        <form id="delete-account-confirmation" onsubmit="window.app.deleteAccount(event)" class="hidden mt-4 p-4 rounded-lg border border-rose-800 bg-rose-950/40 space-y-3">
+        <form id="delete-account-confirmation" data-submit-action="account-delete" class="hidden mt-4 p-4 rounded-lg border border-rose-800 bg-rose-950/40 space-y-3">
           <p class="text-sm text-rose-100">This permanently deletes the account and all saved progress.</p>
           <div>
             <label for="delete-account-password" class="block text-xs text-zinc-300 mb-1">Confirm your password</label>
             <input id="delete-account-password" type="password" autocomplete="current-password" required maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-rose-400 text-sm">
           </div>
           <div class="flex justify-end gap-2">
-            <button type="button" onclick="window.app.cancelDeleteAccount()" class="px-3 py-2 rounded-lg text-zinc-300 hover:bg-zinc-800 text-sm">Cancel</button>
+            <button type="button" data-action="account-delete-cancel" class="px-3 py-2 rounded-lg text-zinc-300 hover:bg-zinc-800 text-sm">Cancel</button>
             <button type="submit" class="px-3 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-semibold text-sm">Confirm account deletion</button>
           </div>
         </form>
@@ -213,13 +197,13 @@
 
   <!-- Modal: Parent / Teacher Progress Stats -->
   <div id="parent-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-2xl w-full shadow-2xl animate-pop max-h-[85vh] flex flex-col">
+    <div role="dialog" aria-modal="true" aria-labelledby="parent-modal-title" tabindex="-1" class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-2xl w-full shadow-2xl animate-pop max-h-[85vh] flex flex-col">
       <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
         <div>
-          <h3 class="font-ninja text-2xl text-white font-bold">Mastery &amp; Progress Report</h3>
+          <h3 id="parent-modal-title" class="font-ninja text-2xl text-white font-bold">Mastery &amp; Progress Report</h3>
           <div class="text-xs text-slate-400">Student: <span id="parent-student-name" class="text-yellow-400 font-bold"></span></div>
         </div>
-        <button onclick="window.app.closeParentModal()" class="text-slate-400 hover:text-white text-xl">✕</button>
+        <button data-action="parent-close" aria-label="Close progress report" class="text-slate-400 hover:text-white text-xl">✕</button>
       </div>
 
       <div class="overflow-y-auto flex-1 pr-1">
@@ -240,7 +224,7 @@
       </div>
 
       <div class="mt-4 pt-3 border-t border-slate-800 flex justify-end">
-        <button onclick="window.app.closeParentModal()" class="btn-ninja px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold">
+        <button data-action="parent-close" class="btn-ninja px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold">
           Close Report
         </button>
       </div>
@@ -248,20 +232,20 @@
   </div>
 
   <!-- App Logic Scripts -->
-  <script src="js/shared/audio.js?v=20261031i"></script>
-  <script src="js/mathmasters/curriculum.js?v=20261031i"></script>
-  <script src="js/shared/renderers.js?v=20261031i"></script>
-  <script src="js/mathmasters/generators.js?v=20261031i"></script>
-  <script src="js/shared/accounts.js?v=20261031i"></script>
-  <script src="js/mathmasters/arcade-games.js?v=20261031i"></script>
-  <script src="js/mathmasters/game-engine.js?v=20261031i"></script>
-  <script src="js/shared/app.js?v=20261031i"></script>
-  <script src="js/home/home.js?v=20261031i"></script>
-  <script src="js/learning/hub.js?v=20261031i"></script>
-  <script src="js/games/hub.js?v=20261031i"></script>
-  <script src="js/mathmasters/views.js?v=20261031i"></script>
-  <script src="js/timetables/timetables.js?v=20261031i"></script>
-  <script src="js/spelling/safari.js?v=20261031i"></script>
-  <script src="js/science/explorers.js?v=20261031i"></script>
+  <script src="js/shared/audio.js"></script>
+  <script src="js/mathmasters/curriculum.js"></script>
+  <script src="js/shared/renderers.js"></script>
+  <script src="js/mathmasters/generators.js"></script>
+  <script src="js/shared/accounts.js"></script>
+  <script src="js/mathmasters/arcade-games.js"></script>
+  <script src="js/mathmasters/game-engine.js"></script>
+  <script src="js/shared/app.js"></script>
+  <script src="js/home/home.js"></script>
+  <script src="js/learning/hub.js"></script>
+  <script src="js/games/hub.js"></script>
+  <script src="js/mathmasters/views.js"></script>
+  <script src="js/timetables/timetables.js"></script>
+  <script src="js/spelling/safari.js"></script>
+  <script src="js/science/explorers.js"></script>
 </body>
 </html>

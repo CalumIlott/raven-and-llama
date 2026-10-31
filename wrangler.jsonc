@@ -7,8 +7,26 @@
     "directory": "./public",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/*"]
   },
+  // Namespace IDs are account-unique; Preview uses a separate set of counters.
+  "ratelimits": [
+    {
+      "name": "AUTH_LOGIN_IP_LIMITER",
+      "namespace_id": "91372101",
+      "simple": { "limit": 60, "period": 60 }
+    },
+    {
+      "name": "AUTH_LOGIN_ACCOUNT_LIMITER",
+      "namespace_id": "91372102",
+      "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "AUTH_REGISTER_LIMITER",
+      "namespace_id": "91372103",
+      "simple": { "limit": 30, "period": 60 }
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -18,6 +36,23 @@
     }
   ],
   "previews": {
+    "ratelimits": [
+      {
+        "name": "AUTH_LOGIN_IP_LIMITER",
+        "namespace_id": "91372201",
+        "simple": { "limit": 60, "period": 60 }
+      },
+      {
+        "name": "AUTH_LOGIN_ACCOUNT_LIMITER",
+        "namespace_id": "91372202",
+        "simple": { "limit": 10, "period": 60 }
+      },
+      {
+        "name": "AUTH_REGISTER_LIMITER",
+        "namespace_id": "91372203",
+        "simple": { "limit": 30, "period": 60 }
+      }
+    ],
     "d1_databases": [
       {
         "binding": "DB",

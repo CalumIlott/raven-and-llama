@@ -42,8 +42,15 @@ test('guest can create an account, change password, sign out, sign in, and delet
 test('signed-in account can change avatar and keep it after reload', async ({ page }) => {
   const { username } = await registerAccount(page);
   await openAccountModal(page);
-  await page.getByRole('radio', { name: 'Owl' }).check();
+  await page.getByText('Owl', { exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
+  const avatarSave = page.waitForResponse(response =>
+    response.url().endsWith('/api/progress') && response.request().method() === 'PUT'
+  );
   await page.getByRole('button', { name: 'Save avatar' }).click();
+  const savedProgress = await avatarSave;
+  expect(savedProgress.status()).toBe(200);
+  expect((await savedProgress.json()).profile.avatar).toBe('owl');
 
   await expect(page.locator('#account-message')).toHaveText('Avatar updated.');
   await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');

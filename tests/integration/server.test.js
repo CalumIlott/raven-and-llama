@@ -78,11 +78,21 @@ test('accounts persist securely and progress stays private to the authenticated 
   const home = await fetch(`${baseUrl}/`);
   assert.equal(home.status, 200);
   assert.match(home.headers.get('content-type'), /text\/html/);
+  assert.equal(home.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(home.headers.get('x-frame-options'), 'DENY');
+  assert.match(home.headers.get('content-security-policy'), /script-src 'self'/);
+  assert.doesNotMatch(home.headers.get('content-security-policy'), /script-src[^;]*unsafe-inline/);
+  assert.doesNotMatch(home.headers.get('content-security-policy'), /style-src[^;]*unsafe-inline/);
   assert.match(await home.text(), /Raven &amp; Llama Learning/);
 
   const favicon = await fetch(`${baseUrl}/assets/raven-llama-logo.svg`);
   assert.equal(favicon.status, 200);
   assert.match(favicon.headers.get('content-type'), /image\/svg\+xml/);
+  assert.match(favicon.headers.get('cache-control'), /max-age=0, must-revalidate/);
+
+  const appScript = await fetch(`${baseUrl}/js/shared/app.js`);
+  assert.equal(appScript.status, 200);
+  assert.match(appScript.headers.get('cache-control'), /no-store/);
 
   assert.equal((await fetch(`${baseUrl}/api/auth/session`)).status, 401);
   assert.equal((await fetch(`${baseUrl}/api/progress`)).status, 401);
@@ -112,8 +122,9 @@ test('accounts persist securely and progress stays private to the authenticated 
 
   const duplicate = await postJson('/api/auth/register', { username: 'AVERY_1', password: 'a secure password 123' });
   assert.equal(duplicate.status, 409);
-  assert.equal(fs.existsSync(path.join(dataDirectory, 'accounts.json')), true);
+  assert.equal(fs.existsSync(path.join(dataDirectory, 'accounts.sqlite')), true);
   assert.equal(fs.existsSync(path.join(temporaryRoot, 'public', 'data')), false);
+  assert.equal((await fetch(`${baseUrl}/data/accounts.sqlite`)).status, 404);
   assert.equal((await fetch(`${baseUrl}/data/accounts.json`)).status, 404);
 
   const privateProgress = { ...first.body.profile, stars: 17, passedBelts: ['white'] };
@@ -146,4 +157,15 @@ test('accounts persist securely and progress stays private to the authenticated 
     body: JSON.stringify({ username: 'origin_test', password: 'origin test password 12' })
   });
   assert.equal(crossOrigin.status, 403);
+
+  let limitedLogin;
+  for (let attempt = 0; attempt < 61; attempt++) {
+    limitedLogin = await postJson('/api/auth/login', {
+      username: `rate_limit_${attempt}`,
+      password: 'incorrect password'
+    });
+    if (limitedLogin.status === 429) break;
+  }
+  assert.equal(limitedLogin.status, 429);
+  assert.equal(limitedLogin.headers.get('retry-after'), '60');
 });

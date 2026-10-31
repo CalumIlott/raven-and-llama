@@ -37,7 +37,7 @@ Object.assign(App.prototype, {
                   <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                   <span>${ProfileManager.isAuthenticated() ? 'Signed in as:' : 'Guest:'}</span>
                   <strong class="text-zinc-100 font-semibold">${profile?.name || 'Guest'}</strong>
-                  <button onclick="window.app.openProfileModal()" class="text-zinc-400 hover:text-white underline ml-1 text-xs transition">
+                  <button data-action="account-open" class="text-zinc-400 hover:text-white underline ml-1 text-xs transition">
                     Account
                   </button>
                 </div>
@@ -46,15 +46,15 @@ Object.assign(App.prototype, {
 
             <!-- Quick Access Nav Cards -->
             <div class="flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
-              <button onclick="window.app.showLearningHub()" class="px-5 py-3 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
+              <button data-action="learning" class="px-5 py-3 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
                 <span>Enter Learning Hub</span>
                 <span>→</span>
               </button>
-              <button onclick="window.app.showGamesHub()" class="px-5 py-3 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
+              <button data-action="games-hub" class="px-5 py-3 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
                 <span>Enter Games Hub</span>
                 <span>→</span>
               </button>
-              <button onclick="window.app.showParentOverview()" class="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-1.5">
+              <button data-action="parent-report" class="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-1.5">
                 <span>📊</span> <span>Mastery Stats</span>
               </button>
             </div>
@@ -70,8 +70,7 @@ Object.assign(App.prototype, {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
 
           <!-- CARD 1: RAVEN & LLAMA LEARNING (FLAGSHIP SUB-PAGE) -->
-          <div onclick="window.app.showLearningHub()"
-               class="cursor-pointer group relative bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between md:col-span-2">
+           <div class="app-card-link group relative p-6 sm:p-8 shadow-xl flex flex-col justify-between md:col-span-2">
             <div>
               <div class="flex items-start justify-between gap-4 mb-4">
                 <div class="flex items-center gap-3.5">
@@ -113,15 +112,15 @@ Object.assign(App.prototype, {
               </div>
             </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-sm font-semibold text-cyan-400 group-hover:text-cyan-300">
+            <a href="#learning" data-action="learning" class="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-sm font-semibold text-cyan-400 group-hover:text-cyan-300 no-underline">
               <span>Open Learning Academy</span>
               <span class="group-hover:translate-x-1.5 transition-transform text-base">→</span>
-            </div>
+            </a>
           </div>
 
-          <!-- CARD 2: GAMES HUB -->
-          <div onclick="window.app.showGamesHub()"
-               class="cursor-pointer group bg-zinc-900/90 border border-zinc-800 hover:border-violet-500/60 rounded-3xl p-6 sm:p-7 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
+       <!-- CARD 2: GAMES HUB -->
+       <a href="#games" data-action="games-hub"
+         class="app-card-link group p-6 sm:p-7 shadow-xl flex flex-col justify-between hover:border-violet-500/60">
             <div>
               <div class="flex items-center gap-3 mb-3">
                 <div class="w-11 h-11 rounded-xl bg-violet-950/70 border border-violet-800/60 flex items-center justify-center text-xl shadow">
@@ -142,7 +141,7 @@ Object.assign(App.prototype, {
               <span>Play Critter Catch</span>
               <span class="group-hover:translate-x-1 transition-transform">→</span>
             </div>
-          </div>
+          </a>
 
         </div>
 

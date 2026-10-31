@@ -25,7 +25,7 @@ Object.assign(App.prototype, {
     this.updateHeader();
     main.innerHTML = `
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-        <button onclick="window.app.showRavenAndLlamaHome()" class="flex items-center gap-2 text-sm text-violet-300 hover:text-violet-200 mb-6 transition font-bold group">
+        <button data-action="home" class="flex items-center gap-2 text-sm text-violet-300 hover:text-violet-200 mb-6 transition font-bold group">
           <span class="group-hover:-translate-x-1 transition-transform">←</span>
           <span>Back to Raven &amp; Llama Home</span>
         </button>
@@ -64,7 +64,7 @@ Object.assign(App.prototype, {
             <p id="critter-catch-status" class="min-h-6 text-sm font-semibold text-emerald-300 mb-3" role="status" aria-live="polite">Press play when you’re ready.</p>
             <div id="critter-catch-board" role="group" aria-label="Critter Catch game board" class="grid grid-cols-3 gap-3 max-w-sm mx-auto mb-5"></div>
             <div class="text-center">
-              <button id="critter-catch-start" onclick="window.app.startCritterCatch()" class="rounded-xl bg-violet-500 hover:bg-violet-400 px-6 py-3 font-bold text-white shadow-lg transition">
+              <button id="critter-catch-start" data-action="critter-start" class="rounded-xl bg-violet-500 hover:bg-violet-400 px-6 py-3 font-bold text-white shadow-lg transition">
                 Play 30-second round
               </button>
             </div>
@@ -161,7 +161,7 @@ Object.assign(App.prototype, {
         : null;
       const label = critter ? `Catch the ${critter.name}` : 'Empty burrow';
       return `
-        <button type="button" data-hole-index="${index}" aria-label="${label}" onclick="window.app.selectCritterHole(${index})"
+        <button type="button" data-action="critter-hole" data-hole-index="${index}" aria-label="${label}"
           ${state.running ? '' : 'disabled'}
           class="aspect-square rounded-2xl border-2 ${critter ? 'border-emerald-300 bg-emerald-900/60 text-4xl sm:text-5xl animate-pop' : 'border-zinc-700 bg-zinc-950/80 text-zinc-600'} flex items-center justify-center shadow-inner transition disabled:cursor-not-allowed enabled:hover:border-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300">
           ${critter ? critter.emoji : '🌱'}

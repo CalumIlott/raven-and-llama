@@ -120,8 +120,8 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-5xl mx-auto px-4 py-6 sm:py-8">
         <div class="flex items-center justify-between mb-6">
-          <button onclick="window.app.showLearningHub()" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold">← Back to Learning</button>
-          <button onclick="window.app.showRavenAndLlamaHome()" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
+          <button data-action="learning" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold">← Back to Learning</button>
+          <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
         <div class="bg-gradient-to-r from-purple-950 via-emerald-950 to-slate-900 border-2 border-emerald-500/50 rounded-3xl p-6 sm:p-8 mb-7 shadow-2xl">
           <div class="text-center">
@@ -133,7 +133,7 @@ Object.assign(App.prototype, {
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose your adventure</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           ${SpellingSafari.getActivities().map(activity => `
-            <button onclick="window.app.startSpellingSafari('${activity.id}')"
+            <button data-action="spelling-start" data-activity-id="${activity.id}"
                     class="text-left bg-slate-900 border-2 border-slate-700 hover:border-emerald-400 rounded-2xl p-5 transition shadow-lg group">
               <span class="text-3xl">${activity.emoji}</span>
               <h3 class="font-ninja text-xl font-bold text-white group-hover:text-emerald-300 mt-2">${activity.title}</h3>
@@ -180,8 +180,8 @@ Object.assign(App.prototype, {
           <p class="text-slate-300 mt-2">You scored <strong class="text-yellow-300">${game.score} / ${game.questions.length}</strong> in ${game.activity.title}.</p>
           ${missedWords}
           <div class="flex flex-wrap justify-center gap-3 mt-6">
-            <button onclick="window.app.startSpellingSafari('${game.activity.id}')" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Play again</button>
-            <button onclick="window.app.showSpellingSafari()" class="px-5 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold">Choose another adventure</button>
+            <button data-action="spelling-start" data-activity-id="${game.activity.id}" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Play again</button>
+            <button data-action="spelling-home" class="px-5 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold">Choose another adventure</button>
           </div>
         </div>
       `;
@@ -197,16 +197,16 @@ Object.assign(App.prototype, {
         </div>
         <div class="flex flex-wrap justify-center gap-2">
           ${question.scramble.map((letter, index) => `
-            <button id="safari-letter-${index}" onclick="window.app.pickSpellingSafariLetter(${index})" ${game.selectedLetters.includes(index) || game.answered ? 'disabled' : ''}
+            <button id="safari-letter-${index}" data-action="spelling-letter" data-index="${index}" ${game.selectedLetters.includes(index) || game.answered ? 'disabled' : ''}
                     aria-label="Letter ${letter}" class="w-11 h-11 rounded-xl bg-purple-800 hover:bg-purple-700 border border-purple-400 text-white text-xl font-bold disabled:opacity-40">${letter}</button>
           `).join('')}
         </div>
-        ${game.selectedLetters.length ? '<button onclick="window.app.clearSpellingSafariLetters()" class="mt-4 text-xs text-slate-400 underline">Clear letters</button>' : ''}
+        ${game.selectedLetters.length ? '<button data-action="spelling-clear" class="mt-4 text-xs text-slate-400 underline">Clear letters</button>' : ''}
       `
       : `
         <div class="grid grid-cols-2 gap-3 mt-6">
           ${question.options.map(option => `
-            <button onclick="window.app.submitSpellingSafariAnswer('${option}')" ${game.answered ? 'disabled' : ''}
+            <button data-action="spelling-answer" data-answer="${encodeURIComponent(String(option))}" ${game.answered ? 'disabled' : ''}
                     class="p-4 rounded-xl bg-slate-800 hover:bg-emerald-700 border-2 border-slate-600 hover:border-emerald-400 text-white font-ninja text-lg font-bold disabled:opacity-60">${option}</button>
           `).join('')}
         </div>
@@ -214,13 +214,13 @@ Object.assign(App.prototype, {
     const prompt = question.type === 'phonics' ? `Complete the word: ${question.prompt}` : question.prompt || `Unscramble: ${question.scramble.join(' ')}`;
     const feedback = game.answered
       ? `<div id="safari-feedback" role="status" class="mt-5 p-3 rounded-xl ${game.lastAnswerCorrect ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-200'}">${game.lastAnswerCorrect ? 'Great work! 🌟' : `The answer was ${question.answer}. Keep exploring!`}</div>
-         <button onclick="window.app.nextSpellingSafariQuestion()" class="mt-4 w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Next word →</button>`
+         <button data-action="spelling-next" class="mt-4 w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Next word →</button>`
       : '';
 
     arena.innerHTML = `
       <div class="bg-slate-900 border-2 border-emerald-600/70 rounded-3xl p-5 sm:p-7 shadow-2xl">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-5">
-          <button onclick="window.app.showSpellingSafari()" class="text-xs text-slate-400 hover:text-white">← Exit</button>
+          <button data-action="spelling-home" class="text-xs text-slate-400 hover:text-white">← Exit</button>
           <div class="text-center">
             <h2 class="font-ninja text-lg text-emerald-300 font-bold">${game.activity.title} ${game.activity.emoji}</h2>
             <p class="text-xs text-slate-400">Round ${game.index + 1} of ${game.questions.length}</p>

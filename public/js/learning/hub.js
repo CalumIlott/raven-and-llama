@@ -12,7 +12,7 @@ Object.assign(App.prototype, {
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
 
         <!-- Breadcrumb: Back to Raven & Llama Top Level Page -->
-        <button onclick="window.app.showRavenAndLlamaHome()" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 mb-6 transition font-bold group">
+        <button data-action="home" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 mb-6 transition font-bold group">
           <span class="group-hover:-translate-x-1 transition-transform">←</span>
           <span>Back to Raven &amp; Llama Home</span>
         </button>
@@ -34,10 +34,10 @@ Object.assign(App.prototype, {
           </div>
 
           <div class="flex flex-wrap justify-center gap-3">
-            <button onclick="window.app.showTrophyRoom()" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg text-sm">
+            <button data-action="trophy-room" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg text-sm">
               🏆 Trophy Room
             </button>
-            <button onclick="window.app.showParentOverview()" class="btn-ninja px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 font-medium flex items-center gap-2 shadow-lg text-xs sm:text-sm">
+            <button data-action="parent-report" class="btn-ninja px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 font-medium flex items-center gap-2 shadow-lg text-xs sm:text-sm">
               📊 Progress Stats
             </button>
           </div>
@@ -56,8 +56,8 @@ Object.assign(App.prototype, {
         <div id="learning-modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
           <!-- 1. MATHS MASTERS DOJO -->
-          <div onclick="window.app.showDojoHub()"
-               class="cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-amber-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+          <a href="#maths-masters" data-action="dojo"
+             class="app-card-link group relative p-6 sm:p-8 shadow-xl flex flex-col justify-between overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-red-500 via-amber-400 to-yellow-300"></div>
 
             <div>
@@ -100,11 +100,11 @@ Object.assign(App.prototype, {
               <span>Open Maths Masters Dojo</span>
               <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
             </div>
-          </div>
+          </a>
 
           <!-- 2. TIMES TABLES DOJO -->
-          <div onclick="window.app.showTimesTables()"
-               class="cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+          <a href="#times-tables" data-action="times-tables"
+             class="app-card-link group relative p-6 sm:p-8 shadow-xl flex flex-col justify-between overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400"></div>
 
             <div>
@@ -147,10 +147,10 @@ Object.assign(App.prototype, {
               <span>Open Times Tables Dojo</span>
               <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
             </div>
-          </div>
+          </a>
 
           <!-- 3. SCIENCE EXPLORERS -->
-          <button type="button" onclick="window.app.showScienceExplorers()"
+          <button type="button" data-action="science-home"
                   class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-sky-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400"></div>
             <div>
@@ -192,7 +192,7 @@ Object.assign(App.prototype, {
             </div>
           </button>
 
-          <button onclick="window.app.showSpellingSafari()" class="text-left bg-slate-900 border-2 border-purple-800/70 hover:border-emerald-400 rounded-2xl p-4 flex items-center gap-4 transition group">
+          <button data-action="spelling-home" class="text-left bg-slate-900 border-2 border-purple-800/70 hover:border-emerald-400 rounded-2xl p-4 flex items-center gap-4 transition group">
             <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-800/60 flex items-center justify-center text-2xl">
               🦁
             </div>

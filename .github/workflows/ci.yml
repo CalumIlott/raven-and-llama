@@ -1,8 +1,8 @@
 name: CI
 
 on:
-  push:
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -14,18 +14,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        node-version: [22, 24, 26]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
         run: npm ci
-      - name: Run unit and integration tests
+      - name: Run unit tests
         run: npm run test:unit
+      - name: Run integration tests
+        run: npm run test:integration
 
   e2e:
     name: Playwright E2E
@@ -33,17 +35,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Check generated assets are committed
+        run: git ls-files --error-unmatch public/css/tailwind.css public/js/vendor/confetti.js
+      - name: Verify generated frontend assets
+        run: npm run test:css
       - name: Validate Cloudflare Worker bundle
         run: npm run test:worker
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run Playwright tests
         run: npm run test:e2e
+
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Audit dependencies
+        run: npm run audit

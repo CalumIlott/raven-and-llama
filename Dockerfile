@@ -1,11 +1,20 @@
-FROM node:22-alpine
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
-# Copy application files
+COPY package*.json ./
+RUN npm ci
+COPY tailwind.config.js tailwind.input.css ./
+COPY scripts/ ./scripts/
+COPY public/ ./public/
+RUN npm run build
+
+FROM node:24-alpine
+
+WORKDIR /app
 COPY server.js ./
 COPY lib/ ./lib/
-COPY public/ ./public/
+COPY --from=build /app/public ./public/
 
 # Persistent data directory
 RUN mkdir -p /app/data

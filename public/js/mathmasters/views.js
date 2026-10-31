@@ -16,8 +16,8 @@ Object.assign(App.prototype, {
       const trainingStatus = ProfileManager.getSkillsTrainingStatus(belt.id);
 
       beltsGridHtml += `
-        <div onclick="window.app.showBeltDetails('${belt.id}')"
-             class="cursor-pointer group relative bg-slate-900/90 rounded-3xl border-2 border-slate-700/80 hover:${belt.borderColor} p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden ${isPassed ? 'border-emerald-500/80' : ''}">
+          <a href="#belt-${belt.id}" data-action="belt-detail" data-belt-id="${belt.id}"
+             class="app-card-link group relative p-6 shadow-xl overflow-hidden hover:border-cyan-400 ${isPassed ? 'border-emerald-500/80' : ''}">
 
           <div class="absolute top-0 left-0 right-0 h-3 ${belt.ribbonClass}"></div>
 
@@ -64,7 +64,7 @@ Object.assign(App.prototype, {
               Enter Belt Dojo →
             </span>
           </div>
-        </div>
+        </a>
       `;
     });
 
@@ -73,11 +73,11 @@ Object.assign(App.prototype, {
 
         <!-- Breadcrumb Navigation -->
         <div class="flex items-center justify-between mb-6">
-          <button onclick="window.app.showLearningHub()" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
+          <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
             <span>Back to Raven &amp; Llama Learning</span>
           </button>
-          <button onclick="window.app.showRavenAndLlamaHome()" class="text-xs text-slate-400 hover:text-white">
+          <button data-action="home" class="text-xs text-slate-400 hover:text-white">
             🏠 Raven &amp; Llama Home
           </button>
         </div>
@@ -97,10 +97,10 @@ Object.assign(App.prototype, {
           </div>
 
           <div class="flex flex-wrap justify-center gap-3">
-            <button onclick="window.app.showTrophyRoom()" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg">
+            <button data-action="trophy-room" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg">
               🏆 Trophy Room
             </button>
-            <button onclick="window.app.showParentOverview()" class="btn-ninja px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 font-medium flex items-center gap-2 shadow-lg text-sm">
+            <button data-action="parent-report" class="btn-ninja px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 font-medium flex items-center gap-2 shadow-lg text-sm">
               📊 Progress Stats
             </button>
           </div>
@@ -158,7 +158,7 @@ Object.assign(App.prototype, {
             </div>
           </div>
 
-          <button onclick="window.app.startSkillGame('${belt.id}', '${skill.id}')"
+          <button data-action="skill-start" data-belt-id="${belt.id}" data-skill-id="${skill.id}"
                   class="btn-ninja w-full sm:w-auto px-5 py-2.5 rounded-xl ${is10 ? 'bg-amber-600 hover:bg-amber-500' : 'bg-sky-600 hover:bg-sky-500'} text-white font-ninja font-bold text-sm shadow-md whitespace-nowrap">
             Train Skill ⚔️
           </button>
@@ -169,15 +169,15 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-4xl mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-6">
-          <button onclick="window.app.showDojoHub()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
+          <button data-action="dojo" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
             ← Back to Maths Masters Belts
           </button>
           <div class="flex items-center gap-3">
-            <button onclick="window.app.showLearningHub()" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold">
+            <button data-action="learning" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold">
               Raven &amp; Llama Learning
             </button>
             <span class="text-slate-600">•</span>
-            <button onclick="window.app.showRavenAndLlamaHome()" class="text-xs text-slate-400 hover:text-white">
+            <button data-action="home" class="text-xs text-slate-400 hover:text-white">
               🏠 Home
             </button>
           </div>
@@ -199,7 +199,7 @@ Object.assign(App.prototype, {
               </div>
             </div>
 
-            <button onclick="window.app.launchArcade('${belt.id}')"
+            <button data-action="arcade-start" data-belt-id="${belt.id}"
                     class="btn-ninja px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-ninja font-bold shadow-xl flex items-center gap-2">
               <span>🕹️</span> <span>Play ${belt.arcadeGame.title.split(' ')[0]} Arcade!</span>
             </button>
@@ -227,7 +227,7 @@ Object.assign(App.prototype, {
                 <h4 class="font-ninja text-lg text-white font-bold mb-1">Proficiency Exam</h4>
                 <p class="text-xs text-slate-400 mb-4">10 questions covering all belt skills. 80% to pass.</p>
               </div>
-              <button onclick="window.app.startBeltTestGame('${belt.id}', 1)"
+              <button data-action="belt-test" data-belt-id="${belt.id}" data-stage="1"
                       class="btn-ninja w-full py-3 rounded-xl ${isStage1Passed ? 'bg-slate-800 text-slate-200' : 'bg-sky-600 text-white'} font-ninja font-bold text-sm shadow">
                 ${isStage1Passed ? 'Retake Stage 1 Exam' : 'Take Stage 1 Exam 🥋'}
               </button>
@@ -248,7 +248,7 @@ Object.assign(App.prototype, {
               </div>
 
               ${isStage1Passed ? `
-                <button onclick="window.app.startBeltTestGame('${belt.id}', 2)"
+                <button data-action="belt-test" data-belt-id="${belt.id}" data-stage="2"
                         class="btn-ninja w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-ninja font-bold text-sm shadow-xl">
                   ${isStage2Passed ? 'Retake' : 'Take'} Stage 2 Quiz ⚔️
                 </button>
@@ -269,17 +269,17 @@ Object.assign(App.prototype, {
             <h4 class="font-ninja text-lg text-white font-bold mb-1">Stage 3 Grand Master Final Exam 🏆</h4>
             <p class="text-xs text-slate-400 mb-3">8 high-speed questions. Requires Stage 2 passed AND 10/10 mastery on all component skills (${trainingStatus.masterCount}/${trainingStatus.total} Mastered).</p>
             ${canTakeFinal ? `
-              <button onclick="window.app.startBeltTestGame('${belt.id}', 3)" class="btn-ninja w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-ninja font-bold shadow-xl">
+              <button data-action="belt-test" data-belt-id="${belt.id}" data-stage="3" class="btn-ninja w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-ninja font-bold shadow-xl">
                 ${isStage3Passed ? 'Retake' : 'Take'} Stage 3 Final Exam! 🏆
               </button>
             ` : `
-              <button onclick="window.app.showPrerequisiteChecklist('${belt.id}')" class="w-full py-3 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-ninja font-bold text-xs border border-slate-700">
+              <button data-action="prerequisites" data-belt-id="${belt.id}" class="w-full py-3 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-ninja font-bold text-xs border border-slate-700">
                 🔒 View Missing Prerequisites (${trainingStatus.masterCount}/${trainingStatus.total} Mastered)
               </button>
             `}
           </div>
 
-          <button onclick="window.app.startEndlessBeltTest('${belt.id}')"
+          <button data-action="endless-belt-test" data-belt-id="${belt.id}"
                   class="btn-ninja w-full mt-4 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 border-2 border-emerald-400 text-white font-ninja font-bold shadow-xl">
             ♾️ Start Endless Belt Challenge
           </button>
