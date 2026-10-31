@@ -16,10 +16,15 @@ test('Games Hub lets players choose Critter Catch and play a round', async ({ pa
 
   await page.getByRole('button', { name: 'Play 30-second round' }).click();
   const score = page.locator('#critter-catch-score');
+  await page.locator('#critter-catch-board button[aria-label="Empty burrow"]').first().click();
+  await expect(page.locator('#critter-catch-board button.critter-catch-feedback-miss')).toHaveCount(1);
   for (let catchCount = 0; catchCount < 5; catchCount++) {
     const critter = page.locator('#critter-catch-board button[aria-label^="Catch the"]');
     await expect(critter).toBeVisible();
     await critter.click();
+    if (catchCount === 0) {
+      await expect(page.locator('#critter-catch-board button.critter-catch-feedback-catch')).toHaveCount(1);
+    }
   }
   await expect(score).toHaveText('75');
   await expect(page.locator('#critter-catch-status')).toHaveText('Five in a row! Bonus points!');
