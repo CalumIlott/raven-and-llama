@@ -9,7 +9,7 @@ function response(data, status = 200) {
 function loadAccounts(fetchImplementation) {
   const context = loadBrowserScripts(
     createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) }),
-    'js/curriculum.js',
+    'js/mathmasters/curriculum.js',
     'js/shared/accounts.js'
   );
   return { context, accounts: context.ProfileManager };

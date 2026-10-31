@@ -30,14 +30,18 @@ The tests cover password/session handling, account isolation, cross-context prog
 
 ```text
 index.html                 App shell
-js/                        Browser application, curriculum, games, and profile logic
+js/shared/                 App shell, accounts, audio, and shared renderers
+js/home/                   Home page view
+js/learning/               Learning hub view
+js/mathmasters/            Curriculum, question generators, dojo views, and arcade/game engines
+js/timetables/             Times Tables practice and arcade views
 css/styles.css             Application styles
 assets/                    Brand assets
 server.js                  Static server and account API
 functions/api/             Cloudflare Pages account API
 functions/_shared/          Shared auth handler and D1 adapter
 migrations/                 Cloudflare D1 schema migrations
-tests/unit/                Curriculum, generator, and account tests
+tests/unit/                Curriculum, generator, account, and storage tests
 tests/integration/         Isolated server and API tests
 tests/e2e/                 Playwright browser workflow tests
 playwright.config.js        Chromium runner and local server configuration

@@ -1,0 +1,184 @@
+Object.assign(App.prototype, {
+  showLearningHub() {
+    this.currentView = 'learning';
+    const main = document.getElementById('app-main');
+    if (!main) return;
+
+    const profile = ProfileManager.getActiveProfile();
+    this.updateHeader();
+
+    main.innerHTML = `
+      <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+
+        <!-- Breadcrumb: Back to Raven & Llama Top Level Page -->
+        <button onclick="window.app.showRavenAndLlamaHome()" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 mb-6 transition font-bold group">
+          <span class="group-hover:-translate-x-1 transition-transform">←</span>
+          <span>Back to Raven &amp; Llama Home</span>
+        </button>
+
+        <!-- Learning Sub-Page Header Banner -->
+        <div class="relative bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-900 border-2 border-indigo-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="text-center md:text-left">
+            <div class="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30 mb-2">
+              <span>🪶 Raven &amp; Llama</span>
+              <span>•</span>
+              <span>Learning Academy Sub-Page</span>
+            </div>
+            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">
+              Raven &amp; Llama <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-300 to-yellow-400">Learning</span>
+            </h1>
+            <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
+              Choose your math learning module below: complete school belt challenges or master multiplication times tables!
+            </p>
+          </div>
+
+          <div class="flex flex-wrap justify-center gap-3">
+            <button onclick="window.app.showTrophyRoom()" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg text-sm">
+              🏆 Trophy Room
+            </button>
+            <button onclick="window.app.showParentOverview()" class="btn-ninja px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 font-medium flex items-center gap-2 shadow-lg text-xs sm:text-sm">
+              📊 Progress Stats
+            </button>
+          </div>
+        </div>
+
+        <!-- Level 3 Programs: MathMasters and Times Tables -->
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-ninja text-2xl text-white font-bold">Mathematics Modules</h2>
+          <span class="text-xs text-slate-400">Select a program to start practicing</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+
+          <!-- 1. MATHS MASTERS DOJO -->
+          <div onclick="window.app.showDojoHub()"
+               class="cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-amber-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-red-500 via-amber-400 to-yellow-300"></div>
+
+            <div>
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center text-3xl shadow-lg border border-yellow-300">
+                    🥋
+                  </div>
+                  <div>
+                    <span class="text-xs uppercase tracking-wider text-amber-400 font-bold">School Program</span>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-amber-300 transition">Maths Masters Dojo</h3>
+                  </div>
+                </div>
+                <span class="bg-amber-950 text-amber-300 border border-amber-600/60 text-xs font-bold px-3 py-1 rounded-full">
+                  7 Belts 🏅
+                </span>
+              </div>
+
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                The complete Raven &amp; Llama Maths Masters curriculum! Train skills in the dojo grounds, pass 3-stage timed belt exams, and graduate from White to Platinum Grand Master.
+              </p>
+
+              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Curriculum</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">${BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0)} Skills</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Exams</div>
+                  <div class="font-ninja font-bold text-yellow-400 mt-0.5">3 Quizzes/Belt</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Mini-Games</div>
+                  <div class="font-ninja font-bold text-emerald-400 mt-0.5">7 Arcades</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-amber-400 group-hover:text-yellow-300">
+              <span>Open Maths Masters Dojo</span>
+              <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
+            </div>
+          </div>
+
+          <!-- 2. TIMES TABLES DOJO -->
+          <div onclick="window.app.showTimesTables()"
+               class="cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-emerald-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400"></div>
+
+            <div>
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-3xl shadow-lg border border-emerald-300">
+                    ✖️
+                  </div>
+                  <div>
+                    <span class="text-xs uppercase tracking-wider text-emerald-400 font-bold">Speed Fluency</span>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-emerald-300 transition">Times Tables Dojo</h3>
+                  </div>
+                </div>
+                <span class="bg-emerald-950 text-emerald-300 border border-emerald-600/60 text-xs font-bold px-3 py-1 rounded-full">
+                  2× to 12× ⚡
+                </span>
+              </div>
+
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                Complete multiplication tables training. Focused drills for every table from 2× to 12×, quick mixed sprints, 33-question completion test, and factor match arcade.
+              </p>
+
+              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Tables</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">2× through 12×</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Mastery Test</div>
+                  <div class="font-ninja font-bold text-cyan-300 mt-0.5">33 Questions</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Arcade</div>
+                  <div class="font-ninja font-bold text-amber-400 mt-0.5">Product Match</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-emerald-400 group-hover:text-emerald-300">
+              <span>Open Times Tables Dojo</span>
+              <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Upcoming Subjects Preview -->
+        <h3 class="font-ninja text-lg text-slate-400 font-bold mb-3 flex items-center gap-2">
+          <span>🚀</span> <span>Future Subjects in Raven &amp; Llama Learning</span>
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 opacity-70">
+            <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-800/60 flex items-center justify-center text-2xl">
+              🦁
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="font-ninja text-base font-bold text-slate-300">Spelling Safari</h4>
+                <span class="text-[10px] bg-slate-800 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">Coming Soon</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Phonics adventures, tricky words, sight words &amp; vocabulary builder.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 opacity-70">
+            <div class="w-12 h-12 rounded-xl bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-2xl">
+              🔬
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="font-ninja text-base font-bold text-slate-300">Science Explorers</h4>
+                <span class="text-[10px] bg-slate-800 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/30">Coming Soon</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">Solar system journeys, biology mysteries, chemistry &amp; nature quests.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+});
