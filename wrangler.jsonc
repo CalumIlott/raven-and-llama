@@ -15,5 +15,15 @@
       "database_id": "0ea66bd8-01be-460c-8470-90c5dabfca49",
       "migrations_dir": "migrations"
     }
-  ]
+  ],
+  "previews": {
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "raven-llama-accounts-preview",
+        "database_id": "8e976cf2-d12e-48d1-b26d-0dc3fec55832",
+        "migrations_dir": "migrations"
+      }
+    ]
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "raven-llama-accounts-preview",
+      "database_id": "8e976cf2-d12e-48d1-b26d-0dc3fec55832",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

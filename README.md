@@ -52,12 +52,12 @@ data/                      Runtime profile storage (gitignored)
 
 ## Cloudflare Workers Setup
 
-The repository is configured for Cloudflare Workers Builds with static assets in `public/`. Bind a D1 database as `DB` on the `raven-and-llama` Worker; without it guests can still play, but registration and cross-device saving are unavailable.
+The repository is configured for Cloudflare Workers Builds with static assets in `public/`. Production uses the `raven-llama-accounts` D1 database; public Worker Previews use the separate `raven-llama-accounts-preview` database so preview accounts and progress cannot access production data. Guests can still play without either binding, but registration and cross-device saving are unavailable.
 
-1. Create a D1 database named `raven-llama-accounts` in Cloudflare. You can use `npx wrangler d1 create raven-llama-accounts` to create it and retrieve its ID.
-2. In the `raven-and-llama` Worker settings, add a D1 binding named `DB` pointing to that database.
-3. Apply the schema with `npx wrangler d1 execute raven-llama-accounts --remote --file migrations/0001_accounts.sql`.
-4. Redeploy the Worker so the runtime receives the binding.
+1. Create both D1 databases with `npx wrangler d1 create raven-llama-accounts` and `npx wrangler d1 create raven-llama-accounts-preview`.
+2. Set the corresponding database IDs in `wrangler.jsonc` and `wrangler.preview-migrations.jsonc`. The production binding is top-level; the Preview binding belongs under `previews.d1_databases` and must never point to the production database.
+3. Apply the schema to both databases with `npx wrangler d1 migrations apply raven-llama-accounts --remote` and `npx wrangler d1 migrations apply raven-llama-accounts-preview --remote --config wrangler.preview-migrations.jsonc`.
+4. Keep the Workers Builds Preview deploy command as `npx wrangler preview`; it requires the Preview-safe D1 binding above.
 
 Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
 
