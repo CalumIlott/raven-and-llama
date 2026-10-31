@@ -924,25 +924,25 @@ class QuestionGenerator {
   static genBlackFractionOrder(diff = 'standard') {
     const fractions = [];
     for (let denominator = 2; denominator <= 12; denominator++) {
-    for (let numerator = 1; numerator < denominator; numerator++) {
-      const divisor = QuestionGenerator.greatestCommonDivisor(numerator, denominator);
-      const fraction = `${numerator / divisor}/${denominator / divisor}`;
-      if (!fractions.some(item => item.label === fraction)) {
-        fractions.push({ label: fraction, value: numerator / denominator });
+      for (let numerator = 1; numerator < denominator; numerator++) {
+        const divisor = QuestionGenerator.greatestCommonDivisor(numerator, denominator);
+        const fraction = `${numerator / divisor}/${denominator / divisor}`;
+        if (!fractions.some(item => item.label === fraction)) {
+          fractions.push({ label: fraction, value: numerator / denominator });
+        }
       }
-    }
     }
     const choices = QuestionGenerator.shuffle(fractions).slice(0, 4);
     const findGreatest = Math.random() > 0.5;
     const correct = choices.reduce((best, item) =>
-    findGreatest ? (item.value > best.value ? item : best) : (item.value < best.value ? item : best));
+      findGreatest ? (item.value > best.value ? item : best) : (item.value < best.value ? item : best));
     return {
-    type: 'standard_choice',
-    title: 'Fraction Order Master',
-    prompt: `Which fraction is ${findGreatest ? 'greatest' : 'smallest'}?`,
-    timeLimitSeconds: diff === 'hard' ? 26 : 36,
-    answer: correct.label,
-    options: QuestionGenerator.shuffle(choices.map(item => item.label))
+      type: 'standard_choice',
+      title: 'Fraction Order Master',
+      prompt: `Which fraction is ${findGreatest ? 'greatest' : 'smallest'}?`,
+      timeLimitSeconds: diff === 'hard' ? 26 : 36,
+      answer: correct.label,
+      options: QuestionGenerator.shuffle(choices.map(item => item.label))
     };
   }
 
@@ -951,29 +951,29 @@ class QuestionGenerator {
     let prompt;
     let answer;
     if (mode === 0) {
-    const perHour = QuestionGenerator.randomInt(4, 18);
-    const hours = QuestionGenerator.randomInt(2, 8);
-    prompt = `A runner covers ${perHour} km each hour. How far in ${hours} hours?`;
-    answer = perHour * hours;
+      const perHour = QuestionGenerator.randomInt(4, 18);
+      const hours = QuestionGenerator.randomInt(2, 8);
+      prompt = `A runner covers ${perHour} km each hour. How far in ${hours} hours?`;
+      answer = perHour * hours;
     } else if (mode === 1) {
-    const scale = QuestionGenerator.randomInt(2, 12);
-    const mapLength = QuestionGenerator.randomInt(2, 9);
-    prompt = `A map uses 1 cm for ${scale} km. What distance does ${mapLength} cm represent?`;
-    answer = scale * mapLength;
+      const scale = QuestionGenerator.randomInt(2, 12);
+      const mapLength = QuestionGenerator.randomInt(2, 9);
+      prompt = `A map uses 1 cm for ${scale} km. What distance does ${mapLength} cm represent?`;
+      answer = scale * mapLength;
     } else {
-    const red = QuestionGenerator.randomInt(2, 9);
-    const blue = QuestionGenerator.randomInt(2, 9);
-    const multiplier = QuestionGenerator.randomInt(2, 6);
-    prompt = `The ratio of red to blue beads is ${red}:${blue}. If there are ${red * multiplier} red beads, how many are blue?`;
-    answer = blue * multiplier;
+      const red = QuestionGenerator.randomInt(2, 9);
+      const blue = QuestionGenerator.randomInt(2, 9);
+      const multiplier = QuestionGenerator.randomInt(2, 6);
+      prompt = `The ratio of red to blue beads is ${red}:${blue}. If there are ${red * multiplier} red beads, how many are blue?`;
+      answer = blue * multiplier;
     }
     return {
-    type: 'standard_choice',
-    title: 'Rates, Ratios & Proportions Master',
-    prompt,
-    timeLimitSeconds: diff === 'hard' ? 24 : 32,
-    answer,
-    options: QuestionGenerator.generateChoices(answer, 4, 8)
+      type: 'standard_choice',
+      title: 'Rates, Ratios & Proportions Master',
+      prompt,
+      timeLimitSeconds: diff === 'hard' ? 24 : 32,
+      answer,
+      options: QuestionGenerator.generateChoices(answer, 4, 8)
     };
   }
 
