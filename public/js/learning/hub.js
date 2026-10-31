@@ -28,7 +28,7 @@ Object.assign(App.prototype, {
               Raven &amp; Llama <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-300 to-yellow-400">Learning</span>
             </h1>
             <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
-              Choose your math learning module below: complete school belt challenges or master multiplication times tables!
+              Choose a learning adventure: train your maths skills, master times tables, or explore spelling and vocabulary.
             </p>
           </div>
 
@@ -42,10 +42,10 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
-        <!-- Level 3 Programs: MathMasters and Times Tables -->
+        <!-- Learning Modules -->
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="font-ninja text-2xl text-white font-bold">Mathematics Modules</h2>
-          <span class="text-xs text-slate-400">Select a program to start practicing</span>
+          <h2 class="font-ninja text-2xl text-white font-bold">Learning Modules</h2>
+          <span class="text-xs text-slate-400">Choose a program to start exploring</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -146,23 +146,23 @@ Object.assign(App.prototype, {
 
         </div>
 
-        <!-- Upcoming Subjects Preview -->
+        <!-- More Learning Adventures -->
         <h3 class="font-ninja text-lg text-slate-400 font-bold mb-3 flex items-center gap-2">
-          <span>🚀</span> <span>Future Subjects in Raven &amp; Llama Learning</span>
+          <span>🚀</span> <span>More Learning Adventures</span>
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 opacity-70">
+          <button onclick="window.app.showSpellingSafari()" class="text-left bg-slate-900 border-2 border-purple-800/70 hover:border-emerald-400 rounded-2xl p-4 flex items-center gap-4 transition group">
             <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-800/60 flex items-center justify-center text-2xl">
               🦁
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <h4 class="font-ninja text-base font-bold text-slate-300">Spelling Safari</h4>
-                <span class="text-[10px] bg-slate-800 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">Coming Soon</span>
+                <h4 class="font-ninja text-base font-bold text-white group-hover:text-emerald-300">Spelling Safari</h4>
+                <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Play now</span>
               </div>
-              <p class="text-xs text-slate-500 mt-0.5">Phonics adventures, tricky words, sight words &amp; vocabulary builder.</p>
+              <p class="text-xs text-slate-400 mt-0.5">Phonics, tricky spelling, vocabulary and word-scramble adventures.</p>
             </div>
-          </div>
+          </button>
 
           <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 opacity-70">
             <div class="w-12 h-12 rounded-xl bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-2xl">
