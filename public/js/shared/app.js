@@ -267,8 +267,22 @@ class App {
       message.textContent = '';
       message.classList.add('hidden');
     }
-    if (!authenticated) this.setAccountMode('login');
+    if (authenticated) this.renderAvatarOptions();
+    else this.setAccountMode('login');
     modal.classList.remove('hidden');
+  }
+
+  renderAvatarOptions() {
+    const options = document.getElementById('account-avatar-options');
+    if (!options) return;
+    const selectedAvatar = ProfileManager.getActiveProfile()?.avatar?.id;
+    options.innerHTML = ProfileManager.AVATARS.map(avatar => `
+      <label class="flex flex-col items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-950 p-2 text-center text-[11px] text-zinc-300 cursor-pointer hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/50">
+        <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === selectedAvatar ? 'checked' : ''}>
+        <span aria-hidden="true" class="w-9 h-9 rounded-full flex items-center justify-center text-xl ${avatar.color}">${avatar.emoji}</span>
+        <span>${avatar.name}</span>
+      </label>
+    `).join('');
   }
 
   setAccountMode(mode) {
@@ -344,6 +358,16 @@ class App {
     } catch (error) {
       this.setAccountMessage(error.message || 'Unable to update password.');
     }
+  }
+
+  async changeAvatarSubmit(event) {
+    event.preventDefault();
+    const selectedAvatar = document.querySelector('input[name="account_avatar"]:checked');
+    if (!selectedAvatar) return;
+    const profile = ProfileManager.getActiveProfile();
+    const saved = await ProfileManager.updateProfile({ ...profile, avatar: selectedAvatar.value });
+    if (saved) this.setAccountMessage('Avatar updated.', false);
+    else this.setAccountMessage(ProfileManager.lastSaveError || 'Unable to save your avatar.');
   }
 
   async logoutAccount() {
