@@ -1240,3 +1240,70 @@ html.theme-light #profile-modal .account-avatar-picker__save { color: #fff; back
   #profile-modal .account-dialog { padding: 1.1rem; }
   #profile-modal #account-avatar-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Parent report dialog */
+#parent-modal {
+  padding: clamp(0.65rem, 3vw, 1.25rem);
+  background: rgb(5 10 7 / 76%);
+}
+
+#parent-modal .parent-report-dialog {
+  width: min(100%, 64rem);
+  min-width: 0;
+  max-height: min(90svh, 56rem);
+  padding: clamp(1rem, 3vw, 1.6rem);
+  border: 1px solid var(--app-border) !important;
+  border-radius: 0.85rem;
+  color: var(--app-text);
+  background: var(--app-surface) !important;
+  box-shadow: 0 28px 90px rgb(0 0 0 / 38%);
+}
+
+#parent-modal .parent-report-header,
+#parent-modal .parent-report-footer { border-color: var(--app-border); }
+#parent-modal #parent-modal-title { color: var(--app-text) !important; font-size: 1.2rem; }
+#parent-modal [class~="text-white"] { color: var(--app-text) !important; }
+#parent-modal [class~="text-slate-300"] { color: color-mix(in srgb, var(--app-text) 82%, transparent) !important; }
+#parent-modal [class~="text-slate-400"] { color: color-mix(in srgb, var(--app-text) 62%, transparent) !important; }
+#parent-modal [class~="text-slate-500"] { color: color-mix(in srgb, var(--app-text) 54%, transparent) !important; }
+#parent-modal [class~="text-yellow-400"] { color: #e4bd5b !important; }
+html.theme-light #parent-modal [class~="text-yellow-400"] { color: #8d6816 !important; }
+html.theme-light #parent-modal [class~="text-emerald-400"] { color: #187c57 !important; }
+
+#parent-modal .parent-report-table-wrap {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--app-border);
+  border-radius: 0.6rem;
+  background: var(--app-surface);
+  overscroll-behavior: contain;
+}
+
+#parent-modal .parent-report-table {
+  min-width: 44rem;
+  table-layout: auto;
+}
+
+#parent-modal .parent-report-table thead { position: sticky; top: 0; z-index: 1; }
+#parent-modal .parent-report-table th {
+  padding: 0.75rem;
+  color: color-mix(in srgb, var(--app-text) 62%, transparent);
+  background: var(--app-surface);
+  white-space: nowrap;
+}
+
+#parent-modal .parent-report-table td {
+  padding: 0.7rem 0.75rem;
+  border-color: var(--app-border);
+  white-space: nowrap;
+}
+
+#parent-modal .parent-report-table tbody tr:hover { background: color-mix(in srgb, var(--app-border) 28%, transparent); }
+#parent-modal .parent-report-footer { flex-shrink: 0; }
+#parent-modal .parent-report-footer button { min-height: 2.6rem; border-radius: 0.55rem; }
+
+@media (max-width: 480px) {
+  #parent-modal .parent-report-table { min-width: 42rem; }
+  #parent-modal .parent-report-table td,
+  #parent-modal .parent-report-table th { padding-inline: 0.6rem; }
+}

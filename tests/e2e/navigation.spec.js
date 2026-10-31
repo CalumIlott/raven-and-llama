@@ -81,10 +81,20 @@ test('home counts, module navigation, and exam failure, retry, and pass gates wo
 });
 
 test('parent progress report and trophy room render their full states', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: /Mastery Stats/ }).click();
-  await expect(page.getByRole('heading', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
   const skillCount = await page.evaluate(() => window.BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0));
   await expect(page.locator('#parent-stats-tbody tr')).toHaveCount(skillCount);
+  const reportLayout = await page.locator('.parent-report-table-wrap').evaluate(element => ({
+    overflowX: getComputedStyle(element).overflowX,
+    scrollWidth: element.scrollWidth,
+    clientWidth: element.clientWidth
+  }));
+  expect(reportLayout.overflowX).toBe('auto');
+  expect(reportLayout.scrollWidth).toBeGreaterThan(reportLayout.clientWidth);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth))
+    .toBeLessThanOrEqual(await page.evaluate(() => document.documentElement.clientWidth));
   await page.getByRole('button', { name: 'Close Report' }).click();
 
   await page.getByRole('button', { name: /Enter Learning Hub/ }).click();

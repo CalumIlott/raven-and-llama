@@ -215,9 +215,9 @@
   </div>
 
   <!-- Modal: Parent / Teacher Progress Stats -->
-  <div id="parent-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div role="dialog" aria-modal="true" aria-labelledby="parent-modal-title" tabindex="-1" class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-2xl w-full shadow-2xl animate-pop max-h-[85vh] flex flex-col">
-      <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+  <div id="parent-modal" class="parent-report-overlay hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div role="dialog" aria-modal="true" aria-labelledby="parent-modal-title" tabindex="-1" class="parent-report-dialog bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-2xl w-full shadow-2xl animate-pop max-h-[85vh] flex flex-col">
+      <div class="parent-report-header flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
         <div>
           <h3 id="parent-modal-title" class="font-ninja text-2xl text-white font-bold">Mastery &amp; Progress Report</h3>
           <div class="text-xs text-slate-400">Student: <span id="parent-student-name" class="text-yellow-400 font-bold"></span></div>
@@ -225,15 +225,16 @@
         <button data-action="parent-close" aria-label="Close progress report" class="text-slate-400 hover:text-white text-xl">✕</button>
       </div>
 
-      <div class="overflow-y-auto flex-1 pr-1">
-        <table class="w-full text-left border-collapse">
+      <div class="parent-report-table-wrap overflow-auto flex-1 pr-1">
+        <table class="parent-report-table w-full text-left border-collapse">
+          <caption class="sr-only">Learner mastery and training status by skill</caption>
           <thead>
             <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
-              <th class="py-2.5 px-3">Belt</th>
-              <th class="py-2.5 px-3">Skill</th>
-              <th class="py-2.5 px-3 text-center">Times Trained</th>
-              <th class="py-2.5 px-3 text-center">High Score</th>
-              <th class="py-2.5 px-3 text-center">Status</th>
+              <th scope="col" class="py-2.5 px-3">Belt</th>
+              <th scope="col" class="py-2.5 px-3">Skill</th>
+              <th scope="col" class="py-2.5 px-3 text-center">Times Trained</th>
+              <th scope="col" class="py-2.5 px-3 text-center">High Score</th>
+              <th scope="col" class="py-2.5 px-3 text-center">Status</th>
             </tr>
           </thead>
           <tbody id="parent-stats-tbody">
@@ -242,7 +243,7 @@
         </table>
       </div>
 
-      <div class="mt-4 pt-3 border-t border-slate-800 flex justify-end">
+      <div class="parent-report-footer mt-4 pt-3 border-t border-slate-800 flex justify-end">
         <button data-action="parent-close" class="btn-ninja px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold">
           Close Report
         </button>
