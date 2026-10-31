@@ -1815,6 +1815,9 @@ html.theme-light .spelling-feedback.is-incorrect {
   border-color: #c99b45 !important;
 }
 
+#app-main[data-page="science"] .science-feedback.is-correct > p:first-child,
+#app-main[data-page="science"] .science-feedback.is-incorrect > p:first-child { color: inherit !important; }
+
 .spelling-answer { color: var(--play-accent); }
 .spelling-letter-slot { border-color: var(--play-accent) !important; }
 .spelling-letter-button {
