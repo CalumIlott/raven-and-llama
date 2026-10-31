@@ -109,20 +109,23 @@ test('a Times Tables quiz resumes at the same question after reloading', async (
   await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible();
 });
 
-test('Times Tables quizzes highlight selected answers by correctness', async ({ page }) => {
+test('Times Tables quizzes let learners retry incorrect answers', async ({ page }) => {
   await openTimesTables(page);
   await page.getByRole('button', { name: '2× Table', exact: true }).click();
+
+  await chooseQuestionAnswer(page, false);
+  const incorrectAnswer = page.locator('#game-arena .play-answer-button.is-incorrect');
+  await expect(incorrectAnswer).toHaveCount(1);
+  await expect(incorrectAnswer).toHaveCSS('background-color', 'rgb(139, 53, 64)');
+  await expect(page.locator('#feedback-banner')).toContainText('Not quite! Keep exploring!');
+  await page.waitForTimeout(1900);
+  await expect(page.getByText('Question 1 of 12', { exact: true })).toBeVisible();
 
   await chooseQuestionAnswer(page);
   const correctAnswer = page.locator('#game-arena .play-answer-button.is-correct');
   await expect(correctAnswer).toHaveCount(1);
   await expect(correctAnswer).toHaveCSS('background-color', 'rgb(23, 107, 72)');
   await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible({ timeout: 5000 });
-
-  await chooseQuestionAnswer(page, false);
-  const incorrectAnswer = page.locator('#game-arena .play-answer-button.is-incorrect');
-  await expect(incorrectAnswer).toHaveCount(1);
-  await expect(incorrectAnswer).toHaveCSS('background-color', 'rgb(139, 53, 64)');
 });
 
 test('endless belt and timetable challenges continue, finish, and retain best scores', async ({ page }) => {

@@ -130,3 +130,26 @@ test('selected quiz answers are highlighted green when correct and red when inco
     assert.ok(selectedButton.classes.has(expectedClass));
   }
 });
+
+test('ordinary quizzes let learners retry after an incorrect answer', () => {
+  const { engine, elements, delayedCallbacks, sessionValues } = loadGameEngine();
+  engine.startCustomQuiz('Retry practice', [
+    { type: 'standard_choice', prompt: '2 + 2 = ?', answer: 4, options: [3, 4], timeLimitSeconds: 20 },
+    { type: 'standard_choice', prompt: '3 + 3 = ?', answer: 6, options: [5, 6], timeLimitSeconds: 20 }
+  ]);
+
+  engine.submitAnswer(3);
+
+  assert.equal(engine.currentIndex, 0);
+  assert.equal(engine.score, 0);
+  assert.equal(engine.isAnswering, false);
+  assert.equal(engine.pendingAnswer, null);
+  assert.match(elements.get('feedback-banner').innerHTML, /Not quite! Keep exploring!/);
+  assert.equal(JSON.parse(sessionValues.get(engine.sessionStorageKey)).currentIndex, 0);
+
+  engine.submitAnswer(4);
+  delayedCallbacks.pop()();
+
+  assert.equal(engine.currentIndex, 1);
+  assert.equal(engine.score, 1);
+});
