@@ -126,6 +126,29 @@ test('authenticated training updates serialize and save only the active account 
   assert.ok(saved.every(item => item.id === account.id && item.name === account.username));
 });
 
+test('endless high scores keep the best valid score for each belt and timetables', async () => {
+  const { accounts } = loadAccounts(async () => response({}, 401));
+  await accounts.initialize();
+
+  accounts.recordEndlessHighScore('white', 8);
+  accounts.recordEndlessHighScore('white', 5);
+  accounts.recordEndlessHighScore('timetables', 12);
+  accounts.recordEndlessHighScore('unknown', 99);
+  accounts.recordEndlessHighScore('yellow', Number.NaN);
+
+  assert.deepEqual({ ...accounts.getActiveProfile().endlessHighScores }, { white: 8, timetables: 12 });
+});
+
+test('profile normalization drops invalid endless high score values', async () => {
+  const { accounts } = loadAccounts(async () => response({
+    user: { id: 'account-6', username: 'jordan' },
+    profile: { endlessHighScores: { white: 7, yellow: '9', unknown: 12, timetables: 4 } }
+  }));
+  await accounts.initialize();
+
+  assert.deepEqual({ ...accounts.getActiveProfile().endlessHighScores }, { white: 7, timetables: 4 });
+});
+
 test('session restore loads only the signed-in user and saved progress', async () => {
   const account = { id: 'account-3', username: 'casey' };
   const { accounts } = loadAccounts(async () => response({

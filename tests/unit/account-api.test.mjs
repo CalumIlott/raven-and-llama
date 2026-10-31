@@ -121,14 +121,23 @@ test('accounts can only read and update their own progress', async () => {
   const firstData = await first.json();
 
   const save = await request(store, '/api/progress', 'PUT', {
-    profile: { ...firstData.profile, stars: 15, passedBelts: ['white'] }
+    profile: {
+      ...firstData.profile,
+      stars: 15,
+      passedBelts: ['white'],
+      endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' }
+    }
   }, firstCookie);
   assert.equal(save.status, 200);
 
   const firstRead = await request(store, '/api/progress', 'GET', undefined, firstCookie);
   const secondRead = await request(store, '/api/progress', 'GET', undefined, secondCookie);
-  assert.equal((await firstRead.json()).profile.stars, 15);
-  assert.equal((await secondRead.json()).profile.stars, 0);
+  const firstProfile = (await firstRead.json()).profile;
+  const secondProfile = (await secondRead.json()).profile;
+  assert.equal(firstProfile.stars, 15);
+  assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
+  assert.equal(secondProfile.stars, 0);
+  assert.deepEqual(secondProfile.endlessHighScores, {});
 
   const anonymousRead = await request(store, '/api/progress');
   assert.equal(anonymousRead.status, 401);

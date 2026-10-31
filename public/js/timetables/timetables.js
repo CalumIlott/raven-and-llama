@@ -70,6 +70,16 @@ Object.assign(App.prototype, {
           </button>
         </div>
 
+        <button onclick="window.app.startEndlessTimetables()"
+                class="btn-ninja w-full p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-700 border-2 border-emerald-400 text-white font-ninja font-bold text-left shadow-xl transition flex items-center justify-between mb-4">
+          <div>
+            <div class="text-lg">Endless Timetables Challenge ♾️</div>
+            <div class="text-xs text-slate-300 font-normal mt-0.5">Keep answering mixed multiplication questions as the timer gets faster</div>
+            <div class="text-xs text-emerald-200 font-normal mt-1">Best score: ${ProfileManager.getActiveProfile().endlessHighScores?.timetables || 0}</div>
+          </div>
+          <span class="text-2xl">➔</span>
+        </button>
+
         <button onclick="window.app.startTimetableArcade()"
                 class="btn-ninja w-full p-5 rounded-2xl bg-amber-600 hover:bg-amber-500 border-2 border-amber-300 text-slate-950 font-ninja font-bold text-lg shadow-xl transition flex items-center justify-center gap-3">
           <span>🕹️</span> <span>Play Product Pair Match Arcade!</span>
@@ -107,6 +117,30 @@ Object.assign(App.prototype, {
 
   startTimesTable(table) {
     this.startTimesTableQuiz(false, table);
+  },
+
+  startEndlessTimetables() {
+    this.currentView = 'game';
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    main.innerHTML = `<div class="max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
+    window.gameEngine.startEndlessQuiz(
+      'Endless Timetables Challenge ♾️',
+      () => {
+        const a = QuestionGenerator.randomInt(2, 12);
+        const b = QuestionGenerator.randomInt(1, 12);
+        const answer = a * b;
+        return {
+          type: 'standard_choice',
+          prompt: `${a} × ${b} = ?`,
+          answer,
+          timeLimitSeconds: 20,
+          options: QuestionGenerator.generateChoices(answer, 4, 12)
+        };
+      },
+      'timetables',
+      { baseTimeSeconds: 20 }
+    );
   },
 
   startTimetableArcade() {

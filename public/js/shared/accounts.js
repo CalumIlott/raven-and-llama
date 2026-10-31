@@ -38,6 +38,7 @@ class ProfileManager {
       passedBelts: [],
       stars: 0,
       skillsProgress: {},
+      endlessHighScores: {},
       certificates: [],
       createdAt: now,
       updatedAt: now
@@ -48,6 +49,12 @@ class ProfileManager {
     const source = profile && typeof profile === 'object' ? profile : {};
     const avatarId = typeof source.avatar === 'string' ? source.avatar : source.avatar?.id || 'raven';
     const now = new Date().toISOString();
+    const beltIds = (window.BELTS_DATA || []).map(belt => belt.id);
+    const endlessHighScores = source.endlessHighScores && typeof source.endlessHighScores === 'object' && !Array.isArray(source.endlessHighScores)
+      ? Object.fromEntries(Object.entries(source.endlessHighScores).filter(([id, score]) =>
+        (id === 'timetables' || beltIds.includes(id)) && Number.isSafeInteger(score) && score >= 0
+      ))
+      : {};
     return {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
@@ -60,6 +67,7 @@ class ProfileManager {
       passedBelts: Array.isArray(source.passedBelts) ? source.passedBelts : [],
       stars: typeof source.stars === 'number' ? source.stars : 0,
       skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
+      endlessHighScores,
       certificates: Array.isArray(source.certificates) ? source.certificates : [],
       createdAt: source.createdAt || now,
       updatedAt: source.updatedAt || now
@@ -284,6 +292,18 @@ class ProfileManager {
     else if (score >= 8) stat.stars = Math.max(stat.stars || 0, 2);
     else if (score >= 5) stat.stars = Math.max(stat.stars || 0, 1);
     profile.stars += score;
+    ProfileManager.updateProfile(profile);
+    return profile;
+  }
+
+  static recordEndlessHighScore(scoreId, score) {
+    const profile = ProfileManager.getActiveProfile();
+    const validBeltIds = (window.BELTS_DATA || []).map(belt => belt.id);
+    if (scoreId !== 'timetables' && !validBeltIds.includes(scoreId)) return profile;
+    if (!Number.isFinite(score) || score < 0) return profile;
+    if (!profile.endlessHighScores) profile.endlessHighScores = {};
+    const bestScore = Number.isSafeInteger(profile.endlessHighScores[scoreId]) ? profile.endlessHighScores[scoreId] : 0;
+    profile.endlessHighScores[scoreId] = Math.max(bestScore, Math.floor(score));
     ProfileManager.updateProfile(profile);
     return profile;
   }
