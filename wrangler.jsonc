@@ -7,5 +7,13 @@
     "directory": "./public",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "raven-llama-accounts",
+      "database_id": "0ea66bd8-01be-460c-8470-90c5dabfca49",
+      "migrations_dir": "migrations"
+    }
+  ]
 }
