@@ -28,7 +28,7 @@ npm test
 npm run audit
 ```
 
-The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, progress/trophy views, and keyboard/mobile accessibility. Browser tests use an isolated temporary account store. Run `npm run test:css`, `npm run test:unit`, `npm run test:integration`, `npm run test:worker`, `npm run test:e2e`, or `npm run audit` to run one check. GitHub Actions verifies committed assets, runs unit/integration checks on Node.js 22, 24, and 26, validates the Worker bundle, runs desktop and mobile Chromium E2E, and audits dependencies on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
+The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, progress/trophy views, and keyboard/mobile accessibility. Browser tests use an isolated account store. Run `npm run test:css`, `npm run test:unit`, `npm run test:integration`, `npm run test:worker`, `npm run test:e2e`, or `npm run audit` to run one check. GitHub Actions verifies committed assets, runs unit/integration checks on Node.js 22, 24, and 26, validates the Worker bundle, runs desktop and mobile Chromium E2E, and audits dependencies for pull requests targeting `main`. See [tests/README.md](tests/README.md) for coverage details.
 
 ## Project Layout
 
@@ -54,7 +54,7 @@ tests/unit/                Curriculum, generator, account, and storage tests
 tests/integration/         Isolated server and API tests
 tests/e2e/                 Playwright browser workflow tests
 playwright.config.js        Chromium runner and local server configuration
-.github/workflows/ci.yml   Push and pull request checks
+.github/workflows/ci.yml   Pull request checks
 data/                      Local SQLite account storage and legacy JSON backup (gitignored)
 ```
 
