@@ -83,7 +83,18 @@ test('incorrect answer does not reveal the correct answer or fact in feedback', 
   app.answerScienceQuestion(wrongChoice);
 
   assert.equal(app.scienceGame.lastAnswerCorrect, false);
+  assert.match(context.main.innerHTML, /science-choice[^"]*is-incorrect/);
   assert.match(context.main.innerHTML, /Not quite! Keep exploring!/);
   assert.doesNotMatch(context.main.innerHTML, /The answer is/);
   assert.doesNotMatch(context.main.innerHTML, new RegExp(currentQuestion.fact));
+});
+
+test('science mission highlights the selected correct answer in green', () => {
+  const context = createScienceContext();
+  const app = context.app;
+
+  app.startScienceMission(context.SCIENCE_MISSIONS[0].id);
+  app.answerScienceQuestion(app.scienceGame.mission.questions[0].answer);
+
+  assert.match(context.main.innerHTML, /science-choice[^"]*is-correct/);
 });

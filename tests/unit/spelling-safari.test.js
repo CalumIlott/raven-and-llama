@@ -101,6 +101,31 @@ test('incorrect answer in Spelling Safari does not reveal the correct answer', (
   app.submitSpellingSafariAnswer(wrongAnswer);
 
   assert.equal(app.spellingSafariGame.lastAnswerCorrect, false);
+  assert.match(context.arena.innerHTML, /spelling-choice[^"]*is-incorrect/);
   assert.match(context.arena.innerHTML, /Not quite! Keep exploring!/);
   assert.doesNotMatch(context.arena.innerHTML, /The answer was/);
+});
+
+test('correct multiple-choice answer in Spelling Safari is highlighted green', () => {
+  const context = createBrowserContext();
+  context.main = { innerHTML: '', dataset: {} };
+  context.arena = { innerHTML: '' };
+  context.document = {
+    getElementById: id => {
+      if (id === 'app-main') return context.main;
+      if (id === 'safari-arena') return context.arena;
+      return null;
+    }
+  };
+  context.App = class {
+    rememberModule() {}
+    updateHeader() {}
+  };
+  loadBrowserScripts(context, 'public/js/spelling/safari.js');
+
+  const app = new context.App();
+  app.startSpellingSafari('spelling-sprint');
+  app.submitSpellingSafariAnswer(app.spellingSafariGame.questions[0].answer);
+
+  assert.match(context.arena.innerHTML, /spelling-choice[^"]*is-correct/);
 });

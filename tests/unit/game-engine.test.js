@@ -9,13 +9,18 @@ function loadGameEngine() {
     document: {
       getElementById(id) {
         if (!elements.has(id)) {
-          elements.set(id, {
-            classList: { add() {}, remove() {} },
-            dataset: {},
-            style: {},
-            innerHTML: '',
-            textContent: ''
-          });
+            const classes = new Set();
+            elements.set(id, {
+              classList: {
+                add(...names) { names.forEach(name => classes.add(name)); },
+                remove(...names) { names.forEach(name => classes.delete(name)); }
+              },
+              classes,
+              dataset: {},
+              style: {},
+              innerHTML: '',
+              textContent: ''
+            });
         }
         return elements.get(id);
       }
@@ -65,4 +70,25 @@ test('endless sessions keep generating validated questions without a fixed quest
   assert.equal(engine.endlessQuestionCount, 1);
   assert.equal(engine.score, 1);
   assert.match(elements.get('game-arena').innerHTML, /Question 2 • Endless/);
+});
+
+test('selected quiz answers are highlighted green when correct and red when incorrect', () => {
+  for (const [answer, selectedAnswer, expectedClass] of [
+    [4, 4, 'is-correct'],
+    [4, 3, 'is-incorrect']
+  ]) {
+    const { engine, elements } = loadGameEngine();
+    engine.startCustomQuiz('Answer highlight', [{
+      type: 'standard_choice',
+      prompt: '2 + 2 = ?',
+      answer,
+      options: [3, 4],
+      timeLimitSeconds: 20
+    }]);
+
+    engine.submitAnswer(selectedAnswer);
+
+    const selectedButton = elements.get(`opt-btn-${selectedAnswer === 4 ? 1 : 0}`);
+    assert.ok(selectedButton.classes.has(expectedClass));
+  }
 });
