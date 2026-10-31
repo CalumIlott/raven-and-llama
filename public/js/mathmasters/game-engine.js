@@ -16,6 +16,12 @@ class GameEngine {
     this.timerInterval = null;
     this.timeLeft = 0;
     this.totalTime = 0;
+    this.endlessQuestionCount = 0;
+    this.endlessBaseTimeSeconds = 22;
+    this.endlessQuestionFactory = null;
+    this.endlessScoreId = null;
+    this.endlessTitle = '';
+    this.endlessReturnBeltId = null;
   }
 
   stopTimer() {
@@ -27,8 +33,12 @@ class GameEngine {
 
   startTimer(seconds) {
     this.stopTimer();
-    // Curriculum and generated question limits share one clean 30% reduction.
-    seconds = Math.max(5, Math.round(seconds * 0.7));
+    if (this.mode === 'endless') {
+      seconds = this.getEndlessTimeLimit(this.endlessQuestionCount, this.endlessBaseTimeSeconds);
+    } else {
+      // Curriculum and generated question limits share one clean 30% reduction.
+      seconds = Math.max(5, Math.round(seconds * 0.7));
+    }
     if (this.mode.startsWith('belt_test')) {
       const stage = Number(this.mode.slice(-1));
       seconds = Math.max(5, Math.round(seconds * (1 - (stage - 1) * 0.12)));
@@ -49,6 +59,10 @@ class GameEngine {
         this.handleTimeout();
       }
     }, 100);
+  }
+
+  getEndlessTimeLimit(questionCount, baseTime = 22) {
+    return Math.max(12, baseTime - Math.floor(questionCount / 5));
   }
 
   updateTimerUI() {
@@ -118,6 +132,56 @@ class GameEngine {
     this.customExit = onExit;
     this.renderCurrentQuestion();
   }
+
+  startEndlessQuiz(title, questionFactory, scoreId, options = {}) {
+    this.stopTimer();
+    this.mode = 'endless';
+    this.currentBelt = options.beltId ? BELTS_DATA.find(belt => belt.id === options.beltId) : { id: 'timetables', name: title };
+    this.currentSkill = { id: 'endless', name: 'Endless Challenge' };
+    this.currentIndex = 0;
+    this.score = 0;
+    this.streak = 0;
+    this.maxStreak = 0;
+    this.endlessQuestionCount = 0;
+    this.endlessBaseTimeSeconds = options.baseTimeSeconds || 22;
+    this.endlessQuestionFactory = questionFactory;
+    this.endlessScoreId = scoreId;
+    this.endlessTitle = title;
+    this.endlessReturnBeltId = options.beltId || null;
+    this.customExit = !options.beltId;
+    const question = this.getEndlessQuestion();
+    if (!question) return;
+    this.questions = [question];
+    this.totalQuestions = Infinity;
+    this.renderCurrentQuestion();
+  }
+
+  getEndlessQuestion() {
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const question = this.endlessQuestionFactory?.();
+      if (QuestionGenerator.isValidQuestion(question)) return question;
+    }
+    return null;
+  }
+
+  exitGame() {
+    this.stopTimer();
+    if (this.mode === 'endless') {
+      this.showEndlessResults();
+    } else if (this.customExit) {
+      window.app.showTimesTables();
+    } else {
+      window.app.showBeltDetails(this.currentBelt.id);
+    }
+  }
+
+  restartEndless() {
+    this.startEndlessQuiz(this.endlessTitle, this.endlessQuestionFactory, this.endlessScoreId, {
+      beltId: this.endlessReturnBeltId,
+      baseTimeSeconds: this.endlessBaseTimeSeconds
+    });
+  }
+
   renderCurrentQuestion() {
     const q = this.questions[this.currentIndex];
     const container = document.getElementById('game-arena');
@@ -126,12 +190,16 @@ class GameEngine {
     this.isAnswering = false;
     this.userOrder = [];
 
-    const progressPct = Math.round((this.currentIndex / this.totalQuestions) * 100);
     const titleText = this.mode === 'belt_test_1'
       ? `🥋 ${this.currentBelt.name} Stage 1 Proficiency Exam`
       : this.mode === 'belt_test_2' || this.mode === 'belt_test_3'
       ? `🥋 ${this.currentBelt.name} Stage ${this.mode.slice(-1)} ${this.mode === 'belt_test_3' ? 'Final' : 'Proficiency'} Exam 🔥`
+      : this.mode === 'endless'
+      ? this.endlessTitle
       : `${this.currentBelt.name} • ${this.currentSkill?.name || ''}`;
+    const questionCountText = this.mode === 'endless'
+      ? `Question ${this.endlessQuestionCount + 1} • Endless`
+      : `Question ${this.currentIndex + 1} of ${this.totalQuestions}`;
 
     let visualWidgetHtml = '';
     const itemIcon = q.itemIcon || '🥋';
@@ -172,13 +240,13 @@ class GameEngine {
     container.innerHTML = `
       <!-- Top HUD -->
       <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-        <button onclick="window.gameEngine.stopTimer(); ${this.customExit ? 'window.app.showTimesTables()' : `window.app.showBeltDetails('${this.currentBelt.id}')`}" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
-          ← Exit
+        <button onclick="window.gameEngine.exitGame()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
+          ← ${this.mode === 'endless' ? 'End Run' : 'Exit'}
         </button>
 
         <div class="text-center">
           <h2 class="font-ninja text-lg sm:text-xl text-yellow-400 font-bold">${titleText}</h2>
-          <div class="text-xs text-slate-400">Question ${this.currentIndex + 1} of ${this.totalQuestions}</div>
+          <div class="text-xs text-slate-400">${questionCountText}</div>
         </div>
 
         <div class="flex items-center gap-3">
@@ -332,6 +400,18 @@ class GameEngine {
     setTimeout(() => {
       if (this.mode.startsWith('belt_test') && this.lives <= 0) {
         this.showTestResults(false);
+      } else if (this.mode === 'endless' && !isCorrect) {
+        this.showEndlessResults();
+      } else if (this.mode === 'endless') {
+        this.endlessQuestionCount++;
+        const question = this.getEndlessQuestion();
+        if (!question) {
+          this.showEndlessResults();
+          return;
+        }
+        this.questions = [question];
+        this.currentIndex = 0;
+        this.renderCurrentQuestion();
       } else {
         this.currentIndex += 1;
         if (this.currentIndex >= this.totalQuestions) {
@@ -341,6 +421,33 @@ class GameEngine {
         }
       }
     }, isCorrect ? 900 : 1800);
+  }
+
+  showEndlessResults() {
+    this.stopTimer();
+    ProfileManager.recordEndlessHighScore(this.endlessScoreId, this.score);
+    const bestScore = ProfileManager.getActiveProfile().endlessHighScores?.[this.endlessScoreId] || 0;
+    const container = document.getElementById('game-arena');
+    if (!container) return;
+    container.innerHTML = `
+      <div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 border-emerald-500 rounded-3xl shadow-2xl animate-pop">
+        <div class="text-4xl mb-3">♾️</div>
+        <h2 class="font-ninja text-2xl text-emerald-400 font-bold mb-2">Endless Run Finished!</h2>
+        <p class="text-slate-300 text-sm mb-5">${this.endlessTitle}</p>
+        <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 mb-6 grid grid-cols-2 gap-3">
+          <div><div class="text-xs text-slate-400">Score</div><div class="text-2xl font-ninja text-emerald-400 font-bold">${this.score}</div></div>
+          <div><div class="text-xs text-slate-400">Best Score</div><div class="text-2xl font-ninja text-yellow-400 font-bold">${bestScore}</div></div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button onclick="window.gameEngine.restartEndless()" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-lg">Play Again ↻</button>
+          <button onclick="${this.endlessReturnBeltId
+            ? `window.app.showBeltDetails('${this.endlessReturnBeltId}')`
+            : 'window.app.showTimesTables()'}" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-600">
+            ${this.endlessReturnBeltId ? 'Belt Dojo' : 'Timetables'}
+          </button>
+        </div>
+      </div>
+    `;
   }
 
   showFinishedScreen() {

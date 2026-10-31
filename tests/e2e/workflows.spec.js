@@ -69,6 +69,33 @@ test('individual, mixed, and mastery Times Tables quizzes advance questions', as
   await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
 });
 
+test('endless belt and timetable challenges continue, finish, and retain best scores', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Start Endless Belt Challenge/ }).click();
+  await expect(page.getByText('Question 1 • Endless', { exact: true })).toBeVisible();
+  await chooseQuestionAnswer(page);
+  await expect(page.getByText('Question 2 • Endless', { exact: true })).toBeVisible({ timeout: 5000 });
+  await chooseQuestionAnswer(page, false);
+  await expect(page.getByRole('heading', { name: 'Endless Run Finished!' })).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('#game-arena')).toContainText('1');
+  await page.getByRole('button', { name: 'Belt Dojo' }).click();
+  await expect(page.locator('#app-main')).toContainText('Endless best: 1');
+
+  await page.getByRole('button', { name: /Back to Maths Masters Belts/ }).click();
+  await page.getByRole('button', { name: /Back to Raven & Llama Learning/ }).click();
+  await page.getByText('Open Times Tables Dojo', { exact: true }).click();
+  await page.getByRole('button', { name: /Endless Timetables Challenge/ }).click();
+  await expect(page.getByText('Question 1 • Endless', { exact: true })).toBeVisible();
+  await chooseQuestionAnswer(page);
+  await expect(page.getByText('Question 2 • Endless', { exact: true })).toBeVisible({ timeout: 5000 });
+  await page.getByRole('button', { name: /End Run/ }).click();
+  await expect(page.getByRole('heading', { name: 'Endless Run Finished!' })).toBeVisible();
+  await expect(page.locator('#game-arena')).toContainText('1');
+  await page.getByRole('button', { name: 'Timetables' }).click();
+  await expect(page.locator('#app-main')).toContainText('Best score: 1');
+});
+
 test('all seven Maths Masters arcades launch and return to their belt dojo', async ({ page }) => {
   const belts = ['White Belt', 'Yellow Belt', 'Green Belt', 'Blue Belt', 'Brown Belt', 'Black Belt', 'Platinum Belt'];
   await openMathsDojo(page);
