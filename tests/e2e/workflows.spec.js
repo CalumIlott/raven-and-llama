@@ -209,6 +209,8 @@ test('Science Explorers missions teach concepts, award stars, and return to the 
 
       if (missionIndex === 0 && questionIndex === 0) {
         await expect(page.locator('#app-main [role="status"]')).toContainText('Not quite!');
+        await expect(page.locator('#app-main [role="status"]')).not.toContainText('The answer is');
+        await expect(page.locator(`[data-science-choice="${answer}"]`)).not.toHaveClass(/is-correct/);
       } else {
         await expect(page.locator('#app-main [role="status"]')).toContainText('Great discovery!');
         totalStars++;
