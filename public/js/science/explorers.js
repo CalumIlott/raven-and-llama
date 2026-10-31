@@ -69,6 +69,7 @@ Object.assign(App.prototype, {
     this.scienceGame = null;
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'science';
     this.updateHeader();
 
     main.innerHTML = `
@@ -108,7 +109,7 @@ Object.assign(App.prototype, {
               <div class="flex items-start gap-4">
                 <div class="w-14 h-14 rounded-2xl ${mission.theme.icon} border flex items-center justify-center text-3xl">${mission.icon}</div>
                 <div class="flex-1">
-                  <span class="text-[10px] uppercase tracking-wider ${mission.theme.topic} font-bold">${mission.topic}</span>
+                  <span class="science-mission-topic text-[10px] uppercase tracking-wider ${mission.theme.topic} font-bold">${mission.topic}</span>
                   <h3 class="font-ninja text-xl font-bold text-white ${mission.theme.title}">${mission.title}</h3>
                 </div>
                 <span class="${mission.theme.arrow} text-xl" aria-hidden="true">→</span>
@@ -116,7 +117,7 @@ Object.assign(App.prototype, {
               <p class="text-slate-300 text-sm mt-4">${mission.description}</p>
               <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
                 <span class="text-slate-400">5 questions · Learn as you play</span>
-                <span class="text-amber-300 font-bold">⭐ 5 stars to find</span>
+                <span class="science-mission-reward text-amber-300 font-bold">⭐ 5 stars to find</span>
               </div>
             </button>
           `).join('')}
@@ -141,31 +142,31 @@ Object.assign(App.prototype, {
     const question = game.mission.questions[game.index];
     const progress = ((game.index + 1) / game.mission.questions.length) * 100;
     main.innerHTML = `
-      <div class="max-w-3xl mx-auto px-4 py-6 sm:py-8">
-        <div class="flex items-center justify-between mb-6">
-          <button data-action="science-home" class="text-sm text-sky-300 hover:text-white font-bold">← Back to missions</button>
-          <span class="text-xs text-slate-400">${game.mission.icon} ${game.mission.title}</span>
+      <div class="play-shell play-shell--science max-w-3xl mx-auto px-4 py-6 sm:py-8">
+        <div class="play-hud flex items-center justify-between mb-6">
+          <button data-action="science-home" class="play-hud__exit text-sm text-sky-300 hover:text-white font-bold">← Back to missions</button>
+          <span class="play-hud__title text-xs text-slate-400">${game.mission.icon} ${game.mission.title}</span>
         </div>
-        <div class="bg-slate-900 border-2 border-sky-800/70 rounded-3xl p-5 sm:p-8 shadow-2xl">
+        <div class="play-question-card science-question-card bg-slate-900 border-2 border-sky-800/70 rounded-3xl p-5 sm:p-8 shadow-2xl">
           <div class="flex items-center justify-between gap-4 mb-3">
             <span class="text-xs uppercase tracking-wider text-sky-300 font-bold">${game.mission.topic}</span>
             <span class="text-sm text-slate-300 font-bold">Clue ${game.index + 1} of ${game.mission.questions.length} <span class="text-amber-300 ml-2">⭐ ${game.correct}</span></span>
           </div>
-          <progress class="science-progress w-full mb-6" aria-label="Mission progress" max="${game.mission.questions.length}" value="${game.index + 1}"></progress>
+          <progress class="play-progress science-progress w-full mb-6" aria-label="Mission progress" max="${game.mission.questions.length}" value="${game.index + 1}"></progress>
           <div class="text-center mb-6">
             <div class="text-5xl mb-3">${game.mission.icon}</div>
-            <h2 class="font-ninja text-2xl sm:text-3xl text-white font-bold">${question.prompt}</h2>
+            <h2 class="play-prompt font-ninja text-2xl sm:text-3xl text-white font-bold">${question.prompt}</h2>
           </div>
           <div class="grid grid-cols-1 gap-3">
             ${question.choices.map((choice, index) => `
               <button type="button" data-action="science-answer" data-index="${index}" data-science-choice="${index}" ${game.answered ? 'disabled' : ''}
-                      class="w-full text-left px-4 py-3 rounded-xl border-2 ${game.answered && index === question.answer ? 'border-emerald-400 bg-emerald-950/50 text-emerald-100' : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-white'} disabled:cursor-default font-semibold transition">
+                      class="science-choice w-full text-left px-4 py-3 rounded-xl border-2 ${game.answered && index === question.answer ? 'is-correct border-emerald-400 bg-emerald-950/50 text-emerald-100' : 'border-slate-700 bg-slate-950/70 hover:border-sky-400 text-white'} disabled:cursor-default font-semibold transition">
                 <span class="inline-flex w-7 h-7 rounded-lg bg-slate-800 items-center justify-center text-xs text-sky-300 mr-2">${String.fromCharCode(65 + index)}</span>${choice}
               </button>
             `).join('')}
           </div>
           ${game.answered ? `
-            <div class="mt-5 p-4 rounded-2xl ${game.lastAnswerCorrect ? 'bg-emerald-950/60 border border-emerald-700' : 'bg-amber-950/50 border border-amber-800'}" role="status" aria-live="polite">
+            <div class="play-feedback science-feedback mt-5 p-4 rounded-2xl ${game.lastAnswerCorrect ? 'is-correct bg-emerald-950/60 border border-emerald-700' : 'is-incorrect bg-amber-950/50 border border-amber-800'}" role="status" aria-live="polite">
               <p class="font-bold ${game.lastAnswerCorrect ? 'text-emerald-300' : 'text-amber-200'}">${game.lastAnswerCorrect ? 'Great discovery! +1 star ⭐' : `Not quite! The answer is ${question.choices[question.answer]}.`}</p>
               <p class="text-sm text-slate-200 mt-1">${question.fact}</p>
             </div>
@@ -212,8 +213,8 @@ Object.assign(App.prototype, {
     }
 
     main.innerHTML = `
-      <div class="max-w-xl mx-auto px-4 py-10 text-center">
-        <div class="bg-slate-900 border-2 border-emerald-500/60 rounded-3xl p-7 sm:p-10 shadow-2xl">
+      <div class="play-shell play-shell--science max-w-xl mx-auto px-4 py-10 text-center">
+        <div class="play-question-card science-result-card bg-slate-900 border-2 border-emerald-500/60 rounded-3xl p-7 sm:p-10 shadow-2xl">
           <div class="text-6xl mb-4">${game.correct === game.mission.questions.length ? '🏆' : '🔬'}</div>
           <p class="text-xs uppercase tracking-widest text-emerald-300 font-bold">${game.mission.title}</p>
           <h1 class="font-ninja text-3xl text-white font-bold mt-1">Mission Complete!</h1>

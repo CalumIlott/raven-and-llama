@@ -5,6 +5,21 @@ test.beforeEach(async ({ page }) => {
   await setupApp(page);
 });
 
+test('guest can choose a theme that persists across reloads', async ({ page }) => {
+  await openAccountModal(page);
+  await expect(page.locator('#guest-theme')).toHaveValue('dark');
+
+  await page.locator('#guest-theme').selectOption('light');
+  await expect(page.locator('html')).toHaveClass(/theme-light/);
+  await expect(page.locator('#guest-theme')).toHaveValue('light');
+  expect(await page.evaluate(() => localStorage.getItem('raven_llama_guest_theme'))).toBe('light');
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveClass(/theme-light/);
+  await openAccountModal(page);
+  await expect(page.locator('#guest-theme')).toHaveValue('light');
+  expect(await page.evaluate(() => localStorage.getItem('raven_llama_profiles_cache_v5'))).toBeNull();
+});
 
 test('guest can create an account, change password, sign out, sign in, and delete the account', async ({ page }) => {
   const { username, password } = await registerAccount(page);
@@ -42,8 +57,18 @@ test('guest can create an account, change password, sign out, sign in, and delet
 test('signed-in account can change avatar and keep it after reload', async ({ page }) => {
   const { username } = await registerAccount(page);
   await openAccountModal(page);
+  await expect(page.locator('#account-avatar-options')).toBeHidden();
+  await expect(page.locator('#account-avatar-current-name')).toHaveText('Black Feather Raven');
+  await page.getByRole('button', { name: /Change/ }).click();
+  await expect(page.getByRole('heading', { name: 'Choose an avatar' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'Black Feather Raven' })).toBeFocused();
   await page.getByText('Owl', { exact: true }).click();
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page.locator('#account-avatar-open')).toBeFocused();
+  await expect(page.locator('#account-avatar-current-name')).toHaveText('Black Feather Raven');
+  await page.getByRole('button', { name: /Change/ }).click();
+  await page.getByText('Owl', { exact: true }).click();
   const avatarSave = page.waitForResponse(response =>
     response.url().endsWith('/api/progress') && response.request().method() === 'PUT'
   );
@@ -53,12 +78,17 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   expect((await savedProgress.json()).profile.avatar).toBe('owl');
 
   await expect(page.locator('#account-message')).toHaveText('Avatar updated.');
+  await expect(page.locator('#account-avatar-picker')).toBeHidden();
+  await expect(page.locator('#account-avatar-current-name')).toHaveText('Owl');
   await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
   await page.reload();
   await expect(page.locator('#header-profile-name')).toHaveText(username);
   await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
 
   await openAccountModal(page);
+  await expect(page.locator('#account-avatar-options')).toBeHidden();
+  await expect(page.locator('#account-avatar-current-name')).toHaveText('Owl');
+  await page.getByRole('button', { name: /Change/ }).click();
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
 });
 

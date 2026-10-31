@@ -5,10 +5,14 @@ test.beforeEach(async ({ page }) => {
   await setupApp(page);
 });
 
-test('Games Hub offers a playable Critter Catch round', async ({ page }) => {
+test('Games Hub lets players choose Critter Catch and play a round', async ({ page }) => {
   await page.getByRole('button', { name: 'Enter Games Hub' }).click();
   await expect(page.getByRole('heading', { name: 'Games Hub', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Critter Catch' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose a game' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Critter Catch' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Play Critter Catch/ }).click();
+  await expect(page.locator('#critter-catch-title')).toBeVisible();
 
   await page.getByRole('button', { name: 'Play 30-second round' }).click();
   const score = page.locator('#critter-catch-score');
@@ -19,6 +23,12 @@ test('Games Hub offers a playable Critter Catch round', async ({ page }) => {
   }
   await expect(score).toHaveText('75');
   await expect(page.locator('#critter-catch-status')).toHaveText('Five in a row! Bonus points!');
+  await expect(page.locator('#critter-catch-bonus')).toBeVisible();
+  await expect(score).toHaveClass(/score-celebrate/);
+
+  await page.getByRole('button', { name: 'Back to Games Hub' }).click();
+  await expect(page.getByRole('heading', { name: 'Choose a game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Play Critter Catch/ })).toBeVisible();
 
   await page.getByRole('button', { name: 'Back to Raven & Llama Home' }).click();
   await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
@@ -71,10 +81,20 @@ test('home counts, module navigation, and exam failure, retry, and pass gates wo
 });
 
 test('parent progress report and trophy room render their full states', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: /Mastery Stats/ }).click();
-  await expect(page.getByRole('heading', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
   const skillCount = await page.evaluate(() => window.BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0));
   await expect(page.locator('#parent-stats-tbody tr')).toHaveCount(skillCount);
+  const reportLayout = await page.locator('.parent-report-table-wrap').evaluate(element => ({
+    overflowX: getComputedStyle(element).overflowX,
+    scrollWidth: element.scrollWidth,
+    clientWidth: element.clientWidth
+  }));
+  expect(reportLayout.overflowX).toBe('auto');
+  expect(reportLayout.scrollWidth).toBeGreaterThan(reportLayout.clientWidth);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth))
+    .toBeLessThanOrEqual(await page.evaluate(() => document.documentElement.clientWidth));
   await page.getByRole('button', { name: 'Close Report' }).click();
 
   await page.getByRole('button', { name: /Enter Learning Hub/ }).click();

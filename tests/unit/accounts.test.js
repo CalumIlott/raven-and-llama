@@ -74,6 +74,23 @@ test('account theme is restored, applied, and saved without local storage', asyn
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 
+test('guest theme is saved separately and restored without persisting progress', async () => {
+  const { context, accounts } = loadAccounts(async () => response({}, 401));
+  await accounts.initialize();
+  assert.equal(accounts.getActiveProfile().theme, 'dark');
+
+  assert.equal(await accounts.setTheme('light'), true);
+  assert.equal(accounts.getActiveProfile().theme, 'light');
+  assert.equal(context.localStorage.getItem('raven_llama_guest_theme'), 'light');
+  assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
+
+  accounts.setGuest();
+  assert.equal(accounts.getActiveProfile().theme, 'light');
+  assert.equal(await accounts.setTheme('dark'), true);
+  assert.equal(context.localStorage.getItem('raven_llama_guest_theme'), 'dark');
+  assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
+});
+
 test('registration and logout switch between one account and unsaved guest mode', async () => {
   const account = { id: 'account-1', username: 'morgan' };
   const profile = { id: account.id, name: account.username, stars: 0, avatar: 'llama' };

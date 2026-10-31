@@ -76,6 +76,7 @@ class GameEngine {
     timerBar.dataset.tone = pct < 30 ? 'critical' : pct < 60 ? 'warning' : 'healthy';
 
     if (timerText) {
+      timerText.dataset.tone = timerBar.dataset.tone;
       timerText.textContent = `${Math.ceil(Math.max(0, this.timeLeft))}s`;
     }
   }
@@ -219,11 +220,11 @@ class GameEngine {
       controlsHtml = this.renderOrderControls(q);
     } else if (q.options && q.options.length > 0) {
       controlsHtml = `
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-xl mx-auto mt-6">
+        <div class="play-answer-grid grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-xl mx-auto mt-6">
           ${q.options.map((opt, idx) => `
             <button data-action="game-answer" data-answer="${encodeURIComponent(String(opt))}"
                     id="opt-btn-${idx}"
-                    class="btn-ninja p-4 sm:p-5 rounded-2xl bg-slate-800 hover:bg-slate-700 active:bg-blue-600 border-2 border-slate-600 hover:border-sky-400 text-white font-bold text-xl sm:text-2xl shadow-xl focus:outline-none focus:ring-4 focus:ring-sky-500/50">
+                    class="play-answer-button btn-ninja p-4 sm:p-5 rounded-2xl bg-slate-800 hover:bg-slate-700 active:bg-blue-600 border-2 border-slate-600 hover:border-sky-400 text-white font-bold text-xl sm:text-2xl shadow-xl focus:outline-none focus:ring-4 focus:ring-sky-500/50">
               ${opt}
             </button>
           `).join('')}
@@ -233,17 +234,17 @@ class GameEngine {
 
     container.innerHTML = `
       <!-- Top HUD -->
-      <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-        <button data-action="game-exit" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
+      <div class="play-hud flex items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
+        <button data-action="game-exit" class="play-hud__exit flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
           ← ${this.mode === 'endless' ? 'End Run' : 'Exit'}
         </button>
 
-        <div class="text-center">
+        <div class="play-hud__title text-center">
           <h2 class="font-ninja text-lg sm:text-xl text-yellow-400 font-bold">${titleText}</h2>
           <div class="text-xs text-slate-400">${questionCountText}</div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="play-hud__stat flex items-center gap-3">
           ${this.mode.startsWith('belt_test') ? `
             <div class="flex items-center gap-1 text-red-400 font-bold text-sm bg-red-950/60 px-3 py-1 rounded-full border border-red-800">
               <span>❤️</span> <span>${this.lives}</span>
@@ -257,7 +258,7 @@ class GameEngine {
       </div>
 
       <!-- Question Countdown Timer Bar -->
-      <div class="mb-4">
+      <div class="play-timer mb-4">
         <div class="flex justify-between items-center text-xs font-ninja mb-1 text-slate-400">
           <span>Speed Timer</span>
           <span id="question-timer-text" class="text-yellow-400 font-bold"></span>
@@ -268,17 +269,17 @@ class GameEngine {
       </div>
 
       <!-- Question Card -->
-      <div id="question-card" class="bg-slate-900/90 border-2 border-slate-700/80 rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div id="question-card" class="play-question-card bg-slate-900/90 border-2 border-slate-700/80 rounded-3xl p-5 sm:p-8 shadow-2xl relative overflow-hidden">
         <div class="text-center mb-6">
-          <h3 class="font-ninja text-2xl sm:text-3xl text-white font-bold tracking-wide">${q.prompt || q.title || 'Solve:'}</h3>
-          ${q.subtitle ? `<p class="text-slate-400 text-sm sm:text-base mt-1 font-medium">${q.subtitle}</p>` : ''}
-          ${q.hint ? `<div class="mt-2 text-xs text-sky-300 bg-sky-950/40 inline-block px-3 py-1 rounded-full border border-sky-800">${q.hint}</div>` : ''}
+          <h3 class="play-prompt font-ninja text-2xl sm:text-3xl text-white font-bold tracking-wide">${q.prompt || q.title || 'Solve:'}</h3>
+          ${q.subtitle ? `<p class="play-subtitle text-slate-400 text-sm sm:text-base mt-1 font-medium">${q.subtitle}</p>` : ''}
+          ${q.hint ? `<div class="play-hint mt-2 text-xs text-sky-300 bg-sky-950/40 inline-block px-3 py-1 rounded-full border border-sky-800">${q.hint}</div>` : ''}
         </div>
 
         ${visualWidgetHtml}
         ${controlsHtml}
 
-        <div id="feedback-banner" class="hidden mt-6 p-4 rounded-2xl text-center font-ninja text-xl font-bold transition-all"></div>
+        <div id="feedback-banner" class="play-feedback hidden mt-6 p-4 rounded-2xl text-center font-ninja text-xl font-bold transition-all" aria-live="polite"></div>
       </div>
     `;
 
@@ -288,20 +289,20 @@ class GameEngine {
 
   renderOrderControls(q) {
     return `
-      <div class="max-w-md mx-auto mt-6">
+      <div class="play-order-controls max-w-md mx-auto mt-6">
         <div class="text-xs text-center text-slate-400 mb-2">Tap numbers in order from smallest to largest:</div>
-        <div id="order-slots" class="flex items-center justify-center gap-2 mb-4 min-h-[56px] p-2 bg-slate-950/60 rounded-2xl border border-slate-700">
+        <div id="order-slots" class="play-order-slots flex items-center justify-center gap-2 mb-4 min-h-[56px] p-2 bg-slate-950/60 rounded-2xl border border-slate-700">
           ${q.correctOrder.map(() => `
-            <div class="slot-item w-14 h-14 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center font-ninja text-lg text-slate-500">
+            <div class="play-order-slot slot-item w-14 h-14 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center font-ninja text-lg text-slate-500">
               ?
             </div>
           `).join('')}
         </div>
-        <div id="order-choices" class="flex flex-wrap items-center justify-center gap-3">
+        <div id="order-choices" class="play-order-choices flex flex-wrap items-center justify-center gap-3">
           ${q.items.map((item, idx) => `
             <button data-action="game-order-pick" data-index="${idx}" data-value="${encodeURIComponent(String(item))}"
                     id="order-btn-${idx}"
-                    class="btn-ninja w-14 h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-sky-400 text-white font-bold text-xl shadow-lg flex items-center justify-center">
+                    class="play-answer-button btn-ninja w-14 h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-sky-400 text-white font-bold text-xl shadow-lg flex items-center justify-center">
               ${item}
             </button>
           `).join('')}
@@ -337,9 +338,9 @@ class GameEngine {
     container.innerHTML = q.correctOrder.map((_, i) => {
       const placed = this.userOrder[i];
       if (placed) {
-        return `<div class="w-14 h-14 rounded-xl bg-sky-600 border-2 border-sky-300 flex items-center justify-center font-ninja text-xl text-white shadow font-bold animate-pop">${placed.val}</div>`;
+        return `<div class="play-order-slot is-filled w-14 h-14 rounded-xl border-2 flex items-center justify-center font-ninja text-xl shadow font-bold animate-pop">${placed.val}</div>`;
       }
-      return `<div class="slot-item w-14 h-14 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center font-ninja text-lg text-slate-500">${i + 1}</div>`;
+      return `<div class="play-order-slot slot-item w-14 h-14 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center font-ninja text-lg text-slate-500">${i + 1}</div>`;
     }).join('');
   }
 
@@ -370,7 +371,7 @@ class GameEngine {
       }
 
       if (feedback) {
-        feedback.className = 'mt-6 p-4 rounded-2xl text-center font-ninja text-xl font-bold bg-emerald-950/80 border-2 border-emerald-500 text-emerald-300 animate-pop block';
+        feedback.className = 'play-feedback mt-6 p-4 rounded-2xl text-center font-ninja text-xl font-bold bg-emerald-950/80 border-2 border-emerald-500 text-emerald-300 animate-pop block';
         feedback.innerHTML = `✨ Outstanding Ninja Strike! Correct! ✨`;
       }
     } else {
@@ -386,7 +387,7 @@ class GameEngine {
       }
 
       if (feedback) {
-        feedback.className = 'mt-6 p-4 rounded-2xl text-center font-ninja text-base sm:text-lg font-bold bg-rose-950/80 border-2 border-rose-500 text-rose-300 animate-pop block';
+        feedback.className = 'play-feedback mt-6 p-4 rounded-2xl text-center font-ninja text-base sm:text-lg font-bold bg-rose-950/80 border-2 border-rose-500 text-rose-300 animate-pop block';
         feedback.innerHTML = `The correct answer was: <span class="text-yellow-400 font-bold ml-1">${expectedAnswer}</span>`;
       }
     }

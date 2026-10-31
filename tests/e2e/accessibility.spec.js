@@ -1,5 +1,17 @@
 const { expect, test } = require('@playwright/test');
-const { setupApp } = require('./support');
+const { openMathsDojo, setupApp } = require('./support');
+
+function contrastRatio(foreground, background) {
+  const luminance = color => {
+    const channels = color.match(/\d+/g).slice(0, 3).map(channel => Number(channel) / 255);
+    const linear = channels.map(channel => channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4);
+    return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  };
+  const values = [luminance(foreground), luminance(background)].sort((first, second) => second - first);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
 
 test('navigation and account dialog support keyboard use on narrow screens', async ({ page }) => {
   await setupApp(page);
@@ -49,10 +61,155 @@ test('navigation and account dialog support keyboard use on narrow screens', asy
   await expect(closeButton).toBeFocused();
 
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#account-submit-button')).toBeFocused();
+  await expect(page.locator('#guest-theme')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(closeButton).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(accountDialog).toBeHidden();
   await expect(accountButton).toBeFocused();
+});
+
+test('light-theme Science and Spelling cards keep accent text readable on mobile', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await page.locator('[data-action="learning"]').first().click();
+
+  const expectNoHorizontalOverflow = async () => {
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  };
+
+  await page.locator('[data-action="science-home"]').click();
+  await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'science');
+  const scienceLabels = await page.locator('.science-mission-topic, .science-mission-reward').evaluateAll(elements =>
+    elements.map(element => ({
+      color: getComputedStyle(element).color,
+      background: getComputedStyle(element.closest('button')).backgroundColor
+    }))
+  );
+  expect(scienceLabels).toHaveLength(8);
+  scienceLabels.forEach(label => expect(contrastRatio(label.color, label.background)).toBeGreaterThanOrEqual(4.5));
+  await expectNoHorizontalOverflow();
+
+  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="spelling-home"]').click();
+  await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'spelling');
+  const spellingAction = await page.locator('.spelling-activity-action').first().evaluate(element => ({
+    color: getComputedStyle(element).color,
+    background: getComputedStyle(element.closest('button')).backgroundColor
+  }));
+  expect(contrastRatio(spellingAction.color, spellingAction.background)).toBeGreaterThanOrEqual(4.5);
+  await expectNoHorizontalOverflow();
+});
+
+test('active Science and Spelling rounds fit mobile light theme with readable feedback', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await page.getByRole('button', { name: 'Raven & Llama home' }).click();
+  await page.locator('[data-action="learning"]').first().click();
+  await page.getByText('Explore Science Explorers', { exact: true }).click();
+  await page.getByRole('button', { name: /Orbit Rescue/ }).click();
+
+  const expectNoHorizontalOverflow = async () => {
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  };
+
+  await expect(page.locator('.play-shell--science')).toBeVisible();
+  await expectNoHorizontalOverflow();
+  const scienceAnswer = await page.evaluate(() => window.app.scienceGame.mission.questions[0].answer);
+  await page.locator(`[data-science-choice="${scienceAnswer}"]`).click();
+  const scienceColors = await page.locator('.science-feedback').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor
+  }));
+  expect(contrastRatio(scienceColors.foreground, scienceColors.background)).toBeGreaterThanOrEqual(4.5);
+
+  await page.locator('[data-action="science-home"]').click();
+  await page.locator('[data-action="learning"]').first().click();
+  await page.getByRole('button', { name: /Spelling Safari/ }).click();
+  await page.getByRole('button', { name: /Spelling Sprint/ }).click();
+  await expect(page.locator('.play-shell--spelling')).toBeVisible();
+  await expectNoHorizontalOverflow();
+  const spellingAnswer = await page.evaluate(() => window.app.spellingSafariGame.questions[0].answer);
+  await page.getByRole('button', { name: spellingAnswer, exact: true }).click();
+  const spellingColors = await page.locator('.spelling-feedback').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor
+  }));
+  expect(contrastRatio(spellingColors.foreground, spellingColors.background)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('light-theme Maths timer tones and order slots retain readable contrast', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Train Skill/ }).first().click();
+
+  await page.evaluate(() => window.gameEngine.startCustomQuiz('Order Practice', [{
+    type: 'order_drag',
+    prompt: 'Put these numbers in order',
+    items: [3, 1, 2],
+    correctOrder: [1, 2, 3],
+    answer: '1,2,3',
+    timeLimitSeconds: 100
+  }], true));
+
+  for (const [timeLeft, tone] of [[70, 'healthy'], [50, 'warning'], [20, 'critical']]) {
+    await page.evaluate(value => {
+      window.gameEngine.timeLeft = value;
+      window.gameEngine.totalTime = 100;
+      window.gameEngine.updateTimerUI();
+    }, timeLeft);
+    await expect(page.locator('#question-timer-bar')).toHaveAttribute('data-tone', tone);
+    const timerColors = await page.locator('#question-timer-text').evaluate(element => ({
+      foreground: getComputedStyle(element).color,
+      background: getComputedStyle(element.closest('.play-shell').querySelector('.play-question-card')).backgroundColor
+    }));
+    expect(contrastRatio(timerColors.foreground, timerColors.background)).toBeGreaterThanOrEqual(4.5);
+  }
+
+  await page.locator('[data-action="game-order-pick"][data-value="1"]').click();
+  const slotColors = await page.locator('.play-order-slot.is-filled').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor
+  }));
+  expect(contrastRatio(slotColors.foreground, slotColors.background)).toBeGreaterThanOrEqual(4.5);
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+});
+
+test('Parent Report keeps keyboard focus inside its dialog on mobile', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const reportButton = page.getByRole('button', { name: /Mastery Stats/ });
+  await reportButton.focus();
+  await page.keyboard.press('Enter');
+
+  const reportDialog = page.getByRole('dialog', { name: 'Mastery & Progress Report' });
+  const headerClose = page.getByRole('button', { name: 'Close progress report' });
+  const footerClose = page.getByRole('button', { name: 'Close Report' });
+  await expect(reportDialog).toBeVisible();
+  await expect(headerClose).toBeFocused();
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(footerClose).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(headerClose).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(reportDialog).toBeHidden();
+  await expect(reportButton).toBeFocused();
 });

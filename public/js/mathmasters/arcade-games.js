@@ -28,6 +28,26 @@ class ArcadeEngine {
     this.eventListeners.push({ target, type, handler });
   }
 
+  renderArcadeShell(beltId, title, scoreId, scoreIcon, instructions, content) {
+    return `
+      <section class="arcade-game arcade-game--${beltId}">
+        <header class="arcade-game__header">
+          <button type="button" data-action="arcade-exit" data-belt-id="${beltId}" class="arcade-game__exit btn-ninja">← Exit Arcade</button>
+          <h2 class="arcade-game__title font-ninja">${title}</h2>
+          <div class="arcade-game__score">Score: <span id="${scoreId}">0</span> ${scoreIcon}</div>
+        </header>
+        <p id="arcade-instructions" class="arcade-game__instructions">${instructions}</p>
+        ${content}
+        <span id="arcade-keyboard-status" class="sr-only" aria-live="polite" aria-atomic="true"></span>
+      </section>
+    `;
+  }
+
+  announceKeyboardAction(message) {
+    const status = document.getElementById('arcade-keyboard-status');
+    if (status) status.textContent = message;
+  }
+
   deductScore(points, elementId) {
     this.score = Math.max(0, this.score - points);
     window.soundFX?.playWrong();
@@ -63,20 +83,18 @@ class ArcadeEngine {
     let target = QuestionGenerator.randomInt(1, 6);
     let balloons = [];
     let lastSpawn = 0;
+    let nextBalloonId = 0;
+    let selectedBalloonId = null;
+    let keyboardMode = false;
 
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="white" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
-          </button>
-          <div class="font-ninja text-lg text-yellow-400">Target: <span id="bp-target" class="text-white text-xl font-bold">${target} Dots</span></div>
-          <div class="text-sm font-bold text-emerald-400">Score: <span id="bp-score">0</span> 🎈</div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Tap balloons matching the target dot count! (-5 pts for wrong balloon)</div>
-        <canvas id="arcade-canvas" width="460" height="380" class="w-full bg-gradient-to-b from-sky-950 via-slate-900 to-indigo-950 rounded-2xl cursor-pointer touch-none"></canvas>
-      </div>
-    `;
+    container.innerHTML = this.renderArcadeShell(
+      'white',
+      `Target: <span id="bp-target">${target} Dots</span>`,
+      'bp-score',
+      '🎈',
+      'Tap a matching balloon, or focus the play area and use ← / → to select and Space or Enter to pop it. Wrong balloon: −5 points.',
+      '<canvas id="arcade-canvas" width="460" height="380" tabindex="0" aria-label="Balloon Pop play area" aria-describedby="arcade-instructions arcade-keyboard-status" class="arcade-game__canvas w-full rounded-2xl cursor-pointer touch-none"></canvas>'
+    );
 
     this.canvas = document.getElementById('arcade-canvas');
     this.ctx = this.canvas.getContext('2d');
@@ -86,6 +104,7 @@ class ArcadeEngine {
       const count = isTarget ? target : QuestionGenerator.randomInt(1, 6);
       const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
       balloons.push({
+        id: nextBalloonId++,
         x: QuestionGenerator.randomInt(45, this.canvas.width - 45),
         y: this.canvas.height + 30,
         radius: 32,
@@ -94,6 +113,38 @@ class ArcadeEngine {
         color: colors[QuestionGenerator.randomInt(0, colors.length - 1)],
         popped: false
       });
+      if (keyboardMode && selectedBalloonId === null) selectBalloon(1);
+    };
+
+    const selectBalloon = (direction) => {
+      keyboardMode = true;
+      const available = balloons.filter(balloon => !balloon.popped);
+      if (!available.length) {
+        selectedBalloonId = null;
+        this.announceKeyboardAction('Waiting for a balloon to appear.');
+        return;
+      }
+      const currentIndex = available.findIndex(balloon => balloon.id === selectedBalloonId);
+      const nextIndex = currentIndex < 0
+        ? direction < 0 ? available.length - 1 : 0
+        : (currentIndex + direction + available.length) % available.length;
+      const selected = available[nextIndex];
+      selectedBalloonId = selected.id;
+      this.announceKeyboardAction(`Selected balloon with ${selected.count} dots. Press Space or Enter to pop it.`);
+    };
+
+    const popBalloon = (balloon, x = balloon.x, y = balloon.y) => {
+      if (balloon.popped) return;
+      balloon.popped = true;
+      selectedBalloonId = null;
+      if (balloon.count === target) {
+        this.addScore(10, 'bp-score', { x: x / this.canvas.width, y: y / this.canvas.height });
+        target = QuestionGenerator.randomInt(1, 6);
+        document.getElementById('bp-target').textContent = `${target} Dots`;
+      } else {
+        this.deductScore(5, 'bp-score');
+      }
+      this.announceKeyboardAction(`Popped balloon with ${balloon.count} dots.`);
     };
 
     const handleClick = (e) => {
@@ -108,14 +159,7 @@ class ArcadeEngine {
       for (let i = balloons.length - 1; i >= 0; i--) {
         const b = balloons[i];
         if (Math.hypot(mx - b.x, my - b.y) <= b.radius && !b.popped) {
-          b.popped = true;
-          if (b.count === target) {
-            this.addScore(10, 'bp-score', { x: mx / this.canvas.width, y: my / this.canvas.height });
-            target = QuestionGenerator.randomInt(1, 6);
-            document.getElementById('bp-target').textContent = `${target} Dots`;
-          } else {
-            this.deductScore(5, 'bp-score');
-          }
+          popBalloon(b, mx, my);
           break;
         }
       }
@@ -123,6 +167,15 @@ class ArcadeEngine {
 
     this.addListener(this.canvas, 'mousedown', handleClick);
     this.addListener(this.canvas, 'touchstart', handleClick);
+    this.addListener(this.canvas, 'keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Space', 'Enter'].includes(event.code)) return;
+      event.preventDefault();
+      if (event.code === 'ArrowLeft') return selectBalloon(-1);
+      if (event.code === 'ArrowRight') return selectBalloon(1);
+      const selected = balloons.find(balloon => balloon.id === selectedBalloonId && !balloon.popped);
+      if (selected) popBalloon(selected);
+      else selectBalloon(1);
+    });
 
     const loop = (timestamp) => {
       if (timestamp - lastSpawn > 1400) {
@@ -150,6 +203,14 @@ class ArcadeEngine {
           this.ctx.lineTo(b.x, b.y + b.radius + 14);
           this.ctx.strokeStyle = 'rgba(255,255,255,0.6)';
           this.ctx.stroke();
+
+          if (b.id === selectedBalloonId) {
+            this.ctx.beginPath();
+            this.ctx.arc(b.x, b.y, b.radius + 6, 0, Math.PI * 2);
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+          }
 
           this.drawDots(b.x, b.y, b.count);
         }
@@ -199,27 +260,22 @@ class ArcadeEngine {
     values = QuestionGenerator.shuffle(values);
     const potions = values.map((val, id) => ({ id, val, matched: false }));
 
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl text-center">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="yellow" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
+    container.innerHTML = this.renderArcadeShell(
+      'yellow',
+      'Match Sum to 10!',
+      'pm-score',
+      '🧪',
+      'Choose two potions that add up to 10. A non-10 pair costs 5 points.',
+      `<div id="potions-grid" class="arcade-game__tile-grid grid grid-cols-4 gap-3 my-4">
+        ${potions.map(p => `
+          <button data-action="arcade-potion" data-id="${p.id}" id="potion-btn-${p.id}"
+                  aria-label="Potion ${p.val}" class="arcade-game__tile btn-ninja aspect-square flex flex-col items-center justify-center shadow-lg transition">
+            <span class="text-2xl" aria-hidden="true">🧪</span>
+            <span class="font-ninja text-xl font-bold mt-1">${p.val}</span>
           </button>
-          <div class="font-ninja text-lg text-yellow-400">Match Sum to 10!</div>
-          <div class="text-sm font-bold text-emerald-400">Score: <span id="pm-score">0</span> 🧪</div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Tap 2 potions that sum to 10! (-5 pts for non-10 pair)</div>
-        <div id="potions-grid" class="grid grid-cols-4 gap-3 my-4">
-          ${potions.map(p => `
-            <button data-action="arcade-potion" data-id="${p.id}" id="potion-btn-${p.id}"
-                    class="btn-ninja aspect-square rounded-2xl bg-indigo-950 border-2 border-indigo-500 hover:border-yellow-400 flex flex-col items-center justify-center text-white shadow-lg transition">
-              <span class="text-2xl">🧪</span>
-              <span class="font-ninja text-xl font-bold mt-1 text-yellow-300">${p.val}</span>
-            </button>
-          `).join('')}
-        </div>
-      </div>
-    `;
+        `).join('')}
+      </div>`
+    );
 
     this.potions = potions;
     this.selectedPotion = null;
@@ -276,41 +332,40 @@ class ArcadeEngine {
     ];
     let nextVal = 20;
 
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
-        <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="green" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
-          </button>
-          <div class="font-ninja text-lg text-emerald-400">Skip Count by 5s!</div>
-          <div class="text-sm font-bold text-yellow-400">Score: <span id="pr-score">0</span> 🏃</div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Tap/Space to JUMP! (-10 pts if you fall in the water)</div>
-        <canvas id="runner-canvas" width="460" height="300" class="w-full bg-slate-950 rounded-2xl cursor-pointer"></canvas>
-        <div class="mt-3 flex justify-center">
-          <button data-action="arcade-jump" class="btn-ninja px-10 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-ninja font-bold text-lg shadow-lg">
-            JUMP! ⬆️
-          </button>
-        </div>
-      </div>
-    `;
+    container.innerHTML = this.renderArcadeShell(
+      'green',
+      'Skip Count by 5s!',
+      'pr-score',
+      '🏃',
+      'Jump with Space or ↑, or select JUMP. Avoid falling into the water.',
+      `<canvas id="runner-canvas" width="460" height="300" tabindex="0" aria-label="Platform Runner play area" aria-describedby="arcade-instructions arcade-keyboard-status" class="arcade-game__canvas rounded-2xl cursor-pointer"></canvas>
+       <div class="arcade-game__controls mt-3 flex justify-center">
+         <button data-action="arcade-jump" class="arcade-game__control btn-ninja px-10 py-3 font-ninja font-bold text-lg">JUMP! ⬆️</button>
+       </div>`
+    );
 
     this.canvas = document.getElementById('runner-canvas');
     this.ctx = this.canvas.getContext('2d');
+    let announcedGrounded = false;
 
     const jump = (e) => {
-      if (e?.type === 'keydown' && (e.repeat || !['Space', 'ArrowUp'].includes(e.code))) return;
+      if (e?.type === 'keydown') {
+        if (e.repeat || !['Space', 'ArrowUp'].includes(e.code)) return;
+        e.preventDefault();
+      }
       if (!player.isJumping) {
         player.vy = -12;
         player.isJumping = true;
+        announcedGrounded = false;
         window.soundFX?.playJump();
+        this.announceKeyboardAction('Jumped.');
       }
     };
 
     this.triggerJump = jump;
     this.addListener(this.canvas, 'click', jump);
-    const keyHandler = (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') jump(); };
-    this.addListener(window, 'keydown', keyHandler);
+    const keyHandler = (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') jump(e); };
+    this.addListener(this.canvas, 'keydown', keyHandler);
 
     let lastFrame = 0;
     const loop = (timestamp) => {
@@ -344,6 +399,11 @@ class ArcadeEngine {
           player.isJumping = false;
         }
       });
+
+      if (!player.isJumping && !announcedGrounded) {
+        announcedGrounded = true;
+        this.announceKeyboardAction('Ready to jump.');
+      }
 
       if (player.y - player.radius > this.canvas.height) {
         player.y = 250;
@@ -391,20 +451,18 @@ class ArcadeEngine {
     let targetSum = 15;
     let targets = [];
     let lastSpawn = 0;
+    let nextTargetId = 0;
+    let selectedTargetId = null;
+    let keyboardMode = false;
 
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
-        <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="blue" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
-          </button>
-          <div class="font-ninja text-lg text-sky-400">Target Balance: <span id="sg-target" class="text-yellow-400 font-bold">= 15</span></div>
-          <div class="text-sm font-bold text-amber-400">Score: <span id="sg-score">0</span> 🎯</div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Hit boards that sum to 15! (-5 pts for wrong board)</div>
-        <canvas id="target-canvas" width="460" height="340" class="w-full bg-slate-950 rounded-2xl cursor-crosshair touch-none"></canvas>
-      </div>
-    `;
+    container.innerHTML = this.renderArcadeShell(
+      'blue',
+      'Target Balance: <span id="sg-target">= 15</span>',
+      'sg-score',
+      '🎯',
+      'Hit boards that sum to 15. Focus the play area and use ← / → to select; Space or Enter shoots. Wrong board: −5 points.',
+      '<canvas id="target-canvas" width="460" height="340" tabindex="0" aria-label="Shuriken Gallery play area" aria-describedby="arcade-instructions arcade-keyboard-status" class="arcade-game__canvas rounded-2xl cursor-crosshair touch-none"></canvas>'
+    );
 
     this.canvas = document.getElementById('target-canvas');
     this.ctx = this.canvas.getContext('2d');
@@ -414,6 +472,7 @@ class ArcadeEngine {
       const a = QuestionGenerator.randomInt(3, 12);
       const b = isCorrect ? (targetSum - a) : QuestionGenerator.randomInt(2, 10);
       targets.push({
+        id: nextTargetId++,
         x: -80,
         y: QuestionGenerator.randomInt(40, 260),
         w: 90,
@@ -423,6 +482,36 @@ class ArcadeEngine {
         isCorrect: (a + b) === targetSum,
         hit: false
       });
+      if (keyboardMode && selectedTargetId === null) selectTarget(1);
+    };
+
+    const selectTarget = (direction) => {
+      keyboardMode = true;
+      const available = targets.filter(target => !target.hit);
+      if (!available.length) {
+        selectedTargetId = null;
+        this.announceKeyboardAction('Waiting for a target to appear.');
+        return;
+      }
+      const currentIndex = available.findIndex(target => target.id === selectedTargetId);
+      const nextIndex = currentIndex < 0
+        ? direction < 0 ? available.length - 1 : 0
+        : (currentIndex + direction + available.length) % available.length;
+      const selected = available[nextIndex];
+      selectedTargetId = selected.id;
+      this.announceKeyboardAction(`Selected target ${selected.text}. Press Space or Enter to shoot.`);
+    };
+
+    const shootTarget = (target, confettiOrigin = null) => {
+      if (!target || target.hit) return;
+      target.hit = true;
+      selectedTargetId = null;
+      if (target.isCorrect) {
+        this.addScore(20, 'sg-score', confettiOrigin);
+      } else {
+        this.deductScore(5, 'sg-score');
+      }
+      this.announceKeyboardAction(`Hit target ${target.text}.`);
     };
 
     const shoot = (e) => {
@@ -439,12 +528,7 @@ class ArcadeEngine {
       for (let i = targets.length - 1; i >= 0; i--) {
         const t = targets[i];
         if (mx >= t.x && mx <= t.x + t.w && my >= t.y && my <= t.y + t.h && !t.hit) {
-          t.hit = true;
-          if (t.isCorrect) {
-            this.addScore(20, 'sg-score', { x: mx / this.canvas.width, y: my / this.canvas.height });
-          } else {
-            this.deductScore(5, 'sg-score');
-          }
+          shootTarget(t, { x: mx / this.canvas.width, y: my / this.canvas.height });
           break;
         }
       }
@@ -452,6 +536,15 @@ class ArcadeEngine {
 
     this.addListener(this.canvas, 'mousedown', shoot);
     this.addListener(this.canvas, 'touchstart', shoot);
+    this.addListener(this.canvas, 'keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Space', 'Enter'].includes(event.code)) return;
+      event.preventDefault();
+      if (event.code === 'ArrowLeft') return selectTarget(-1);
+      if (event.code === 'ArrowRight') return selectTarget(1);
+      const selected = targets.find(target => target.id === selectedTargetId && !target.hit);
+      if (selected) shootTarget(selected);
+      else selectTarget(1);
+    });
 
     const loop = (timestamp) => {
       if (timestamp - lastSpawn > 1300) {
@@ -471,6 +564,12 @@ class ArcadeEngine {
           this.ctx.strokeStyle = '#fde047';
           this.ctx.lineWidth = 2;
           this.ctx.strokeRect(t.x, t.y, t.w, t.h);
+
+          if (t.id === selectedTargetId) {
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeRect(t.x - 4, t.y - 4, t.w + 8, t.h + 8);
+          }
 
           this.ctx.fillStyle = '#ffffff';
           this.ctx.font = 'bold 16px Fredoka, sans-serif';
@@ -503,24 +602,19 @@ class ArcadeEngine {
     let lastSpawn = 0;
     let keys = {};
 
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
-        <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="brown" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
-          </button>
-          <div class="font-ninja text-lg text-amber-400">Blast Multiples of ${timesBase}!</div>
-          <div class="text-sm font-bold text-sky-400">Score: <span id="ab-score">0</span> 🚀</div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Blast multiples of ${timesBase}! (-10 pts for shooting non-multiples)</div>
-        <canvas id="space-canvas" width="460" height="340" class="w-full bg-slate-950 rounded-2xl"></canvas>
-        <div class="mt-3 flex justify-between gap-2">
-          <button data-action="arcade-move-left" class="btn-ninja flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">⬅️ Move</button>
-          <button data-action="arcade-fire" class="btn-ninja flex-1 py-3 bg-rose-600 text-white rounded-xl font-ninja font-bold">🔥 FIRE</button>
-          <button data-action="arcade-move-right" class="btn-ninja flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">Move ➡️</button>
-        </div>
-      </div>
-    `;
+    container.innerHTML = this.renderArcadeShell(
+      'brown',
+      `Blast Multiples of ${timesBase}!`,
+      'ab-score',
+      '🚀',
+      `Move with ← / → or A / D; fire with Space. Blast multiples of ${timesBase}, and avoid non-multiples.`,
+      `<canvas id="space-canvas" width="460" height="340" tabindex="0" aria-label="Asteroid Blaster play area" aria-describedby="arcade-instructions arcade-keyboard-status" class="arcade-game__canvas rounded-2xl"></canvas>
+       <div class="arcade-game__controls mt-3 flex justify-between">
+         <button data-action="arcade-move-left" class="arcade-game__control btn-ninja flex-1 py-3 font-bold">⬅️ Move</button>
+         <button data-action="arcade-fire" class="arcade-game__control btn-ninja flex-1 py-3 font-ninja font-bold">🔥 FIRE</button>
+         <button data-action="arcade-move-right" class="arcade-game__control btn-ninja flex-1 py-3 font-bold">Move ➡️</button>
+       </div>`
+    );
 
     this.canvas = document.getElementById('space-canvas');
     this.ctx = this.canvas.getContext('2d');
@@ -542,18 +636,27 @@ class ArcadeEngine {
     const fire = () => {
       bullets.push({ x: ship.x, y: ship.y - 20, vy: -7 });
       window.soundFX?.playLaser();
+      this.announceKeyboardAction('Fired a shot.');
     };
 
     this.fireBullet = fire;
-    this.moveShipLeft = () => { ship.x = Math.max(30, ship.x - 40); };
-    this.moveShipRight = () => { ship.x = Math.min(this.canvas.width - 30, ship.x + 40); };
+    this.moveShipLeft = () => { ship.x = Math.max(30, ship.x - 40); this.announceKeyboardAction('Ship moved left.'); };
+    this.moveShipRight = () => { ship.x = Math.min(this.canvas.width - 30, ship.x + 40); this.announceKeyboardAction('Ship moved right.'); };
 
     const keyDown = (e) => {
+      if (!['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD', 'Space'].includes(e.code)) return;
+      e.preventDefault();
+      if (e.repeat && e.code === 'Space') return;
       keys[e.code] = true;
       if (e.code === 'Space') fire();
+      else this.announceKeyboardAction(e.code === 'ArrowLeft' || e.code === 'KeyA' ? 'Ship moved left.' : 'Ship moved right.');
     };
-    const keyUp = (e) => { keys[e.code] = false; };
-    this.addListener(window, 'keydown', keyDown);
+    const keyUp = (e) => {
+      if (!['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD', 'Space'].includes(e.code)) return;
+      e.preventDefault();
+      keys[e.code] = false;
+    };
+    this.addListener(this.canvas, 'keydown', keyDown);
     this.addListener(window, 'keyup', keyUp);
 
     const loop = (timestamp) => {
@@ -632,21 +735,16 @@ class ArcadeEngine {
     this.score = 0;
     this.gemRound = 0;
     this.gemScoreId = 'gs-score';
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl text-center">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="black" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
-          </button>
-          <div class="font-ninja text-lg text-purple-400">Match Equivalences! 💎</div>
-          <div class="text-sm font-bold text-yellow-400">Score: <span id="gs-score">0</span></div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Tap every fraction, decimal, and percentage equal to the target.</div>
-        <div class="flex justify-between text-sm text-slate-300"><span>Round <b id="gs-round">1 / 5</b></span><span>Time <b id="gs-time">45</b>s</span></div>
-        <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 my-3"><div class="text-xs text-slate-400 mb-1">Target value</div><div id="gs-target" class="font-ninja text-3xl text-yellow-300 font-bold"></div></div>
-        <div id="gs-gems" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
-      </div>
-    `;
+    container.innerHTML = this.renderArcadeShell(
+      'black',
+      'Match Equivalences! 💎',
+      'gs-score',
+      '💎',
+      'Select every fraction, decimal, and percentage equal to the target. Complete five rounds before time runs out.',
+      `<div class="arcade-game__stats"><span>Round <b id="gs-round">1 / 5</b></span><span>Time <b id="gs-time">45</b>s</span></div>
+       <div class="arcade-game__target my-3"><span>Target value</span><div id="gs-target" class="font-ninja text-3xl font-bold"></div></div>
+       <div id="gs-gems" class="arcade-game__tile-grid grid grid-cols-2 sm:grid-cols-3 gap-3"></div>`
+    );
     this.nextGemRound();
     let timeLeft = 45;
     this.gameInterval = setInterval(() => {
@@ -672,7 +770,7 @@ class ArcadeEngine {
     this.gemExpected = new Set(round.forms);
     const decoys = ['1/3', '0.4', '60%', '3/5', '0.125', '40%', '2/3', '0.8', '90%', '5/8'];
     const values = QuestionGenerator.shuffle([...round.forms, ...QuestionGenerator.shuffle(decoys).slice(0, 5)]);
-    document.getElementById('gs-gems').innerHTML = values.map((value, index) => `<button id="gem-${index}" data-action="arcade-gem" data-index="${index}" class="btn-ninja p-4 min-h-16 rounded-xl bg-purple-900/60 border border-purple-400 hover:border-yellow-300 font-ninja text-lg font-bold text-white">💎 ${value}</button>`).join('');
+    document.getElementById('gs-gems').innerHTML = values.map((value, index) => `<button id="gem-${index}" data-action="arcade-gem" data-index="${index}" class="arcade-game__tile btn-ninja p-4 min-h-16 font-ninja text-lg font-bold">💎 ${value}</button>`).join('');
   }
 
   tapGem(index) {
@@ -681,7 +779,7 @@ class ArcadeEngine {
     const value = btn.textContent.replace('💎 ', '').trim();
     btn.disabled = true;
     if (this.gemExpected.has(value)) {
-      btn.classList.add('bg-emerald-900', 'opacity-60');
+      btn.classList.add('is-correct', 'opacity-60');
       this.gemExpected.delete(value);
       this.addScore(10, 'gs-score');
       if (this.gemExpected.size === 0) {
@@ -689,7 +787,7 @@ class ArcadeEngine {
         setTimeout(() => { if (this.gemRound >= 5) this.finishGemSorter(true); else this.nextGemRound(); }, 500);
       }
     } else {
-      btn.classList.add('bg-rose-950', 'opacity-50');
+      btn.classList.add('is-wrong', 'opacity-50');
       this.deductScore(5, 'gs-score');
     }
   }
@@ -711,21 +809,16 @@ class ArcadeEngine {
     this.defenseRound = 0;
     this.defenseLives = 3;
     this.bossHealth = 8;
-    container.innerHTML = `
-      <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl text-center">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button data-action="arcade-exit" data-belt-id="platinum" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
-            ← Exit Arcade
-          </button>
-          <div class="font-ninja text-lg text-sky-400">BODMAS Boss Defense 🛡️</div>
-          <div class="text-sm font-bold text-emerald-400">Score: <span id="cd-score">0</span></div>
-        </div>
-        <div class="text-xs text-slate-400 mb-2">Answer BODMAS problems to hit the boss. Three shields; solve eight before time runs out.</div>
-        <div class="flex justify-between text-sm text-slate-300"><span>Shields <b id="cd-lives">3</b> ❤️</span><span>Time <b id="cd-time">60</b>s</span><span>Boss <b id="cd-health">8</b> 🛡️</span></div>
-        <progress id="cd-healthbar" class="boss-health-progress w-full my-2" max="8" value="8" aria-label="Boss health"></progress>
-        <div class="p-6 bg-slate-950 rounded-2xl border-2 border-sky-500/40 my-4 text-center"><div class="text-xs text-rose-400 font-bold uppercase tracking-wider mb-2">Incoming attack · solve to fire</div><div id="cd-question" class="font-ninja text-3xl text-white font-bold mb-4"></div><div id="cd-choices" class="grid grid-cols-2 gap-3"></div></div>
-      </div>
-    `;
+    container.innerHTML = this.renderArcadeShell(
+      'platinum',
+      'BODMAS Boss Defense 🛡️',
+      'cd-score',
+      '🛡️',
+      'Answer BODMAS problems to hit the boss. Three shields; solve eight before time runs out.',
+      `<div class="arcade-game__stats"><span>Shields <b id="cd-lives">3</b> ❤️</span><span>Time <b id="cd-time">60</b>s</span><span>Boss <b id="cd-health">8</b> 🛡️</span></div>
+       <progress id="cd-healthbar" class="boss-health-progress w-full my-2" max="8" value="8" aria-label="Boss health"></progress>
+       <div class="arcade-game__target my-4"><div class="text-xs text-rose-400 font-bold uppercase tracking-wider mb-2">Incoming attack · solve to fire</div><div id="cd-question" class="font-ninja text-3xl font-bold mb-4"></div><div id="cd-choices" class="arcade-game__tile-grid grid grid-cols-2 gap-3"></div></div>`
+    );
     this.nextDefenseQuestion();
     let timeLeft = 60;
     this.gameInterval = setInterval(() => { timeLeft--; const el = document.getElementById('cd-time'); if(el) el.textContent=timeLeft; if(timeLeft<=0) this.finishCyberDefense(false); }, 1000);
@@ -743,7 +836,7 @@ class ArcadeEngine {
     }
     document.getElementById('cd-question').textContent = this.defensePrompt;
     const options = QuestionGenerator.generateChoices(this.defenseAnswer, 4, 12);
-    document.getElementById('cd-choices').innerHTML = options.map(value => `<button data-action="arcade-turret" data-value="${value}" class="btn-ninja p-4 rounded-xl bg-sky-900 border border-sky-400 hover:bg-sky-700 font-ninja text-2xl font-bold text-white">${value}</button>`).join('');
+    document.getElementById('cd-choices').innerHTML = options.map(value => `<button data-action="arcade-turret" data-value="${value}" class="arcade-game__tile btn-ninja p-4 font-ninja text-2xl font-bold">${value}</button>`).join('');
   }
 
   fireTurret(value) {

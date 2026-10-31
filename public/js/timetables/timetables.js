@@ -4,6 +4,7 @@ Object.assign(App.prototype, {
     this.rememberModule('timetables');
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'timetables';
 
     const buttons = Array.from({length: 11}, (_, i) => i + 2).map(n => `
       <button data-action="times-table-start" data-table="${n}"
@@ -94,7 +95,7 @@ Object.assign(App.prototype, {
     this.currentView = 'game';
     const main = document.getElementById('app-main');
     if (!main) return;
-    main.innerHTML = `<div class="max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
+    main.innerHTML = `<div class="play-shell play-shell--quiz play-shell--times max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
     const count = allTables ? 33 : 12;
     const questions = QuestionGenerator.generateUniqueQuestions(() => {
       const a = table || QuestionGenerator.randomInt(2, 12);
@@ -124,7 +125,7 @@ Object.assign(App.prototype, {
     this.currentView = 'game';
     const main = document.getElementById('app-main');
     if (!main) return;
-    main.innerHTML = `<div class="max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
+    main.innerHTML = `<div class="play-shell play-shell--quiz play-shell--times max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
     window.gameEngine.startEndlessQuiz(
       'Endless Timetables Challenge ♾️',
       () => {
@@ -149,18 +150,18 @@ Object.assign(App.prototype, {
     const main = document.getElementById('app-main');
     if (!main) return;
     main.innerHTML = `
-      <div class="max-w-xl mx-auto px-4 py-6">
-        <div class="bg-slate-900 border-2 border-amber-600 rounded-3xl p-5 text-center shadow-2xl">
-          <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-            <button data-action="timetable-exit" class="btn-ninja text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
+      <div class="play-shell play-shell--product-match max-w-xl mx-auto px-4 py-6">
+        <div class="play-arcade-panel bg-slate-900 border-2 border-amber-600 rounded-3xl p-5 text-center shadow-2xl">
+          <div class="play-arcade-hud flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
+            <button data-action="timetable-exit" class="play-hud__exit btn-ninja text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
               ← Exit Arcade
             </button>
-            <h2 class="font-ninja text-xl text-amber-400 font-bold">Product Pair Match 🕹️</h2>
-            <div class="text-emerald-400 font-bold text-sm">Score: <span id="tt-score">0</span></div>
+            <h2 class="play-arcade-title font-ninja text-xl text-amber-400 font-bold">Product Pair Match 🕹️</h2>
+            <div class="play-arcade-score text-emerald-400 font-bold text-sm">Score: <span id="tt-score">0</span></div>
           </div>
           <p class="text-slate-300 text-xs mb-3">Tap two numbers whose multiplication equals the target product!</p>
-          <div class="text-yellow-300 font-ninja text-2xl font-bold mb-4 bg-slate-950 p-3 rounded-2xl border border-slate-800" id="tt-target"></div>
-          <div id="tt-cards" class="grid grid-cols-4 gap-3 my-2"></div>
+          <div class="play-arcade-target text-yellow-300 font-ninja text-2xl font-bold mb-4 bg-slate-950 p-3 rounded-2xl border border-slate-800" id="tt-target"></div>
+          <div id="tt-cards" class="play-arcade-grid grid grid-cols-4 gap-3 my-2"></div>
         </div>
       </div>
     `;
@@ -186,7 +187,7 @@ Object.assign(App.prototype, {
 
     cardsContainer.innerHTML = cards.map(c => `
       <button id="tt-card-${c.i}"
-              class="btn-ninja aspect-square bg-indigo-950 border-2 border-indigo-600 hover:border-yellow-400 rounded-2xl text-white text-2xl font-ninja font-bold transition flex items-center justify-center shadow-lg"
+              class="play-arcade-card btn-ninja aspect-square bg-indigo-950 border-2 border-indigo-600 hover:border-yellow-400 rounded-2xl text-white text-2xl font-ninja font-bold transition flex items-center justify-center shadow-lg"
               data-action="times-table-pick" data-id="${c.i}" data-value="${c.v}">
         ${c.v}
       </button>
@@ -196,7 +197,7 @@ Object.assign(App.prototype, {
       if (this.ttResolving || picked.some(p => p.id === id)) return;
       const card = document.getElementById(`tt-card-${id}`);
       picked.push({ id, val });
-      card?.classList.add('ring-4', 'ring-yellow-300', 'scale-105', 'border-yellow-300');
+      card?.classList.add('is-selected');
 
       if (picked.length < 2) return;
       this.ttResolving = true;
@@ -204,8 +205,8 @@ Object.assign(App.prototype, {
 
       picked.forEach(({ id: pickedId }) => {
         const pickedCard = document.getElementById(`tt-card-${pickedId}`);
-        pickedCard?.classList.remove('ring-4', 'ring-yellow-300', 'scale-105', 'border-yellow-300');
-        pickedCard?.classList.add(isMatch ? 'bg-emerald-700' : 'bg-rose-800', isMatch ? 'border-emerald-300' : 'border-rose-400');
+        pickedCard?.classList.remove('is-selected');
+        pickedCard?.classList.add(isMatch ? 'is-correct' : 'is-wrong');
       });
 
       if (isMatch) {
