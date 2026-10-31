@@ -192,6 +192,12 @@ test('Science Explorers success message has readable contrast in dark theme', as
     background: getComputedStyle(element.parentElement).backgroundColor
   }));
   expect(contrastRatio(messageColors.foreground, messageColors.background)).toBeGreaterThanOrEqual(7);
+
+  const detailColors = await page.locator('.science-feedback > p:not(.font-bold)').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element.parentElement).backgroundColor
+  }));
+  expect(contrastRatio(detailColors.foreground, detailColors.background)).toBeGreaterThanOrEqual(4.5);
 });
 
 test('light-theme Maths timer tones and order slots retain readable contrast', async ({ page }) => {
