@@ -60,6 +60,6 @@ test('parent progress report and trophy room render their full states', async ({
 
   await page.getByRole('button', { name: /Enter Learning Hub/ }).click();
   await page.getByRole('button', { name: /Trophy Room/ }).click();
-  await expect(page.getByRole('heading', { name: "Profile 1's Trophy Hall" })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "Guest's Trophy Hall" })).toBeVisible();
   await expect(page.getByText('No Grand Master certificates earned yet.')).toBeVisible();
 });

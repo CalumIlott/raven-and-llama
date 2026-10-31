@@ -1,49 +1,38 @@
 const { expect } = require('@playwright/test');
 
 async function setupApp(page) {
-  const profiles = [{
-    id: 'profile_default',
-    name: 'Profile 1',
-    avatar: 'raven',
-    currentBelt: 'white',
-    stage1PassedBelts: [],
-    stage2PassedBelts: [],
-    stage3PassedBelts: [],
-    passedBelts: [],
-    stars: 0,
-    skillsProgress: {},
-    certificates: []
-  }];
-
-  await page.route('**/api/profiles', async route => {
-    const request = route.request();
-    if (request.method() === 'GET') {
-      await route.fulfill({ status: 200, json: { profiles } });
-      return;
-    }
-
-    if (request.method() === 'POST') {
-      const body = request.postDataJSON();
-      if (body.profile) {
-        const index = profiles.findIndex(profile => profile.id === body.profile.id);
-        if (index === -1) profiles.push(body.profile);
-        else profiles[index] = body.profile;
-      } else if (body.deleteProfileId) {
-        const remaining = profiles.filter(profile => profile.id !== body.deleteProfileId);
-        profiles.splice(0, profiles.length, ...remaining);
-      } else if (Array.isArray(body.profiles)) {
-        profiles.splice(0, profiles.length, ...body.profiles);
-      }
-      await route.fulfill({ status: 200, json: { status: 'saved' } });
-      return;
-    }
-
-    await route.fallback();
-  });
-
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
-  return { profiles };
+  await expect(page.locator('#account-status-banner')).toContainText('Guest mode: progress will not be saved');
+}
+
+function uniqueUsername(prefix = 'learner') {
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+async function openAccountModal(page) {
+  await page.locator('header button').filter({ has: page.locator('#header-profile-name') }).click();
+  await expect(page.getByRole('dialog', { name: 'Account' })).toBeVisible();
+}
+
+async function registerAccount(page, username = uniqueUsername(), password = 'correct horse battery 42') {
+  await openAccountModal(page);
+  await page.locator('#account-register-tab').click();
+  await page.locator('#account-username').fill(username);
+  await page.locator('#account-password').fill(password);
+  await page.locator('#account-confirm-password').fill(password);
+  await page.locator('#account-submit-button').click();
+  await expect(page.locator('#header-profile-name')).toHaveText(username);
+  return { username, password };
+}
+
+async function loginAccount(page, username, password) {
+  await openAccountModal(page);
+  await page.locator('#account-login-tab').click();
+  await page.locator('#account-username').fill(username);
+  await page.locator('#account-password').fill(password);
+  await page.locator('#account-submit-button').click();
+  await expect(page.locator('#header-profile-name')).toHaveText(username);
 }
 
 async function openLearningHub(page) {
@@ -80,8 +69,11 @@ async function chooseQuestionAnswer(page, correct = true) {
 
 module.exports = {
   chooseQuestionAnswer,
+  loginAccount,
+  openAccountModal,
   openLearningHub,
   openMathsDojo,
   openTimesTables,
+  registerAccount,
   setupApp
 };

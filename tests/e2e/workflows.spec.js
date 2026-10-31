@@ -10,25 +10,6 @@ test.beforeEach(async ({ page }) => {
   await setupApp(page);
 });
 
-test('a learner can create, switch, and delete a profile', async ({ page }) => {
-  await page.locator('header button[title="Switch Profile"]').click();
-  await page.locator('#new-profile-name').fill('Jordan');
-  await page.locator('label').filter({ has: page.locator('input[name="new_avatar"][value="owl"]') }).click();
-  await page.getByRole('button', { name: 'Create Profile' }).click();
-
-  await expect(page.locator('#header-profile-name')).toHaveText('Jordan');
-  await expect(page.locator('#header-profile-avatar')).toContainText('🦉');
-
-  await page.locator('header button[title="Switch Profile"]').click();
-  await page.locator('#profiles-list').getByText('Profile 1', { exact: true }).click();
-  await expect(page.locator('#header-profile-name')).toHaveText('Profile 1');
-
-  await page.locator('header button[title="Switch Profile"]').click();
-  page.once('dialog', dialog => dialog.accept());
-  await page.locator('#profiles-list button[title="Delete Learner Profile"]').nth(1).click();
-  await expect(page.locator('#profiles-list').getByText('Jordan', { exact: true })).toHaveCount(0);
-});
-
 test('a perfect practice round records mastery and updates the dojo', async ({ page }) => {
   await openMathsDojo(page);
   await page.getByRole('heading', { name: 'White Belt', exact: true }).click();

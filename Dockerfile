@@ -1,12 +1,11 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 # Copy application files
-COPY index.html server.js ./
-COPY css/ ./css/
-COPY js/ ./js/
-COPY assets/ ./assets/
+COPY server.js ./
+COPY lib/ ./lib/
+COPY public/ ./public/
 
 # Persistent data directory
 RUN mkdir -p /app/data
