@@ -54,10 +54,12 @@ test('home counts, module navigation, and exam failure, retry, and pass gates wo
   await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
   await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Belt Examination Hall' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Show Me What You Know' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Complete Stage 1 to Unlock/ })).toBeDisabled();
   await expect(page.getByRole('button', { name: /View Missing Prerequisites/ })).toBeVisible();
 
   await page.getByRole('button', { name: /Take Stage 1 Exam/ }).click();
+  await expect(page.getByRole('heading', { name: 'White Belt Stage 1: Show Me What You Know' })).toBeVisible();
   await expect(page.getByText('Question 1 of 10', { exact: true })).toBeVisible();
 
   for (let question = 1; question <= 3; question++) {
@@ -81,6 +83,7 @@ test('home counts, module navigation, and exam failure, retry, and pass gates wo
 
   await expect(page.getByRole('heading', { name: 'Stage 1 Test Passed!' })).toBeVisible({ timeout: 5000 });
   await expect(page.locator('#game-arena')).toContainText('8/10');
+  await expect(page.locator('#game-arena')).toContainText('on Show Me What You Know!');
   await page.getByRole('button', { name: /Return to Dojo/ }).click();
   await expect(page.getByRole('button', { name: /Take Stage 2 Quiz/ })).toBeEnabled();
 });

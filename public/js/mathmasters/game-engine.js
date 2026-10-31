@@ -186,9 +186,9 @@ class GameEngine {
     this.userOrder = [];
 
     const titleText = this.mode === 'belt_test_1'
-      ? `🥋 ${this.currentBelt.name} Stage 1 Proficiency Exam`
+      ? `🥋 ${this.currentBelt.name} Stage 1: Show Me What You Know`
       : this.mode === 'belt_test_2' || this.mode === 'belt_test_3'
-      ? `🥋 ${this.currentBelt.name} Stage ${this.mode.slice(-1)} ${this.mode === 'belt_test_3' ? 'Final' : 'Proficiency'} Exam 🔥`
+      ? `🥋 ${this.currentBelt.name} Stage ${this.mode.slice(-1)} ${this.mode === 'belt_test_3' ? 'Final Exam' : 'Show Me What You Know'} 🔥`
       : this.mode === 'endless'
       ? this.endlessTitle
       : `${this.currentBelt.name} • ${this.currentSkill?.name || ''}`;
@@ -522,7 +522,7 @@ class GameEngine {
           <div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 border-emerald-500 rounded-3xl shadow-2xl animate-pop">
             <div class="text-4xl mb-3">🎉</div>
             <h2 class="font-ninja text-2xl text-emerald-400 font-bold mb-2">Stage ${stageNum} Test Passed!</h2>
-            <p class="text-slate-300 text-sm mb-4">You scored <strong class="text-white">${this.score}/${this.totalQuestions}</strong> on the Proficiency Exam!</p>
+            <p class="text-slate-300 text-sm mb-4">You scored <strong class="text-white">${this.score}/${this.totalQuestions}</strong> on Show Me What You Know!</p>
 
             <div class="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-slate-400 mb-6">
               Continue to Stage ${stageNum + 1}; each stage has a shorter timer. Complete all three exams and achieve <strong class="text-amber-400">10/10 Mastery</strong> on all skills to graduate.
