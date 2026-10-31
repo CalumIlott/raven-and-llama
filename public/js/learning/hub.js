@@ -4,6 +4,7 @@ Object.assign(App.prototype, {
     this.rememberModule('learning');
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'learning';
 
     const profile = ProfileManager.getActiveProfile();
     this.updateHeader();
@@ -21,9 +22,7 @@ Object.assign(App.prototype, {
         <div class="relative bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-900 border-2 border-indigo-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div class="text-center md:text-left">
             <div class="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30 mb-2">
-              <span>🪶 Raven &amp; Llama</span>
-              <span>•</span>
-              <span>Learning Academy Sub-Page</span>
+              <span>🪶 Academy for curious minds</span>
             </div>
             <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">
               Raven &amp; Llama <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-300 to-yellow-400">Learning</span>

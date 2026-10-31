@@ -4,6 +4,7 @@ class ProfileManager {
   static accountServiceAvailable = true;
   static lastSaveError = '';
   static saveQueue = Promise.resolve();
+  static GUEST_THEME_KEY = 'raven_llama_guest_theme';
   static LAST_MODULES = new Set(['learning', 'dojo', 'timetables', 'spelling']);
 
   static AVATARS = [
@@ -79,8 +80,17 @@ class ProfileManager {
   static setGuest() {
     ProfileManager.account = null;
     ProfileManager.currentProfile = ProfileManager.createGuestProfile();
+    ProfileManager.currentProfile.theme = ProfileManager.readGuestThemePreference();
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.lastSaveError = '';
+  }
+
+  static readGuestThemePreference() {
+    try {
+      return localStorage.getItem(ProfileManager.GUEST_THEME_KEY) === 'light' ? 'light' : 'dark';
+    } catch {
+      return 'dark';
+    }
   }
 
   static acceptSession(data) {
@@ -197,6 +207,15 @@ class ProfileManager {
     const profile = ProfileManager.getActiveProfile();
     profile.theme = theme;
     ProfileManager.applyTheme(theme);
+    if (!ProfileManager.account) {
+      try {
+        localStorage.setItem(ProfileManager.GUEST_THEME_KEY, theme);
+      } catch {
+        return Promise.resolve(false);
+      }
+      window.app?.updateHeader();
+      return Promise.resolve(true);
+    }
     return ProfileManager.updateProfile(profile);
   }
 

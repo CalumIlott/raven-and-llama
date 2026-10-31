@@ -11,6 +11,53 @@ Object.assign(App.prototype, {
   showGamesHub() {
     this.stopCritterCatch();
     this.currentView = 'games';
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    main.dataset.page = 'games';
+
+    this.updateHeader();
+    main.innerHTML = `
+      <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        <button data-action="home" class="flex items-center gap-2 text-sm text-violet-300 hover:text-violet-200 mb-6 transition font-bold group">
+          <span class="group-hover:-translate-x-1 transition-transform">←</span>
+          <span>Back to Raven &amp; Llama Home</span>
+        </button>
+
+        <section class="games-hub-hero">
+          <div class="games-hub-hero__copy">
+            <span class="games-hub-hero__eyebrow">🎮 Just for fun</span>
+            <h1>Games Hub</h1>
+            <p>Pick up a game, play at your own pace, and enjoy the fun. No lessons or scores to study — just play!</p>
+          </div>
+          <div class="games-hub-hero__art" aria-hidden="true">🎉</div>
+        </section>
+
+        <div class="games-hub-section-heading">
+          <div>
+            <h2>Choose a game</h2>
+            <p>Pick one to jump in. More games can join the collection over time.</p>
+          </div>
+          <span>1 GAME</span>
+        </div>
+
+        <div class="games-picker-grid">
+          <button type="button" data-action="critter-open" class="game-choice">
+            <span class="game-choice__art" aria-hidden="true">🦊🐸🐼</span>
+            <span class="game-choice__content">
+              <span class="game-choice__eyebrow">Quick arcade · 30 seconds</span>
+              <strong>Critter Catch</strong>
+              <span>Spot a friendly critter, tap it, and build a catch streak.</span>
+              <span class="game-choice__action">Play Critter Catch <span aria-hidden="true">→</span></span>
+            </span>
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  showCritterCatch() {
+    this.stopCritterCatch();
+    this.currentView = 'critter-catch';
     this.critterCatchState = {
       score: 0,
       secondsLeft: 30,
@@ -21,13 +68,14 @@ Object.assign(App.prototype, {
     };
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'critter-catch';
 
     this.updateHeader();
     main.innerHTML = `
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-        <button data-action="home" class="flex items-center gap-2 text-sm text-violet-300 hover:text-violet-200 mb-6 transition font-bold group">
+        <button data-action="games-hub" class="flex items-center gap-2 text-sm text-violet-300 hover:text-violet-200 mb-6 transition font-bold group">
           <span class="group-hover:-translate-x-1 transition-transform">←</span>
-          <span>Back to Raven &amp; Llama Home</span>
+          <span>Back to Games Hub</span>
         </button>
 
         <div class="relative overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-violet-950 via-zinc-900 to-zinc-950 p-6 sm:p-10 mb-8">
@@ -35,8 +83,8 @@ Object.assign(App.prototype, {
             <div class="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-xs font-bold text-violet-200 mb-3">
               🎮 Just for fun
             </div>
-            <h1 class="font-ninja text-3xl sm:text-5xl font-bold text-white">Games Hub</h1>
-            <p class="mt-3 text-sm sm:text-base text-zinc-300">Pick up a game, play at your own pace, and enjoy the fun. No lessons or scores to study — just play!</p>
+            <h1 class="font-ninja text-3xl sm:text-5xl font-bold text-white">Critter Catch</h1>
+            <p class="mt-3 text-sm sm:text-base text-zinc-300">Catch friendly critters, keep your streak alive, and see how many points you can score.</p>
           </div>
           <div aria-hidden="true" class="absolute -right-8 -bottom-14 text-[10rem] opacity-10">🎉</div>
         </div>
@@ -51,7 +99,10 @@ Object.assign(App.prototype, {
               <div class="flex gap-2 text-center">
                 <div class="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2">
                   <div class="text-[10px] uppercase tracking-wide text-zinc-400">Score</div>
-                  <div id="critter-catch-score" class="font-bold text-amber-300">0</div>
+                  <div class="critter-catch-scoreline">
+                    <div id="critter-catch-score" class="font-bold text-amber-300">0</div>
+                    <span id="critter-catch-bonus" class="critter-catch-bonus" aria-hidden="true" hidden>+25</span>
+                  </div>
                 </div>
                 <div class="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2">
                   <div class="text-[10px] uppercase tracking-wide text-zinc-400">Time</div>
@@ -86,7 +137,7 @@ Object.assign(App.prototype, {
   },
 
   startCritterCatch() {
-    if (this.currentView !== 'games') return;
+    if (this.currentView !== 'critter-catch') return;
     this.stopCritterCatch();
     this.critterCatchState = {
       score: 0,
@@ -96,12 +147,15 @@ Object.assign(App.prototype, {
       targetCritter: CRITTER_CATCH_ANIMALS[Math.floor(Math.random() * CRITTER_CATCH_ANIMALS.length)],
       running: true
     };
-    document.getElementById('critter-catch-status').textContent = 'Catch a critter before it hops away!';
+    const status = document.getElementById('critter-catch-status');
+    status.textContent = 'Catch a critter before it hops away!';
+    status.classList.remove('is-bonus');
+    document.getElementById('critter-catch-bonus').hidden = true;
     document.getElementById('critter-catch-start').textContent = 'Restart round';
     this.renderCritterCatchBoard();
 
     this.critterCatchTargetInterval = setInterval(() => {
-      if (this.currentView !== 'games' || !this.critterCatchState.running) {
+      if (this.currentView !== 'critter-catch' || !this.critterCatchState.running) {
         this.stopCritterCatch();
         return;
       }
@@ -110,7 +164,7 @@ Object.assign(App.prototype, {
       this.renderCritterCatchBoard();
     }, 850);
     this.critterCatchTimer = setInterval(() => {
-      if (this.currentView !== 'games' || !this.critterCatchState.running) {
+      if (this.currentView !== 'critter-catch' || !this.critterCatchState.running) {
         this.stopCritterCatch();
         return;
       }
@@ -122,6 +176,8 @@ Object.assign(App.prototype, {
         this.critterCatchState.targetIndex = null;
         this.critterCatchState.targetCritter = null;
         document.getElementById('critter-catch-status').textContent = `Time’s up! You scored ${this.critterCatchState.score} points. Play again?`;
+        document.getElementById('critter-catch-status').classList.remove('is-bonus');
+        document.getElementById('critter-catch-bonus').hidden = true;
         document.getElementById('critter-catch-start').textContent = 'Play again';
         this.renderCritterCatchBoard();
       }
@@ -130,10 +186,12 @@ Object.assign(App.prototype, {
 
   selectCritterHole(index) {
     const state = this.critterCatchState;
-    if (this.currentView !== 'games' || !state?.running) return;
+    if (this.currentView !== 'critter-catch' || !state?.running) return;
     if (state.targetIndex !== index) {
       state.streak = 0;
       document.getElementById('critter-catch-status').textContent = 'No critter there — keep looking!';
+      document.getElementById('critter-catch-status').classList.remove('is-bonus');
+      document.getElementById('critter-catch-bonus').hidden = true;
       return;
     }
 
@@ -142,10 +200,23 @@ Object.assign(App.prototype, {
     state.score += bonus ? 35 : 10;
     state.targetIndex = null;
     state.targetCritter = null;
-    document.getElementById('critter-catch-status').textContent = bonus
+    const status = document.getElementById('critter-catch-status');
+    status.textContent = bonus
       ? 'Five in a row! Bonus points!'
       : `Nice catch! ${state.streak} in a row.`;
+    status.classList.toggle('is-bonus', bonus);
+    const bonusNotice = document.getElementById('critter-catch-bonus');
+    bonusNotice.hidden = !bonus;
     this.renderCritterCatchBoard();
+    if (bonus) {
+      const score = document.getElementById('critter-catch-score');
+      score.classList.remove('score-celebrate');
+      void score.offsetWidth;
+      score.classList.add('score-celebrate');
+      bonusNotice.classList.remove('bonus-pop');
+      void bonusNotice.offsetWidth;
+      bonusNotice.classList.add('bonus-pop');
+    }
   },
 
   renderCritterCatchBoard() {

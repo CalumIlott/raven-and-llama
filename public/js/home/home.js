@@ -4,6 +4,7 @@ Object.assign(App.prototype, {
     this.showHomeRoute();
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'home';
 
     const profile = ProfileManager.getActiveProfile();
     this.updateHeader();

@@ -90,12 +90,15 @@ class App {
       case 'home': this.showRavenAndLlamaHome(); break;
       case 'learning': this.showLearningHub(); break;
       case 'games-hub': this.showGamesHub(); break;
+      case 'critter-open': this.showCritterCatch(); break;
       case 'account-open': this.openProfileModal(); break;
       case 'parent-report': this.showParentOverview(); break;
       case 'dojo': this.showDojoHub(); break;
       case 'times-tables': this.showTimesTables(); break;
       case 'trophy-room': this.showTrophyRoom(); break;
       case 'account-close': this.closeProfileModal(); break;
+      case 'account-avatar-open': this.showAvatarPicker(); break;
+      case 'account-avatar-cancel': this.showAccountSettings(); break;
       case 'account-mode': this.setAccountMode(target.dataset.mode); break;
       case 'sound-toggle': this.toggleSound(); break;
       case 'account-logout': this.logoutAccount(); break;
@@ -254,7 +257,7 @@ class App {
     if (accountButton) accountButton.title = ProfileManager.isAuthenticated() ? 'Account settings' : 'Sign in or create an account';
     if (avatarEl) {
       avatarEl.innerHTML = profile?.avatar?.emoji || '🪶';
-      avatarEl.className = `w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${profile?.avatar?.color || 'bg-black text-white border border-zinc-700'}`;
+      avatarEl.className = `site-account-button__avatar w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${profile?.avatar?.color || 'bg-black text-white border border-zinc-700'}`;
     }
     if (starsEl) starsEl.textContent = profile?.stars || 0;
     if (statusBanner && statusMessage) {
@@ -279,7 +282,7 @@ class App {
       } else if (this.currentView === 'learning') {
         subBadge.textContent = 'Learning';
         subBadge.classList.remove('hidden');
-      } else if (this.currentView === 'games') {
+      } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'dojo' || this.currentView === 'belt_detail') {
@@ -299,15 +302,17 @@ class App {
     }
 
     if (homeBtn && learningBtn && gamesBtn) {
-      homeBtn.className = this.currentView === 'home'
-        ? 'px-3 py-1 rounded-lg text-xs font-semibold text-white bg-zinc-800 transition'
-        : 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition';
-      learningBtn.className = this.currentView !== 'home' && this.currentView !== 'games'
-        ? 'px-3 py-1 rounded-lg text-xs font-semibold text-cyan-300 bg-cyan-950/80 border border-cyan-500/30 transition flex items-center gap-1'
-        : 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-cyan-300 hover:bg-zinc-800/80 transition flex items-center gap-1';
-      gamesBtn.className = this.currentView === 'games'
-        ? 'px-3 py-1 rounded-lg text-xs font-semibold text-violet-300 bg-violet-950/80 border border-violet-500/30 transition flex items-center gap-1'
-        : 'px-3 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-violet-300 hover:bg-zinc-800/80 transition flex items-center gap-1';
+      const activeView = this.currentView === 'games' || this.currentView === 'critter-catch'
+        ? gamesBtn
+        : this.currentView === 'home'
+          ? homeBtn
+          : learningBtn;
+      [homeBtn, learningBtn, gamesBtn].forEach(button => {
+        const isActive = button === activeView;
+        button.classList.toggle('is-active', isActive);
+        if (isActive) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
     }
   }
 
@@ -329,6 +334,8 @@ class App {
       this.showLearningHub();
     } else if (this.currentView === 'games') {
       this.showGamesHub();
+    } else if (this.currentView === 'critter-catch') {
+      this.showCritterCatch();
     } else if (this.currentView === 'dojo') {
       this.showDojoHub();
     } else if (this.currentView === 'belt_detail' && this.selectedBeltId) {
@@ -491,13 +498,20 @@ class App {
     const serviceWarning = document.getElementById('account-service-warning');
     const message = document.getElementById('account-message');
     const themeSelect = document.getElementById('account-theme');
+    const guestThemeSelect = document.getElementById('guest-theme');
+    const profile = ProfileManager.getActiveProfile();
+    const avatarPicker = document.getElementById('account-avatar-picker');
+    const settingsView = document.getElementById('account-settings-view');
     if (guestPanel) guestPanel.classList.toggle('hidden', authenticated);
     if (signedInPanel) signedInPanel.classList.toggle('hidden', !authenticated);
     if (description) description.textContent = authenticated
       ? 'Manage your password or sign out of this account.'
       : 'Sign in to save progress across your devices.';
     if (username) username.textContent = ProfileManager.account?.username || '';
-    if (themeSelect) themeSelect.value = ProfileManager.getActiveProfile().theme;
+    if (themeSelect) themeSelect.value = profile.theme;
+    if (guestThemeSelect) guestThemeSelect.value = profile.theme;
+    if (avatarPicker) avatarPicker.classList.add('hidden');
+    if (settingsView) settingsView.classList.remove('hidden');
     if (serviceWarning) serviceWarning.classList.toggle('hidden', ProfileManager.accountServiceAvailable);
     if (message) {
       message.textContent = '';
@@ -513,15 +527,49 @@ class App {
 
   renderAvatarOptions() {
     const options = document.getElementById('account-avatar-options');
-    if (!options) return;
-    const selectedAvatar = ProfileManager.getActiveProfile()?.avatar?.id;
-    options.innerHTML = ProfileManager.AVATARS.map(avatar => `
+    const activeAvatar = ProfileManager.getActiveProfile()?.avatar || ProfileManager.getAvatar('raven');
+    if (options) options.innerHTML = ProfileManager.AVATARS.map(avatar => `
       <label class="flex flex-col items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-950 p-2 text-center text-[11px] text-zinc-300 cursor-pointer hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/50">
-        <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === selectedAvatar ? 'checked' : ''}>
+        <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === activeAvatar.id ? 'checked' : ''}>
         <span aria-hidden="true" class="w-9 h-9 rounded-full flex items-center justify-center text-xl ${avatar.color}">${avatar.emoji}</span>
         <span>${avatar.name}</span>
       </label>
     `).join('');
+    const currentAvatarIcon = document.getElementById('account-avatar-current-icon');
+    const currentAvatarName = document.getElementById('account-avatar-current-name');
+    if (currentAvatarIcon) {
+      currentAvatarIcon.textContent = activeAvatar.emoji;
+      currentAvatarIcon.className = `account-avatar-current__icon ${activeAvatar.color}`;
+    }
+    if (currentAvatarName) currentAvatarName.textContent = activeAvatar.name;
+  }
+
+  showAvatarPicker() {
+    const settingsView = document.getElementById('account-settings-view');
+    const avatarPicker = document.getElementById('account-avatar-picker');
+    const title = document.getElementById('account-modal-title');
+    const description = document.getElementById('account-modal-description');
+    if (!settingsView || !avatarPicker) return;
+    this.renderAvatarOptions();
+    settingsView.classList.add('hidden');
+    avatarPicker.classList.remove('hidden');
+    if (title) title.textContent = 'Choose an avatar';
+    if (description) description.textContent = 'Select the avatar shown on your profile.';
+    document.querySelector('#account-avatar-options input:checked')?.focus();
+  }
+
+  showAccountSettings() {
+    const settingsView = document.getElementById('account-settings-view');
+    const avatarPicker = document.getElementById('account-avatar-picker');
+    const title = document.getElementById('account-modal-title');
+    const description = document.getElementById('account-modal-description');
+    if (!settingsView || !avatarPicker) return;
+    this.renderAvatarOptions();
+    avatarPicker.classList.add('hidden');
+    settingsView.classList.remove('hidden');
+    if (title) title.textContent = 'Account';
+    if (description) description.textContent = 'Manage your password or sign out of this account.';
+    document.getElementById('account-avatar-open')?.focus();
   }
 
   setAccountMode(mode) {
@@ -605,7 +653,10 @@ class App {
     if (!selectedAvatar) return;
     const profile = ProfileManager.getActiveProfile();
     const saved = await ProfileManager.updateProfile({ ...profile, avatar: selectedAvatar.value });
-    if (saved) this.setAccountMessage('Avatar updated.', false);
+    if (saved) {
+      this.setAccountMessage('Avatar updated.', false);
+      this.showAccountSettings();
+    }
     else this.setAccountMessage(ProfileManager.lastSaveError || 'Unable to save your avatar.');
   }
 
