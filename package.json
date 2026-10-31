@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
-    "canvas-confetti": "^1.9.3",
+    "canvas-confetti": "^1.9.4",
     "tailwindcss": "^4.3.3",
     "wrangler": "^4.156.0"
   }
