@@ -28,7 +28,7 @@ Object.assign(App.prototype, {
               Raven &amp; Llama <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-300 to-yellow-400">Learning</span>
             </h1>
             <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
-              Choose a learning adventure: train your maths skills, master times tables, or explore spelling and vocabulary.
+              Train your maths skills, master times tables, explore spelling, or set off on a science discovery mission!
             </p>
           </div>
 
@@ -52,7 +52,7 @@ Object.assign(App.prototype, {
           <span class="text-xs text-slate-400">Choose a program to start exploring</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
           <!-- 1. MATHS MASTERS DOJO -->
           <div onclick="window.app.showDojoHub()"
@@ -148,6 +148,49 @@ Object.assign(App.prototype, {
             </div>
           </div>
 
+          <!-- 3. SCIENCE EXPLORERS -->
+          <button type="button" onclick="window.app.showScienceExplorers()"
+                  class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-sky-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400"></div>
+            <div>
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center text-3xl shadow-lg border border-cyan-300">
+                    🔬
+                  </div>
+                  <div>
+                    <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Discovery Program</span>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-sky-300 transition">Science Explorers</h3>
+                  </div>
+                </div>
+                <span class="bg-sky-950 text-sky-300 border border-sky-600/60 text-xs font-bold px-3 py-1 rounded-full">
+                  4 Missions 🚀
+                </span>
+              </div>
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                Journey through space, explore animal habitats, experiment with states of matter, and investigate the natural world.
+              </p>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Space</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">Orbit Rescue</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Life</div>
+                  <div class="font-ninja font-bold text-emerald-300 mt-0.5">Habitat Match</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">More</div>
+                  <div class="font-ninja font-bold text-cyan-300 mt-0.5">2 Lab Missions</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-sky-400 group-hover:text-cyan-300">
+              <span>Explore Science Explorers</span>
+              <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
+            </div>
+          </button>
+
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -173,18 +216,6 @@ Object.assign(App.prototype, {
             </div>
           </button>
 
-          <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 opacity-70">
-            <div class="w-12 h-12 rounded-xl bg-sky-950/80 border border-sky-800/60 flex items-center justify-center text-2xl">
-              🔬
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-ninja text-base font-bold text-slate-300">Science Explorers</h4>
-                <span class="text-[10px] bg-slate-800 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/30">Coming Soon</span>
-              </div>
-              <p class="text-xs text-slate-500 mt-0.5">Solar system journeys, biology mysteries, chemistry &amp; nature quests.</p>
-            </div>
-          </div>
         </div>
 
       </div>

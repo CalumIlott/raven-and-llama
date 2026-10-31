@@ -71,6 +71,8 @@ class App {
       } else if (this.currentView === 'timetables') {
         subBadge.textContent = 'Times Tables';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'science') {
+        subBadge.textContent = 'Science Explorers';
       } else if (this.currentView === 'spelling') {
         subBadge.textContent = 'Spelling Safari';
         subBadge.classList.remove('hidden');
@@ -112,6 +114,8 @@ class App {
       this.showBeltDetails(this.selectedBeltId);
     } else if (this.currentView === 'timetables') {
       this.showTimesTables();
+    } else if (this.currentView === 'science') {
+      this.showScienceExplorers();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
     } else if (this.currentView === 'spelling') {
