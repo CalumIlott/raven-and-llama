@@ -5,6 +5,25 @@ test.beforeEach(async ({ page }) => {
   await setupApp(page);
 });
 
+test('Games Hub offers a playable Critter Catch round', async ({ page }) => {
+  await page.getByRole('button', { name: 'Enter Games Hub' }).click();
+  await expect(page.getByRole('heading', { name: 'Games Hub', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Critter Catch' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Play 30-second round' }).click();
+  const score = page.locator('#critter-catch-score');
+  for (let catchCount = 0; catchCount < 5; catchCount++) {
+    const critter = page.locator('#critter-catch-board button[aria-label^="Catch the"]');
+    await expect(critter).toBeVisible();
+    await critter.click();
+  }
+  await expect(score).toHaveText('75');
+  await expect(page.locator('#critter-catch-status')).toHaveText('Five in a row! Bonus points!');
+
+  await page.getByRole('button', { name: 'Back to Raven & Llama Home' }).click();
+  await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
+});
+
 test('home counts, module navigation, and exam failure, retry, and pass gates work', async ({ page }) => {
   test.setTimeout(60000);
 
