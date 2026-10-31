@@ -98,6 +98,17 @@ test('individual, mixed, and mastery Times Tables quizzes advance questions', as
   await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
 });
 
+test('a Times Tables quiz resumes at the same question after reloading', async ({ page }) => {
+  await openTimesTables(page);
+  await page.getByRole('button', { name: /Quick Mixed Quiz/ }).click();
+  await chooseQuestionAnswer(page);
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible({ timeout: 5000 });
+
+  await page.reload();
+
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible();
+});
+
 test('Times Tables quizzes highlight selected answers by correctness', async ({ page }) => {
   await openTimesTables(page);
   await page.getByRole('button', { name: '2× Table', exact: true }).click();
