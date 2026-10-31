@@ -106,6 +106,48 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   await expectNoHorizontalOverflow();
 });
 
+test('active Science and Spelling rounds fit mobile light theme with readable feedback', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await page.getByRole('button', { name: 'Raven & Llama home' }).click();
+  await page.locator('[data-action="learning"]').first().click();
+  await page.getByText('Explore Science Explorers', { exact: true }).click();
+  await page.getByRole('button', { name: /Orbit Rescue/ }).click();
+
+  const expectNoHorizontalOverflow = async () => {
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  };
+
+  await expect(page.locator('.play-shell--science')).toBeVisible();
+  await expectNoHorizontalOverflow();
+  const scienceAnswer = await page.evaluate(() => window.app.scienceGame.mission.questions[0].answer);
+  await page.locator(`[data-science-choice="${scienceAnswer}"]`).click();
+  const scienceColors = await page.locator('.science-feedback').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor
+  }));
+  expect(contrastRatio(scienceColors.foreground, scienceColors.background)).toBeGreaterThanOrEqual(4.5);
+
+  await page.locator('[data-action="science-home"]').click();
+  await page.locator('[data-action="learning"]').first().click();
+  await page.getByRole('button', { name: /Spelling Safari/ }).click();
+  await page.getByRole('button', { name: /Spelling Sprint/ }).click();
+  await expect(page.locator('.play-shell--spelling')).toBeVisible();
+  await expectNoHorizontalOverflow();
+  const spellingAnswer = await page.evaluate(() => window.app.spellingSafariGame.questions[0].answer);
+  await page.getByRole('button', { name: spellingAnswer, exact: true }).click();
+  const spellingColors = await page.locator('.spelling-feedback').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor
+  }));
+  expect(contrastRatio(spellingColors.foreground, spellingColors.background)).toBeGreaterThanOrEqual(4.5);
+});
+
 test('Parent Report keeps keyboard focus inside its dialog on mobile', async ({ page }) => {
   await setupApp(page);
   await page.setViewportSize({ width: 390, height: 844 });

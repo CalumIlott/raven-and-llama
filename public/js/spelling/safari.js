@@ -161,7 +161,7 @@ Object.assign(App.prototype, {
     this.currentView = 'spelling';
     const main = document.getElementById('app-main');
     if (!main) return;
-    main.innerHTML = '<div class="max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
+    main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
     this.renderSpellingSafariQuestion();
   },
 
@@ -175,7 +175,7 @@ Object.assign(App.prototype, {
         ? `<p class="text-sm text-slate-400 mt-4">Keep practising: ${game.mistakes.join(', ')}</p>`
         : '<p class="text-sm text-emerald-300 mt-4">Perfect trail! You got every word right.</p>';
       arena.innerHTML = `
-        <div class="text-center bg-slate-900 border-2 border-emerald-500 rounded-3xl p-7 shadow-2xl">
+        <div class="play-question-card spelling-result-card text-center bg-slate-900 border-2 border-emerald-500 rounded-3xl p-7 shadow-2xl">
           <div class="text-5xl mb-3">🏆</div>
           <h2 class="font-ninja text-2xl text-white font-bold">Safari Complete!</h2>
           <p class="text-slate-300 mt-2">You scored <strong class="text-yellow-300">${game.score} / ${game.questions.length}</strong> in ${game.activity.title}.</p>
@@ -193,13 +193,13 @@ Object.assign(App.prototype, {
     const selected = game.selectedLetters.map(index => question.scramble[index]).join('');
     const choices = question.type === 'scramble'
       ? `
-        <div class="min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold text-yellow-300" aria-label="Your word">
-          ${Array.from({ length: question.answer.length }, (_, index) => `<span class="w-8 border-b-2 border-yellow-400">${selected[index] || '_'}</span>`).join('')}
+        <div class="spelling-answer min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold" aria-label="Your word">
+          ${Array.from({ length: question.answer.length }, (_, index) => `<span class="spelling-letter-slot w-8 border-b-2">${selected[index] || '_'}</span>`).join('')}
         </div>
         <div class="flex flex-wrap justify-center gap-2">
           ${question.scramble.map((letter, index) => `
             <button id="safari-letter-${index}" data-action="spelling-letter" data-index="${index}" ${game.selectedLetters.includes(index) || game.answered ? 'disabled' : ''}
-                    aria-label="Letter ${letter}" class="w-11 h-11 rounded-xl bg-purple-800 hover:bg-purple-700 border border-purple-400 text-white text-xl font-bold disabled:opacity-40">${letter}</button>
+                    aria-label="Letter ${letter}" class="spelling-letter-button w-11 h-11 rounded-xl border text-xl font-bold disabled:opacity-40">${letter}</button>
           `).join('')}
         </div>
         ${game.selectedLetters.length ? '<button data-action="spelling-clear" class="mt-4 text-xs text-slate-400 underline">Clear letters</button>' : ''}
@@ -208,29 +208,29 @@ Object.assign(App.prototype, {
         <div class="grid grid-cols-2 gap-3 mt-6">
           ${question.options.map(option => `
             <button data-action="spelling-answer" data-answer="${encodeURIComponent(String(option))}" ${game.answered ? 'disabled' : ''}
-                    class="p-4 rounded-xl bg-slate-800 hover:bg-emerald-700 border-2 border-slate-600 hover:border-emerald-400 text-white font-ninja text-lg font-bold disabled:opacity-60">${option}</button>
+                    class="spelling-choice p-4 rounded-xl border-2 font-ninja text-lg font-bold disabled:opacity-60">${option}</button>
           `).join('')}
         </div>
       `;
     const prompt = question.type === 'phonics' ? `Complete the word: ${question.prompt}` : question.prompt || `Unscramble: ${question.scramble.join(' ')}`;
     const feedback = game.answered
-      ? `<div id="safari-feedback" role="status" class="mt-5 p-3 rounded-xl ${game.lastAnswerCorrect ? 'bg-emerald-950 text-emerald-300' : 'bg-amber-950 text-amber-200'}">${game.lastAnswerCorrect ? 'Great work! 🌟' : `The answer was ${question.answer}. Keep exploring!`}</div>
-         <button data-action="spelling-next" class="mt-4 w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Next word →</button>`
+      ? `<div id="safari-feedback" role="status" class="play-feedback spelling-feedback mt-5 p-3 rounded-xl ${game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect'}">${game.lastAnswerCorrect ? 'Great work! 🌟' : `The answer was ${question.answer}. Keep exploring!`}</div>
+        <button data-action="spelling-next" class="spelling-next-button mt-4 w-full py-3 rounded-xl font-bold">Next word →</button>`
       : '';
 
     arena.innerHTML = `
-      <div class="bg-slate-900 border-2 border-emerald-600/70 rounded-3xl p-5 sm:p-7 shadow-2xl">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-5">
-          <button data-action="spelling-home" class="text-xs text-slate-400 hover:text-white">← Exit</button>
-          <div class="text-center">
+      <div class="play-question-card spelling-question-card bg-slate-900 border-2 border-emerald-600/70 rounded-3xl p-5 sm:p-7 shadow-2xl">
+        <div class="play-hud spelling-hud flex items-center justify-between border-b border-slate-800 pb-3 mb-5">
+          <button data-action="spelling-home" class="play-hud__exit text-xs text-slate-400 hover:text-white">← Exit</button>
+          <div class="play-hud__title text-center">
             <h2 class="font-ninja text-lg text-emerald-300 font-bold">${game.activity.title} ${game.activity.emoji}</h2>
             <p class="text-xs text-slate-400">Round ${game.index + 1} of ${game.questions.length}</p>
           </div>
-          <span class="text-sm text-yellow-300 font-bold">⭐ ${game.score}</span>
+          <span class="play-hud__stat spelling-score text-sm font-bold">⭐ ${game.score}</span>
         </div>
         <div class="text-center">
-          <p class="font-ninja text-xl sm:text-2xl text-white font-bold">${prompt}</p>
-          ${question.hint ? `<p class="text-sm text-slate-400 mt-2">${question.hint}</p>` : ''}
+          <p class="play-prompt font-ninja text-xl sm:text-2xl text-white font-bold">${prompt}</p>
+          ${question.hint ? `<p class="spelling-hint text-sm text-slate-400 mt-2">${question.hint}</p>` : ''}
         </div>
         ${choices}
         ${feedback}

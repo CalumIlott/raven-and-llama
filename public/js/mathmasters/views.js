@@ -320,7 +320,7 @@ Object.assign(App.prototype, {
     if (!main) return;
 
     main.innerHTML = `
-      <div class="max-w-xl mx-auto px-4 py-6">
+      <div class="play-shell play-shell--dojo-arcade max-w-xl mx-auto px-4 py-6">
         <div id="game-arena"></div>
       </div>
     `;
@@ -343,7 +343,7 @@ Object.assign(App.prototype, {
     if (!main) return;
 
     main.innerHTML = `
-      <div class="max-w-2xl mx-auto px-4 py-6">
+      <div class="play-shell play-shell--quiz play-shell--maths max-w-2xl mx-auto px-4 py-6">
         <div id="game-arena"></div>
       </div>
     `;
@@ -357,7 +357,7 @@ Object.assign(App.prototype, {
     if (!main) return;
 
     main.innerHTML = `
-      <div class="max-w-2xl mx-auto px-4 py-6">
+      <div class="play-shell play-shell--quiz play-shell--maths max-w-2xl mx-auto px-4 py-6">
         <div id="game-arena"></div>
       </div>
     `;
@@ -371,7 +371,7 @@ Object.assign(App.prototype, {
     this.currentView = 'game';
     const main = document.getElementById('app-main');
     if (!main) return;
-    main.innerHTML = `<div class="max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
+    main.innerHTML = `<div class="play-shell play-shell--quiz play-shell--maths max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
     let previousSkillId = null;
     window.gameEngine.startEndlessQuiz(
       `${belt.name} • Endless Challenge ♾️`,

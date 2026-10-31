@@ -4,7 +4,7 @@ const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-br
 
 function createScienceContext() {
   const context = createBrowserContext();
-  context.main = { innerHTML: '' };
+  context.main = { innerHTML: '', dataset: {} };
   context.document = { getElementById: id => id === 'app-main' ? context.main : null };
   context.profile = { stars: 0 };
   context.ProfileManager = {
