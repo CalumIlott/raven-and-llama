@@ -132,7 +132,7 @@ class App {
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
-      case 'spelling-start': this.startSpellingSafari(target.dataset.activityId); break;
+      case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
       case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
       case 'spelling-clear': this.clearSpellingSafariLetters(); break;
       case 'spelling-answer': this.submitSpellingSafariAnswer(decodeURIComponent(target.dataset.answer)); break;
