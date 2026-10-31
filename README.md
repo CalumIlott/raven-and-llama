@@ -4,27 +4,31 @@ A family-friendly learning platform with Maths Masters, Times Tables practice, a
 
 ## Run Locally
 
-Requires Node.js 20 or newer.
+Requires Node.js 22.5 or newer.
 
 ```powershell
 npm start
 ```
 
-Open http://localhost:8080. Local accounts and progress are stored in the gitignored `data/accounts.json`. To use a different port, set `PORT` before starting the server.
+`npm start` builds the self-hosted Tailwind stylesheet and browser assets before launching the server. Run `npm run build` after changing Tailwind classes or client assets. Commit the generated `public/css/tailwind.css` and `public/js/vendor/confetti.js` so Worker deployments do not depend on runtime asset CDNs. Static responses revalidate on use, so asset URLs do not need manual cache-version query parameters.
+
+Open http://localhost:8080. Local accounts and progress are stored transactionally in the gitignored `data/accounts.sqlite`. Existing `data/accounts.json` files are imported once on startup and retained unchanged as a backup. Use Node.js 22.5 or newer for the built-in SQLite driver. To use a different port, set `PORT` before starting the server.
 
 Alternatively, run `docker compose up -d --build` and open http://localhost:8080, or use `start-server.bat` on Windows.
 
 ## Tests
 
-Install dependencies, install the Playwright Chromium browser once, then run unit, HTTP integration, Worker-bundle, and browser tests:
+Install dependencies, install the Playwright Chromium browser once, then run generated-asset verification, unit, HTTP integration, Worker-bundle, browser, and dependency checks:
 
 ```bash
 npm ci
 npx playwright install chromium
+npm run test:css
 npm test
+npm run audit
 ```
 
-The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, and progress/trophy views. Browser tests use an isolated temporary account store. Run `npm run test:unit`, `npm run test:worker`, or `npm run test:e2e` to run one suite. GitHub Actions runs unit/integration checks on Node.js 20, 22, and 24, validates the Worker bundle, and runs Chromium E2E on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
+The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, progress/trophy views, and keyboard/mobile accessibility. Browser tests use an isolated temporary account store. Run `npm run test:css`, `npm run test:unit`, `npm run test:integration`, `npm run test:worker`, `npm run test:e2e`, or `npm run audit` to run one check. GitHub Actions verifies committed assets, runs unit/integration checks on Node.js 22, 24, and 26, validates the Worker bundle, runs desktop and mobile Chromium E2E, and audits dependencies on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
 
 ## Project Layout
 
@@ -36,7 +40,11 @@ public/js/learning/        Learning hub view
 public/js/mathmasters/     Curriculum, question generators, dojo views, and arcade/game engines
 public/js/timetables/      Times Tables practice and arcade views
 public/css/                Application styles
+public/js/vendor/          Self-hosted browser libraries
 public/assets/             Brand assets
+tailwind.config.js         Static Tailwind source scanning and theme
+tailwind.input.css         Tailwind build entry point
+scripts/                   Asset copying and generated-file verification
 server.js                  Static server and account API
 worker.js                  Cloudflare Worker API/static-assets entry point
 wrangler.jsonc              Worker build and static-assets configuration
@@ -47,7 +55,7 @@ tests/integration/         Isolated server and API tests
 tests/e2e/                 Playwright browser workflow tests
 playwright.config.js        Chromium runner and local server configuration
 .github/workflows/ci.yml   Push and pull request checks
-data/                      Runtime profile storage (gitignored)
+data/                      Local SQLite account storage and legacy JSON backup (gitignored)
 ```
 
 ## Cloudflare Workers Setup
@@ -62,6 +70,10 @@ The repository is configured for Cloudflare Workers Builds with static assets in
 Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. Signed-in users can choose a dark or light theme in account settings; this preference is stored with that account's progress and syncs across browsers. Guest sessions use the default dark theme without saving it. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
 
 Leaderboards are public and show only the top ten usernames and scores for the overall learning hub, Maths Masters, Times Tables, and each Maths Masters belt. Guest progress is not included.
+
+Registration is limited to 30 attempts per source per minute. Login is limited to 60 attempts per source per minute and 10 attempts per source/username pair per minute. Worker Rate Limiting bindings are approximate and local to each Cloudflare location; the local Node server enforces the same limits per process and socket peer. If the Node server is behind a reverse proxy, configure rate limiting at that proxy as well because local requests share the proxy's socket address. Wrangler rate-limit namespace IDs must remain unique within the Cloudflare account; production and Preview use separate IDs and counters.
+
+Responses set baseline framing, MIME-sniffing, referrer, and permissions policies. The content security policy restricts scripts to same-origin assets; styles allow Google Fonts, with no inline style exception. Tailwind and confetti are built/self-hosted.
 
 ## Account API
 

@@ -5,16 +5,28 @@
   "description": "Raven & Llama Learning Platform",
   "scripts": {
     "start": "node server.js",
-    "test": "npm run test:unit && npm run test:worker && npm run test:e2e",
-    "test:unit": "node --test",
+    "prestart": "npm run build",
+    "build:css": "tailwindcss --config tailwind.config.js --input ./tailwind.input.css --output ./public/css/tailwind.css --minify",
+    "build:assets": "node scripts/copy-client-assets.js",
+    "build": "npm run build:css && npm run build:assets",
+    "pretest": "npm run build",
+    "test": "npm run test:unit && npm run test:integration && npm run test:worker && npm run test:e2e",
+    "test:css": "node scripts/verify-generated-assets.js",
+    "test:unit": "node --test tests/unit",
+    "test:integration": "node --test tests/integration",
+    "pretest:worker": "npm run build",
     "test:e2e": "playwright test",
-    "test:worker": "wrangler deploy --dry-run"
+    "pretest:e2e": "npm run build",
+    "test:worker": "wrangler deploy --dry-run",
+    "audit": "npm audit --audit-level=high"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.5.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "canvas-confetti": "^1.9.3",
+    "tailwindcss": "^3.4.17",
     "wrangler": "^4.156.0"
   }
 }
