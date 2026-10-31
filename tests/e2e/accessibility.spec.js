@@ -49,7 +49,7 @@ test('navigation and account dialog support keyboard use on narrow screens', asy
   await expect(closeButton).toBeFocused();
 
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#account-submit-button')).toBeFocused();
+  await expect(page.locator('#guest-theme')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(closeButton).toBeFocused();
   await page.keyboard.press('Escape');
