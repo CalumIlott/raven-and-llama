@@ -79,6 +79,16 @@ test('last module is restored on home load without overriding explicit routes or
 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
+
+  await page.locator('header button').filter({ has: page.locator('#header-profile-name') }).click();
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.locator('#nav-btn-home').click();
+  await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
+  await loginAccount(page, account.username, account.password);
+  await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
+
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
 });
 
 test('progress syncs to another browser context without exposing it to a different account', async ({ browser, page }) => {
