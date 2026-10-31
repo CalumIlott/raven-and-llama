@@ -71,6 +71,9 @@ class App {
       } else if (this.currentView === 'timetables') {
         subBadge.textContent = 'Times Tables';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'spelling') {
+        subBadge.textContent = 'Spelling Safari';
+        subBadge.classList.remove('hidden');
       } else {
         subBadge.classList.add('hidden');
       }
@@ -111,6 +114,8 @@ class App {
       this.showTimesTables();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
+    } else if (this.currentView === 'spelling') {
+      this.showSpellingSafari();
     }
   }
 
