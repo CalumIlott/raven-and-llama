@@ -66,7 +66,7 @@
         <button data-action="account-open" class="site-account-button"
           title="Account">
           <div id="header-profile-avatar" class="site-account-button__avatar">
-            🪶
+            🐦‍⬛
           </div>
           <span id="header-profile-name" class="site-account-button__name">
             Profile
@@ -152,10 +152,10 @@
         <p class="account-signed-in-summary mb-5 text-sm text-zinc-300">Signed in as <strong id="account-username-display" class="text-white"></strong></p>
         <div id="account-settings-view">
           <button type="button" id="account-avatar-open" data-action="account-avatar-open" class="account-avatar-current">
-            <span id="account-avatar-current-icon" class="account-avatar-current__icon" aria-hidden="true">🪶</span>
+            <span id="account-avatar-current-icon" class="account-avatar-current__icon" aria-hidden="true">🐦‍⬛</span>
             <span class="account-avatar-current__identity">
               <span class="account-avatar-current__label">Profile avatar</span>
-              <strong id="account-avatar-current-name">Black Feather Raven</strong>
+              <strong id="account-avatar-current-name">Raven</strong>
             </span>
             <span class="account-avatar-current__action">Change <span aria-hidden="true">→</span></span>
           </button>
@@ -202,11 +202,15 @@
           <form id="account-avatar-form" data-submit-action="account-avatar" class="account-settings-section account-avatar-section">
             <fieldset>
               <legend class="text-sm font-bold text-white mb-3">Choose an avatar</legend>
+              <div class="account-avatar-picker__current">
+                <span>Current avatar</span>
+                <span id="account-avatar-picker-current-icon" aria-hidden="true">🐦‍⬛</span>
+              </div>
               <div id="account-avatar-options" class="grid grid-cols-3 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Choose an avatar"></div>
             </fieldset>
             <div class="account-avatar-picker__actions">
               <button type="button" data-action="account-avatar-cancel" class="account-avatar-picker__cancel">Cancel</button>
-              <button type="submit" class="account-avatar-picker__save">Save avatar</button>
+              <button type="submit" class="account-avatar-picker__save" disabled>Save avatar</button>
             </div>
           </form>
         </div>

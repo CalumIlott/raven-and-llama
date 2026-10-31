@@ -8,7 +8,7 @@ class ProfileManager {
   static LAST_MODULES = new Set(['learning', 'dojo', 'timetables', 'spelling']);
 
   static AVATARS = [
-    { id: 'raven', name: 'Black Feather Raven', emoji: '🪶', color: 'bg-black text-white border-2 border-zinc-700 shadow-md', icon: 'feather' },
+    { id: 'raven', name: 'Raven', emoji: '🐦‍⬛', color: 'bg-black text-white border-2 border-zinc-700 shadow-md', icon: 'feather' },
     { id: 'llama', name: 'Llama', emoji: '🦙', color: 'bg-amber-100 text-amber-950 border border-amber-400', icon: 'smile' },
     { id: 'hippo', name: 'Hippo', emoji: '🦛', color: 'bg-teal-900 text-teal-200 border border-teal-400/50', icon: 'shield' },
     { id: 'owl', name: 'Owl', emoji: '🦉', color: 'bg-amber-900 text-amber-100 border border-amber-400/50', icon: 'book' },

@@ -182,6 +182,7 @@ class App {
 
   handleChangeAction(event) {
     if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+    if (event.target.name === 'account_avatar') this.updateAvatarSaveButton();
   }
 
   getDialogFocusableElements(dialog) {
@@ -256,7 +257,7 @@ class App {
     if (nameEl) nameEl.textContent = ProfileManager.account?.username || 'Guest';
     if (accountButton) accountButton.title = ProfileManager.isAuthenticated() ? 'Account settings' : 'Sign in or create an account';
     if (avatarEl) {
-      avatarEl.innerHTML = profile?.avatar?.emoji || '🪶';
+      avatarEl.innerHTML = profile?.avatar?.emoji || '🐦‍⬛';
       avatarEl.className = `site-account-button__avatar w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${profile?.avatar?.color || 'bg-black text-white border border-zinc-700'}`;
     }
     if (starsEl) starsEl.textContent = profile?.stars || 0;
@@ -533,16 +534,25 @@ class App {
       <label class="flex flex-col items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-950 p-2 text-center text-[11px] text-zinc-300 cursor-pointer hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/50">
         <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === activeAvatar.id ? 'checked' : ''}>
         <span aria-hidden="true" class="w-9 h-9 rounded-full flex items-center justify-center text-xl ${avatar.color}">${avatar.emoji}</span>
-        <span>${avatar.name}</span>
       </label>
     `).join('');
+    this.updateAvatarSaveButton();
     const currentAvatarIcon = document.getElementById('account-avatar-current-icon');
+    const pickerCurrentAvatarIcon = document.getElementById('account-avatar-picker-current-icon');
     const currentAvatarName = document.getElementById('account-avatar-current-name');
     if (currentAvatarIcon) {
       currentAvatarIcon.textContent = activeAvatar.emoji;
       currentAvatarIcon.className = `account-avatar-current__icon ${activeAvatar.color}`;
     }
+    if (pickerCurrentAvatarIcon) pickerCurrentAvatarIcon.textContent = activeAvatar.emoji;
     if (currentAvatarName) currentAvatarName.textContent = activeAvatar.name;
+  }
+
+  updateAvatarSaveButton() {
+    const selectedAvatar = document.querySelector('input[name="account_avatar"]:checked');
+    const activeAvatar = ProfileManager.getActiveProfile()?.avatar || ProfileManager.getAvatar('raven');
+    const saveButton = document.querySelector('#account-avatar-form [type="submit"]');
+    if (saveButton) saveButton.disabled = !selectedAvatar || selectedAvatar.value === activeAvatar.id;
   }
 
   showAvatarPicker() {
@@ -653,6 +663,7 @@ class App {
     const selectedAvatar = document.querySelector('input[name="account_avatar"]:checked');
     if (!selectedAvatar) return;
     const profile = ProfileManager.getActiveProfile();
+    if (selectedAvatar.value === profile.avatar.id) return;
     const saved = await ProfileManager.updateProfile({ ...profile, avatar: selectedAvatar.value });
     if (saved) {
       this.setAccountMessage('Avatar updated.', false);

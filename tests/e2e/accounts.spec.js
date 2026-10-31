@@ -58,17 +58,22 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   const { username } = await registerAccount(page);
   await openAccountModal(page);
   await expect(page.locator('#account-avatar-options')).toBeHidden();
-  await expect(page.locator('#account-avatar-current-name')).toHaveText('Black Feather Raven');
+  await expect(page.locator('#account-avatar-current-name')).toHaveText('Raven');
+  await expect(page.locator('#account-avatar-picker-current-icon')).toHaveText('🐦‍⬛');
   await page.getByRole('button', { name: /Change/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose an avatar' })).toBeVisible();
-  await expect(page.getByRole('radio', { name: 'Black Feather Raven' })).toBeFocused();
-  await page.getByText('Owl', { exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Raven' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Save avatar' })).toBeDisabled();
+  await expect(page.locator('#account-avatar-options label')).toHaveCount(12);
+  await expect(page.locator('#account-avatar-options label').first().locator('span')).toHaveCount(1);
+  await page.locator('#account-avatar-options label').filter({ has: page.getByRole('radio', { name: 'Owl' }) }).click();
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Save avatar' })).toBeEnabled();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page.locator('#account-avatar-open')).toBeFocused();
-  await expect(page.locator('#account-avatar-current-name')).toHaveText('Black Feather Raven');
+  await expect(page.locator('#account-avatar-current-name')).toHaveText('Raven');
   await page.getByRole('button', { name: /Change/ }).click();
-  await page.getByText('Owl', { exact: true }).click();
+  await page.locator('#account-avatar-options label').filter({ has: page.getByRole('radio', { name: 'Owl' }) }).click();
   const avatarSave = page.waitForResponse(response =>
     response.url().endsWith('/api/progress') && response.request().method() === 'PUT'
   );
@@ -90,6 +95,7 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   await expect(page.locator('#account-avatar-current-name')).toHaveText('Owl');
   await page.getByRole('button', { name: /Change/ }).click();
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Save avatar' })).toBeDisabled();
 });
 
 test('last module is restored on home load without overriding explicit routes or login context', async ({ page }) => {
