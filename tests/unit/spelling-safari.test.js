@@ -17,6 +17,15 @@ test('Spelling Safari activities have unique ids and enough questions for a full
   assert.ok(activities.every(activity => activity.questions.length >= 6));
 });
 
+test('Phonics Trail identifies chick as a young bird', () => {
+  const context = loadSafari();
+  const activity = context.SpellingSafari.getActivity('phonics-trail');
+  const question = activity.questions.find(item => item.prompt === 'ch_ck');
+
+  assert.equal(question.hint, 'A young bird.');
+  assert.equal(question.answer, 'i');
+});
+
 test('each activity generates six unique answerable questions', () => {
   const context = loadSafari();
 

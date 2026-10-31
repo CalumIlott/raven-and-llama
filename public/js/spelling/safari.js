@@ -27,7 +27,7 @@ const SPELLING_SAFARI_ACTIVITIES = [
       { prompt: 'fr_g', hint: 'A small animal that can hop.', answer: 'o', options: ['a', 'e', 'i', 'o'] },
       { prompt: 'cl_p', hint: 'To bring your hands together to make a sound.', answer: 'a', options: ['a', 'e', 'i', 'o'] },
       { prompt: 'br_sh', hint: 'You use one to tidy your hair.', answer: 'u', options: ['a', 'e', 'i', 'u'] },
-      { prompt: 'ch_ck', hint: 'A young bird, or a small piece of chocolate.', answer: 'i', options: ['a', 'e', 'i', 'o'] },
+      { prompt: 'ch_ck', hint: 'A young bird.', answer: 'i', options: ['a', 'e', 'i', 'o'] },
       { prompt: 'wh_le', hint: 'A very large animal that lives in the sea.', answer: 'a', options: ['a', 'e', 'i', 'o'] },
       { prompt: 'st_ne', hint: 'A small piece of rock.', answer: 'o', options: ['a', 'e', 'i', 'o'] },
       { prompt: 'sm_le', hint: 'A happy expression on your face.', answer: 'i', options: ['a', 'e', 'i', 'o'] }

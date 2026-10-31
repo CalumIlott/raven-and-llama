@@ -64,6 +64,7 @@ Object.assign(App.prototype, {
       streak: 0,
       targetIndex: null,
       targetCritter: null,
+      feedback: null,
       running: false
     };
     const main = document.getElementById('app-main');
@@ -145,6 +146,7 @@ Object.assign(App.prototype, {
       streak: 0,
       targetIndex: Math.floor(Math.random() * 9),
       targetCritter: CRITTER_CATCH_ANIMALS[Math.floor(Math.random() * CRITTER_CATCH_ANIMALS.length)],
+      feedback: null,
       running: true
     };
     const status = document.getElementById('critter-catch-status');
@@ -161,6 +163,7 @@ Object.assign(App.prototype, {
       }
       this.critterCatchState.targetIndex = Math.floor(Math.random() * 9);
       this.critterCatchState.targetCritter = CRITTER_CATCH_ANIMALS[Math.floor(Math.random() * CRITTER_CATCH_ANIMALS.length)];
+      this.critterCatchState.feedback = null;
       this.renderCritterCatchBoard();
     }, 850);
     this.critterCatchTimer = setInterval(() => {
@@ -189,9 +192,11 @@ Object.assign(App.prototype, {
     if (this.currentView !== 'critter-catch' || !state?.running) return;
     if (state.targetIndex !== index) {
       state.streak = 0;
+      state.feedback = { index, type: 'miss' };
       document.getElementById('critter-catch-status').textContent = 'No critter there — keep looking!';
       document.getElementById('critter-catch-status').classList.remove('is-bonus');
       document.getElementById('critter-catch-bonus').hidden = true;
+      this.renderCritterCatchBoard();
       return;
     }
 
@@ -200,6 +205,7 @@ Object.assign(App.prototype, {
     state.score += bonus ? 35 : 10;
     state.targetIndex = null;
     state.targetCritter = null;
+    state.feedback = { index, type: 'catch' };
     const status = document.getElementById('critter-catch-status');
     status.textContent = bonus
       ? 'Five in a row! Bonus points!'
@@ -230,11 +236,14 @@ Object.assign(App.prototype, {
       const critter = state.running && state.targetIndex === index
         ? state.targetCritter
         : null;
+      const feedback = state.feedback?.index === index
+        ? `critter-catch-feedback-${state.feedback.type}`
+        : '';
       const label = critter ? `Catch the ${critter.name}` : 'Empty burrow';
       return `
         <button type="button" data-action="critter-hole" data-hole-index="${index}" aria-label="${label}"
           ${state.running ? '' : 'disabled'}
-          class="aspect-square rounded-2xl border-2 ${critter ? 'border-emerald-300 bg-emerald-900/60 text-4xl sm:text-5xl animate-pop' : 'border-zinc-700 bg-zinc-950/80 text-zinc-600'} flex items-center justify-center shadow-inner transition disabled:cursor-not-allowed enabled:hover:border-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300">
+          class="aspect-square rounded-2xl border-2 ${critter ? 'border-emerald-300 bg-emerald-900/60 text-4xl sm:text-5xl animate-pop' : 'border-zinc-700 bg-zinc-950/80 text-zinc-600'} ${feedback} flex items-center justify-center shadow-inner transition disabled:cursor-not-allowed enabled:hover:border-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300">
           ${critter ? critter.emoji : '🌱'}
         </button>
       `;

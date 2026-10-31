@@ -191,16 +191,45 @@ Object.assign(App.prototype, {
             </div>
           </button>
 
-          <button data-action="spelling-home" class="text-left bg-slate-900 border-2 border-purple-800/70 hover:border-emerald-400 rounded-2xl p-4 flex items-center gap-4 transition group">
-            <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-800/60 flex items-center justify-center text-2xl">
-              🦁
-            </div>
+          <button type="button" data-action="spelling-home"
+                  class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-sky-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400"></div>
             <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-ninja text-base font-bold text-white group-hover:text-emerald-300">Spelling Safari</h4>
-                <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">Play now</span>
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center text-3xl shadow-lg border border-cyan-300">
+                    🦁
+                  </div>
+                  <div>
+                    <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Word Adventures</span>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-sky-300 transition">Spelling Safari</h3>
+                  </div>
+                </div>
+                <span class="bg-sky-950 text-sky-300 border border-sky-600/60 text-xs font-bold px-3 py-1 rounded-full">
+                  4 Adventures 🦁
+                </span>
               </div>
-              <p class="text-xs text-slate-400 mt-0.5">Phonics, tricky spelling, vocabulary and word-scramble adventures.</p>
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                Phonics, tricky spelling, vocabulary and word-scramble adventures.
+              </p>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Phonics</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">Trail</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Vocabulary</div>
+                  <div class="font-ninja font-bold text-emerald-300 mt-0.5">Explorer</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Word Game</div>
+                  <div class="font-ninja font-bold text-cyan-300 mt-0.5">Jumble</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-sky-400 group-hover:text-cyan-300">
+              <span>Explore Spelling Safari</span>
+              <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
             </div>
           </button>
         </div>
