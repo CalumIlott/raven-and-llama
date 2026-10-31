@@ -4181,7 +4181,7 @@ Object.assign(App.prototype, {
                 if (game.lastAnswerCorrect && index === question.answer) {
                   choiceClass = 'is-correct border-emerald-400 bg-emerald-950/50 text-emerald-100';
                 } else if (!game.lastAnswerCorrect && index === game.selectedIndex) {
-                  choiceClass = 'is-incorrect border-amber-500 bg-amber-950/50 text-amber-200';
+                  choiceClass = 'is-incorrect border-rose-500 bg-rose-950/50 text-rose-200';
                 }
               }
               return `
