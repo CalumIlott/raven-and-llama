@@ -4,6 +4,7 @@ class ProfileManager {
   static accountServiceAvailable = true;
   static lastSaveError = '';
   static saveQueue = Promise.resolve();
+  static LAST_MODULES = new Set(['learning', 'dojo', 'timetables', 'spelling']);
 
   static AVATARS = [
     { id: 'raven', name: 'Black Feather Raven', emoji: '🪶', color: 'bg-black text-white border-2 border-zinc-700 shadow-md', icon: 'feather' },
@@ -60,6 +61,7 @@ class ProfileManager {
       name: account?.username || 'Guest',
       avatar: ProfileManager.getAvatar(avatarId),
       theme: source.theme === 'light' ? 'light' : 'dark',
+      lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
       stage2PassedBelts: Array.isArray(source.stage2PassedBelts) ? source.stage2PassedBelts : [],

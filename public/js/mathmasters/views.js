@@ -1,6 +1,7 @@
 Object.assign(App.prototype, {
   showDojoHub() {
     this.currentView = 'dojo';
+    this.rememberModule('dojo');
     const main = document.getElementById('app-main');
     if (!main) return;
 

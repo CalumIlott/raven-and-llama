@@ -55,6 +55,42 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
 });
 
+test('last module is restored on home load without overriding explicit routes or login context', async ({ page }) => {
+  const account = await registerAccount(page);
+
+  await page.getByRole('button', { name: /Enter Learning Hub/ }).click();
+  await page.getByText('Open Times Tables Dojo', { exact: true }).click();
+  await expect(page).toHaveURL(/\/timetables$/);
+  await page.evaluate(() => window.ProfileManager.flush());
+
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
+
+  await page.goto('/learning');
+  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning', exact: true })).toBeVisible();
+  await page.locator('header button').filter({ has: page.locator('#header-profile-name') }).click();
+  await page.getByRole('button', { name: 'Sign out' }).click();
+
+  await page.goto('/dojo');
+  await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
+  await loginAccount(page, account.username, account.password);
+  await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
+  await page.evaluate(() => window.ProfileManager.flush());
+
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
+
+  await page.locator('header button').filter({ has: page.locator('#header-profile-name') }).click();
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.locator('#nav-btn-home').click();
+  await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
+  await loginAccount(page, account.username, account.password);
+  await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
+
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
+});
+
 test('progress syncs to another browser context without exposing it to a different account', async ({ browser, page }) => {
   test.setTimeout(60000);
   const first = await registerAccount(page);
