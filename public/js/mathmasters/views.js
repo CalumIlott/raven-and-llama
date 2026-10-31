@@ -105,11 +105,16 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
+        <div class="mb-8">
+          ${ProfileManager.renderLeaderboard('maths', 'Maths Masters Leaderboard')}
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           ${beltsGridHtml}
         </div>
       </div>
     `;
+    ProfileManager.loadLeaderboard('maths');
   },
 
   showBeltDetails(beltId) {
@@ -200,6 +205,10 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
+        <div class="mb-6">
+          ${ProfileManager.renderLeaderboard(`belt:${belt.id}`, `${belt.name} Leaderboard`)}
+        </div>
+
         <!-- 3-Stage Testing Arena Section -->
         <div class="bg-slate-900/90 border-2 border-slate-700 rounded-3xl p-6 shadow-2xl mb-8">
           <h3 class="font-ninja text-xl text-yellow-400 font-bold mb-1">Belt Examination Hall</h3>
@@ -280,6 +289,7 @@ Object.assign(App.prototype, {
         </div>
       </div>
     `;
+    ProfileManager.loadLeaderboard(`belt:${belt.id}`);
   },
 
   showPrerequisiteChecklist(beltId) {

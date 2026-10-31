@@ -42,6 +42,10 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
+        <div class="mb-8">
+          ${ProfileManager.renderLeaderboard('learning', 'Learning Hub Leaderboard')}
+        </div>
+
         <!-- Level 3 Programs: MathMasters and Times Tables -->
         <div class="mb-4 flex items-center justify-between">
           <h2 class="font-ninja text-2xl text-white font-bold">Mathematics Modules</h2>
@@ -146,6 +150,11 @@ Object.assign(App.prototype, {
 
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          ${ProfileManager.renderLeaderboard('maths', 'Maths Masters Top Scores')}
+          ${ProfileManager.renderLeaderboard('times_tables', 'Times Tables Top Scores')}
+        </div>
+
         <!-- Upcoming Subjects Preview -->
         <h3 class="font-ninja text-lg text-slate-400 font-bold mb-3 flex items-center gap-2">
           <span>🚀</span> <span>Future Subjects in Raven &amp; Llama Learning</span>
@@ -180,5 +189,8 @@ Object.assign(App.prototype, {
 
       </div>
     `;
+    ProfileManager.loadLeaderboard('learning');
+    ProfileManager.loadLeaderboard('maths');
+    ProfileManager.loadLeaderboard('times_tables');
   }
 });
