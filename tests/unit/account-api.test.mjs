@@ -130,6 +130,30 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(oldList.status, 404);
 });
 
+test('theme preferences persist independently on each account', async () => {
+  const store = new MemoryAccountStore();
+  const first = await request(store, '/api/auth/register', 'POST', { username: 'theme_one', password: 'a secure password 123' });
+  const second = await request(store, '/api/auth/register', 'POST', { username: 'theme_two', password: 'another secure pass 123' });
+  const firstCookie = sessionCookie(first);
+  const secondCookie = sessionCookie(second);
+  const firstProfile = (await first.json()).profile;
+
+  const update = await request(store, '/api/progress', 'PUT', {
+    profile: { ...firstProfile, theme: 'light' }
+  }, firstCookie);
+  assert.equal((await update.json()).profile.theme, 'light');
+
+  const firstSession = await request(store, '/api/auth/session', 'GET', undefined, firstCookie);
+  const secondSession = await request(store, '/api/auth/session', 'GET', undefined, secondCookie);
+  assert.equal((await firstSession.json()).profile.theme, 'light');
+  assert.equal((await secondSession.json()).profile.theme, 'dark');
+
+  const invalidTheme = await request(store, '/api/progress', 'PUT', {
+    profile: { ...firstProfile, theme: 'system' }
+  }, firstCookie);
+  assert.equal((await invalidTheme.json()).profile.theme, 'light');
+});
+
 test('login uses a generic credential error and logout revokes the session', async () => {
   const store = new MemoryAccountStore();
   const registered = await request(store, '/api/auth/register', 'POST', { username: 'learner', password: 'correct horse battery 42' });
