@@ -598,6 +598,21 @@ html.theme-light #app-main[data-page="trophy"] { --page-accent: #916714; }
   box-shadow: 0 18px 42px rgb(0 0 0 / 14%);
 }
 
+html.theme-light #app-main[data-page="science"] .science-mission-topic {
+  color: #17688c !important;
+}
+
+html.theme-light #app-main[data-page="science"] .science-mission-reward,
+html.theme-light #app-main[data-page="spelling"] .spelling-activity-action {
+  color: #176b48 !important;
+}
+
+html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-amber-400"],
+html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-yellow-400"],
+html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-400"] {
+  color: #825b0b !important;
+}
+
 /* Home: a composed, calm family portal */
 #app-main[data-page="home"] > div:first-child > div:first-child {
   position: relative;

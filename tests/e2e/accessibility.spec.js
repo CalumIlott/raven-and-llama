@@ -1,6 +1,18 @@
 const { expect, test } = require('@playwright/test');
 const { setupApp } = require('./support');
 
+function contrastRatio(foreground, background) {
+  const luminance = color => {
+    const channels = color.match(/\d+/g).slice(0, 3).map(channel => Number(channel) / 255);
+    const linear = channels.map(channel => channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4);
+    return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  };
+  const values = [luminance(foreground), luminance(background)].sort((first, second) => second - first);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
 test('navigation and account dialog support keyboard use on narrow screens', async ({ page }) => {
   await setupApp(page);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -55,4 +67,41 @@ test('navigation and account dialog support keyboard use on narrow screens', asy
   await page.keyboard.press('Escape');
   await expect(accountDialog).toBeHidden();
   await expect(accountButton).toBeFocused();
+});
+
+test('light-theme Science and Spelling cards keep accent text readable on mobile', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await page.locator('[data-action="learning"]').first().click();
+
+  const expectNoHorizontalOverflow = async () => {
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  };
+
+  await page.locator('[data-action="science-home"]').click();
+  await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'science');
+  const scienceLabels = await page.locator('.science-mission-topic, .science-mission-reward').evaluateAll(elements =>
+    elements.map(element => ({
+      color: getComputedStyle(element).color,
+      background: getComputedStyle(element.closest('button')).backgroundColor
+    }))
+  );
+  expect(scienceLabels).toHaveLength(8);
+  scienceLabels.forEach(label => expect(contrastRatio(label.color, label.background)).toBeGreaterThanOrEqual(4.5));
+  await expectNoHorizontalOverflow();
+
+  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="spelling-home"]').click();
+  await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'spelling');
+  const spellingAction = await page.locator('.spelling-activity-action').first().evaluate(element => ({
+    color: getComputedStyle(element).color,
+    background: getComputedStyle(element.closest('button')).backgroundColor
+  }));
+  expect(contrastRatio(spellingAction.color, spellingAction.background)).toBeGreaterThanOrEqual(4.5);
+  await expectNoHorizontalOverflow();
 });

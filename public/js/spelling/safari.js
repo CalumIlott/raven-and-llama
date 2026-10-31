@@ -139,7 +139,7 @@ Object.assign(App.prototype, {
               <span class="text-3xl">${activity.emoji}</span>
               <h3 class="font-ninja text-xl font-bold text-white group-hover:text-emerald-300 mt-2">${activity.title}</h3>
               <p class="text-sm text-slate-400 mt-1">${activity.description}</p>
-              <span class="inline-block mt-4 text-xs font-bold text-emerald-300">6 rounds · Play now →</span>
+              <span class="spelling-activity-action inline-block mt-4 text-xs font-bold text-emerald-300">6 rounds · Play now →</span>
             </button>
           `).join('')}
         </div>

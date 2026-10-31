@@ -109,7 +109,7 @@ Object.assign(App.prototype, {
               <div class="flex items-start gap-4">
                 <div class="w-14 h-14 rounded-2xl ${mission.theme.icon} border flex items-center justify-center text-3xl">${mission.icon}</div>
                 <div class="flex-1">
-                  <span class="text-[10px] uppercase tracking-wider ${mission.theme.topic} font-bold">${mission.topic}</span>
+                  <span class="science-mission-topic text-[10px] uppercase tracking-wider ${mission.theme.topic} font-bold">${mission.topic}</span>
                   <h3 class="font-ninja text-xl font-bold text-white ${mission.theme.title}">${mission.title}</h3>
                 </div>
                 <span class="${mission.theme.arrow} text-xl" aria-hidden="true">→</span>
@@ -117,7 +117,7 @@ Object.assign(App.prototype, {
               <p class="text-slate-300 text-sm mt-4">${mission.description}</p>
               <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
                 <span class="text-slate-400">5 questions · Learn as you play</span>
-                <span class="text-amber-300 font-bold">⭐ 5 stars to find</span>
+                <span class="science-mission-reward text-amber-300 font-bold">⭐ 5 stars to find</span>
               </div>
             </button>
           `).join('')}
