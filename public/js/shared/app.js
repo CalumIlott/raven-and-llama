@@ -23,7 +23,7 @@ class App {
     const profileModule = this.isHomePage() && ProfileManager.isAuthenticated()
       ? ProfileManager.getActiveProfile().lastModule
       : null;
-    this.showModule(module || profileModule);
+    if (!window.gameEngine.restoreSession()) this.showModule(module || profileModule);
     this.attachEventListeners();
   }
 

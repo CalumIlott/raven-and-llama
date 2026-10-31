@@ -22,6 +22,91 @@ class GameEngine {
     this.endlessScoreId = null;
     this.endlessTitle = '';
     this.endlessReturnBeltId = null;
+    this.sessionStorageKey = 'raven-llama-active-quiz';
+    this.pendingAnswer = null;
+    this.resumeTimeLeft = null;
+  }
+
+  clearSavedSession() {
+    try {
+      window.sessionStorage?.removeItem(this.sessionStorageKey);
+    } catch {}
+  }
+
+  saveSession() {
+    if (this.mode === 'endless' || !this.questions.length || this.currentIndex >= this.totalQuestions) return;
+    try {
+      window.sessionStorage?.setItem(this.sessionStorageKey, JSON.stringify({
+        mode: this.mode,
+        beltId: this.currentBelt?.id,
+        skillId: this.currentSkill?.id,
+        skillName: this.currentSkill?.name,
+        questions: this.questions,
+        currentIndex: this.currentIndex,
+        score: this.score,
+        streak: this.streak,
+        maxStreak: this.maxStreak,
+        lives: this.lives,
+        totalQuestions: this.totalQuestions,
+        timeLeft: this.timeLeft,
+        pendingAnswer: this.pendingAnswer,
+        customExit: Boolean(this.customExit)
+      }));
+    } catch {}
+  }
+
+  restoreSession() {
+    let saved;
+    try {
+      saved = JSON.parse(window.sessionStorage?.getItem(this.sessionStorageKey) || 'null');
+    } catch {
+      this.clearSavedSession();
+      return false;
+    }
+
+    if (!saved || !['training', 'belt_test_1', 'belt_test_2', 'belt_test_3'].includes(saved.mode) ||
+      !Array.isArray(saved.questions) || !Number.isInteger(saved.currentIndex) ||
+      saved.currentIndex < 0 || saved.currentIndex >= saved.questions.length) {
+      this.clearSavedSession();
+      return false;
+    }
+
+    const belt = BELTS_DATA.find(item => item.id === saved.beltId);
+    const skill = belt?.skills.find(item => item.id === saved.skillId);
+    const isCustomQuiz = saved.skillId === 'timetable_practice' && saved.beltId === 'brown';
+    if ((!belt || (!skill && !isCustomQuiz)) || saved.questions.some(question => !QuestionGenerator.isValidQuestion(question))) {
+      this.clearSavedSession();
+      return false;
+    }
+
+    this.stopTimer();
+    this.mode = saved.mode;
+    this.currentBelt = belt;
+    this.currentSkill = isCustomQuiz ? { id: 'timetable_practice', name: saved.skillName || 'Practice' } : skill;
+    this.questions = saved.questions;
+    this.currentIndex = saved.currentIndex;
+    this.score = Number.isSafeInteger(saved.score) ? saved.score : 0;
+    this.streak = Number.isSafeInteger(saved.streak) ? saved.streak : 0;
+    this.maxStreak = Number.isSafeInteger(saved.maxStreak) ? saved.maxStreak : 0;
+    this.lives = Number.isSafeInteger(saved.lives) ? saved.lives : 3;
+    this.totalQuestions = saved.questions.length;
+    this.customExit = Boolean(saved.customExit);
+    this.pendingAnswer = saved.pendingAnswer == null ? null : Boolean(saved.pendingAnswer);
+    this.resumeTimeLeft = Number.isFinite(saved.timeLeft) ? saved.timeLeft : null;
+
+    const main = document.getElementById('app-main');
+    if (!main) return false;
+    main.dataset.page = isCustomQuiz ? 'timetables' : 'dojo';
+    main.innerHTML = `<div class="play-shell play-shell--quiz ${isCustomQuiz ? 'play-shell--times' : 'play-shell--maths'} max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
+    window.app.currentView = 'game';
+    if (this.pendingAnswer !== null) {
+      const answer = this.pendingAnswer;
+      this.pendingAnswer = null;
+      this.advanceAfterAnswer(answer);
+    } else {
+      this.renderCurrentQuestion();
+    }
+    return true;
   }
 
   stopTimer() {
@@ -43,9 +128,12 @@ class GameEngine {
       const stage = Number(this.mode.slice(-1));
       seconds = Math.max(5, Math.round(seconds * (1 - (stage - 1) * 0.12)));
     }
-    this.timeLeft = seconds;
+    this.timeLeft = this.resumeTimeLeft === null ? seconds : Math.max(0, Math.min(seconds, this.resumeTimeLeft));
+    this.resumeTimeLeft = null;
     this.totalTime = seconds;
     this.updateTimerUI();
+    this.saveSession();
+    let savedSeconds = Math.ceil(this.timeLeft);
 
     this.timerInterval = setInterval(() => {
       this.timeLeft -= 0.1;
@@ -53,6 +141,10 @@ class GameEngine {
         window.soundFX?.playTick();
       }
       this.updateTimerUI();
+      if (Math.ceil(this.timeLeft) !== savedSeconds) {
+        savedSeconds = Math.ceil(this.timeLeft);
+        this.saveSession();
+      }
 
       if (this.timeLeft <= 0) {
         this.stopTimer();
@@ -130,6 +222,7 @@ class GameEngine {
 
   startEndlessQuiz(title, questionFactory, scoreId, options = {}) {
     this.stopTimer();
+    this.clearSavedSession();
     this.mode = 'endless';
     this.currentBelt = options.beltId ? BELTS_DATA.find(belt => belt.id === options.beltId) : { id: 'timetables', name: title };
     this.currentSkill = { id: 'endless', name: 'Endless Challenge' };
@@ -161,6 +254,7 @@ class GameEngine {
 
   exitGame() {
     this.stopTimer();
+    this.clearSavedSession();
     if (this.mode === 'endless') {
       this.showEndlessResults();
     } else if (this.customExit) {
@@ -392,34 +486,42 @@ class GameEngine {
       }
     }
 
+    this.pendingAnswer = isCorrect;
+    this.saveSession();
     setTimeout(() => {
-      if (this.mode.startsWith('belt_test') && this.lives <= 0) {
-        this.showTestResults(false);
-      } else if (this.mode === 'endless' && !isCorrect) {
-        this.showEndlessResults();
-      } else if (this.mode === 'endless') {
-        this.endlessQuestionCount++;
-        const question = this.getEndlessQuestion();
-        if (!question) {
-          this.showEndlessResults();
-          return;
-        }
-        this.questions = [question];
-        this.currentIndex = 0;
-        this.renderCurrentQuestion();
-      } else {
-        this.currentIndex += 1;
-        if (this.currentIndex >= this.totalQuestions) {
-          this.showFinishedScreen();
-        } else {
-          this.renderCurrentQuestion();
-        }
-      }
+      this.advanceAfterAnswer(isCorrect);
     }, isCorrect ? 900 : 1800);
+  }
+
+  advanceAfterAnswer(isCorrect) {
+    this.pendingAnswer = null;
+    if (this.mode.startsWith('belt_test') && this.lives <= 0) {
+      this.showTestResults(false);
+    } else if (this.mode === 'endless' && !isCorrect) {
+      this.showEndlessResults();
+    } else if (this.mode === 'endless') {
+      this.endlessQuestionCount++;
+      const question = this.getEndlessQuestion();
+      if (!question) {
+        this.showEndlessResults();
+        return;
+      }
+      this.questions = [question];
+      this.currentIndex = 0;
+      this.renderCurrentQuestion();
+    } else {
+      this.currentIndex += 1;
+      if (this.currentIndex >= this.totalQuestions) {
+        this.showFinishedScreen();
+      } else {
+        this.renderCurrentQuestion();
+      }
+    }
   }
 
   showEndlessResults() {
     this.stopTimer();
+    this.clearSavedSession();
     ProfileManager.recordEndlessHighScore(this.endlessScoreId, this.score);
     const bestScore = ProfileManager.getActiveProfile().endlessHighScores?.[this.endlessScoreId] || 0;
     const container = document.getElementById('game-arena');
@@ -455,6 +557,7 @@ class GameEngine {
   }
 
   showTrainingSummary() {
+    this.clearSavedSession();
     const container = document.getElementById('game-arena');
     if (!container) return;
 
@@ -505,6 +608,7 @@ class GameEngine {
   }
 
   showTestResults(passed) {
+    this.clearSavedSession();
     const container = document.getElementById('game-arena');
     if (!container) return;
 
