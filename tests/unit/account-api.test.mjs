@@ -112,6 +112,28 @@ test('registration validates input, creates a private account, and issues a secu
   assert.equal(duplicate.status, 409);
 });
 
+test('rejects oversized streamed bodies without a content length', async () => {
+  const store = new MemoryAccountStore();
+  const body = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array(40000));
+      controller.enqueue(new Uint8Array(25537));
+      controller.close();
+    }
+  });
+  const request = new Request('https://dojo.example/api/auth/register', {
+    method: 'POST',
+    headers: { Origin: 'https://dojo.example' },
+    body,
+    duplex: 'half'
+  });
+
+  const response = await handleAccountRequest(request, store);
+
+  assert.equal(response.status, 413);
+  assert.equal(store.users.length, 0);
+});
+
 test('accounts can only read and update their own progress', async () => {
   const store = new MemoryAccountStore();
   const first = await request(store, '/api/auth/register', 'POST', { username: 'learner_one', password: 'a secure password 123' });
@@ -258,5 +280,29 @@ test('cross-origin state-changing requests are rejected', async () => {
     password: 'origin test password 12'
   }, undefined, 'https://attacker.example');
   assert.equal(response.status, 403);
+  assert.equal(store.users.length, 0);
+});
+
+test('malformed origins are rejected without processing mutations', async () => {
+  const store = new MemoryAccountStore();
+  const response = await request(store, '/api/auth/register', 'POST', {
+    username: 'malformed_origin',
+    password: 'malformed origin test 123'
+  }, undefined, 'not a valid origin');
+
+  assert.equal(response.status, 403);
+  assert.equal(store.users.length, 0);
+});
+
+test('auth rate limits reject validated attempts before account work', async () => {
+  const store = new MemoryAccountStore();
+  const denied = await handleAccountRequest(new Request('https://dojo.example/api/auth/register', {
+    method: 'POST',
+    headers: { Origin: 'https://dojo.example', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'rate_limited', password: 'a secure password 123' })
+  }), store, { rateLimit: async () => false });
+
+  assert.equal(denied.status, 429);
+  assert.equal(denied.headers.get('retry-after'), '60');
   assert.equal(store.users.length, 0);
 });
