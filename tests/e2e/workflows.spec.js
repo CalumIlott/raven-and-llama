@@ -141,3 +141,50 @@ test('all seven Maths Masters arcades launch and return to their belt dojo', asy
     }
   }
 });
+
+test('Science Explorers missions teach concepts, award stars, and return to the mission map', async ({ page }) => {
+  await openLearningHub(page);
+  await expect(page.getByRole('heading', { name: 'Learning Modules', exact: true })).toBeVisible();
+  await page.getByText('Explore Science Explorers', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Science Explorers', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Orbit Rescue/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Habitat Match/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Matter Lab/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Nature Detectives/ })).toBeVisible();
+
+  const missions = await page.evaluate(() => window.SCIENCE_MISSIONS.map(mission => mission.id));
+  let totalStars = 0;
+  for (const [missionIndex, missionId] of missions.entries()) {
+    const title = await page.evaluate(id => window.SCIENCE_MISSIONS.find(mission => mission.id === id).title, missionId);
+    await page.getByRole('button', { name: new RegExp(title) }).click();
+
+    for (let questionIndex = 0; questionIndex < 5; questionIndex++) {
+      const { answer, choices } = await page.evaluate(() => {
+        const game = window.app.scienceGame;
+        return game.mission.questions[game.index];
+      });
+      const answerIndex = missionIndex === 0 && questionIndex === 0 ? (answer + 1) % choices.length : answer;
+      await page.locator(`[data-science-choice="${answerIndex}"]`).click();
+
+      if (missionIndex === 0 && questionIndex === 0) {
+        await expect(page.locator('#app-main [role="status"]')).toContainText('Not quite!');
+      } else {
+        await expect(page.locator('#app-main [role="status"]')).toContainText('Great discovery!');
+        totalStars++;
+      }
+
+      await page.getByRole('button', { name: questionIndex === 4 ? /Finish Mission/ : /Next Clue/ }).click();
+    }
+
+    await expect(page.getByRole('heading', { name: 'Mission Complete!' })).toBeVisible();
+    if (missionIndex < missions.length - 1) {
+      await page.getByRole('button', { name: 'Choose Another Mission' }).click();
+    }
+  }
+
+  await expect(page.locator('#header-stars-count')).toHaveText(String(totalStars));
+  await page.getByRole('button', { name: 'Play Again' }).click();
+  await expect(page.getByText('Clue 1 of 5', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: /Back to missions/ }).click();
+  await expect(page.getByRole('heading', { name: 'Choose a Mission' })).toBeVisible();
+});

@@ -90,7 +90,7 @@ Object.assign(App.prototype, {
               </div>
 
               <p class="text-zinc-400 text-sm leading-relaxed mb-6">
-                Our complete educational wing. Practice targeted mathematics with the 7-belt <strong>Maths Masters Dojo</strong> and build automaticity with <strong>Times Tables Dojo</strong>.
+                Our educational wing: practice maths with the 7-belt <strong>Maths Masters Dojo</strong>, build fluency in <strong>Times Tables Dojo</strong>, and explore science missions.
               </p>
 
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-zinc-950/60 p-3.5 rounded-2xl border border-zinc-800/80 mb-6">
