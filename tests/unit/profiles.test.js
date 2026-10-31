@@ -54,3 +54,42 @@ test('deleting the active profile creates or selects a remaining profile', () =>
   assert.notEqual(remaining[0].id, learner.id);
   assert.equal(profiles.getActiveProfile().id, remaining[0].id);
 });
+
+test('final belt exam requires stage two and perfect mastery of every belt skill', () => {
+  const { context, profiles } = loadProfiles();
+  const learner = profiles.createProfile('Morgan', 'owl');
+
+  assert.equal(profiles.canTakeFinalTest('white'), false);
+
+  learner.stage2PassedBelts.push('white');
+  learner.skillsProgress = Object.fromEntries(context.BELTS_DATA[0].skills.map(skill => [skill.id, {
+    bestScore: 10,
+    timesTrained: 1
+  }]));
+  profiles.updateProfile(learner);
+  assert.equal(profiles.canTakeFinalTest('white'), true);
+
+  learner.skillsProgress.white_subitising.bestScore = 9;
+  profiles.updateProfile(learner);
+  assert.equal(profiles.canTakeFinalTest('white'), false);
+});
+
+test('passing all exam stages records graduation, awards, certificate, and next belt', () => {
+  const { profiles } = loadProfiles();
+  profiles.createProfile('Morgan', 'owl');
+
+  profiles.recordTestPass('white', 1, 8, 10);
+  profiles.recordTestPass('white', 2, 9, 10);
+  profiles.recordTestPass('white', 3, 8, 8);
+
+  const learner = profiles.getActiveProfile();
+  assert.deepEqual(Array.from(learner.stage1PassedBelts), ['white']);
+  assert.deepEqual(Array.from(learner.stage2PassedBelts), ['white']);
+  assert.deepEqual(Array.from(learner.stage3PassedBelts), ['white']);
+  assert.deepEqual(Array.from(learner.passedBelts), ['white']);
+  assert.equal(learner.currentBelt, 'yellow');
+  assert.equal(learner.stars, 100);
+  assert.equal(learner.certificates.length, 1);
+  assert.equal(learner.certificates[0].beltName, 'White Belt');
+  assert.equal(learner.certificates[0].score, '8/8');
+});

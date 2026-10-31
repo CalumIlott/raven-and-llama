@@ -58,7 +58,10 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 - `main` — stable, deployable at all times
 - Feature / fix branches: `feat/<short-slug>` or `fix/<short-slug>`
-- All changes arrive via pull request; do not push directly to `main`
+- All new functionality must be developed on a feature branch and merged into `main` via a pull request.
+- All changes arrive via pull request; do not push directly to `main`.
+- Pull requests must pass every required CI check before they can be merged.
+- GitHub branch protection for `main` must require `Node.js 20`, `Node.js 22`, `Node.js 24`, and `Playwright E2E` status checks.
 
 ---
 
@@ -67,6 +70,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - All new logic (generators, game engine, profile management) must have accompanying unit tests in `tests/unit/`.
 - Server, persistence, and API behavior changes must include integration coverage in `tests/integration/`.
 - UI/navigation changes must include an automated browser test in `tests/e2e/`.
+- All new functionality requires complete unit and automated test coverage for its behavior and relevant user workflows.
 - Tests must pass in CI before merging; run `npm test` locally before pushing.
 
 ---
@@ -100,7 +104,7 @@ When working as an AI agent in this repository:
 ## Pull Request Checklist
 
 - [ ] Each commit represents exactly one unit of work
-- [ ] All existing tests pass (`npm test`)
+- [ ] All unit, integration, and Playwright E2E tests pass (`npm test`)
 - [ ] New tests added for new logic
 - [ ] Cache version bumped if JS/CSS changed
 - [ ] `README.md` updated if API or structure changed

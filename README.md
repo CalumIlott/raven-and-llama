@@ -16,14 +16,15 @@ Alternatively, run `docker compose up -d --build` and open http://localhost:8080
 
 ## Tests
 
-Install dependencies and run the complete unit and HTTP integration test suite:
+Install dependencies, install the Playwright Chromium browser once, then run all unit, HTTP integration, and browser tests:
 
 ```bash
 npm ci
+npx playwright install chromium
 npm test
 ```
 
-The tests cover curriculum consistency, generated question invariants, profile behavior, static asset serving, and the profiles API. GitHub Actions runs the suite on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
+The tests cover all curriculum skills, profile and graduation rules, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, profile management, Times Tables quizzes, Product Pair Match, and progress/trophy views. E2E tests use a mocked profile API and do not write local learner data. Run `npm run test:unit` or `npm run test:e2e` to run a single suite. GitHub Actions reports `Node.js 20`, `Node.js 22`, `Node.js 24`, and `Playwright E2E` checks on pushes and pull requests. Configure `main` branch protection to require all four checks so a failing test blocks merging. See [tests/README.md](tests/README.md) for the coverage map.
 
 ## Project Layout
 
@@ -35,6 +36,8 @@ assets/                    Brand assets
 server.js                  Static server and profile API
 tests/unit/                Curriculum, generator, and profile tests
 tests/integration/         Isolated server and API tests
+tests/e2e/                 Playwright browser workflow tests
+playwright.config.js        Chromium runner and local server configuration
 .github/workflows/ci.yml   Push and pull request checks
 data/                      Runtime profile storage (gitignored)
 ```
@@ -52,4 +55,4 @@ Profiles are stored in `data/profiles.json`, which is local runtime data and mus
 
 ## Contributing
 
-Follow the repository rules in [agents.md](agents.md). Each unit of work should be a separate, focused commit.
+Follow the repository rules in [agents.md](agents.md). Each unit of work should be a separate, focused commit on a feature branch and merged into `main` through a pull request.

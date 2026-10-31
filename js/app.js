@@ -195,7 +195,7 @@ class App {
                 <div>
                   <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Curriculum</div>
                   <div class="font-bold text-zinc-200 mt-0.5">Maths Masters Dojo</div>
-                  <div class="text-[11px] text-zinc-400">7 Belt Levels • 39 Skills</div>
+                  <div class="text-[11px] text-zinc-400">${BELTS_DATA.length} Belt Levels • ${BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0)} Skills</div>
                 </div>
                 <div>
                   <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Multiplication</div>
@@ -347,7 +347,7 @@ class App {
               <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
                 <div>
                   <div class="text-[10px] text-slate-400 uppercase">Curriculum</div>
-                  <div class="font-ninja font-bold text-white mt-0.5">39 Skills</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">${BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0)} Skills</div>
                 </div>
                 <div>
                   <div class="text-[10px] text-slate-400 uppercase">Exams</div>
