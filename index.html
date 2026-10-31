@@ -76,10 +76,10 @@
           🔊
         </button>
 
-        <!-- Profile Switcher Button -->
+        <!-- Account Button -->
         <button onclick="window.app.openProfileModal()"
                 class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800/90 border border-zinc-800 pl-1.5 pr-2.5 sm:pr-3 py-1 rounded-xl transition text-left"
-                title="Switch Profile">
+          title="Account">
           <div id="header-profile-avatar" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-black border border-zinc-700 flex items-center justify-center text-xs sm:text-sm shadow">
             🪶
           </div>
@@ -92,6 +92,11 @@
       </div>
     </div>
   </header>
+
+  <div id="account-status-banner" class="hidden px-4 py-2 bg-amber-950/70 border-b border-amber-700/50 text-amber-200 text-xs sm:text-sm flex items-center justify-center gap-3" role="status" aria-live="polite">
+    <span id="account-status-message"></span>
+    <button onclick="window.app.openProfileModal()" id="account-status-action" class="font-bold underline underline-offset-2">Sign in</button>
+  </div>
 
   <!-- Main View Area -->
   <main id="app-main" class="flex-1 pb-16">
@@ -113,51 +118,76 @@
     </div>
   </footer>
 
-  <!-- Modal: Synchronised Profiles Across Devices -->
+  <!-- Modal: Account Access and Settings -->
   <div id="profile-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-zinc-900 border border-zinc-700/80 rounded-2xl p-6 max-w-lg w-full shadow-2xl animate-pop max-h-[92vh] overflow-y-auto">
+    <div role="dialog" aria-modal="true" aria-labelledby="account-modal-title" class="bg-zinc-900 border border-zinc-700/80 rounded-2xl p-6 max-w-lg w-full shadow-2xl animate-pop max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
         <div>
-          <h3 class="font-sans text-xl text-white font-bold tracking-tight">Raven &amp; Llama Profiles</h3>
-          <p class="text-xs text-zinc-400 mt-0.5">Profiles automatically synchronise across all your devices</p>
+          <h3 id="account-modal-title" class="font-sans text-xl text-white font-bold tracking-tight">Account</h3>
+          <p id="account-modal-description" class="text-xs text-zinc-400 mt-0.5">Sign in to save progress across your devices.</p>
         </div>
-        <button onclick="window.app.closeProfileModal()" class="text-zinc-400 hover:text-white text-xl font-bold">✕</button>
+        <button onclick="window.app.closeProfileModal()" aria-label="Close account dialog" class="text-zinc-400 hover:text-white text-xl font-bold">✕</button>
       </div>
 
-      <!-- Profiles List -->
-      <div class="mb-5">
-        <div class="text-xs uppercase font-semibold tracking-wider text-zinc-400 mb-2.5">Select active profile:</div>
-        <div id="profiles-list" class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
-          <!-- Rendered dynamically -->
+      <p id="account-message" class="hidden mb-4 p-3 rounded-lg text-sm" role="status" aria-live="polite"></p>
+
+      <div id="account-guest-panel">
+        <div class="grid grid-cols-2 gap-1 p-1 mb-5 rounded-lg bg-zinc-950 border border-zinc-800" role="group" aria-label="Account access mode">
+          <button type="button" id="account-login-tab" onclick="window.app.setAccountMode('login')" aria-pressed="true" class="px-3 py-2 rounded-md text-sm font-semibold bg-zinc-700 text-white">Sign in</button>
+          <button type="button" id="account-register-tab" onclick="window.app.setAccountMode('register')" aria-pressed="false" class="px-3 py-2 rounded-md text-sm font-semibold text-zinc-400 hover:text-white">Create account</button>
         </div>
+
+        <form id="account-auth-form" onsubmit="window.app.submitAccountForm(event)" class="space-y-4">
+          <div>
+            <label for="account-username" class="block text-xs text-zinc-300 mb-1">Username</label>
+            <input id="account-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_]+" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+            <p class="text-[11px] text-zinc-500 mt-1">3-32 letters, numbers, or underscores.</p>
+          </div>
+          <div>
+            <label for="account-password" id="account-password-label" class="block text-xs text-zinc-300 mb-1">Password</label>
+            <input id="account-password" name="password" type="password" autocomplete="current-password" required minlength="12" maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+          </div>
+          <div id="account-confirm-field" class="hidden">
+            <label for="account-confirm-password" class="block text-xs text-zinc-300 mb-1">Confirm password</label>
+            <input id="account-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+          </div>
+          <button id="account-submit-button" type="submit" class="btn-ninja w-full px-4 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-bold text-sm">Sign in</button>
+        </form>
+        <p id="account-service-warning" class="hidden mt-4 text-sm text-rose-300" role="alert">Account service is unavailable. You can keep playing as a guest, but progress will not be saved.</p>
+        <p class="mt-4 text-xs text-zinc-400">Guest play is always available. Guest progress lasts only for this visit and is not saved.</p>
       </div>
 
-      <!-- Add New Profile Form -->
-      <div class="pt-4 border-t border-zinc-800">
-        <h4 class="font-sans text-sm text-zinc-200 font-bold mb-3 flex items-center gap-1.5">
-          <span>+</span> <span>Add Profile</span>
-        </h4>
-        <form onsubmit="window.app.createNewProfileSubmit(event)" class="space-y-4">
+      <div id="account-signed-in-panel" class="hidden">
+        <p class="mb-5 text-sm text-zinc-300">Signed in as <strong id="account-username-display" class="text-white"></strong></p>
+        <form id="account-password-form" onsubmit="window.app.changePasswordSubmit(event)" class="space-y-3">
+          <h4 class="text-sm font-bold text-white">Change password</h4>
           <div>
-            <label class="block text-xs text-zinc-400 mb-1">Profile Name:</label>
-            <input type="text" id="new-profile-name" required placeholder="e.g. Callum, Alex, or Maya"
-                   class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500 text-sm">
+            <label for="account-current-password" class="block text-xs text-zinc-300 mb-1">Current password</label>
+            <input id="account-current-password" type="password" autocomplete="current-password" required maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
           </div>
-
           <div>
-            <label class="block text-xs text-zinc-400 mb-2">Avatar:</label>
-            <div id="new-avatar-grid" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1.5 bg-zinc-950 rounded-xl border border-zinc-800">
-              <!-- Rendered dynamically -->
-            </div>
+            <label for="account-new-password" class="block text-xs text-zinc-300 mb-1">New password</label>
+            <input id="account-new-password" type="password" autocomplete="new-password" required minlength="12" maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
           </div>
-
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" onclick="window.app.closeProfileModal()" class="px-4 py-2 rounded-xl text-zinc-400 hover:text-white text-xs font-medium">
-              Cancel
-            </button>
-            <button type="submit" class="btn-ninja px-5 py-2 rounded-xl bg-zinc-100 hover:bg-white text-zinc-900 font-sans font-bold text-xs shadow transition">
-              Create Profile
-            </button>
+          <div>
+            <label for="account-new-password-confirm" class="block text-xs text-zinc-300 mb-1">Confirm new password</label>
+            <input id="account-new-password-confirm" type="password" autocomplete="new-password" required minlength="12" maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+          </div>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white font-semibold text-sm">Update password</button>
+        </form>
+        <div class="mt-5 pt-4 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+          <button onclick="window.app.logoutAccount()" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-sm">Sign out</button>
+          <button id="delete-account-toggle" onclick="window.app.showDeleteAccountConfirmation()" class="px-3 py-2 rounded-lg text-rose-300 hover:bg-rose-950/60 font-semibold text-xs">Delete account</button>
+        </div>
+        <form id="delete-account-confirmation" onsubmit="window.app.deleteAccount(event)" class="hidden mt-4 p-4 rounded-lg border border-rose-800 bg-rose-950/40 space-y-3">
+          <p class="text-sm text-rose-100">This permanently deletes the account and all saved progress.</p>
+          <div>
+            <label for="delete-account-password" class="block text-xs text-zinc-300 mb-1">Confirm your password</label>
+            <input id="delete-account-password" type="password" autocomplete="current-password" required maxlength="128" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-rose-400 text-sm">
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" onclick="window.app.cancelDeleteAccount()" class="px-3 py-2 rounded-lg text-zinc-300 hover:bg-zinc-800 text-sm">Cancel</button>
+            <button type="submit" class="px-3 py-2 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-semibold text-sm">Confirm account deletion</button>
           </div>
         </form>
       </div>
@@ -201,13 +231,13 @@
   </div>
 
   <!-- App Logic Scripts -->
-  <script src="js/audio.js?v=20261031c"></script>
-  <script src="js/curriculum.js?v=20261031c"></script>
-  <script src="js/renderers.js?v=20261031c"></script>
-  <script src="js/generators.js?v=20261031c"></script>
-  <script src="js/profiles.js?v=20261031c"></script>
-  <script src="js/arcadeGames.js?v=20261031c"></script>
-  <script src="js/gameEngine.js?v=20261031c"></script>
-  <script src="js/app.js?v=20261031c"></script>
+  <script src="js/audio.js?v=20261031d"></script>
+  <script src="js/curriculum.js?v=20261031d"></script>
+  <script src="js/renderers.js?v=20261031d"></script>
+  <script src="js/generators.js?v=20261031d"></script>
+  <script src="js/shared/accounts.js?v=20261031d"></script>
+  <script src="js/arcadeGames.js?v=20261031d"></script>
+  <script src="js/gameEngine.js?v=20261031d"></script>
+  <script src="js/app.js?v=20261031d"></script>
 </body>
 </html>

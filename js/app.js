@@ -5,7 +5,8 @@ class App {
     this.selectedBeltId = null;
   }
 
-  init() {
+  async init() {
+    await ProfileManager.initialize();
     this.updateHeader();
     this.showRavenAndLlamaHome();
     this.attachEventListeners();
@@ -27,16 +28,31 @@ class App {
     const avatarEl = document.getElementById('header-profile-avatar');
     const starsEl = document.getElementById('header-stars-count');
     const soundBtn = document.getElementById('header-sound-btn');
+    const accountButton = document.querySelector('header button[title="Account"]');
+    const statusBanner = document.getElementById('account-status-banner');
+    const statusMessage = document.getElementById('account-status-message');
+    const statusAction = document.getElementById('account-status-action');
     const subBadge = document.getElementById('header-sub-badge');
     const homeBtn = document.getElementById('nav-btn-home');
     const learningBtn = document.getElementById('nav-btn-learning');
 
-    if (nameEl) nameEl.textContent = profile ? profile.name : 'Profile';
+    if (nameEl) nameEl.textContent = ProfileManager.account?.username || 'Guest';
+    if (accountButton) accountButton.title = ProfileManager.isAuthenticated() ? 'Account settings' : 'Sign in or create an account';
     if (avatarEl) {
       avatarEl.innerHTML = profile?.avatar?.emoji || '🪶';
       avatarEl.className = `w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${profile?.avatar?.color || 'bg-black text-white border border-zinc-700'}`;
     }
     if (starsEl) starsEl.textContent = profile?.stars || 0;
+    if (statusBanner && statusMessage) {
+      const notice = ProfileManager.lastSaveError || (!ProfileManager.isAuthenticated()
+        ? ProfileManager.accountServiceAvailable
+          ? 'Guest mode: progress will not be saved after this visit.'
+          : 'Account service is unavailable. Guest progress will not be saved.'
+        : '');
+      statusMessage.textContent = notice;
+      statusBanner.classList.toggle('hidden', !notice);
+      if (statusAction) statusAction.textContent = ProfileManager.isAuthenticated() ? 'Account settings' : 'Sign in';
+    }
     if (soundBtn) {
       const isMuted = window.soundFX?.isMuted();
       soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
@@ -136,10 +152,10 @@ class App {
                 <!-- Active Account Indicator (Clean, NOT childish) -->
                 <div class="mt-4 inline-flex items-center gap-2.5 bg-zinc-950/80 border border-zinc-800 px-3.5 py-1.5 rounded-xl text-xs text-zinc-300">
                   <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span>Active Profile:</span>
-                  <strong class="text-zinc-100 font-semibold">${profile?.name || 'Profile 1'}</strong>
+                  <span>${ProfileManager.isAuthenticated() ? 'Signed in as:' : 'Guest:'}</span>
+                  <strong class="text-zinc-100 font-semibold">${profile?.name || 'Guest'}</strong>
                   <button onclick="window.app.openProfileModal()" class="text-zinc-400 hover:text-white underline ml-1 text-xs transition">
-                    Switch
+                    Account
                   </button>
                 </div>
               </div>
@@ -1088,55 +1104,140 @@ class App {
   openProfileModal() {
     const modal = document.getElementById('profile-modal');
     if (!modal) return;
-
-    const profiles = ProfileManager.loadProfiles();
-    const activeProfile = ProfileManager.getActiveProfile();
-
-    const profilesList = document.getElementById('profiles-list');
-    if (profilesList) {
-      profilesList.innerHTML = profiles.map(p => `
-        <div class="p-3.5 sm:p-4 rounded-2xl border-2 ${p.id === activeProfile?.id ? 'border-cyan-400 bg-cyan-950/40 shadow-lg' : 'border-slate-700 bg-slate-800/80 hover:border-slate-500'} flex items-center justify-between gap-3 transition">
-          <div onclick="window.app.selectProfile('${p.id}')" class="flex items-center gap-3 cursor-pointer flex-1">
-            <div class="w-12 h-12 rounded-2xl ${p.avatar?.color || 'bg-slate-600'} flex items-center justify-center text-2xl shadow">
-              ${p.avatar?.emoji || '🪶'}
-            </div>
-            <div>
-              <div class="font-ninja text-base sm:text-lg text-white font-bold">${p.name}</div>
-              <div class="text-xs text-slate-400">Stars: ${p.stars} ⭐ • Belts Passed: ${(p.passedBelts || []).length} / 7</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            ${p.id === activeProfile?.id ? `
-              <span class="text-xs text-cyan-300 font-bold px-2.5 py-1 bg-cyan-900/60 rounded-xl border border-cyan-500/40">
-                Active on this device ✓
-              </span>
-            ` : `
-              <button onclick="window.app.selectProfile('${p.id}')" class="btn-ninja px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-ninja">
-                Select
-              </button>
-            `}
-            <button onclick="window.app.confirmDeleteProfile('${p.id}', '${p.name}')" title="Delete Learner Profile"
-                    class="btn-ninja p-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 hover:text-white text-xs">
-              🗑️
-            </button>
-          </div>
-        </div>
-      `).join('');
+    const authenticated = ProfileManager.isAuthenticated();
+    const guestPanel = document.getElementById('account-guest-panel');
+    const signedInPanel = document.getElementById('account-signed-in-panel');
+    const description = document.getElementById('account-modal-description');
+    const username = document.getElementById('account-username-display');
+    const serviceWarning = document.getElementById('account-service-warning');
+    const message = document.getElementById('account-message');
+    if (guestPanel) guestPanel.classList.toggle('hidden', authenticated);
+    if (signedInPanel) signedInPanel.classList.toggle('hidden', !authenticated);
+    if (description) description.textContent = authenticated
+      ? 'Manage your password or sign out of this account.'
+      : 'Sign in to save progress across your devices.';
+    if (username) username.textContent = ProfileManager.account?.username || '';
+    if (serviceWarning) serviceWarning.classList.toggle('hidden', ProfileManager.accountServiceAvailable);
+    if (message) {
+      message.textContent = '';
+      message.classList.add('hidden');
     }
-
-    const avatarGrid = document.getElementById('new-avatar-grid');
-    if (avatarGrid) {
-      avatarGrid.innerHTML = ProfileManager.AVATARS.map((av, idx) => `
-        <label class="cursor-pointer">
-          <input type="radio" name="new_avatar" value="${av.id}" ${idx === 0 ? 'checked' : ''} class="peer sr-only">
-          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl ${av.color} flex items-center justify-center text-2xl peer-checked:ring-4 peer-checked:ring-yellow-400 hover:scale-105 transition shadow">
-            ${av.emoji}
-          </div>
-        </label>
-      `).join('');
-    }
-
+    if (!authenticated) this.setAccountMode('login');
     modal.classList.remove('hidden');
+  }
+
+  setAccountMode(mode) {
+    this.accountMode = mode === 'register' ? 'register' : 'login';
+    const register = this.accountMode === 'register';
+    const loginTab = document.getElementById('account-login-tab');
+    const registerTab = document.getElementById('account-register-tab');
+    const confirmField = document.getElementById('account-confirm-field');
+    const passwordInput = document.getElementById('account-password');
+    const passwordLabel = document.getElementById('account-password-label');
+    const submitButton = document.getElementById('account-submit-button');
+    const message = document.getElementById('account-message');
+    if (loginTab) {
+      loginTab.setAttribute('aria-pressed', String(!register));
+      loginTab.className = `px-3 py-2 rounded-md text-sm font-semibold ${register ? 'text-zinc-400 hover:text-white' : 'bg-zinc-700 text-white'}`;
+    }
+    if (registerTab) {
+      registerTab.setAttribute('aria-pressed', String(register));
+      registerTab.className = `px-3 py-2 rounded-md text-sm font-semibold ${register ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'}`;
+    }
+    if (confirmField) confirmField.classList.toggle('hidden', !register);
+    if (passwordInput) passwordInput.autocomplete = register ? 'new-password' : 'current-password';
+    if (passwordLabel) passwordLabel.textContent = register ? 'Password (12 characters minimum)' : 'Password';
+    if (submitButton) submitButton.textContent = register ? 'Create account' : 'Sign in';
+    if (message) message.classList.add('hidden');
+  }
+
+  setAccountMessage(text, isError = true) {
+    const message = document.getElementById('account-message');
+    if (!message) return;
+    message.textContent = text;
+    message.className = `mb-4 p-3 rounded-lg text-sm ${isError ? 'bg-rose-950/70 text-rose-200 border border-rose-800' : 'bg-emerald-950/70 text-emerald-200 border border-emerald-800'}`;
+  }
+
+  async submitAccountForm(event) {
+    event.preventDefault();
+    const username = document.getElementById('account-username')?.value.trim() || '';
+    const password = document.getElementById('account-password')?.value || '';
+    const confirmPassword = document.getElementById('account-confirm-password')?.value || '';
+    const submitButton = document.getElementById('account-submit-button');
+    if (this.accountMode === 'register' && password !== confirmPassword) {
+      this.setAccountMessage('Passwords do not match.');
+      return;
+    }
+
+    if (submitButton) submitButton.disabled = true;
+    try {
+      if (this.accountMode === 'register') await ProfileManager.registerAccount(username, password);
+      else await ProfileManager.login(username, password);
+      this.closeProfileModal();
+      this.updateHeader();
+      this.refreshCurrentView();
+    } catch (error) {
+      this.setAccountMessage(error.message || 'Unable to access this account.');
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  }
+
+  async changePasswordSubmit(event) {
+    event.preventDefault();
+    const currentPassword = document.getElementById('account-current-password')?.value || '';
+    const newPassword = document.getElementById('account-new-password')?.value || '';
+    const confirmPassword = document.getElementById('account-new-password-confirm')?.value || '';
+    if (newPassword !== confirmPassword) {
+      this.setAccountMessage('New passwords do not match.');
+      return;
+    }
+    try {
+      await ProfileManager.changePassword(currentPassword, newPassword);
+      document.getElementById('account-password-form')?.reset();
+      this.setAccountMessage('Password updated.', false);
+    } catch (error) {
+      this.setAccountMessage(error.message || 'Unable to update password.');
+    }
+  }
+
+  async logoutAccount() {
+    try {
+      await ProfileManager.logout();
+    } catch (error) {
+      this.setAccountMessage(error.message || 'Unable to sign out.');
+    }
+    this.closeProfileModal();
+    this.updateHeader();
+    this.refreshCurrentView();
+  }
+
+  async deleteAccount(event) {
+    event?.preventDefault();
+    const form = document.getElementById('delete-account-confirmation');
+    if (!form) return;
+    if (!form.reportValidity()) return;
+    const password = document.getElementById('delete-account-password')?.value || '';
+    try {
+      await ProfileManager.deleteAccount(password);
+      this.closeProfileModal();
+      this.updateHeader();
+      this.refreshCurrentView();
+    } catch (error) {
+      this.setAccountMessage(error.message || 'Unable to delete account.');
+    }
+  }
+
+  showDeleteAccountConfirmation() {
+    document.getElementById('delete-account-toggle')?.classList.add('hidden');
+    document.getElementById('delete-account-confirmation')?.classList.remove('hidden');
+    document.getElementById('delete-account-password')?.focus();
+  }
+
+  cancelDeleteAccount() {
+    document.getElementById('delete-account-confirmation')?.classList.add('hidden');
+    document.getElementById('delete-account-toggle')?.classList.remove('hidden');
+    document.getElementById('delete-account-confirmation')?.reset();
   }
 
   closeProfileModal() {

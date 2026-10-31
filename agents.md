@@ -79,7 +79,9 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 - **No build step** — vanilla JS only; no transpilers, no bundlers
 - Tailwind utility classes must be complete strings (no dynamic concatenation) so CDN scanning works
-- Profile API shape: `{ profiles: Array<Profile> }` — never change this without updating `server.js`, `profiles.js`, and the API docs in `README.md`
+- Account progress must always be scoped to the authenticated session; never add an API that lists accounts or accepts a client-supplied account ID as authority.
+- Store only password hashes and hashed session tokens. Keep account storage changes aligned between local `server.js`, Cloudflare Pages Functions, D1 migrations, and the API docs in `README.md`.
+- Guest progress is memory-only and must never be written to local storage or sent to account endpoints.
 - Cache version string in `index.html` (`?v=YYYYMMDD[letter]`) must be bumped whenever a JS or CSS file changes
 - The `data/` folder is gitignored — never commit user profile data
 

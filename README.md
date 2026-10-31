@@ -1,6 +1,6 @@
 # Raven & Llama Learning
 
-A family-friendly learning platform with the Maths Masters belt curriculum, Times Tables practice, arcade activities, printable certificates, and synchronised learner profiles. The frontend is vanilla JavaScript with no build step; a small Node.js server serves the app and persists profiles.
+A family-friendly learning platform with Maths Masters, Times Tables practice, arcade activities, printable certificates, and optional username/password accounts. Guests can play without registering; guest progress is temporary and is discarded when the visit ends. Signed-in progress is private to that account and syncs across devices through Cloudflare D1.
 
 ## Run Locally
 
@@ -10,7 +10,7 @@ Requires Node.js 20 or newer.
 npm start
 ```
 
-Open http://localhost:8080. To use a different port, set `PORT` before starting the server.
+Open http://localhost:8080. Local accounts and progress are stored in the gitignored `data/accounts.json`. To use a different port, set `PORT` before starting the server.
 
 Alternatively, run `docker compose up -d --build` and open http://localhost:8080, or use `start-server.bat` on Windows.
 
@@ -24,7 +24,7 @@ npx playwright install chromium
 npm test
 ```
 
-The tests cover all curriculum skills, profile and graduation rules, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, profile management, Times Tables quizzes, Product Pair Match, and progress/trophy views. E2E tests use a mocked profile API and do not write local learner data. Run `npm run test:unit` or `npm run test:e2e` to run a single suite. GitHub Actions reports `Node.js 20`, `Node.js 22`, `Node.js 24`, and `Playwright E2E` checks on pushes and pull requests. Configure `main` branch protection to require all four checks so a failing test blocks merging. See [tests/README.md](tests/README.md) for the coverage map.
+The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, and progress/trophy views. Browser tests use an isolated temporary account store. Run `npm run test:unit` or `npm run test:e2e` to run one suite. GitHub Actions runs unit/integration checks on Node.js 20, 22, and 24, plus Chromium E2E on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
 
 ## Project Layout
 
@@ -33,8 +33,11 @@ index.html                 App shell
 js/                        Browser application, curriculum, games, and profile logic
 css/styles.css             Application styles
 assets/                    Brand assets
-server.js                  Static server and profile API
-tests/unit/                Curriculum, generator, and profile tests
+server.js                  Static server and account API
+functions/api/             Cloudflare Pages account API
+functions/_shared/          Shared auth handler and D1 adapter
+migrations/                 Cloudflare D1 schema migrations
+tests/unit/                Curriculum, generator, and account tests
 tests/integration/         Isolated server and API tests
 tests/e2e/                 Playwright browser workflow tests
 playwright.config.js        Chromium runner and local server configuration
@@ -42,16 +45,28 @@ playwright.config.js        Chromium runner and local server configuration
 data/                      Runtime profile storage (gitignored)
 ```
 
-## Profiles API
+## Cloudflare Pages Setup
 
-Profiles are stored in `data/profiles.json`, which is local runtime data and must not be committed.
+Cloudflare Pages must deploy the root `functions/` directory and bind a D1 database named `DB`. Without this binding, guests can still play, but registration and cross-device saving are unavailable.
 
-| Method | Path | Body | Description |
-| --- | --- | --- | --- |
-| GET | `/api/profiles` | — | Return `{ "profiles": [...] }` |
-| POST | `/api/profiles` | `{ "profile": { ... } }` | Upsert one profile by `id` |
-| POST | `/api/profiles` | `{ "deleteProfileId": "..." }` | Delete a profile by `id` |
-| POST | `/api/profiles` | `{ "profiles": [...] }` | Replace the profiles state |
+1. Create a D1 database named `raven-llama-accounts` in Cloudflare.
+2. Apply the schema with `npx wrangler d1 execute raven-llama-accounts --remote --file migrations/0001_accounts.sql`.
+3. In the Pages project, open **Settings → Functions → D1 database bindings** and add a binding named `DB` pointing to that database.
+4. Redeploy the Pages project so the Functions runtime receives the binding.
+
+Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
+
+## Account API
+
+| Method | Path | Description |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Create an account and sign in |
+| POST | `/api/auth/login` | Sign in with username and password |
+| GET | `/api/auth/session` | Return the current account and its progress |
+| POST | `/api/auth/logout` | Revoke the current session |
+| POST | `/api/auth/password` | Change the signed-in account password |
+| DELETE | `/api/auth/account` | Delete the signed-in account and progress |
+| GET/PUT | `/api/progress` | Read or update only the signed-in account's progress |
 
 ## Contributing
 
