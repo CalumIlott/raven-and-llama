@@ -4,6 +4,7 @@ Object.assign(App.prototype, {
     this.rememberModule('dojo');
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'dojo';
 
     const profile = ProfileManager.getActiveProfile();
     this.updateHeader();
@@ -123,6 +124,7 @@ Object.assign(App.prototype, {
     this.selectedBeltId = beltId;
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'belt-detail';
 
     const belt = BELTS_DATA.find(b => b.id === beltId);
     if (!belt) return this.showDojoHub();

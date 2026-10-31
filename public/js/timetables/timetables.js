@@ -4,6 +4,7 @@ Object.assign(App.prototype, {
     this.rememberModule('timetables');
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'timetables';
 
     const buttons = Array.from({length: 11}, (_, i) => i + 2).map(n => `
       <button data-action="times-table-start" data-table="${n}"

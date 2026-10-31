@@ -69,6 +69,7 @@ Object.assign(App.prototype, {
     this.scienceGame = null;
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'science';
     this.updateHeader();
 
     main.innerHTML = `

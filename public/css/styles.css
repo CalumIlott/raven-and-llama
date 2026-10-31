@@ -475,6 +475,7 @@ a:focus-visible,
   --page-panel-raised: #202c24;
   --page-edge: #34443a;
   --page-canvas: #101713;
+  --page-accent: #8bd6b4;
   min-width: 0;
   color: var(--page-ink);
   background: var(--page-canvas);
@@ -488,6 +489,7 @@ html.theme-light #app-main[data-page] {
   --page-panel-raised: #f2f6f1;
   --page-edge: #d7e0d8;
   --page-canvas: #f3f6f2;
+  --page-accent: #187c57;
 }
 
 #app-main[data-page] > div:first-child {
@@ -509,6 +511,92 @@ html.theme-light #app-main[data-page] {
 #app-main[data-page] [class~="text-slate-300"],
 #app-main[data-page] [class~="text-zinc-400"],
 #app-main[data-page] [class~="text-slate-400"] { color: var(--page-muted) !important; }
+
+#app-main[data-page="dojo"] { --page-accent: #e4b844; }
+html.theme-light #app-main[data-page="dojo"] { --page-accent: #916714; }
+#app-main[data-page="timetables"] { --page-accent: #54c4a0; }
+html.theme-light #app-main[data-page="timetables"] { --page-accent: #187c57; }
+#app-main[data-page="science"] { --page-accent: #65b8e4; }
+html.theme-light #app-main[data-page="science"] { --page-accent: #17688c; }
+#app-main[data-page="spelling"] { --page-accent: #e3a165; }
+html.theme-light #app-main[data-page="spelling"] { --page-accent: #97512b; }
+#app-main[data-page="trophy"] { --page-accent: #e4b844; }
+html.theme-light #app-main[data-page="trophy"] { --page-accent: #916714; }
+
+#app-main[data-page="dojo"] .app-card-link,
+#app-main[data-page="belt-detail"] .app-card-link,
+#app-main[data-page="timetables"] .app-card-link,
+#app-main[data-page="science"] .app-card-link,
+#app-main[data-page="spelling"] .app-card-link,
+#app-main[data-page="trophy"] .app-card-link {
+  border-color: var(--page-edge);
+  border-radius: 0.6rem;
+  background-color: var(--page-panel);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
+}
+
+#app-main[data-page="dojo"] .app-card-link:hover,
+#app-main[data-page="belt-detail"] .app-card-link:hover,
+#app-main[data-page="timetables"] .app-card-link:hover,
+#app-main[data-page="science"] .app-card-link:hover,
+#app-main[data-page="spelling"] .app-card-link:hover,
+#app-main[data-page="trophy"] .app-card-link:hover {
+  border-color: var(--page-accent);
+}
+
+#app-main[data-page="dojo"] > div:first-child > div:nth-child(2),
+#app-main[data-page="timetables"] > div:first-child > div:nth-child(2),
+#app-main[data-page="science"] > div:first-child > div:nth-child(2),
+#app-main[data-page="spelling"] > div:first-child > div:nth-child(2),
+#app-main[data-page="trophy"] > div:first-child > div:nth-child(2) {
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  border: 1px solid var(--page-edge) !important;
+  border-radius: 1rem;
+  box-shadow: 0 18px 42px rgb(0 0 0 / 12%);
+}
+
+#app-main[data-page="dojo"] > div:first-child > div:nth-child(2) {
+  background: linear-gradient(118deg, #f8cf58 0%, #f7de8d 55%, #a8dfc7 100%);
+}
+
+#app-main[data-page="timetables"] > div:first-child > div:nth-child(2) {
+  background: linear-gradient(118deg, #d6f1b3 0%, #a8dfc7 55%, #8ccfca 100%);
+}
+
+#app-main[data-page="science"] > div:first-child > div:nth-child(2) {
+  background: linear-gradient(118deg, #c9e8f4 0%, #bce7d7 58%, #e6e9a6 100%);
+}
+
+#app-main[data-page="spelling"] > div:first-child > div:nth-child(2) {
+  background: linear-gradient(118deg, #f5d69b 0%, #c9e5a5 58%, #91d1b3 100%);
+}
+
+#app-main[data-page="trophy"] > div:first-child > div:nth-child(2) {
+  background: linear-gradient(118deg, #f8dc82 0%, #f1e4af 55%, #badfc3 100%);
+}
+
+#app-main[data-page="dojo"] > div:first-child > div:nth-child(2) h1,
+#app-main[data-page="timetables"] > div:first-child > div:nth-child(2) h1,
+#app-main[data-page="science"] > div:first-child > div:nth-child(2) h1,
+#app-main[data-page="spelling"] > div:first-child > div:nth-child(2) h1,
+#app-main[data-page="trophy"] > div:first-child > div:nth-child(2) h1 { color: #253629 !important; }
+
+#app-main[data-page="dojo"] > div:first-child > div:nth-child(2) p,
+#app-main[data-page="timetables"] > div:first-child > div:nth-child(2) p,
+#app-main[data-page="science"] > div:first-child > div:nth-child(2) p,
+#app-main[data-page="spelling"] > div:first-child > div:nth-child(2) p,
+#app-main[data-page="trophy"] > div:first-child > div:nth-child(2) p { color: #3c5143 !important; }
+
+#app-main[data-page="dojo"] > div:first-child > div:nth-child(2) h1 span,
+#app-main[data-page="timetables"] > div:first-child > div:nth-child(2) h1 span,
+#app-main[data-page="science"] > div:first-child > div:nth-child(2) h1 span,
+#app-main[data-page="spelling"] > div:first-child > div:nth-child(2) h1 span,
+#app-main[data-page="trophy"] > div:first-child > div:nth-child(2) h1 span { color: #17688c !important; }
+
+#app-main[data-page="belt-detail"] > div:first-child > div:nth-child(2) {
+  border-radius: 1rem;
+  box-shadow: 0 18px 42px rgb(0 0 0 / 14%);
+}
 
 /* Home: a composed, calm family portal */
 #app-main[data-page="home"] > div:first-child > div:first-child {

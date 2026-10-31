@@ -406,6 +406,7 @@ class App {
     this.currentView = 'trophy';
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'trophy';
 
     const profile = ProfileManager.getActiveProfile();
     const passedBelts = profile?.passedBelts || [];

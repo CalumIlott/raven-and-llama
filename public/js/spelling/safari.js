@@ -115,6 +115,7 @@ Object.assign(App.prototype, {
     this.rememberModule('spelling');
     const main = document.getElementById('app-main');
     if (!main) return;
+    main.dataset.page = 'spelling';
     this.updateHeader();
 
     main.innerHTML = `
