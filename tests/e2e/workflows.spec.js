@@ -125,6 +125,37 @@ test('endless belt and timetable challenges continue, finish, and retain best sc
   await expect(page.locator('#app-main')).toContainText('Best score: 1');
 });
 
+test('canvas arcades support keyboard-only play and announce actions', async ({ page }) => {
+  test.setTimeout(60000);
+  await openMathsDojo(page);
+  const games = [
+    { belt: 'White Belt', canvas: '#arcade-canvas', select: 'ArrowRight', selected: 'Selected balloon', activate: 'Space', activated: 'Popped balloon' },
+    { belt: 'Green Belt', canvas: '#runner-canvas', ready: 'Ready to jump', activate: 'Space', activated: 'Jumped' },
+    { belt: 'Blue Belt', canvas: '#target-canvas', select: 'ArrowRight', selected: 'Selected target', activate: 'Enter', activated: 'Hit target' },
+    { belt: 'Brown Belt', canvas: '#space-canvas', select: 'ArrowLeft', selected: 'Ship moved left', activate: 'Space', activated: 'Fired a shot' }
+  ];
+
+  for (const [index, game] of games.entries()) {
+    if (index > 0) await page.getByRole('button', { name: /Back to Maths Masters Belts/ }).click();
+    await page.getByRole('heading', { name: game.belt, exact: true }).click();
+    await page.getByRole('button', { name: /Play .* Arcade!/ }).click();
+    const canvas = page.locator(game.canvas);
+    await expect(canvas).toHaveAttribute('tabindex', '0');
+    await canvas.focus();
+    await expect(canvas).toBeFocused();
+    if (game.ready) await expect(page.locator('#arcade-keyboard-status')).toContainText(game.ready, { timeout: 5000 });
+
+    if (game.select) {
+      await page.keyboard.press(game.select);
+      await expect(page.locator('#arcade-keyboard-status')).toContainText(game.selected, { timeout: 5000 });
+    }
+
+    await page.keyboard.press(game.activate);
+    await expect(page.locator('#arcade-keyboard-status')).toContainText(game.activated, { timeout: 5000 });
+    await page.getByRole('button', { name: /Exit Arcade/ }).click();
+  }
+});
+
 test('all seven Maths Masters arcades launch and return to their belt dojo', async ({ page }) => {
   test.setTimeout(60000);
   const belts = ['White Belt', 'Yellow Belt', 'Green Belt', 'Blue Belt', 'Brown Belt', 'Black Belt', 'Platinum Belt'];
@@ -133,6 +164,8 @@ test('all seven Maths Masters arcades launch and return to their belt dojo', asy
   for (let index = 0; index < belts.length; index++) {
     await page.getByRole('heading', { name: belts[index], exact: true }).click();
     await page.getByRole('button', { name: /Play .* Arcade!/ }).click();
+    await expect(page.locator('.arcade-game__header')).toBeVisible();
+    await expect(page.locator('.arcade-game__score')).toBeVisible();
     await expect(page.locator('#game-arena canvas, #game-arena button').first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Exit Arcade/ })).toBeVisible();
     await page.getByRole('button', { name: /Exit Arcade/ }).click();
