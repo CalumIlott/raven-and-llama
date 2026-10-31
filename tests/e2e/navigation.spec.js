@@ -82,3 +82,25 @@ test('parent progress report and trophy room render their full states', async ({
   await expect(page.getByRole('heading', { name: "Guest's Trophy Hall" })).toBeVisible();
   await expect(page.getByText('No Grand Master certificates earned yet.')).toBeVisible();
 });
+
+test('certificate text cannot create markup and mobile zoom remains available', async ({ page }) => {
+  const certificateText = '<em data-injected>Injected markup</em>';
+  await page.evaluate(value => {
+    window.ProfileManager.getActiveProfile().certificates = [{
+      beltName: value,
+      date: value,
+      score: value
+    }];
+    window.app.showTrophyRoom();
+  }, certificateText);
+
+  await expect(page.locator('#app-main em[data-injected]')).toHaveCount(0);
+  await expect(page.locator('#app-main')).toContainText(`${certificateText} Mastery`);
+
+  const accessibilitySettings = await page.evaluate(() => ({
+    viewport: document.querySelector('meta[name="viewport"]').content,
+    userSelect: getComputedStyle(document.body).userSelect
+  }));
+  expect(accessibilitySettings.viewport).not.toMatch(/maximum-scale|user-scalable=no/);
+  expect(accessibilitySettings.userSelect).not.toBe('none');
+});

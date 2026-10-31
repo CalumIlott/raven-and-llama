@@ -1,8 +1,19 @@
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
 // Raven & Llama: Multi-Tiered Educational Platform Controller
 class App {
   constructor() {
     this.currentView = 'home';
     this.selectedBeltId = null;
+    this.dialogFocusReturn = new Map();
   }
 
   async init() {
@@ -64,6 +75,164 @@ class App {
     };
     document.addEventListener('click', initAudio);
     document.addEventListener('keydown', initAudio);
+    document.addEventListener('keydown', event => this.handleDialogKeydown(event));
+    document.addEventListener('click', event => this.handleClickAction(event));
+    document.addEventListener('submit', event => this.handleSubmitAction(event));
+    document.addEventListener('change', event => this.handleChangeAction(event));
+  }
+
+  handleClickAction(event) {
+    const target = event.target.closest?.('[data-action]');
+    if (!target) return;
+    if (target instanceof HTMLAnchorElement) event.preventDefault();
+
+    switch (target.dataset.action) {
+      case 'home': this.showRavenAndLlamaHome(); break;
+      case 'learning': this.showLearningHub(); break;
+      case 'games-hub': this.showGamesHub(); break;
+      case 'account-open': this.openProfileModal(); break;
+      case 'parent-report': this.showParentOverview(); break;
+      case 'dojo': this.showDojoHub(); break;
+      case 'times-tables': this.showTimesTables(); break;
+      case 'trophy-room': this.showTrophyRoom(); break;
+      case 'account-close': this.closeProfileModal(); break;
+      case 'account-mode': this.setAccountMode(target.dataset.mode); break;
+      case 'sound-toggle': this.toggleSound(); break;
+      case 'account-logout': this.logoutAccount(); break;
+      case 'account-delete-show': this.showDeleteAccountConfirmation(); break;
+      case 'account-delete-cancel': this.cancelDeleteAccount(); break;
+      case 'parent-close': this.closeParentModal(); break;
+      case 'belt-detail': this.showBeltDetails(target.dataset.beltId); break;
+      case 'skill-start': this.startSkillGame(target.dataset.beltId, target.dataset.skillId); break;
+      case 'arcade-start': this.launchArcade(target.dataset.beltId); break;
+      case 'belt-test': this.startBeltTestGame(target.dataset.beltId, Number(target.dataset.stage)); break;
+      case 'prerequisites': this.showPrerequisiteChecklist(target.dataset.beltId); break;
+      case 'times-table-start': this.startTimesTable(Number(target.dataset.table)); break;
+      case 'times-table-quiz': this.startTimesTableQuiz(target.dataset.allTables === 'true'); break;
+      case 'times-table-arcade': this.startTimetableArcade(); break;
+      case 'endless-timetables': this.startEndlessTimetables(); break;
+      case 'times-table-pick': this.ttPick(Number(target.dataset.id), Number(target.dataset.value)); break;
+      case 'game-answer': window.gameEngine.submitAnswer(decodeURIComponent(target.dataset.answer)); break;
+      case 'game-order-pick': window.gameEngine.pickOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
+      case 'game-exit':
+        window.gameEngine.exitGame();
+        break;
+      case 'endless-retry': window.gameEngine.restartEndless(); break;
+      case 'endless-return':
+        if (target.dataset.beltId) this.showBeltDetails(target.dataset.beltId);
+        else this.showTimesTables();
+        break;
+      case 'critter-start': this.startCritterCatch(); break;
+      case 'critter-hole': this.selectCritterHole(Number(target.dataset.holeIndex)); break;
+      case 'science-home': this.showScienceExplorers(); break;
+      case 'science-start': this.startScienceMission(target.dataset.missionId); break;
+      case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
+      case 'science-continue': this.continueScienceMission(); break;
+      case 'spelling-home': this.showSpellingSafari(); break;
+      case 'spelling-start': this.startSpellingSafari(target.dataset.activityId); break;
+      case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
+      case 'spelling-clear': this.clearSpellingSafariLetters(); break;
+      case 'spelling-answer': this.submitSpellingSafariAnswer(decodeURIComponent(target.dataset.answer)); break;
+      case 'spelling-next': this.nextSpellingSafariQuestion(); break;
+      case 'science-home': this.showScienceExplorers(); break;
+      case 'science-start': this.startScienceMission(target.dataset.missionId); break;
+      case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
+      case 'science-continue': this.continueScienceMission(); break;
+      case 'spelling-home': this.showSpellingSafari(); break;
+      case 'spelling-start': this.startSpellingSafari(target.dataset.activityId); break;
+      case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
+      case 'spelling-clear': this.clearSpellingSafariLetters(); break;
+      case 'spelling-answer': this.submitSpellingSafariAnswer(decodeURIComponent(target.dataset.answer)); break;
+      case 'spelling-next': this.nextSpellingSafariQuestion(); break;
+      case 'endless-belt-test': this.startEndlessBeltTest(target.dataset.beltId); break;
+      case 'training-retry': window.gameEngine.startTraining(target.dataset.beltId, target.dataset.skillId); break;
+      case 'training-return': this.showBeltDetails(target.dataset.beltId); break;
+      case 'quiz-retry': window.gameEngine.startBeltTest(target.dataset.beltId, Number(target.dataset.stage)); break;
+      case 'quiz-return': this.showBeltDetails(target.dataset.beltId); break;
+      case 'quiz-next-belt': this.showDojoHub(); break;
+      case 'print-certificate': window.print(); break;
+      case 'arcade-exit':
+        window.arcadeEngine.stopGame();
+        this.showBeltDetails(target.dataset.beltId);
+        break;
+      case 'arcade-potion': window.arcadeEngine.tapPotion(Number(target.dataset.id)); break;
+      case 'arcade-jump': window.arcadeEngine.triggerJump(); break;
+      case 'arcade-move-left': window.arcadeEngine.moveShipLeft(); break;
+      case 'arcade-fire': window.arcadeEngine.fireBullet(); break;
+      case 'arcade-move-right': window.arcadeEngine.moveShipRight(); break;
+      case 'arcade-gem': window.arcadeEngine.tapGem(Number(target.dataset.index)); break;
+      case 'arcade-turret': window.arcadeEngine.fireTurret(Number(target.dataset.value)); break;
+      case 'arcade-retry': window.arcadeEngine[target.dataset.game](target.dataset.container); break;
+      case 'arcade-return': this.showBeltDetails(target.dataset.beltId); break;
+      case 'timetable-exit': this.showTimesTables(); break;
+    }
+  }
+
+  handleSubmitAction(event) {
+    switch (event.target.dataset.submitAction) {
+      case 'account-auth': this.submitAccountForm(event); break;
+      case 'account-avatar': this.changeAvatarSubmit(event); break;
+      case 'account-password': this.changePasswordSubmit(event); break;
+      case 'account-delete': this.deleteAccount(event); break;
+    }
+  }
+
+  handleChangeAction(event) {
+    if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+  }
+
+  getDialogFocusableElements(dialog) {
+    return Array.from(dialog.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(element => element.getClientRects().length > 0);
+  }
+
+  openDialog(modal) {
+    this.dialogFocusReturn.set(modal, document.activeElement);
+    modal.classList.remove('hidden');
+    const dialog = modal.querySelector('[role="dialog"]') || modal;
+    const focusable = this.getDialogFocusableElements(dialog);
+    (focusable[0] || dialog).focus();
+  }
+
+  closeDialog(modal) {
+    modal.classList.add('hidden');
+    const previousFocus = this.dialogFocusReturn.get(modal);
+    this.dialogFocusReturn.delete(modal);
+    if (previousFocus?.isConnected && !previousFocus.closest('.hidden')) previousFocus.focus();
+  }
+
+  handleDialogKeydown(event) {
+    const dialogs = Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"]'))
+      .filter(dialog => !dialog.closest('.hidden'));
+    const dialog = dialogs[dialogs.length - 1];
+    if (!dialog) return;
+
+    const modal = dialog.closest('#profile-modal, #parent-modal');
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (modal?.id === 'profile-modal') this.closeProfileModal();
+      else if (modal?.id === 'parent-modal') this.closeParentModal();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = this.getDialogFocusableElements(dialog);
+    if (!focusable.length) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   updateHeader() {
@@ -248,8 +417,8 @@ class App {
               📜
             </div>
             <div>
-              <h4 class="font-ninja text-lg text-yellow-300 font-bold">${c.beltName} Mastery</h4>
-              <div class="text-xs text-slate-400">Awarded on ${c.date} • Score: ${c.score}</div>
+              <h4 class="font-ninja text-lg text-yellow-300 font-bold">${escapeHtml(c.beltName)} Mastery</h4>
+              <div class="text-xs text-slate-400">Awarded on ${escapeHtml(c.date)} • Score: ${escapeHtml(c.score)}</div>
             </div>
           </div>
           <span class="text-xs bg-emerald-950 text-emerald-300 border border-emerald-600 px-3 py-1 rounded-full font-bold">
@@ -261,11 +430,11 @@ class App {
     main.innerHTML = `
       <div class="max-w-4xl mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-6">
-          <button onclick="window.app.showLearningHub()" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
+          <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
             <span>Back to Raven &amp; Llama Learning</span>
           </button>
-          <button onclick="window.app.showRavenAndLlamaHome()" class="text-xs text-slate-400 hover:text-white">
+          <button data-action="home" class="text-xs text-slate-400 hover:text-white">
             🏠 Raven &amp; Llama Home
           </button>
         </div>
@@ -335,8 +504,11 @@ class App {
       message.classList.add('hidden');
     }
     if (authenticated) this.renderAvatarOptions();
-    else this.setAccountMode('login');
-    modal.classList.remove('hidden');
+    else {
+      this.setAccountMode('login');
+      document.getElementById('account-avatar-form')?.reset();
+    }
+    this.openDialog(modal);
   }
 
   renderAvatarOptions() {
@@ -478,7 +650,7 @@ class App {
 
   closeProfileModal() {
     const modal = document.getElementById('profile-modal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) this.closeDialog(modal);
   }
 
   selectProfile(profileId) {
@@ -546,12 +718,12 @@ class App {
     const studentNameEl = document.getElementById('parent-student-name');
     if (studentNameEl) studentNameEl.textContent = profile ? profile.name : 'Learner';
 
-    modal.classList.remove('hidden');
+    this.openDialog(modal);
   }
 
   closeParentModal() {
     const modal = document.getElementById('parent-modal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) this.closeDialog(modal);
   }
 }
 

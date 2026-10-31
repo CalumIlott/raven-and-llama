@@ -11,6 +11,7 @@ function loadGameEngine() {
         if (!elements.has(id)) {
           elements.set(id, {
             classList: { add() {}, remove() {} },
+            dataset: {},
             style: {},
             innerHTML: '',
             textContent: ''

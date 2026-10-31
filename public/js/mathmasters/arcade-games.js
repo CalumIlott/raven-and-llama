@@ -67,7 +67,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('white')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="white" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-yellow-400">Target: <span id="bp-target" class="text-white text-xl font-bold">${target} Dots</span></div>
@@ -202,7 +202,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl text-center">
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('yellow')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="yellow" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-yellow-400">Match Sum to 10!</div>
@@ -211,7 +211,7 @@ class ArcadeEngine {
         <div class="text-xs text-slate-400 mb-2">Tap 2 potions that sum to 10! (-5 pts for non-10 pair)</div>
         <div id="potions-grid" class="grid grid-cols-4 gap-3 my-4">
           ${potions.map(p => `
-            <button onclick="window.arcadeEngine.tapPotion(${p.id})" id="potion-btn-${p.id}"
+            <button data-action="arcade-potion" data-id="${p.id}" id="potion-btn-${p.id}"
                     class="btn-ninja aspect-square rounded-2xl bg-indigo-950 border-2 border-indigo-500 hover:border-yellow-400 flex flex-col items-center justify-center text-white shadow-lg transition">
               <span class="text-2xl">🧪</span>
               <span class="font-ninja text-xl font-bold mt-1 text-yellow-300">${p.val}</span>
@@ -279,7 +279,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
         <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('green')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="green" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-emerald-400">Skip Count by 5s!</div>
@@ -288,7 +288,7 @@ class ArcadeEngine {
         <div class="text-xs text-slate-400 mb-2">Tap/Space to JUMP! (-10 pts if you fall in the water)</div>
         <canvas id="runner-canvas" width="460" height="300" class="w-full bg-slate-950 rounded-2xl cursor-pointer"></canvas>
         <div class="mt-3 flex justify-center">
-          <button onclick="window.arcadeEngine.triggerJump()" class="btn-ninja px-10 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-ninja font-bold text-lg shadow-lg">
+          <button data-action="arcade-jump" class="btn-ninja px-10 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-ninja font-bold text-lg shadow-lg">
             JUMP! ⬆️
           </button>
         </div>
@@ -395,7 +395,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
         <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('blue')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="blue" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-sky-400">Target Balance: <span id="sg-target" class="text-yellow-400 font-bold">= 15</span></div>
@@ -506,7 +506,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-4 shadow-2xl text-center overflow-hidden">
         <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('brown')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="brown" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-amber-400">Blast Multiples of ${timesBase}!</div>
@@ -515,9 +515,9 @@ class ArcadeEngine {
         <div class="text-xs text-slate-400 mb-2">Blast multiples of ${timesBase}! (-10 pts for shooting non-multiples)</div>
         <canvas id="space-canvas" width="460" height="340" class="w-full bg-slate-950 rounded-2xl"></canvas>
         <div class="mt-3 flex justify-between gap-2">
-          <button onclick="window.arcadeEngine.moveShipLeft()" class="btn-ninja flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">⬅️ Move</button>
-          <button onclick="window.arcadeEngine.fireBullet()" class="btn-ninja flex-1 py-3 bg-rose-600 text-white rounded-xl font-ninja font-bold">🔥 FIRE</button>
-          <button onclick="window.arcadeEngine.moveShipRight()" class="btn-ninja flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">Move ➡️</button>
+          <button data-action="arcade-move-left" class="btn-ninja flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">⬅️ Move</button>
+          <button data-action="arcade-fire" class="btn-ninja flex-1 py-3 bg-rose-600 text-white rounded-xl font-ninja font-bold">🔥 FIRE</button>
+          <button data-action="arcade-move-right" class="btn-ninja flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold">Move ➡️</button>
         </div>
       </div>
     `;
@@ -635,7 +635,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl text-center">
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('black')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="black" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-purple-400">Match Equivalences! 💎</div>
@@ -672,7 +672,7 @@ class ArcadeEngine {
     this.gemExpected = new Set(round.forms);
     const decoys = ['1/3', '0.4', '60%', '3/5', '0.125', '40%', '2/3', '0.8', '90%', '5/8'];
     const values = QuestionGenerator.shuffle([...round.forms, ...QuestionGenerator.shuffle(decoys).slice(0, 5)]);
-    document.getElementById('gs-gems').innerHTML = values.map((value, index) => `<button id="gem-${index}" onclick="window.arcadeEngine.tapGem(${index})" class="btn-ninja p-4 min-h-16 rounded-xl bg-purple-900/60 border border-purple-400 hover:border-yellow-300 font-ninja text-lg font-bold text-white">💎 ${value}</button>`).join('');
+    document.getElementById('gs-gems').innerHTML = values.map((value, index) => `<button id="gem-${index}" data-action="arcade-gem" data-index="${index}" class="btn-ninja p-4 min-h-16 rounded-xl bg-purple-900/60 border border-purple-400 hover:border-yellow-300 font-ninja text-lg font-bold text-white">💎 ${value}</button>`).join('');
   }
 
   tapGem(index) {
@@ -698,7 +698,7 @@ class ArcadeEngine {
     if (this.gameInterval) { clearInterval(this.gameInterval); this.gameInterval = null; }
     const arena = document.getElementById('game-arena');
     if (!arena) return;
-    arena.innerHTML = `<div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 ${won ? 'border-emerald-500' : 'border-rose-700'} rounded-3xl"><div class="text-5xl mb-3">${won ? '💎' : '⏱️'}</div><h2 class="font-ninja text-2xl text-white font-bold">${won ? 'Gem Master!' : 'Time’s Up!'}</h2><p class="text-slate-300 my-3">Score: <b class="text-yellow-400">${this.score}</b> · Rounds cleared: ${Math.min(this.gemRound + (won ? 0 : 0), 5)} / 5</p><button onclick="window.arcadeEngine.startGemSorter('game-arena')" class="btn-ninja px-5 py-3 bg-purple-700 rounded-xl text-white font-bold">Play Again</button><button onclick="window.app.showBeltDetails('black')" class="btn-ninja px-5 py-3 ml-2 bg-slate-700 rounded-xl text-white">Dojo Skills</button></div>`;
+    arena.innerHTML = `<div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 ${won ? 'border-emerald-500' : 'border-rose-700'} rounded-3xl"><div class="text-5xl mb-3">${won ? '💎' : '⏱️'}</div><h2 class="font-ninja text-2xl text-white font-bold">${won ? 'Gem Master!' : 'Time’s Up!'}</h2><p class="text-slate-300 my-3">Score: <b class="text-yellow-400">${this.score}</b> · Rounds cleared: ${Math.min(this.gemRound + (won ? 0 : 0), 5)} / 5</p><button data-action="arcade-retry" data-game="startGemSorter" data-container="game-arena" class="btn-ninja px-5 py-3 bg-purple-700 rounded-xl text-white font-bold">Play Again</button><button data-action="arcade-return" data-belt-id="black" class="btn-ninja px-5 py-3 ml-2 bg-slate-700 rounded-xl text-white">Dojo Skills</button></div>`;
   }
 
   // --- 7. PLATINUM BELT: BODMAS CYBER TURRET ---
@@ -714,7 +714,7 @@ class ArcadeEngine {
     container.innerHTML = `
       <div class="relative w-full max-w-lg mx-auto bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 shadow-2xl text-center">
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
-          <button onclick="window.arcadeEngine.stopGame(); window.app.showBeltDetails('platinum')" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
+          <button data-action="arcade-exit" data-belt-id="platinum" class="btn-ninja flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold shadow">
             ← Exit Arcade
           </button>
           <div class="font-ninja text-lg text-sky-400">BODMAS Boss Defense 🛡️</div>
@@ -722,7 +722,7 @@ class ArcadeEngine {
         </div>
         <div class="text-xs text-slate-400 mb-2">Answer BODMAS problems to hit the boss. Three shields; solve eight before time runs out.</div>
         <div class="flex justify-between text-sm text-slate-300"><span>Shields <b id="cd-lives">3</b> ❤️</span><span>Time <b id="cd-time">60</b>s</span><span>Boss <b id="cd-health">8</b> 🛡️</span></div>
-        <div class="w-full h-3 rounded-full bg-slate-800 my-2 overflow-hidden"><div id="cd-healthbar" class="h-full bg-rose-500" style="width:100%"></div></div>
+        <progress id="cd-healthbar" class="boss-health-progress w-full my-2" max="8" value="8" aria-label="Boss health"></progress>
         <div class="p-6 bg-slate-950 rounded-2xl border-2 border-sky-500/40 my-4 text-center"><div class="text-xs text-rose-400 font-bold uppercase tracking-wider mb-2">Incoming attack · solve to fire</div><div id="cd-question" class="font-ninja text-3xl text-white font-bold mb-4"></div><div id="cd-choices" class="grid grid-cols-2 gap-3"></div></div>
       </div>
     `;
@@ -743,7 +743,7 @@ class ArcadeEngine {
     }
     document.getElementById('cd-question').textContent = this.defensePrompt;
     const options = QuestionGenerator.generateChoices(this.defenseAnswer, 4, 12);
-    document.getElementById('cd-choices').innerHTML = options.map(value => `<button onclick="window.arcadeEngine.fireTurret(${value})" class="btn-ninja p-4 rounded-xl bg-sky-900 border border-sky-400 hover:bg-sky-700 font-ninja text-2xl font-bold text-white">${value}</button>`).join('');
+    document.getElementById('cd-choices').innerHTML = options.map(value => `<button data-action="arcade-turret" data-value="${value}" class="btn-ninja p-4 rounded-xl bg-sky-900 border border-sky-400 hover:bg-sky-700 font-ninja text-2xl font-bold text-white">${value}</button>`).join('');
   }
 
   fireTurret(value) {
@@ -757,7 +757,7 @@ class ArcadeEngine {
       const health = document.getElementById('cd-health');
       const bar = document.getElementById('cd-healthbar');
       if(health) health.textContent=this.bossHealth;
-      if(bar) bar.style.width=`${Math.max(0, this.bossHealth / 8 * 100)}%`;
+      if(bar) bar.value = this.bossHealth;
     } else {
       this.deductScore(10, 'cd-score');
       this.defenseLives--;
@@ -773,7 +773,7 @@ class ArcadeEngine {
     if (this.gameInterval) { clearInterval(this.gameInterval); this.gameInterval = null; }
     const arena = document.getElementById('game-arena');
     if (!arena) return;
-    arena.innerHTML = `<div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 ${won ? 'border-emerald-500' : 'border-rose-700'} rounded-3xl"><div class="text-5xl mb-3">${won ? '🛡️' : '💥'}</div><h2 class="font-ninja text-2xl text-white font-bold">${won ? 'Dojo Defended!' : 'Defense Overrun'}</h2><p class="text-slate-300 my-3">Score: <b class="text-yellow-400">${this.score}</b> · Correct: ${this.defenseRound} / 8</p><button onclick="window.arcadeEngine.startCyberDefense('game-arena')" class="btn-ninja px-5 py-3 bg-sky-700 rounded-xl text-white font-bold">Play Again</button><button onclick="window.app.showBeltDetails('platinum')" class="btn-ninja px-5 py-3 ml-2 bg-slate-700 rounded-xl text-white">Dojo Skills</button></div>`;
+    arena.innerHTML = `<div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 ${won ? 'border-emerald-500' : 'border-rose-700'} rounded-3xl"><div class="text-5xl mb-3">${won ? '🛡️' : '💥'}</div><h2 class="font-ninja text-2xl text-white font-bold">${won ? 'Dojo Defended!' : 'Defense Overrun'}</h2><p class="text-slate-300 my-3">Score: <b class="text-yellow-400">${this.score}</b> · Correct: ${this.defenseRound} / 8</p><button data-action="arcade-retry" data-game="startCyberDefense" data-container="game-arena" class="btn-ninja px-5 py-3 bg-sky-700 rounded-xl text-white font-bold">Play Again</button><button data-action="arcade-return" data-belt-id="platinum" class="btn-ninja px-5 py-3 ml-2 bg-slate-700 rounded-xl text-white">Dojo Skills</button></div>`;
   }
 }
 

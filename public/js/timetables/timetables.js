@@ -6,7 +6,7 @@ Object.assign(App.prototype, {
     if (!main) return;
 
     const buttons = Array.from({length: 11}, (_, i) => i + 2).map(n => `
-      <button onclick="window.app.startTimesTable(${n})"
+      <button data-action="times-table-start" data-table="${n}"
               class="btn-ninja p-4 rounded-2xl bg-slate-900 border-2 border-emerald-700 hover:border-emerald-400 text-white font-ninja text-xl font-bold hover:scale-105 transition shadow-lg flex flex-col items-center justify-center">
         <span>${n}×</span>
         <span class="text-[10px] text-slate-400 font-normal mt-0.5">Table</span>
@@ -16,16 +16,16 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-4xl mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-5">
-          <button onclick="window.app.showLearningHub()" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 group">
+          <button data-action="learning" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
             <span>Back to Raven &amp; Llama Learning</span>
           </button>
           <div class="flex items-center gap-3">
-            <button onclick="window.app.showDojoHub()" class="text-xs text-amber-400 hover:text-amber-300 font-semibold">
+            <button data-action="dojo" class="text-xs text-amber-400 hover:text-amber-300 font-semibold">
               🥋 Maths Masters Belts
             </button>
             <span class="text-slate-600">•</span>
-            <button onclick="window.app.showRavenAndLlamaHome()" class="text-xs text-slate-400 hover:text-white">
+            <button data-action="home" class="text-xs text-slate-400 hover:text-white">
               🏠 Home
             </button>
           </div>
@@ -52,7 +52,7 @@ Object.assign(App.prototype, {
 
         <h2 class="font-ninja text-xl text-white mb-3">All-Tables Mixed Challenges:</h2>
         <div class="grid sm:grid-cols-2 gap-4 mb-4">
-          <button onclick="window.app.startTimesTableQuiz(false)"
+          <button data-action="times-table-quiz" data-all-tables="false"
                   class="btn-ninja p-5 rounded-2xl bg-sky-800 hover:bg-sky-700 border-2 border-sky-400 text-white font-ninja font-bold text-left shadow-xl transition flex items-center justify-between">
             <div>
               <div class="text-lg">Quick Mixed Quiz ⚡</div>
@@ -61,7 +61,7 @@ Object.assign(App.prototype, {
             <span class="text-2xl">➔</span>
           </button>
 
-          <button onclick="window.app.startTimesTableQuiz(true)"
+          <button data-action="times-table-quiz" data-all-tables="true"
                   class="btn-ninja p-5 rounded-2xl bg-indigo-800 hover:bg-indigo-700 border-2 border-indigo-400 text-white font-ninja font-bold text-left shadow-xl transition flex items-center justify-between">
             <div>
               <div class="text-lg">Grand Completion Test 🏆</div>
@@ -71,7 +71,7 @@ Object.assign(App.prototype, {
           </button>
         </div>
 
-        <button onclick="window.app.startEndlessTimetables()"
+  <button data-action="endless-timetables"
                 class="btn-ninja w-full p-5 rounded-2xl bg-emerald-800 hover:bg-emerald-700 border-2 border-emerald-400 text-white font-ninja font-bold text-left shadow-xl transition flex items-center justify-between mb-4">
           <div>
             <div class="text-lg">Endless Timetables Challenge ♾️</div>
@@ -81,7 +81,7 @@ Object.assign(App.prototype, {
           <span class="text-2xl">➔</span>
         </button>
 
-        <button onclick="window.app.startTimetableArcade()"
+        <button data-action="times-table-arcade"
                 class="btn-ninja w-full p-5 rounded-2xl bg-amber-600 hover:bg-amber-500 border-2 border-amber-300 text-slate-950 font-ninja font-bold text-lg shadow-xl transition flex items-center justify-center gap-3">
           <span>🕹️</span> <span>Play Product Pair Match Arcade!</span>
         </button>
@@ -152,7 +152,7 @@ Object.assign(App.prototype, {
       <div class="max-w-xl mx-auto px-4 py-6">
         <div class="bg-slate-900 border-2 border-amber-600 rounded-3xl p-5 text-center shadow-2xl">
           <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-            <button onclick="window.app.showTimesTables()" class="btn-ninja text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
+            <button data-action="timetable-exit" class="btn-ninja text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl text-slate-300">
               ← Exit Arcade
             </button>
             <h2 class="font-ninja text-xl text-amber-400 font-bold">Product Pair Match 🕹️</h2>
@@ -187,7 +187,7 @@ Object.assign(App.prototype, {
     cardsContainer.innerHTML = cards.map(c => `
       <button id="tt-card-${c.i}"
               class="btn-ninja aspect-square bg-indigo-950 border-2 border-indigo-600 hover:border-yellow-400 rounded-2xl text-white text-2xl font-ninja font-bold transition flex items-center justify-center shadow-lg"
-              onclick="window.app.ttPick(${c.i}, ${c.v})">
+              data-action="times-table-pick" data-id="${c.i}" data-value="${c.v}">
         ${c.v}
       </button>
     `).join('');

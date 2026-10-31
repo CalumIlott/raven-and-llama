@@ -71,15 +71,9 @@ class GameEngine {
     if (!timerBar) return;
 
     const pct = Math.max(0, Math.min(100, (this.timeLeft / this.totalTime) * 100));
-    timerBar.style.width = `${pct}%`;
+    timerBar.value = pct;
 
-    if (pct < 30) {
-      timerBar.className = 'h-2 rounded-full transition-all duration-100 bg-rose-500';
-    } else if (pct < 60) {
-      timerBar.className = 'h-2 rounded-full transition-all duration-100 bg-amber-400';
-    } else {
-      timerBar.className = 'h-2 rounded-full transition-all duration-100 bg-emerald-400';
-    }
+    timerBar.dataset.tone = pct < 30 ? 'critical' : pct < 60 ? 'warning' : 'healthy';
 
     if (timerText) {
       timerText.textContent = `${Math.ceil(Math.max(0, this.timeLeft))}s`;
@@ -227,7 +221,7 @@ class GameEngine {
       controlsHtml = `
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-xl mx-auto mt-6">
           ${q.options.map((opt, idx) => `
-            <button onclick="window.gameEngine.submitAnswer('${opt}')"
+            <button data-action="game-answer" data-answer="${encodeURIComponent(String(opt))}"
                     id="opt-btn-${idx}"
                     class="btn-ninja p-4 sm:p-5 rounded-2xl bg-slate-800 hover:bg-slate-700 active:bg-blue-600 border-2 border-slate-600 hover:border-sky-400 text-white font-bold text-xl sm:text-2xl shadow-xl focus:outline-none focus:ring-4 focus:ring-sky-500/50">
               ${opt}
@@ -240,7 +234,7 @@ class GameEngine {
     container.innerHTML = `
       <!-- Top HUD -->
       <div class="flex items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800">
-        <button onclick="window.gameEngine.exitGame()" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
+        <button data-action="game-exit" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
           ← ${this.mode === 'endless' ? 'End Run' : 'Exit'}
         </button>
 
@@ -268,8 +262,8 @@ class GameEngine {
           <span>Speed Timer</span>
           <span id="question-timer-text" class="text-yellow-400 font-bold"></span>
         </div>
-        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
-          <div id="question-timer-bar" class="bg-emerald-400 h-2 rounded-full transition-all duration-100" style="width: 100%"></div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+          <progress id="question-timer-bar" class="question-timer w-full" max="100" value="100" aria-label="Question time remaining"></progress>
         </div>
       </div>
 
@@ -305,7 +299,7 @@ class GameEngine {
         </div>
         <div id="order-choices" class="flex flex-wrap items-center justify-center gap-3">
           ${q.items.map((item, idx) => `
-            <button onclick="window.gameEngine.pickOrderItem(${idx}, '${item}')"
+            <button data-action="game-order-pick" data-index="${idx}" data-value="${encodeURIComponent(String(item))}"
                     id="order-btn-${idx}"
                     class="btn-ninja w-14 h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-sky-400 text-white font-bold text-xl shadow-lg flex items-center justify-center">
               ${item}
@@ -439,10 +433,8 @@ class GameEngine {
           <div><div class="text-xs text-slate-400">Best Score</div><div class="text-2xl font-ninja text-yellow-400 font-bold">${bestScore}</div></div>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
-          <button onclick="window.gameEngine.restartEndless()" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-lg">Play Again ↻</button>
-          <button onclick="${this.endlessReturnBeltId
-            ? `window.app.showBeltDetails('${this.endlessReturnBeltId}')`
-            : 'window.app.showTimesTables()'}" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-600">
+          <button data-action="endless-retry" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-lg">Play Again ↻</button>
+          <button data-action="endless-return" data-belt-id="${this.endlessReturnBeltId || ''}" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-600">
             ${this.endlessReturnBeltId ? 'Belt Dojo' : 'Timetables'}
           </button>
         </div>
@@ -498,11 +490,11 @@ class GameEngine {
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3">
-          ${this.customExit ? `<button onclick="window.app.showTimesTables()" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-lg">Timetables ↻</button>` : `<button onclick="window.gameEngine.startTraining('${this.currentBelt.id}', '${this.currentSkill.id}')"
+          ${this.customExit ? `<button data-action="times-tables" class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-lg">Timetables ↻</button>` : `<button data-action="training-retry" data-belt-id="${this.currentBelt.id}" data-skill-id="${this.currentSkill.id}"
                   class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold shadow-lg">
             Train Again ↻
           </button>`}
-          <button onclick="${this.customExit ? 'window.app.showTimesTables()' : `window.app.showBeltDetails('${this.currentBelt.id}')` }"
+          <button data-action="${this.customExit ? 'times-tables' : 'training-return'}" data-belt-id="${this.currentBelt.id}"
                   class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-600">
             ${this.customExit ? 'Timetables' : 'Dojo Skills'}
           </button>
@@ -535,7 +527,7 @@ class GameEngine {
               Continue to Stage ${stageNum + 1}; each stage has a shorter timer. Complete all three exams and achieve <strong class="text-amber-400">10/10 Mastery</strong> on all skills to graduate.
             </div>
 
-            <button onclick="window.app.showBeltDetails('${this.currentBelt.id}')" class="btn-ninja w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-ninja font-bold shadow-lg">
+            <button data-action="quiz-return" data-belt-id="${this.currentBelt.id}" class="btn-ninja w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-ninja font-bold shadow-lg">
               Return to Dojo 🥋
             </button>
           </div>
@@ -562,10 +554,10 @@ class GameEngine {
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 mt-6">
-              <button onclick="window.app.showDojoHub()" class="btn-ninja flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-900 font-bold shadow-lg">
+              <button data-action="quiz-next-belt" class="btn-ninja flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-900 font-bold shadow-lg">
                 Continue to Next Belt 🥋
               </button>
-              <button onclick="window.print()" class="btn-ninja py-3 px-4 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-medium text-sm border border-slate-700">
+              <button data-action="print-certificate" class="btn-ninja py-3 px-4 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-medium text-sm border border-slate-700">
                 🖨️ Print Certificate
               </button>
             </div>
@@ -583,11 +575,11 @@ class GameEngine {
           <p class="text-slate-400 text-sm mb-4">You scored <strong class="text-rose-400">${this.score} / ${this.totalQuestions}</strong> (80% required to pass).</p>
 
           <div class="flex flex-col sm:flex-row gap-3">
-            <button onclick="window.gameEngine.startBeltTest('${this.currentBelt.id}', ${stageNum})"
+            <button data-action="quiz-retry" data-belt-id="${this.currentBelt.id}" data-stage="${stageNum}"
                     class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-lg">
               Retry Test ⚔️
             </button>
-            <button onclick="window.app.showBeltDetails('${this.currentBelt.id}')"
+            <button data-action="quiz-return" data-belt-id="${this.currentBelt.id}"
                     class="btn-ninja flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold border border-slate-600">
               Train Skills 🥋
             </button>

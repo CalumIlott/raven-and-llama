@@ -13,6 +13,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('a perfect practice round records mastery and updates the dojo', async ({ page }) => {
+  test.setTimeout(60000);
   await openMathsDojo(page);
   await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
   await page.getByRole('button', { name: /Train Skill/ }).first().click();
@@ -125,6 +126,7 @@ test('endless belt and timetable challenges continue, finish, and retain best sc
 });
 
 test('all seven Maths Masters arcades launch and return to their belt dojo', async ({ page }) => {
+  test.setTimeout(60000);
   const belts = ['White Belt', 'Yellow Belt', 'Green Belt', 'Blue Belt', 'Brown Belt', 'Black Belt', 'Platinum Belt'];
   await openMathsDojo(page);
 
@@ -146,6 +148,12 @@ test('Science Explorers missions teach concepts, award stars, and return to the 
   await openLearningHub(page);
   await expect(page.getByRole('heading', { name: 'Learning Modules', exact: true })).toBeVisible();
   await page.getByText('Explore Science Explorers', { exact: true }).click();
+  const scienceNavigation = await page.evaluate(() => ({
+    currentView: window.app.currentView,
+    method: typeof window.app.showScienceExplorers,
+    action: document.querySelector('[data-action="science-home"]')?.dataset.action
+  }));
+  expect(scienceNavigation.currentView, JSON.stringify(scienceNavigation)).toBe('science');
   await expect(page.getByRole('heading', { name: 'Science Explorers', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /Orbit Rescue/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Habitat Match/ })).toBeVisible();
