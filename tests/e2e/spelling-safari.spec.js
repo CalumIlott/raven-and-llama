@@ -34,7 +34,14 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
 
   for (const activity of ['Spelling Sprint', 'Phonics Trail', 'Word Explorer', 'Jungle Jumble']) {
-    await page.getByRole('button', { name: new RegExp(activity) }).click();
+    if (activity === 'Jungle Jumble') {
+      const card = page.locator('[data-activity-id="jungle-jumble"][data-difficulty="medium"]');
+      await expect(card).toHaveText('Medium');
+      await card.click();
+      await expect(page.getByText('medium difficulty')).toBeVisible();
+    } else {
+      await page.getByRole('button', { name: new RegExp(activity) }).click();
+    }
     await expect(page.getByRole('heading', { name: new RegExp(activity) })).toBeVisible();
 
     for (let round = 1; round <= 6; round++) {
@@ -48,7 +55,11 @@ test('Spelling Safari offers and completes all four word-game adventures', async
 
     await expect(page.getByRole('heading', { name: 'Safari Complete!' })).toBeVisible();
     await expect(page.locator('#safari-arena')).toContainText('6 / 6');
-    if (activity !== 'Jungle Jumble') {
+    if (activity === 'Jungle Jumble') {
+      await page.getByRole('button', { name: 'Play again' }).click();
+      await expect(page.getByText('medium difficulty')).toBeVisible();
+      await page.getByRole('button', { name: 'Exit' }).click();
+    } else {
       await page.getByRole('button', { name: 'Choose another adventure' }).click();
     }
   }
@@ -73,4 +84,3 @@ test('Spelling Safari does not reveal the correct answer on incorrect guesses', 
   await expect(page.locator('#safari-feedback')).not.toContainText('The answer was');
   await expect(page.locator('#safari-feedback')).not.toContainText(question.answer);
 });
-

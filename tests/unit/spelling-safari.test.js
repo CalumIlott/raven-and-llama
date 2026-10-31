@@ -50,6 +50,21 @@ test('each activity generates six unique answerable questions', () => {
   }
 });
 
+test('Jungle Jumble filters rounds by difficulty', () => {
+  const safari = loadSafari().SpellingSafari;
+  const ranges = {
+    easy: answer => answer.length <= 5,
+    medium: answer => answer.length >= 6 && answer.length <= 7,
+    hard: answer => answer.length >= 8
+  };
+
+  for (const [difficulty, matchesDifficulty] of Object.entries(ranges)) {
+    const questions = safari.createQuestions('jungle-jumble', 6, difficulty);
+    assert.equal(questions.length, 6);
+    assert.ok(questions.every(question => matchesDifficulty(question.answer)));
+  }
+});
+
 test('unknown activities and invalid round counts return no questions', () => {
   const context = loadSafari();
   const safari = context.SpellingSafari;
