@@ -40,6 +40,10 @@ Object.assign(App.prototype, {
           </p>
         </div>
 
+        <div class="mb-6">
+          ${ProfileManager.renderLeaderboard('times_tables', 'Times Tables Leaderboard')}
+        </div>
+
         <h2 class="font-ninja text-xl text-white mb-3">Individual Tables Practice (2× to 12×):</h2>
         <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
           ${buttons}
@@ -82,6 +86,7 @@ Object.assign(App.prototype, {
         </button>
       </div>
     `;
+    ProfileManager.loadLeaderboard('times_tables');
   },
 
   startTimesTableQuiz(allTables, table = null) {

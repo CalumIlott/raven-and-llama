@@ -56,6 +56,12 @@ class MemoryAccountStore {
     return this.progress.get(userId) || null;
   }
 
+  async getLeaderboardProfiles() {
+    return this.users
+      .filter(user => this.progress.has(user.id))
+      .map(user => ({ username: user.username, profile: this.progress.get(user.id) }));
+  }
+
   async saveProgress(userId, value) {
     this.progress.set(userId, structuredClone(value));
   }
@@ -115,19 +121,85 @@ test('accounts can only read and update their own progress', async () => {
   const firstData = await first.json();
 
   const save = await request(store, '/api/progress', 'PUT', {
-    profile: { ...firstData.profile, stars: 15, passedBelts: ['white'] }
+    profile: {
+      ...firstData.profile,
+      stars: 15,
+      passedBelts: ['white'],
+      endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' }
+    }
   }, firstCookie);
   assert.equal(save.status, 200);
 
   const firstRead = await request(store, '/api/progress', 'GET', undefined, firstCookie);
   const secondRead = await request(store, '/api/progress', 'GET', undefined, secondCookie);
-  assert.equal((await firstRead.json()).profile.stars, 15);
-  assert.equal((await secondRead.json()).profile.stars, 0);
+  const firstProfile = (await firstRead.json()).profile;
+  const secondProfile = (await secondRead.json()).profile;
+  assert.equal(firstProfile.stars, 15);
+  assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
+  assert.equal(secondProfile.stars, 0);
+  assert.deepEqual(secondProfile.endlessHighScores, {});
 
   const anonymousRead = await request(store, '/api/progress');
   assert.equal(anonymousRead.status, 401);
   const oldList = await request(store, '/api/profiles');
   assert.equal(oldList.status, 404);
+});
+
+test('leaderboards expose only the top ten usernames and scoped scores', async () => {
+  const store = new MemoryAccountStore();
+  for (let index = 0; index < 12; index++) {
+    const response = await request(store, '/api/auth/register', 'POST', {
+      username: `learner_${String(index).padStart(2, '0')}`,
+      password: 'a secure password 123'
+    });
+    const { user, profile } = await response.json();
+    await store.saveProgress(user.id, {
+      ...profile,
+      stars: index + 1,
+      skillsProgress: {
+        white_addition: { bestScore: index },
+        timetable_practice: { bestScore: 33 - index }
+      }
+    });
+  }
+
+  const overall = await request(store, '/api/leaderboards?scope=all');
+  const overallData = await overall.json();
+  assert.equal(overall.status, 200);
+  assert.equal(overallData.entries.length, 10);
+  assert.deepEqual(overallData.entries[0], { username: 'learner_11', score: 12 });
+  assert.deepEqual(Object.keys(overallData.entries[0]).sort(), ['score', 'username']);
+
+  const belt = await request(store, '/api/leaderboards?scope=belt:white');
+  assert.deepEqual((await belt.json()).entries[0], { username: 'learner_10', score: 10 });
+  const timesTables = await request(store, '/api/leaderboards?scope=times_tables');
+  assert.deepEqual((await timesTables.json()).entries[0], { username: 'learner_00', score: 33 });
+  assert.equal((await request(store, '/api/leaderboards?scope=accounts')).status, 400);
+  assert.equal((await request(store, '/api/leaderboards')).status, 400);
+});
+
+test('theme preferences persist independently on each account', async () => {
+  const store = new MemoryAccountStore();
+  const first = await request(store, '/api/auth/register', 'POST', { username: 'theme_one', password: 'a secure password 123' });
+  const second = await request(store, '/api/auth/register', 'POST', { username: 'theme_two', password: 'another secure pass 123' });
+  const firstCookie = sessionCookie(first);
+  const secondCookie = sessionCookie(second);
+  const firstProfile = (await first.json()).profile;
+
+  const update = await request(store, '/api/progress', 'PUT', {
+    profile: { ...firstProfile, theme: 'light' }
+  }, firstCookie);
+  assert.equal((await update.json()).profile.theme, 'light');
+
+  const firstSession = await request(store, '/api/auth/session', 'GET', undefined, firstCookie);
+  const secondSession = await request(store, '/api/auth/session', 'GET', undefined, secondCookie);
+  assert.equal((await firstSession.json()).profile.theme, 'light');
+  assert.equal((await secondSession.json()).profile.theme, 'dark');
+
+  const invalidTheme = await request(store, '/api/progress', 'PUT', {
+    profile: { ...firstProfile, theme: 'system' }
+  }, firstCookie);
+  assert.equal((await invalidTheme.json()).profile.theme, 'light');
 });
 
 test('login uses a generic credential error and logout revokes the session', async () => {

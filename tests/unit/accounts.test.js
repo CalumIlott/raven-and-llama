@@ -27,12 +27,50 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(accounts.isAuthenticated(), false);
   assert.equal(guest.id, 'guest');
   assert.equal(guest.name, 'Guest');
+  assert.equal(guest.theme, 'dark');
   assert.equal(guest.currentBelt, 'white');
   accounts.recordTrainingScore('addition', 8, 10);
   await accounts.flush();
 
   assert.equal(accounts.getActiveProfile().stars, 8);
   assert.equal(fetchCount, 1);
+  assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
+});
+
+test('account theme is restored, applied, and saved without local storage', async () => {
+  const classes = new Set(['dark']);
+  const document = {
+    documentElement: {
+      classList: {
+        toggle(name, force) {
+          if (force) classes.add(name);
+          else classes.delete(name);
+        }
+      }
+    }
+  };
+  const account = { id: 'theme-account', username: 'theme_user' };
+  const savedThemes = [];
+  const { context, accounts } = loadAccounts(async (url, options = {}) => {
+    if (url === '/api/auth/session') return response({ user: account, profile: { theme: 'light' } });
+    if (url === '/api/progress' && options.method === 'PUT') {
+      const profile = JSON.parse(options.body).profile;
+      savedThemes.push(profile.theme);
+      return response({ profile });
+    }
+    throw new Error(`Unexpected request: ${url}`);
+  });
+  context.document = document;
+
+  await accounts.initialize();
+  assert.equal(accounts.getActiveProfile().theme, 'light');
+  assert.equal(classes.has('theme-light'), true);
+  assert.equal(classes.has('dark'), false);
+
+  await accounts.setTheme('dark');
+  assert.deepEqual(savedThemes, ['dark']);
+  assert.equal(classes.has('dark'), true);
+  assert.equal(classes.has('theme-light'), false);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 
