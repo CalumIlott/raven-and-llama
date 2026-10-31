@@ -76,6 +76,7 @@ class GameEngine {
     timerBar.dataset.tone = pct < 30 ? 'critical' : pct < 60 ? 'warning' : 'healthy';
 
     if (timerText) {
+      timerText.dataset.tone = timerBar.dataset.tone;
       timerText.textContent = `${Math.ceil(Math.max(0, this.timeLeft))}s`;
     }
   }

@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { setupApp } = require('./support');
+const { openMathsDojo, setupApp } = require('./support');
 
 function contrastRatio(foreground, background) {
   const luminance = color => {
@@ -146,6 +146,50 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
     background: getComputedStyle(element).backgroundColor
   }));
   expect(contrastRatio(spellingColors.foreground, spellingColors.background)).toBeGreaterThanOrEqual(4.5);
+});
+
+test('light-theme Maths timer tones and order slots retain readable contrast', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Train Skill/ }).first().click();
+
+  await page.evaluate(() => window.gameEngine.startCustomQuiz('Order Practice', [{
+    type: 'order_drag',
+    prompt: 'Put these numbers in order',
+    items: [3, 1, 2],
+    correctOrder: [1, 2, 3],
+    answer: '1,2,3',
+    timeLimitSeconds: 100
+  }], true));
+
+  for (const [timeLeft, tone] of [[70, 'healthy'], [50, 'warning'], [20, 'critical']]) {
+    await page.evaluate(value => {
+      window.gameEngine.timeLeft = value;
+      window.gameEngine.totalTime = 100;
+      window.gameEngine.updateTimerUI();
+    }, timeLeft);
+    await expect(page.locator('#question-timer-bar')).toHaveAttribute('data-tone', tone);
+    const timerColors = await page.locator('#question-timer-text').evaluate(element => ({
+      foreground: getComputedStyle(element).color,
+      background: getComputedStyle(element.closest('.play-shell').querySelector('.play-question-card')).backgroundColor
+    }));
+    expect(contrastRatio(timerColors.foreground, timerColors.background)).toBeGreaterThanOrEqual(4.5);
+  }
+
+  await page.locator('[data-action="game-order-pick"][data-value="1"]').click();
+  const slotColors = await page.locator('.play-order-slot.is-filled').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor
+  }));
+  expect(contrastRatio(slotColors.foreground, slotColors.background)).toBeGreaterThanOrEqual(4.5);
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
 });
 
 test('Parent Report keeps keyboard focus inside its dialog on mobile', async ({ page }) => {

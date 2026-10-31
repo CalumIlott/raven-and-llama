@@ -1400,6 +1400,13 @@ html.theme-light .play-shell--dojo-arcade { --play-accent: #17688c; --play-accen
 }
 .play-timer { color: var(--play-muted); }
 .play-timer > div { background: var(--play-surface-raised); border-color: var(--play-edge); }
+.play-timer #question-timer-text { color: var(--play-accent) !important; }
+html.theme-light .play-timer #question-timer-text[data-tone="healthy"] { color: #176b48 !important; }
+html.theme-light .play-timer #question-timer-text[data-tone="warning"] { color: #80560b !important; }
+html.theme-light .play-timer #question-timer-text[data-tone="critical"] { color: #a12635 !important; }
+html.theme-light .play-timer > div { background: #d7e0d8; border-color: #aeb9b1; }
+html.theme-light .play-timer .question-timer { background-color: #d7e0d8; }
+html.theme-light .play-timer .question-timer::-webkit-progress-bar { background-color: #d7e0d8; }
 
 .play-answer-button {
   min-width: 0;
@@ -1431,6 +1438,7 @@ html.theme-light .play-shell--dojo-arcade { --play-accent: #17688c; --play-accen
   background: var(--play-accent-soft) !important;
   border-color: var(--play-accent) !important;
 }
+html.theme-light .play-order-slot:not(.is-filled) { color: #47574d !important; border-color: #7c9183 !important; }
 
 .play-arcade-panel { padding: clamp(1rem, 3vw, 1.5rem); }
 .play-arcade-hud { gap: 0.6rem; border-color: var(--play-edge); }
