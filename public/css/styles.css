@@ -803,6 +803,37 @@ html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-40
   background: #d7f0a2;
 }
 
+#app-main[data-page="critter-catch"] #critter-catch-board button.critter-catch-feedback-catch {
+  position: relative;
+  isolation: isolate;
+}
+
+#app-main[data-page="critter-catch"] #critter-catch-board button.critter-catch-feedback-catch::before,
+#app-main[data-page="critter-catch"] #critter-catch-board button.critter-catch-feedback-catch::after {
+  position: absolute;
+  z-index: 1;
+  color: #f7d95b;
+  content: "✦";
+  pointer-events: none;
+  animation: critter-catch-sparkle 650ms ease-out both;
+}
+
+#app-main[data-page="critter-catch"] #critter-catch-board button.critter-catch-feedback-catch::before {
+  font-size: 1.5rem;
+}
+
+#app-main[data-page="critter-catch"] #critter-catch-board button.critter-catch-feedback-catch::after {
+  content: "✨";
+  font-size: 1.2rem;
+  animation-delay: 80ms;
+}
+
+#app-main[data-page="critter-catch"] #critter-catch-board button.critter-catch-feedback-miss {
+  border-color: #f87171 !important;
+  box-shadow: inset 0 0 0 2px #f87171, 0 0 0.8rem rgb(248 113 113 / 55%);
+  animation: critter-catch-miss 400ms ease-in-out;
+}
+
 #app-main[data-page="critter-catch"] #critter-catch-start {
   min-height: 3rem;
   border-radius: 0.8rem;
@@ -956,6 +987,17 @@ html.theme-light #app-main[data-page="games"] .game-choice__action { color: #557
   0% { opacity: 0; transform: translateY(0.35rem) scale(0.75); }
   55% { opacity: 1; transform: translateY(-0.2rem) scale(1.12); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes critter-catch-sparkle {
+  0% { opacity: 0; transform: scale(0.3) rotate(-30deg); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-1.5rem) scale(1.4) rotate(30deg); }
+}
+
+@keyframes critter-catch-miss {
+  25%, 75% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
 }
 
 @keyframes academy-arrive {
