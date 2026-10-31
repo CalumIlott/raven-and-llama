@@ -41,12 +41,17 @@ async function waitForServer() {
 test.before(async () => {
   temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'raven-llama-test-'));
   dataDirectory = path.join(temporaryRoot, 'data');
+  fs.copyFileSync(path.join(projectRoot, 'server.js'), path.join(temporaryRoot, 'server.js'));
+  fs.cpSync(path.join(projectRoot, 'lib'), path.join(temporaryRoot, 'lib'), { recursive: true });
+  fs.cpSync(path.join(projectRoot, 'public'), path.join(temporaryRoot, 'public'), { recursive: true });
 
   const port = await findAvailablePort();
   baseUrl = `http://127.0.0.1:${port}`;
-  serverProcess = spawn(process.execPath, [path.join(projectRoot, 'server.js')], {
-    cwd: projectRoot,
-    env: { ...process.env, PORT: String(port), DATA_DIR: dataDirectory },
+  const serverEnv = { ...process.env, PORT: String(port) };
+  delete serverEnv.DATA_DIR;
+  serverProcess = spawn(process.execPath, [path.join(temporaryRoot, 'server.js')], {
+    cwd: temporaryRoot,
+    env: serverEnv,
     stdio: ['ignore', 'ignore', 'pipe']
   });
   let serverErrors = '';
@@ -107,6 +112,8 @@ test('accounts persist securely and progress stays private to the authenticated 
 
   const duplicate = await postJson('/api/auth/register', { username: 'AVERY_1', password: 'a secure password 123' });
   assert.equal(duplicate.status, 409);
+  assert.equal(fs.existsSync(path.join(dataDirectory, 'accounts.json')), true);
+  assert.equal(fs.existsSync(path.join(temporaryRoot, 'public', 'data')), false);
   assert.equal((await fetch(`${baseUrl}/data/accounts.json`)).status, 404);
 
   const privateProgress = { ...first.body.profile, stars: 17, passedBelts: ['white'] };
