@@ -226,7 +226,7 @@ Object.assign(App.prototype, {
                   <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Stage 1</span>
                   ${isStage1Passed ? '<span class="text-xs text-emerald-400 font-bold">✓ PASSED</span>' : ''}
                 </div>
-                <h4 class="font-ninja text-lg text-white font-bold mb-1">Proficiency Exam</h4>
+                <h4 class="font-ninja text-lg text-white font-bold mb-1">Show Me What You Know</h4>
                 <p class="text-xs text-slate-400 mb-4">10 questions covering all belt skills. 80% to pass.</p>
               </div>
               <button data-action="belt-test" data-belt-id="${belt.id}" data-stage="1"
