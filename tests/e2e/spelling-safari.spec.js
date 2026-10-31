@@ -53,3 +53,24 @@ test('Spelling Safari offers and completes all four word-game adventures', async
     }
   }
 });
+
+test('Spelling Safari does not reveal the correct answer on incorrect guesses', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await setupApp(page);
+  await openLearningHub(page);
+  await page.getByRole('button', { name: /Spelling Safari/ }).click();
+  await page.getByRole('button', { name: /Spelling Sprint/ }).click();
+
+  const question = await page.evaluate(() => {
+    const game = window.app.spellingSafariGame;
+    return game.questions[game.index];
+  });
+
+  const wrongAnswer = question.options.find(opt => opt.toLowerCase() !== question.answer.toLowerCase());
+  await page.getByRole('button', { name: wrongAnswer, exact: true }).click();
+
+  await expect(page.locator('#safari-feedback')).toContainText('Not quite! Keep exploring!');
+  await expect(page.locator('#safari-feedback')).not.toContainText('The answer was');
+  await expect(page.locator('#safari-feedback')).not.toContainText(question.answer);
+});
+
