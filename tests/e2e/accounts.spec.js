@@ -5,6 +5,7 @@ test.beforeEach(async ({ page }) => {
   await setupApp(page);
 });
 
+
 test('guest can create an account, change password, sign out, sign in, and delete the account', async ({ page }) => {
   const { username, password } = await registerAccount(page);
   await expect(page.locator('#account-status-banner')).toBeHidden();
@@ -36,6 +37,22 @@ test('guest can create an account, change password, sign out, sign in, and delet
   await page.getByRole('button', { name: 'Confirm account deletion' }).click();
   await expect(page.locator('#header-profile-name')).toHaveText('Guest');
   await expect(page.locator('#account-status-banner')).toContainText('Guest mode: progress will not be saved');
+});
+
+test('signed-in account can change avatar and keep it after reload', async ({ page }) => {
+  const { username } = await registerAccount(page);
+  await openAccountModal(page);
+  await page.getByRole('radio', { name: 'Owl' }).check();
+  await page.getByRole('button', { name: 'Save avatar' }).click();
+
+  await expect(page.locator('#account-message')).toHaveText('Avatar updated.');
+  await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
+  await page.reload();
+  await expect(page.locator('#header-profile-name')).toHaveText(username);
+  await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
+
+  await openAccountModal(page);
+  await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
 });
 
 test('progress syncs to another browser context without exposing it to a different account', async ({ browser, page }) => {
@@ -72,6 +89,26 @@ test('progress syncs to another browser context without exposing it to a differe
     const second = await registerAccount(otherPage);
     expect(second.username).not.toBe(first.username);
     await expect(otherPage.locator('#header-stars-count')).toHaveText('0');
+  } finally {
+    await otherDevice.close();
+  }
+});
+
+test('theme preference syncs to another browser context for the signed-in account', async ({ browser, page }) => {
+  const account = await registerAccount(page);
+  await openAccountModal(page);
+  await page.locator('#account-theme').selectOption('light');
+  await page.evaluate(() => window.ProfileManager.flush());
+  await expect(page.locator('html')).toHaveClass(/theme-light/);
+
+  const otherDevice = await browser.newContext();
+  try {
+    const otherPage = await otherDevice.newPage();
+    await setupApp(otherPage);
+    await loginAccount(otherPage, account.username, account.password);
+    await expect(otherPage.locator('html')).toHaveClass(/theme-light/);
+    await openAccountModal(otherPage);
+    await expect(otherPage.locator('#account-theme')).toHaveValue('light');
   } finally {
     await otherDevice.close();
   }
