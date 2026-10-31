@@ -52,7 +52,7 @@ Object.assign(App.prototype, {
           <span class="text-xs text-slate-400">Choose a program to start exploring</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <div id="learning-modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
           <!-- 1. MATHS MASTERS DOJO -->
           <div onclick="window.app.showDojoHub()"
@@ -191,18 +191,6 @@ Object.assign(App.prototype, {
             </div>
           </button>
 
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          ${ProfileManager.renderLeaderboard('maths', 'Maths Masters Top Scores')}
-          ${ProfileManager.renderLeaderboard('times_tables', 'Times Tables Top Scores')}
-        </div>
-
-        <!-- More Learning Adventures -->
-        <h3 class="font-ninja text-lg text-slate-400 font-bold mb-3 flex items-center gap-2">
-          <span>🚀</span> <span>More Learning Adventures</span>
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button onclick="window.app.showSpellingSafari()" class="text-left bg-slate-900 border-2 border-purple-800/70 hover:border-emerald-400 rounded-2xl p-4 flex items-center gap-4 transition group">
             <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-800/60 flex items-center justify-center text-2xl">
               🦁
@@ -215,7 +203,11 @@ Object.assign(App.prototype, {
               <p class="text-xs text-slate-400 mt-0.5">Phonics, tricky spelling, vocabulary and word-scramble adventures.</p>
             </div>
           </button>
+        </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          ${ProfileManager.renderLeaderboard('maths', 'Maths Masters Top Scores')}
+          ${ProfileManager.renderLeaderboard('times_tables', 'Times Tables Top Scores')}
         </div>
 
       </div>

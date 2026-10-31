@@ -25,6 +25,7 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   await setupApp(page);
   await openLearningHub(page);
   await expect(page.getByRole('heading', { name: 'Learning Modules' })).toBeVisible();
+  await expect(page.locator('#learning-modules-grid').getByRole('button', { name: /Spelling Safari/ })).toBeVisible();
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
 
