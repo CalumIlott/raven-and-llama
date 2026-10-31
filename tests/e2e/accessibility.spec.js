@@ -105,3 +105,25 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   expect(contrastRatio(spellingAction.color, spellingAction.background)).toBeGreaterThanOrEqual(4.5);
   await expectNoHorizontalOverflow();
 });
+
+test('Parent Report keeps keyboard focus inside its dialog on mobile', async ({ page }) => {
+  await setupApp(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const reportButton = page.getByRole('button', { name: /Mastery Stats/ });
+  await reportButton.focus();
+  await page.keyboard.press('Enter');
+
+  const reportDialog = page.getByRole('dialog', { name: 'Mastery & Progress Report' });
+  const headerClose = page.getByRole('button', { name: 'Close progress report' });
+  const footerClose = page.getByRole('button', { name: 'Close Report' });
+  await expect(reportDialog).toBeVisible();
+  await expect(headerClose).toBeFocused();
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(footerClose).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(headerClose).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(reportDialog).toBeHidden();
+  await expect(reportButton).toBeFocused();
+});

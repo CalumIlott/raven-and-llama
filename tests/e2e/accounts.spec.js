@@ -61,9 +61,11 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   await expect(page.locator('#account-avatar-current-name')).toHaveText('Black Feather Raven');
   await page.getByRole('button', { name: /Change/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose an avatar' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'Black Feather Raven' })).toBeFocused();
   await page.getByText('Owl', { exact: true }).click();
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page.locator('#account-avatar-open')).toBeFocused();
   await expect(page.locator('#account-avatar-current-name')).toHaveText('Black Feather Raven');
   await page.getByRole('button', { name: /Change/ }).click();
   await page.getByText('Owl', { exact: true }).click();
