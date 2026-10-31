@@ -177,6 +177,23 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
   expect(contrastRatio(spellingColors.foreground, spellingColors.background)).toBeGreaterThanOrEqual(4.5);
 });
 
+test('Science Explorers success message has readable contrast in dark theme', async ({ page }) => {
+  await setupApp(page);
+  await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
+  await page.getByRole('button', { name: /Enter Learning Hub/ }).click();
+  await page.getByText('Explore Science Explorers', { exact: true }).click();
+  await page.getByRole('button', { name: /Orbit Rescue/ }).click();
+
+  const scienceAnswer = await page.evaluate(() => window.app.scienceGame.mission.questions[0].answer);
+  await page.locator(`[data-science-choice="${scienceAnswer}"]`).click();
+
+  const messageColors = await page.locator('.science-feedback p').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element.parentElement).backgroundColor
+  }));
+  expect(contrastRatio(messageColors.foreground, messageColors.background)).toBeGreaterThanOrEqual(7);
+});
+
 test('light-theme Maths timer tones and order slots retain readable contrast', async ({ page }) => {
   await setupApp(page);
   await page.setViewportSize({ width: 390, height: 844 });
