@@ -50,6 +50,10 @@ Object.assign(App.prototype, {
                 <span>Enter Learning Hub</span>
                 <span>→</span>
               </button>
+              <button onclick="window.app.showGamesHub()" class="px-5 py-3 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
+                <span>Enter Games Hub</span>
+                <span>→</span>
+              </button>
               <button onclick="window.app.showParentOverview()" class="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-1.5">
                 <span>📊</span> <span>Mastery Stats</span>
               </button>
@@ -87,7 +91,7 @@ Object.assign(App.prototype, {
               </div>
 
               <p class="text-zinc-400 text-sm leading-relaxed mb-6">
-                Our complete educational wing. Practice targeted mathematics with the 7-belt <strong>Maths Masters Dojo</strong> and build automaticity with <strong>Times Tables Dojo</strong>.
+                Our educational wing: practice maths with the 7-belt <strong>Maths Masters Dojo</strong>, build fluency in <strong>Times Tables Dojo</strong>, and explore science missions.
               </p>
 
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-zinc-950/60 p-3.5 rounded-2xl border border-zinc-800/80 mb-6">
@@ -115,27 +119,27 @@ Object.assign(App.prototype, {
             </div>
           </div>
 
-          <!-- CARD 2: ARCADE & MINI-GAMES -->
-          <div onclick="window.app.showLearningHub()"
-               class="cursor-pointer group bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 rounded-3xl p-6 sm:p-7 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
+          <!-- CARD 2: GAMES HUB -->
+          <div onclick="window.app.showGamesHub()"
+               class="cursor-pointer group bg-zinc-900/90 border border-zinc-800 hover:border-violet-500/60 rounded-3xl p-6 sm:p-7 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-3 mb-3">
-                <div class="w-11 h-11 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl shadow">
-                  🕹️
+                <div class="w-11 h-11 rounded-xl bg-violet-950/70 border border-violet-800/60 flex items-center justify-center text-xl shadow">
+                  🎮
                 </div>
                 <div>
-                  <span class="text-[11px] font-semibold text-amber-400 uppercase tracking-wider">Mini-Games</span>
-                  <h3 class="text-lg font-bold text-white">Dojo Arcade</h3>
+                  <span class="text-[11px] font-semibold text-violet-400 uppercase tracking-wider">Play for fun</span>
+                  <h3 class="text-lg font-bold text-white">Games Hub</h3>
                 </div>
               </div>
 
               <p class="text-zinc-400 text-xs sm:text-sm mb-4 leading-relaxed">
-                Reflex mini-games including Balloon Pop, Tens Mate Potion Match, Ninja Runner, and Product Match.
+                Take a break from learning with Critter Catch, a quick arcade game anyone can play.
               </p>
             </div>
 
-            <div class="pt-4 border-t border-zinc-800/80 text-xs font-semibold text-zinc-300 group-hover:text-white flex items-center justify-between">
-              <span>Explore Arcades</span>
+            <div class="pt-4 border-t border-zinc-800/80 text-xs font-semibold text-violet-300 group-hover:text-violet-200 flex items-center justify-between">
+              <span>Play Critter Catch</span>
               <span class="group-hover:translate-x-1 transition-transform">→</span>
             </div>
           </div>
