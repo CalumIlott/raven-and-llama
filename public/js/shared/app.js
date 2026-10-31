@@ -93,6 +93,10 @@ class App {
     if (soundBtn) soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
   }
 
+  setTheme(theme) {
+    return ProfileManager.setTheme(theme);
+  }
+
   refreshCurrentView() {
     this.updateHeader();
     if (this.currentView === 'home') {
@@ -256,12 +260,14 @@ class App {
     const username = document.getElementById('account-username-display');
     const serviceWarning = document.getElementById('account-service-warning');
     const message = document.getElementById('account-message');
+    const themeSelect = document.getElementById('account-theme');
     if (guestPanel) guestPanel.classList.toggle('hidden', authenticated);
     if (signedInPanel) signedInPanel.classList.toggle('hidden', !authenticated);
     if (description) description.textContent = authenticated
       ? 'Manage your password or sign out of this account.'
       : 'Sign in to save progress across your devices.';
     if (username) username.textContent = ProfileManager.account?.username || '';
+    if (themeSelect) themeSelect.value = ProfileManager.getActiveProfile().theme;
     if (serviceWarning) serviceWarning.classList.toggle('hidden', ProfileManager.accountServiceAvailable);
     if (message) {
       message.textContent = '';
