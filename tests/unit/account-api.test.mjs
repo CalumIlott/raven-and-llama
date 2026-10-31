@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { handleAccountRequest } from '../../functions/_shared/account-api.mjs';
+import { handleAccountRequest } from '../../lib/account-api.mjs';
 
 class MemoryAccountStore {
   users = [];

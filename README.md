@@ -16,7 +16,7 @@ Alternatively, run `docker compose up -d --build` and open http://localhost:8080
 
 ## Tests
 
-Install dependencies, install the Playwright Chromium browser once, then run all unit, HTTP integration, and browser tests:
+Install dependencies, install the Playwright Chromium browser once, then run unit, HTTP integration, Worker-bundle, and browser tests:
 
 ```bash
 npm ci
@@ -24,22 +24,23 @@ npx playwright install chromium
 npm test
 ```
 
-The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, and progress/trophy views. Browser tests use an isolated temporary account store. Run `npm run test:unit` or `npm run test:e2e` to run one suite. GitHub Actions runs unit/integration checks on Node.js 20, 22, and 24, plus Chromium E2E on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
+The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, and progress/trophy views. Browser tests use an isolated temporary account store. Run `npm run test:unit`, `npm run test:worker`, or `npm run test:e2e` to run one suite. GitHub Actions runs unit/integration checks on Node.js 20, 22, and 24, validates the Worker bundle, and runs Chromium E2E on pushes and pull requests. See [tests/README.md](tests/README.md) for coverage details.
 
 ## Project Layout
 
 ```text
-index.html                 App shell
-js/shared/                 App shell, accounts, audio, and shared renderers
-js/home/                   Home page view
-js/learning/               Learning hub view
-js/mathmasters/            Curriculum, question generators, dojo views, and arcade/game engines
-js/timetables/             Times Tables practice and arcade views
-css/styles.css             Application styles
-assets/                    Brand assets
+public/index.html          App shell and static site root
+public/js/shared/          App shell, accounts, audio, and shared renderers
+public/js/home/            Home page view
+public/js/learning/        Learning hub view
+public/js/mathmasters/     Curriculum, question generators, dojo views, and arcade/game engines
+public/js/timetables/      Times Tables practice and arcade views
+public/css/                Application styles
+public/assets/             Brand assets
 server.js                  Static server and account API
-functions/api/             Cloudflare Pages account API
-functions/_shared/          Shared auth handler and D1 adapter
+worker.js                  Cloudflare Worker API/static-assets entry point
+wrangler.jsonc              Worker build and static-assets configuration
+lib/                        Shared auth handler, stores, and D1 adapter
 migrations/                 Cloudflare D1 schema migrations
 tests/unit/                Curriculum, generator, account, and storage tests
 tests/integration/         Isolated server and API tests
@@ -49,14 +50,14 @@ playwright.config.js        Chromium runner and local server configuration
 data/                      Runtime profile storage (gitignored)
 ```
 
-## Cloudflare Pages Setup
+## Cloudflare Workers Setup
 
-Cloudflare Pages must deploy the root `functions/` directory and bind a D1 database named `DB`. Without this binding, guests can still play, but registration and cross-device saving are unavailable.
+The repository is configured for Cloudflare Workers Builds with static assets in `public/`. Bind a D1 database as `DB` on the `raven-and-llama` Worker; without it guests can still play, but registration and cross-device saving are unavailable.
 
-1. Create a D1 database named `raven-llama-accounts` in Cloudflare.
-2. Apply the schema with `npx wrangler d1 execute raven-llama-accounts --remote --file migrations/0001_accounts.sql`.
-3. In the Pages project, open **Settings → Functions → D1 database bindings** and add a binding named `DB` pointing to that database.
-4. Redeploy the Pages project so the Functions runtime receives the binding.
+1. Create a D1 database named `raven-llama-accounts` in Cloudflare. You can use `npx wrangler d1 create raven-llama-accounts` to create it and retrieve its ID.
+2. In the `raven-and-llama` Worker settings, add a D1 binding named `DB` pointing to that database.
+3. Apply the schema with `npx wrangler d1 execute raven-llama-accounts --remote --file migrations/0001_accounts.sql`.
+4. Redeploy the Worker so the runtime receives the binding.
 
 Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
 

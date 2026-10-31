@@ -3,7 +3,7 @@ const test = require('node:test');
 const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
 
 test('curriculum belt levels and skill identifiers are consistent', () => {
-  const context = loadBrowserScripts(createBrowserContext(), 'js/mathmasters/curriculum.js');
+  const context = loadBrowserScripts(createBrowserContext(), 'public/js/mathmasters/curriculum.js');
   const belts = context.BELTS_DATA;
 
   assert.equal(belts.length, 7);

@@ -5,10 +5,10 @@ const path = require('path');
 const { LocalAccountStore } = require('./lib/local-account-store');
 
 const PORT = process.env.PORT || 8080;
-const PUBLIC_DIR = __dirname;
+const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = process.env.DATA_DIR || path.join(PUBLIC_DIR, 'data');
 const accountStore = new LocalAccountStore(DATA_DIR);
-const accountHandler = import('./functions/_shared/account-api.mjs').then(module => module.handleAccountRequest);
+const accountHandler = import('./lib/account-api.mjs').then(module => module.handleAccountRequest);
 const MAX_REQUEST_BYTES = 65536;
 
 const MIME_TYPES = {

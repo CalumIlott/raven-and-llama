@@ -5,8 +5,8 @@ const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-br
 function loadGenerator() {
   const context = loadBrowserScripts(
     createBrowserContext(),
-    'js/mathmasters/curriculum.js',
-    'js/mathmasters/generators.js'
+    'public/js/mathmasters/curriculum.js',
+    'public/js/mathmasters/generators.js'
   );
   return { belts: context.BELTS_DATA, generator: context.QuestionGenerator };
 }

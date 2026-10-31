@@ -5,14 +5,16 @@
   "description": "Raven & Llama Learning Platform",
   "scripts": {
     "start": "node server.js",
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "npm run test:unit && npm run test:worker && npm run test:e2e",
     "test:unit": "node --test",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:worker": "wrangler deploy --dry-run"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.1"
+    "@playwright/test": "^1.64.1",
+    "wrangler": "^4.156.0"
   }
 }
