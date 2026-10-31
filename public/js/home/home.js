@@ -141,6 +141,10 @@ Object.assign(App.prototype, {
 
         </div>
 
+        <div class="mb-10">
+          ${ProfileManager.renderLeaderboard('all', 'Raven &amp; Llama Leaderboard')}
+        </div>
+
         <!-- Secondary Section: Creative & Studio Preview -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-zinc-500">
           <div class="bg-zinc-950 border border-zinc-800/60 rounded-2xl p-4 flex items-center gap-3.5">
@@ -161,5 +165,6 @@ Object.assign(App.prototype, {
 
       </div>
     `;
+    ProfileManager.loadLeaderboard('all');
   }
 });

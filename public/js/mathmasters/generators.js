@@ -838,6 +838,36 @@ class QuestionGenerator {
     }
   }
 
+  static isValidQuestion(question) {
+    if (!question || typeof question !== 'object' || !Number.isFinite(question.timeLimitSeconds) || question.timeLimitSeconds <= 0) {
+      return false;
+    }
+    if (question.type === 'order_drag') {
+      return Array.isArray(question.correctOrder) && question.correctOrder.length > 1 &&
+        Array.isArray(question.items) && question.items.length === question.correctOrder.length;
+    }
+    return question.answer !== undefined && Array.isArray(question.options) && question.options.length > 0 &&
+      question.options.some(option => String(option).trim().toLowerCase() === String(question.answer).trim().toLowerCase());
+  }
+
+  static generateRandomBeltQuestion(beltId, diff = 'standard', previousSkillId = null) {
+    const belt = BELTS_DATA.find(item => item.id === beltId);
+    if (!belt) return null;
+    const skills = belt.skills.length > 1
+      ? belt.skills.filter(skill => skill.id !== previousSkillId)
+      : belt.skills;
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const skill = skills[QuestionGenerator.randomInt(0, skills.length - 1)];
+      const question = QuestionGenerator.getQuestionForSkill(skill.id, diff);
+      if (!QuestionGenerator.isValidQuestion(question)) continue;
+      question.skillId = skill.id;
+      question.skillName = skill.name;
+      question.beltName = belt.name;
+      return question;
+    }
+    return null;
+  }
+
   static generateBeltTest(beltId, diff = 'standard', total = diff === 'hard' ? 12 : 10) {
     const belt = BELTS_DATA.find(b => b.id === beltId);
     if (!belt) return [];

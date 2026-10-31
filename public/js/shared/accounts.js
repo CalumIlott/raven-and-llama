@@ -30,6 +30,7 @@ class ProfileManager {
       id: 'guest',
       name: 'Guest',
       avatar: ProfileManager.getAvatar('raven'),
+      theme: 'dark',
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -37,6 +38,7 @@ class ProfileManager {
       passedBelts: [],
       stars: 0,
       skillsProgress: {},
+      endlessHighScores: {},
       certificates: [],
       createdAt: now,
       updatedAt: now
@@ -47,10 +49,17 @@ class ProfileManager {
     const source = profile && typeof profile === 'object' ? profile : {};
     const avatarId = typeof source.avatar === 'string' ? source.avatar : source.avatar?.id || 'raven';
     const now = new Date().toISOString();
+    const beltIds = (window.BELTS_DATA || []).map(belt => belt.id);
+    const endlessHighScores = source.endlessHighScores && typeof source.endlessHighScores === 'object' && !Array.isArray(source.endlessHighScores)
+      ? Object.fromEntries(Object.entries(source.endlessHighScores).filter(([id, score]) =>
+        (id === 'timetables' || beltIds.includes(id)) && Number.isSafeInteger(score) && score >= 0
+      ))
+      : {};
     return {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
       avatar: ProfileManager.getAvatar(avatarId),
+      theme: source.theme === 'light' ? 'light' : 'dark',
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
       stage2PassedBelts: Array.isArray(source.stage2PassedBelts) ? source.stage2PassedBelts : [],
@@ -58,6 +67,7 @@ class ProfileManager {
       passedBelts: Array.isArray(source.passedBelts) ? source.passedBelts : [],
       stars: typeof source.stars === 'number' ? source.stars : 0,
       skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
+      endlessHighScores,
       certificates: Array.isArray(source.certificates) ? source.certificates : [],
       createdAt: source.createdAt || now,
       updatedAt: source.updatedAt || now
@@ -67,14 +77,22 @@ class ProfileManager {
   static setGuest() {
     ProfileManager.account = null;
     ProfileManager.currentProfile = ProfileManager.createGuestProfile();
+    ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.lastSaveError = '';
   }
 
   static acceptSession(data) {
     ProfileManager.account = data.user;
     ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, data.user);
+    ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.accountServiceAvailable = true;
     ProfileManager.lastSaveError = '';
+  }
+
+  static applyTheme(theme) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('theme-light', theme === 'light');
+    document.documentElement.classList.toggle('dark', theme !== 'light');
   }
 
   static async requestApi(url, method = 'GET', body) {
@@ -172,11 +190,20 @@ class ProfileManager {
     return Boolean(ProfileManager.account);
   }
 
+  static setTheme(theme) {
+    if (theme !== 'dark' && theme !== 'light') return Promise.resolve(false);
+    const profile = ProfileManager.getActiveProfile();
+    profile.theme = theme;
+    ProfileManager.applyTheme(theme);
+    return ProfileManager.updateProfile(profile);
+  }
+
   static updateProfile(updatedProfile) {
     const account = ProfileManager.account;
     const normalized = ProfileManager.normalizeProfile(updatedProfile, account);
     normalized.updatedAt = new Date().toISOString();
     ProfileManager.currentProfile = normalized;
+    ProfileManager.applyTheme(normalized.theme);
 
     if (!account) {
       window.app?.updateHeader();
@@ -207,6 +234,50 @@ class ProfileManager {
     return ProfileManager.saveQueue;
   }
 
+  static renderLeaderboard(scope, title) {
+    const id = `leaderboard-${scope.replace(/[^a-z0-9-]/gi, '-')}`;
+    return `
+      <section class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4" aria-label="${title}">
+        <h3 class="font-ninja text-lg text-yellow-400 font-bold mb-3">🏆 ${title}</h3>
+        <ol id="${id}" class="space-y-2 text-sm text-slate-300" aria-live="polite">
+          <li class="text-slate-500">Loading scores…</li>
+        </ol>
+      </section>
+    `;
+  }
+
+  static async loadLeaderboard(scope) {
+    const id = `leaderboard-${scope.replace(/[^a-z0-9-]/gi, '-')}`;
+    const list = document.getElementById(id);
+    if (!list) return;
+
+    try {
+      const { entries } = await ProfileManager.requestApi(`/api/leaderboards?scope=${encodeURIComponent(scope)}`);
+      const currentList = document.getElementById(id);
+      if (!currentList) return;
+      currentList.replaceChildren();
+      if (!entries.length) {
+        currentList.textContent = 'No scores yet—be the first to train!';
+        return;
+      }
+      entries.forEach((entry, index) => {
+        const row = document.createElement('li');
+        row.className = 'flex items-center justify-between gap-3';
+        const username = document.createElement('span');
+        username.className = 'truncate';
+        username.textContent = `${index + 1}. ${entry.username}`;
+        const score = document.createElement('strong');
+        score.className = 'text-amber-300 whitespace-nowrap';
+        score.textContent = `${entry.score} points`;
+        row.append(username, score);
+        currentList.append(row);
+      });
+    } catch {
+      const currentList = document.getElementById(id);
+      if (currentList) currentList.textContent = 'Leaderboard is currently unavailable.';
+    }
+  }
+
   static recordTrainingScore(skillId, score, total = 10) {
     const profile = ProfileManager.getActiveProfile();
     if (!profile.skillsProgress[skillId]) {
@@ -221,6 +292,18 @@ class ProfileManager {
     else if (score >= 8) stat.stars = Math.max(stat.stars || 0, 2);
     else if (score >= 5) stat.stars = Math.max(stat.stars || 0, 1);
     profile.stars += score;
+    ProfileManager.updateProfile(profile);
+    return profile;
+  }
+
+  static recordEndlessHighScore(scoreId, score) {
+    const profile = ProfileManager.getActiveProfile();
+    const validBeltIds = (window.BELTS_DATA || []).map(belt => belt.id);
+    if (scoreId !== 'timetables' && !validBeltIds.includes(scoreId)) return profile;
+    if (!Number.isFinite(score) || score < 0) return profile;
+    if (!profile.endlessHighScores) profile.endlessHighScores = {};
+    const bestScore = Number.isSafeInteger(profile.endlessHighScores[scoreId]) ? profile.endlessHighScores[scoreId] : 0;
+    profile.endlessHighScores[scoreId] = Math.max(bestScore, Math.floor(score));
     ProfileManager.updateProfile(profile);
     return profile;
   }
