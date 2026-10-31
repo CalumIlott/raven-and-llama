@@ -4181,7 +4181,7 @@ Object.assign(App.prototype, {
                 if (game.lastAnswerCorrect && index === question.answer) {
                   choiceClass = 'is-correct border-emerald-400 bg-emerald-950/50 text-emerald-100';
                 } else if (!game.lastAnswerCorrect && index === game.selectedIndex) {
-                  choiceClass = 'is-incorrect border-amber-500 bg-amber-950/50 text-amber-200';
+                  choiceClass = 'is-incorrect border-rose-500 bg-rose-950/50 text-rose-200';
                 }
               }
               return `
@@ -4194,7 +4194,7 @@ Object.assign(App.prototype, {
           </div>
           ${game.answered ? `
             <div class="play-feedback science-feedback mt-5 p-4 rounded-2xl ${game.lastAnswerCorrect ? 'is-correct bg-emerald-950/60 border border-emerald-700' : 'is-incorrect bg-amber-950/50 border border-amber-800'}" role="status" aria-live="polite">
-              <p class="font-bold ${game.lastAnswerCorrect ? 'text-emerald-300' : 'text-amber-200'}">${game.lastAnswerCorrect ? 'Great discovery! +1 star ⭐' : 'Not quite! Keep exploring!'}</p>
+              <p class="font-bold">${game.lastAnswerCorrect ? 'Great discovery! +1 star ⭐' : 'Not quite! Keep exploring!'}</p>
               ${game.lastAnswerCorrect && question.fact ? `<p class="text-sm text-slate-200 mt-1">${question.fact}</p>` : ''}
             </div>
             <button type="button" data-action="science-continue" class="btn-ninja w-full mt-4 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-ninja font-bold">

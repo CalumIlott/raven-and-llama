@@ -9,8 +9,13 @@ function loadGameEngine(sessionValues = new Map()) {
     document: {
       getElementById(id) {
         if (!elements.has(id)) {
+          const classes = new Set();
           elements.set(id, {
-            classList: { add() {}, remove() {} },
+            classList: {
+              add(...names) { names.forEach(name => classes.add(name)); },
+              remove(...names) { names.forEach(name => classes.delete(name)); }
+            },
+            classes,
             dataset: {},
             style: {},
             innerHTML: '',
@@ -103,4 +108,25 @@ test('finite quiz sessions resume their saved question after reload', () => {
 
   resumed.engine.exitGame();
   assert.equal(sessionValues.size, 0);
+});
+
+test('selected quiz answers are highlighted green when correct and red when incorrect', () => {
+  for (const [answer, selectedAnswer, expectedClass] of [
+    [4, 4, 'is-correct'],
+    [4, 3, 'is-incorrect']
+  ]) {
+    const { engine, elements } = loadGameEngine();
+    engine.startCustomQuiz('Answer highlight', [{
+      type: 'standard_choice',
+      prompt: '2 + 2 = ?',
+      answer,
+      options: [3, 4],
+      timeLimitSeconds: 20
+    }]);
+
+    engine.submitAnswer(selectedAnswer);
+
+    const selectedButton = elements.get(`opt-btn-${selectedAnswer === 4 ? 1 : 0}`);
+    assert.ok(selectedButton.classes.has(expectedClass));
+  }
 });

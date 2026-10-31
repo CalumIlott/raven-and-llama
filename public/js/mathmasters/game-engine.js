@@ -444,7 +444,12 @@ class GameEngine {
     this.stopTimer();
 
     const q = this.questions[this.currentIndex];
-    const isCorrect = String(selectedAnswer).trim().toLowerCase() === String(q.answer).trim().toLowerCase();
+    const normalizedAnswer = String(selectedAnswer).trim().toLowerCase();
+    const isCorrect = normalizedAnswer === String(q.answer).trim().toLowerCase();
+    const selectedIndex = q.options?.findIndex(option => String(option).trim().toLowerCase() === normalizedAnswer);
+    if (selectedIndex >= 0) {
+      document.getElementById(`opt-btn-${selectedIndex}`)?.classList.add(isCorrect ? 'is-correct' : 'is-incorrect');
+    }
     this.evaluateAnswer(isCorrect, q.answer);
   }
 

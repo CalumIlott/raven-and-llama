@@ -50,6 +50,21 @@ test('each activity generates six unique answerable questions', () => {
   }
 });
 
+test('Jungle Jumble filters rounds by difficulty', () => {
+  const safari = loadSafari().SpellingSafari;
+  const ranges = {
+    easy: answer => answer.length <= 5,
+    medium: answer => answer.length >= 6 && answer.length <= 7,
+    hard: answer => answer.length >= 8
+  };
+
+  for (const [difficulty, matchesDifficulty] of Object.entries(ranges)) {
+    const questions = safari.createQuestions('jungle-jumble', 6, difficulty);
+    assert.equal(questions.length, 6);
+    assert.ok(questions.every(question => matchesDifficulty(question.answer)));
+  }
+});
+
 test('unknown activities and invalid round counts return no questions', () => {
   const context = loadSafari();
   const safari = context.SpellingSafari;
@@ -86,6 +101,31 @@ test('incorrect answer in Spelling Safari does not reveal the correct answer', (
   app.submitSpellingSafariAnswer(wrongAnswer);
 
   assert.equal(app.spellingSafariGame.lastAnswerCorrect, false);
+  assert.match(context.arena.innerHTML, /spelling-choice[^"]*is-incorrect/);
   assert.match(context.arena.innerHTML, /Not quite! Keep exploring!/);
   assert.doesNotMatch(context.arena.innerHTML, /The answer was/);
+});
+
+test('correct multiple-choice answer in Spelling Safari is highlighted green', () => {
+  const context = createBrowserContext();
+  context.main = { innerHTML: '', dataset: {} };
+  context.arena = { innerHTML: '' };
+  context.document = {
+    getElementById: id => {
+      if (id === 'app-main') return context.main;
+      if (id === 'safari-arena') return context.arena;
+      return null;
+    }
+  };
+  context.App = class {
+    rememberModule() {}
+    updateHeader() {}
+  };
+  loadBrowserScripts(context, 'public/js/spelling/safari.js');
+
+  const app = new context.App();
+  app.startSpellingSafari('spelling-sprint');
+  app.submitSpellingSafariAnswer(app.spellingSafariGame.questions[0].answer);
+
+  assert.match(context.arena.innerHTML, /spelling-choice[^"]*is-correct/);
 });

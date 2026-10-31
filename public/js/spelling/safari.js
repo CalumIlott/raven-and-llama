@@ -3775,6 +3775,12 @@ const SPELLING_SAFARI_ACTIVITIES = [
   }
 ];
 
+const JUNGLE_JUMBLE_DIFFICULTIES = {
+  easy: answer => answer.length <= 5,
+  medium: answer => answer.length >= 6 && answer.length <= 7,
+  hard: answer => answer.length >= 8
+};
+
 const SpellingSafari = {
   getActivities() {
     return SPELLING_SAFARI_ACTIVITIES;
@@ -3793,12 +3799,18 @@ const SpellingSafari = {
     return shuffled;
   },
 
-  createQuestions(activityId, count = 6) {
+  createQuestions(activityId, count = 6, difficulty) {
     const activity = this.getActivity(activityId);
     if (!activity || !Number.isFinite(count) || count < 1) return [];
 
-    const questionCount = Math.min(Math.floor(count), activity.questions.length);
-    return this.shuffle(activity.questions).slice(0, questionCount).map(question => {
+    const matchesDifficulty = Object.hasOwn(JUNGLE_JUMBLE_DIFFICULTIES, difficulty)
+      ? JUNGLE_JUMBLE_DIFFICULTIES[difficulty]
+      : null;
+    const questionPool = activity.id === 'jungle-jumble' && matchesDifficulty
+      ? activity.questions.filter(question => matchesDifficulty(question.answer))
+      : activity.questions;
+    const questionCount = Math.min(Math.floor(count), questionPool.length);
+    return this.shuffle(questionPool).slice(0, questionCount).map(question => {
       const result = { ...question };
       if (question.options) result.options = this.shuffle(question.options);
       if (activity.type === 'scramble') {
@@ -3844,7 +3856,22 @@ Object.assign(App.prototype, {
         </div>
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose your adventure</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          ${SpellingSafari.getActivities().map(activity => `
+          ${SpellingSafari.getActivities().map(activity => activity.type === 'scramble' ? `
+            <div class="text-left bg-slate-900 border-2 border-slate-700 rounded-2xl p-5 shadow-lg">
+              <span class="text-3xl">${activity.emoji}</span>
+              <h3 class="font-ninja text-xl font-bold text-white mt-2">${activity.title}</h3>
+              <p class="text-sm text-slate-400 mt-1">${activity.description}</p>
+              <p class="spelling-activity-action mt-4 text-xs font-bold text-emerald-300">Choose your difficulty · 6 rounds</p>
+              <div class="grid grid-cols-3 gap-2 mt-2">
+                <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="easy"
+                        class="rounded-xl bg-emerald-900 hover:bg-emerald-800 px-2 py-2 text-sm font-bold text-white">Easy</button>
+                <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="medium"
+                        class="rounded-xl bg-emerald-900 hover:bg-emerald-800 px-2 py-2 text-sm font-bold text-white">Medium</button>
+                <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="hard"
+                        class="rounded-xl bg-emerald-900 hover:bg-emerald-800 px-2 py-2 text-sm font-bold text-white">Hard</button>
+              </div>
+            </div>
+          ` : `
             <button data-action="spelling-start" data-activity-id="${activity.id}"
                     class="text-left bg-slate-900 border-2 border-slate-700 hover:border-emerald-400 rounded-2xl p-5 transition shadow-lg group">
               <span class="text-3xl">${activity.emoji}</span>
@@ -3858,15 +3885,20 @@ Object.assign(App.prototype, {
     `;
   },
 
-  startSpellingSafari(activityId) {
+  startSpellingSafari(activityId, difficulty) {
     const activity = SpellingSafari.getActivity(activityId);
     if (!activity) return this.showSpellingSafari();
+    const selectedDifficulty = activity.type === 'scramble' && Object.hasOwn(JUNGLE_JUMBLE_DIFFICULTIES, difficulty)
+      ? difficulty
+      : null;
     this.spellingSafariGame = {
       activity,
-      questions: SpellingSafari.createQuestions(activityId),
+      difficulty: selectedDifficulty,
+      questions: SpellingSafari.createQuestions(activityId, 6, selectedDifficulty),
       index: 0,
       score: 0,
       selectedLetters: [],
+      selectedAnswer: null,
       mistakes: []
     };
     this.currentView = 'spelling';
@@ -3892,7 +3924,7 @@ Object.assign(App.prototype, {
           <p class="text-slate-300 mt-2">You scored <strong class="text-yellow-300">${game.score} / ${game.questions.length}</strong> in ${game.activity.title}.</p>
           ${missedWords}
           <div class="flex flex-wrap justify-center gap-3 mt-6">
-            <button data-action="spelling-start" data-activity-id="${game.activity.id}" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Play again</button>
+            <button data-action="spelling-start" data-activity-id="${game.activity.id}" data-difficulty="${game.difficulty || ''}" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Play again</button>
             <button data-action="spelling-home" class="px-5 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold">Choose another adventure</button>
           </div>
         </div>
@@ -3902,6 +3934,7 @@ Object.assign(App.prototype, {
 
     const question = game.questions[game.index];
     const selected = game.selectedLetters.map(index => question.scramble[index]).join('');
+    const selectedAnswerClass = game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect';
     const choices = question.type === 'scramble'
       ? `
         <div class="spelling-answer min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold" aria-label="Your word">
@@ -3919,7 +3952,7 @@ Object.assign(App.prototype, {
         <div class="grid grid-cols-2 gap-3 mt-6">
           ${question.options.map(option => `
             <button data-action="spelling-answer" data-answer="${encodeURIComponent(String(option))}" ${game.answered ? 'disabled' : ''}
-                    class="spelling-choice p-4 rounded-xl border-2 font-ninja text-lg font-bold disabled:opacity-60">${option}</button>
+                    class="spelling-choice p-4 rounded-xl border-2 font-ninja text-lg font-bold disabled:opacity-60 ${game.answered && String(option).toLowerCase() === String(game.selectedAnswer).toLowerCase() ? selectedAnswerClass : ''}">${option}</button>
           `).join('')}
         </div>
       `;
@@ -3935,6 +3968,7 @@ Object.assign(App.prototype, {
           <button data-action="spelling-home" class="play-hud__exit text-xs text-slate-400 hover:text-white">← Exit</button>
           <div class="play-hud__title text-center">
             <h2 class="font-ninja text-lg text-emerald-300 font-bold">${game.activity.title} ${game.activity.emoji}</h2>
+            ${game.difficulty ? `<p class="text-xs text-slate-400 capitalize">${game.difficulty} difficulty</p>` : ''}
             <p class="text-xs text-slate-400">Round ${game.index + 1} of ${game.questions.length}</p>
           </div>
           <span class="play-hud__stat spelling-score text-sm font-bold">⭐ ${game.score}</span>
@@ -3954,6 +3988,7 @@ Object.assign(App.prototype, {
     if (!game || game.answered) return;
     const question = game.questions[game.index];
     game.answered = true;
+    game.selectedAnswer = answer;
     game.lastAnswerCorrect = String(answer).toLowerCase() === question.answer.toLowerCase();
     if (game.lastAnswerCorrect) game.score++;
     else game.mistakes.push(question.answer);
@@ -3984,6 +4019,7 @@ Object.assign(App.prototype, {
     if (!game?.answered) return;
     game.index++;
     game.answered = false;
+    game.selectedAnswer = null;
     game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   }

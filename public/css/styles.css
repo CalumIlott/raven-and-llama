@@ -1575,6 +1575,40 @@ html.theme-light .play-timer .question-timer::-webkit-progress-bar { background-
 .play-answer-button:focus-visible,
 .play-arcade-card:focus-visible { outline-color: var(--play-accent); }
 
+.play-answer-button.is-correct,
+.play-answer-button.is-correct:hover,
+.science-choice.is-correct,
+.spelling-choice.is-correct {
+  color: #ffffff !important;
+  background: #176b48 !important;
+  border-color: #54c4a0 !important;
+}
+
+.play-answer-button.is-incorrect,
+.play-answer-button.is-incorrect:hover,
+.science-choice.is-incorrect,
+.spelling-choice.is-incorrect {
+  color: #ffffff !important;
+  background: #8b3540 !important;
+  border-color: #ed8791 !important;
+}
+
+html.theme-light .play-answer-button.is-correct,
+html.theme-light .science-choice.is-correct,
+html.theme-light .spelling-choice.is-correct {
+  color: #14583d !important;
+  background: #e1f3e8 !important;
+  border-color: #438d66 !important;
+}
+
+html.theme-light .play-answer-button.is-incorrect,
+html.theme-light .science-choice.is-incorrect,
+html.theme-light .spelling-choice.is-incorrect {
+  color: #7a2532 !important;
+  background: #fae3e5 !important;
+  border-color: #c36570 !important;
+}
+
 .play-feedback { border-radius: 0.65rem; }
 .play-order-slots { border-color: var(--play-edge) !important; background: var(--play-surface-raised) !important; }
 .play-order-slot { border-color: var(--play-edge) !important; color: var(--play-muted) !important; }
@@ -1746,18 +1780,6 @@ html.theme-light .play-shell--spelling { --play-accent: #97512b; --play-accent-s
   background: var(--play-accent-soft) !important;
 }
 
-.science-choice.is-correct {
-  color: #ffffff !important;
-  background: #176b48 !important;
-  border-color: #54c4a0 !important;
-}
-
-html.theme-light .science-choice.is-correct {
-  color: #14583d !important;
-  background: #e1f3e8 !important;
-  border-color: #438d66 !important;
-}
-
 .science-feedback,
 .spelling-feedback {
   color: var(--play-ink) !important;
@@ -1792,6 +1814,9 @@ html.theme-light .spelling-feedback.is-incorrect {
   background: #fff3d4 !important;
   border-color: #c99b45 !important;
 }
+
+#app-main[data-page="science"] .science-feedback.is-correct > p:first-child,
+#app-main[data-page="science"] .science-feedback.is-incorrect > p:first-child { color: inherit !important; }
 
 .spelling-answer { color: var(--play-accent); }
 .spelling-letter-slot { border-color: var(--play-accent) !important; }
