@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { openMathsDojo, setupApp } = require('./support');
+const { openAccountModal, openMathsDojo, openTimesTables, registerAccount, setupApp } = require('./support');
 
 function contrastRatio(foreground, background) {
   const luminance = color => {
@@ -104,6 +104,35 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   }));
   expect(contrastRatio(spellingAction.color, spellingAction.background)).toBeGreaterThanOrEqual(4.5);
   await expectNoHorizontalOverflow();
+});
+
+test('light-theme action buttons retain readable contrast across views', async ({ page }) => {
+  await setupApp(page);
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+
+  const expectReadableButtons = async selector => {
+    const buttons = await page.locator(selector).evaluateAll(elements => elements.map(element => ({
+      foreground: getComputedStyle(element).color,
+      background: getComputedStyle(element).backgroundColor
+    })));
+    expect(buttons.length).toBeGreaterThan(0);
+    buttons.forEach(button => expect(contrastRatio(button.foreground, button.background)).toBeGreaterThanOrEqual(4.5));
+  };
+
+  await expectReadableButtons('#app-main button[data-action="games-hub"]');
+  await openTimesTables(page);
+  await expectReadableButtons('#app-main button[data-action="times-table-quiz"], #app-main button[data-action="endless-timetables"], #app-main button[data-action="times-table-arcade"]');
+
+  await registerAccount(page);
+  await page.evaluate(() => window.ProfileManager.applyTheme('light'));
+  await openAccountModal(page);
+  const deleteButtonColors = await page.locator('#delete-account-toggle').evaluate(element => ({
+    foreground: getComputedStyle(element).color,
+    background: getComputedStyle(element.closest('.account-dialog')).backgroundColor
+  }));
+  expect(contrastRatio(deleteButtonColors.foreground, deleteButtonColors.background)).toBeGreaterThanOrEqual(4.5);
+  await page.locator('#delete-account-toggle').click();
+  await expectReadableButtons('#delete-account-confirmation button[type="submit"]');
 });
 
 test('active Science and Spelling rounds fit mobile light theme with readable feedback', async ({ page }) => {
