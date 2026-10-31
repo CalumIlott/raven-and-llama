@@ -20,7 +20,7 @@ Object.assign(App.prototype, {
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
         <button data-action="home" class="flex items-center gap-2 text-sm text-violet-300 hover:text-violet-200 mb-6 transition font-bold group">
           <span class="group-hover:-translate-x-1 transition-transform">←</span>
-          <span>Back to Raven &amp; Llama Home</span>
+          <span>Back to ${window.brandWordmark()} Home</span>
         </button>
 
         <section class="games-hub-hero">

@@ -666,7 +666,7 @@ class GameEngine {
       } else {
         container.innerHTML = `
           <div class="max-w-xl mx-auto p-6 sm:p-8 certificate-border rounded-3xl shadow-2xl text-center animate-pop relative">
-            <div class="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-1">Raven &amp; Llama Learning</div>
+            <div class="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-1">${window.brandWordmark()} Learning</div>
             <h1 class="font-ninja text-2xl sm:text-3xl text-yellow-300 font-bold mb-1">MATHS MASTERS</h1>
             <div class="text-xs text-slate-400 italic mb-4">Official Grand Master Belt Certificate</div>
 

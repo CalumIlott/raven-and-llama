@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="theme-light">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -11,7 +11,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&family=Unkempt:wght@400;700&display=swap" rel="stylesheet">
   <!-- Canvas Confetti -->
   <script src="js/vendor/confetti.js"></script>
   <!-- Custom Styles -->
@@ -30,7 +30,7 @@
           <img src="assets/raven-llama-logo.svg" alt="" />
         </span>
         <span class="site-brand__name">
-          <span>Raven <span class="site-brand__amp">&amp;</span> Llama</span>
+          <span class="brand-wordmark"><span>Raven</span> <span class="brand-wordmark__amp">&amp;</span> <span>Llama</span></span>
           <span id="header-sub-badge" class="site-brand__badge hidden"></span>
         </span>
       </button>
@@ -78,7 +78,7 @@
     </div>
   </header>
 
-  <div id="account-status-banner" class="hidden px-4 py-2 bg-amber-950/70 border-b border-amber-700/50 text-amber-200 text-xs sm:text-sm flex items-center justify-center gap-3" role="status" aria-live="polite">
+  <div id="account-status-banner" class="hidden px-4 py-2 border-b text-xs sm:text-sm flex items-center justify-center gap-3" role="status" aria-live="polite">
     <span id="account-status-message"></span>
     <button data-action="account-open" id="account-status-action" class="font-bold underline underline-offset-2">Sign in</button>
   </div>
@@ -93,7 +93,7 @@
     <div class="site-footer__inner">
       <div class="site-footer__brand">
         <img src="assets/raven-llama-logo.svg" alt="" />
-        <span>Raven &amp; Llama</span>
+        <span class="brand-wordmark"><span>Raven</span> <span class="brand-wordmark__amp">&amp;</span> <span>Llama</span></span>
         <span class="site-footer__tagline">Where curiosity meets mastery</span>
       </div>
       <div class="site-footer__note">
