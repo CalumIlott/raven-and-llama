@@ -8,6 +8,7 @@ const test = require('node:test');
 
 const projectRoot = path.resolve(__dirname, '..', '..');
 let temporaryRoot;
+let dataDirectory;
 let serverProcess;
 let baseUrl;
 
@@ -29,7 +30,7 @@ async function waitForServer() {
       throw new Error(`Server exited early with code ${serverProcess.exitCode}`);
     }
     try {
-      const response = await fetch(`${baseUrl}/api/profiles`);
+      const response = await fetch(`${baseUrl}/`);
       if (response.ok) return;
     } catch {}
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -39,17 +40,13 @@ async function waitForServer() {
 
 test.before(async () => {
   temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'raven-llama-test-'));
-  fs.copyFileSync(path.join(projectRoot, 'server.js'), path.join(temporaryRoot, 'server.js'));
-  for (const directory of ['assets', 'css', 'js']) {
-    fs.cpSync(path.join(projectRoot, directory), path.join(temporaryRoot, directory), { recursive: true });
-  }
-  fs.copyFileSync(path.join(projectRoot, 'index.html'), path.join(temporaryRoot, 'index.html'));
+  dataDirectory = path.join(temporaryRoot, 'data');
 
   const port = await findAvailablePort();
   baseUrl = `http://127.0.0.1:${port}`;
-  serverProcess = spawn(process.execPath, [path.join(temporaryRoot, 'server.js')], {
-    cwd: temporaryRoot,
-    env: { ...process.env, PORT: String(port) },
+  serverProcess = spawn(process.execPath, [path.join(projectRoot, 'server.js')], {
+    cwd: projectRoot,
+    env: { ...process.env, PORT: String(port), DATA_DIR: dataDirectory },
     stdio: ['ignore', 'ignore', 'pipe']
   });
   let serverErrors = '';
@@ -72,57 +69,74 @@ test.after(async () => {
   if (temporaryRoot) fs.rmSync(temporaryRoot, { recursive: true, force: true });
 });
 
-test('static app and profiles API behave correctly without touching local learner data', async t => {
+test('accounts persist securely and progress stays private to the authenticated user', async () => {
   const home = await fetch(`${baseUrl}/`);
   assert.equal(home.status, 200);
   assert.match(home.headers.get('content-type'), /text\/html/);
   assert.match(await home.text(), /Raven &amp; Llama Learning/);
 
-  const script = await fetch(`${baseUrl}/js/generators.js`);
-  assert.equal(script.status, 200);
-  assert.match(script.headers.get('content-type'), /javascript/);
+  const favicon = await fetch(`${baseUrl}/assets/raven-llama-logo.svg`);
+  assert.equal(favicon.status, 200);
+  assert.match(favicon.headers.get('content-type'), /image\/svg\+xml/);
 
-  const initial = await fetch(`${baseUrl}/api/profiles`);
-  assert.deepEqual(await initial.json(), { profiles: [] });
+  assert.equal((await fetch(`${baseUrl}/api/auth/session`)).status, 401);
+  assert.equal((await fetch(`${baseUrl}/api/progress`)).status, 401);
+  assert.equal((await fetch(`${baseUrl}/api/profiles`)).status, 404);
 
-  const saveProfile = profile => fetch(`${baseUrl}/api/profiles`, {
+  const postJson = (url, body, cookie) => fetch(`${baseUrl}${url}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ profile })
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: baseUrl,
+      ...(cookie ? { Cookie: cookie } : {})
+    },
+    body: JSON.stringify(body)
   });
-  assert.equal((await saveProfile({ id: 'learner-a', name: 'Avery' })).status, 200);
-  assert.equal((await saveProfile({ id: 'learner-a', name: 'Avery Updated' })).status, 200);
-  assert.equal((await saveProfile({ id: 'learner-b', name: 'Riley' })).status, 200);
+  const register = async username => {
+    const response = await postJson('/api/auth/register', { username, password: 'a secure password 123' });
+    return { response, body: await response.json(), cookie: response.headers.get('set-cookie')?.split(';', 1)[0] };
+  };
 
-  let stored = await (await fetch(`${baseUrl}/api/profiles`)).json();
-  assert.deepEqual(stored.profiles.map(profile => profile.name), ['Avery Updated', 'Riley']);
+  const first = await register('Avery_1');
+  assert.equal(first.response.status, 201);
+  assert.equal(first.body.user.username, 'avery_1');
+  assert.equal(first.body.profile.stars, 0);
+  assert.match(first.response.headers.get('set-cookie'), /HttpOnly/);
+  assert.match(first.response.headers.get('set-cookie'), /SameSite=Lax/);
+  assert.equal(JSON.stringify(first.body).includes('passwordHash'), false);
 
-  const deletion = await fetch(`${baseUrl}/api/profiles`, {
+  const duplicate = await postJson('/api/auth/register', { username: 'AVERY_1', password: 'a secure password 123' });
+  assert.equal(duplicate.status, 409);
+  assert.equal((await fetch(`${baseUrl}/data/accounts.json`)).status, 404);
+
+  const privateProgress = { ...first.body.profile, stars: 17, passedBelts: ['white'] };
+  const update = await fetch(`${baseUrl}/api/progress`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Origin: baseUrl, Cookie: first.cookie },
+    body: JSON.stringify({ profile: privateProgress })
+  });
+  assert.equal(update.status, 200);
+
+  const second = await register('Riley_2');
+  assert.equal(second.response.status, 201);
+  const firstRead = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: first.cookie } });
+  const secondRead = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
+  assert.equal((await firstRead.json()).profile.stars, 17);
+  assert.equal((await secondRead.json()).profile.stars, 0);
+
+  const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
+  assert.equal(wrongLogin.status, 401);
+  const login = await postJson('/api/auth/login', { username: 'AVERY_1', password: 'a secure password 123' });
+  assert.equal(login.status, 200);
+
+  const logout = await postJson('/api/auth/logout', {}, first.cookie);
+  assert.equal(logout.status, 200);
+  assert.equal((await fetch(`${baseUrl}/api/auth/session`, { headers: { Cookie: first.cookie } })).status, 401);
+
+  const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ deleteProfileId: 'learner-a' })
+    headers: { 'Content-Type': 'application/json', Origin: 'https://attacker.example' },
+    body: JSON.stringify({ username: 'origin_test', password: 'origin test password 12' })
   });
-  assert.equal(deletion.status, 200);
-  stored = await (await fetch(`${baseUrl}/api/profiles`)).json();
-  assert.deepEqual(stored.profiles.map(profile => profile.id), ['learner-b']);
-
-  const replacement = await fetch(`${baseUrl}/api/profiles`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ profiles: [{ id: 'learner-c', name: 'Casey' }] })
-  });
-  assert.equal(replacement.status, 200);
-  stored = await (await fetch(`${baseUrl}/api/profiles`)).json();
-  assert.deepEqual(stored.profiles, [{ id: 'learner-c', name: 'Casey' }]);
-
-  const malformed = await fetch(`${baseUrl}/api/profiles`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: '{'
-  });
-  assert.equal(malformed.status, 400);
-
-  const preflight = await fetch(`${baseUrl}/api/profiles`, { method: 'OPTIONS' });
-  assert.equal(preflight.status, 200);
-  assert.match(preflight.headers.get('access-control-allow-methods'), /POST/);
+  assert.equal(crossOrigin.status, 403);
 });

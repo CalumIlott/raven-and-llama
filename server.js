@@ -2,16 +2,14 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { LocalAccountStore } = require('./lib/local-account-store');
 
 const PORT = process.env.PORT || 8080;
 const PUBLIC_DIR = __dirname;
-const DATA_DIR = path.join(PUBLIC_DIR, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'profiles.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+const DATA_DIR = process.env.DATA_DIR || path.join(PUBLIC_DIR, 'data');
+const accountStore = new LocalAccountStore(DATA_DIR);
+const accountHandler = import('./functions/_shared/account-api.mjs').then(module => module.handleAccountRequest);
+const MAX_REQUEST_BYTES = 65536;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -25,111 +23,85 @@ const MIME_TYPES = {
   '.webp': 'image/webp'
 };
 
-const server = http.createServer((req, res) => {
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = decodeURIComponent(parsedUrl.pathname);
+async function toFetchRequest(req) {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(', ') : value);
+  }
 
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const options = { method: req.method, headers };
+  if (!['GET', 'HEAD'].includes(req.method)) {
+    const declaredLength = Number(req.headers['content-length'] || 0);
+    if (declaredLength > MAX_REQUEST_BYTES) {
+      const error = new Error('Request is too large');
+      error.statusCode = 413;
+      throw error;
+    }
+    const chunks = [];
+    let size = 0;
+    for await (const chunk of req) {
+      size += chunk.length;
+      if (size > MAX_REQUEST_BYTES) {
+        const error = new Error('Request is too large');
+        error.statusCode = 413;
+        throw error;
+      }
+      chunks.push(chunk);
+    }
+    if (chunks.length) {
+      options.body = Buffer.concat(chunks);
+      options.duplex = 'half';
+    }
+  }
 
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
+  return new Request(new URL(req.url, `http://${req.headers.host || 'localhost'}`), options);
+}
+
+function sendJson(res, status, body) {
+  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+  res.end(JSON.stringify(body));
+}
+
+const server = http.createServer(async (req, res) => {
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname);
+  } catch {
+    sendJson(res, 400, { error: 'Invalid URL' });
     return;
   }
 
-  // API Endpoints for Profiles Persistence & Cross-Device Sync
-  if (pathname === '/api/profiles') {
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-
-    if (req.method === 'GET') {
-      try {
-        if (fs.existsSync(DATA_FILE)) {
-          const content = fs.readFileSync(DATA_FILE, 'utf8');
-          res.writeHead(200);
-          res.end(content || '{"profiles":[]}');
-        } else {
-          res.writeHead(200);
-          res.end('{"profiles":[]}');
-        }
-      } catch (err) {
-        console.error('Error reading profiles:', err);
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Failed to read profiles' }));
-      }
-      return;
+  if (pathname.startsWith('/api/')) {
+    try {
+      const request = await toFetchRequest(req);
+      const handler = await accountHandler;
+      const response = await handler(request, accountStore);
+      const headers = Object.fromEntries(response.headers.entries());
+      res.writeHead(response.status, headers);
+      res.end(Buffer.from(await response.arrayBuffer()));
+    } catch (error) {
+      console.error('Account API request failed:', error);
+      sendJson(res, error.statusCode || 500, { error: error.statusCode === 413 ? 'Request is too large' : 'Request failed' });
     }
-
-    if (req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => { body += chunk; });
-      req.on('end', () => {
-        try {
-          const parsed = JSON.parse(body);
-
-          // Support single profile merge to avoid race conditions across devices
-          if (parsed.profile) {
-            let existing = { profiles: [] };
-            if (fs.existsSync(DATA_FILE)) {
-              try {
-                existing = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-              } catch (e) {}
-            }
-            if (!Array.isArray(existing.profiles)) existing.profiles = [];
-
-            const idx = existing.profiles.findIndex(p => p.id === parsed.profile.id);
-            if (idx !== -1) {
-              existing.profiles[idx] = parsed.profile;
-            } else {
-              existing.profiles.push(parsed.profile);
-            }
-            fs.writeFileSync(DATA_FILE, JSON.stringify(existing, null, 2), 'utf8');
-          } else if (parsed.deleteProfileId) {
-            let existing = { profiles: [] };
-            if (fs.existsSync(DATA_FILE)) {
-              try { existing = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch (e) {}
-            }
-            if (Array.isArray(existing.profiles)) {
-              existing.profiles = existing.profiles.filter(p => p.id !== parsed.deleteProfileId);
-            }
-            fs.writeFileSync(DATA_FILE, JSON.stringify(existing, null, 2), 'utf8');
-          } else {
-            // Full state update
-            fs.writeFileSync(DATA_FILE, JSON.stringify(parsed, null, 2), 'utf8');
-          }
-
-          res.writeHead(200);
-          res.end(JSON.stringify({ status: 'saved' }));
-        } catch (err) {
-          console.error('Error saving profiles:', err);
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: 'Invalid JSON payload' }));
-        }
-      });
-      return;
-    }
+    return;
   }
 
-  // Static File Serving
-  let relativePath = pathname.replace(/^\/+/, '');
-  if (!relativePath || relativePath === '') {
-    relativePath = 'index.html';
-  }
-
-  // Prevent directory traversal
-  const safePath = path.normalize(path.join(PUBLIC_DIR, relativePath));
-  if (!safePath.startsWith(PUBLIC_DIR)) {
+  const relativePath = pathname.replace(/^\/+/, '') || 'index.html';
+  const safePath = path.resolve(PUBLIC_DIR, relativePath);
+  const relativeSafePath = path.relative(PUBLIC_DIR, safePath);
+  if (relativeSafePath.startsWith('..') || path.isAbsolute(relativeSafePath)) {
     res.writeHead(403);
     res.end('403 Forbidden');
+    return;
+  }
+  if (relativeSafePath === 'data' || relativeSafePath.startsWith(`data${path.sep}`)) {
+    res.writeHead(404);
+    res.end('404 Not Found');
     return;
   }
 
   fs.stat(safePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback for SPA routing
       const indexPath = path.join(PUBLIC_DIR, 'index.html');
       fs.readFile(indexPath, (readErr, indexData) => {
         if (readErr) {
@@ -148,12 +120,11 @@ const server = http.createServer((req, res) => {
 
     const ext = path.extname(safePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
     const headers = { 'Content-Type': contentType };
     if (['.html', '.js', '.css'].includes(ext)) {
       headers['Cache-Control'] = 'no-store, no-cache, must-revalidate';
-      headers['Pragma'] = 'no-cache';
-      headers['Expires'] = '0';
+      headers.Pragma = 'no-cache';
+      headers.Expires = '0';
     } else {
       headers['Cache-Control'] = 'public, max-age=86400';
     }
