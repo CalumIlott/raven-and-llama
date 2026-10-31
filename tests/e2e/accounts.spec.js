@@ -39,6 +39,22 @@ test('guest can create an account, change password, sign out, sign in, and delet
   await expect(page.locator('#account-status-banner')).toContainText('Guest mode: progress will not be saved');
 });
 
+test('signed-in account can change avatar and keep it after reload', async ({ page }) => {
+  const { username } = await registerAccount(page);
+  await openAccountModal(page);
+  await page.getByRole('radio', { name: 'Owl' }).check();
+  await page.getByRole('button', { name: 'Save avatar' }).click();
+
+  await expect(page.locator('#account-message')).toHaveText('Avatar updated.');
+  await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
+  await page.reload();
+  await expect(page.locator('#header-profile-name')).toHaveText(username);
+  await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
+
+  await openAccountModal(page);
+  await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
+});
+
 test('progress syncs to another browser context without exposing it to a different account', async ({ browser, page }) => {
   test.setTimeout(60000);
   const first = await registerAccount(page);

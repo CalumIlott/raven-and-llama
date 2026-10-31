@@ -159,6 +159,13 @@
 
       <div id="account-signed-in-panel" class="hidden">
         <p class="mb-5 text-sm text-zinc-300">Signed in as <strong id="account-username-display" class="text-white"></strong></p>
+        <form id="account-avatar-form" onsubmit="window.app.changeAvatarSubmit(event)" class="mb-5 pb-5 border-b border-zinc-800">
+          <fieldset>
+            <legend class="text-sm font-bold text-white mb-3">Change avatar</legend>
+            <div id="account-avatar-options" class="grid grid-cols-3 sm:grid-cols-4 gap-2" role="radiogroup" aria-label="Choose an avatar"></div>
+          </fieldset>
+          <button type="submit" class="mt-4 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-sm">Save avatar</button>
+        </form>
         <div class="mb-5">
           <label for="account-theme" class="block text-xs text-zinc-300 mb-1">Color theme</label>
           <select id="account-theme" onchange="window.app.setTheme(this.value)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
