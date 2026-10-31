@@ -73,6 +73,8 @@ class App {
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'science') {
         subBadge.textContent = 'Science Explorers';
+      } else if (this.currentView === 'spelling') {
+        subBadge.textContent = 'Spelling Safari';
         subBadge.classList.remove('hidden');
       } else {
         subBadge.classList.add('hidden');
@@ -96,6 +98,10 @@ class App {
     if (soundBtn) soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
   }
 
+  setTheme(theme) {
+    return ProfileManager.setTheme(theme);
+  }
+
   refreshCurrentView() {
     this.updateHeader();
     if (this.currentView === 'home') {
@@ -112,6 +118,8 @@ class App {
       this.showScienceExplorers();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
+    } else if (this.currentView === 'spelling') {
+      this.showSpellingSafari();
     }
   }
 
@@ -261,19 +269,35 @@ class App {
     const username = document.getElementById('account-username-display');
     const serviceWarning = document.getElementById('account-service-warning');
     const message = document.getElementById('account-message');
+    const themeSelect = document.getElementById('account-theme');
     if (guestPanel) guestPanel.classList.toggle('hidden', authenticated);
     if (signedInPanel) signedInPanel.classList.toggle('hidden', !authenticated);
     if (description) description.textContent = authenticated
       ? 'Manage your password or sign out of this account.'
       : 'Sign in to save progress across your devices.';
     if (username) username.textContent = ProfileManager.account?.username || '';
+    if (themeSelect) themeSelect.value = ProfileManager.getActiveProfile().theme;
     if (serviceWarning) serviceWarning.classList.toggle('hidden', ProfileManager.accountServiceAvailable);
     if (message) {
       message.textContent = '';
       message.classList.add('hidden');
     }
-    if (!authenticated) this.setAccountMode('login');
+    if (authenticated) this.renderAvatarOptions();
+    else this.setAccountMode('login');
     modal.classList.remove('hidden');
+  }
+
+  renderAvatarOptions() {
+    const options = document.getElementById('account-avatar-options');
+    if (!options) return;
+    const selectedAvatar = ProfileManager.getActiveProfile()?.avatar?.id;
+    options.innerHTML = ProfileManager.AVATARS.map(avatar => `
+      <label class="flex flex-col items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-950 p-2 text-center text-[11px] text-zinc-300 cursor-pointer hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/50">
+        <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === selectedAvatar ? 'checked' : ''}>
+        <span aria-hidden="true" class="w-9 h-9 rounded-full flex items-center justify-center text-xl ${avatar.color}">${avatar.emoji}</span>
+        <span>${avatar.name}</span>
+      </label>
+    `).join('');
   }
 
   setAccountMode(mode) {
@@ -349,6 +373,16 @@ class App {
     } catch (error) {
       this.setAccountMessage(error.message || 'Unable to update password.');
     }
+  }
+
+  async changeAvatarSubmit(event) {
+    event.preventDefault();
+    const selectedAvatar = document.querySelector('input[name="account_avatar"]:checked');
+    if (!selectedAvatar) return;
+    const profile = ProfileManager.getActiveProfile();
+    const saved = await ProfileManager.updateProfile({ ...profile, avatar: selectedAvatar.value });
+    if (saved) this.setAccountMessage('Avatar updated.', false);
+    else this.setAccountMessage(ProfileManager.lastSaveError || 'Unable to save your avatar.');
   }
 
   async logoutAccount() {

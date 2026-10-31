@@ -105,11 +105,16 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
+        <div class="mb-8">
+          ${ProfileManager.renderLeaderboard('maths', 'Maths Masters Leaderboard')}
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           ${beltsGridHtml}
         </div>
       </div>
     `;
+    ProfileManager.loadLeaderboard('maths');
   },
 
   showBeltDetails(beltId) {
@@ -200,10 +205,15 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
+        <div class="mb-6">
+          ${ProfileManager.renderLeaderboard(`belt:${belt.id}`, `${belt.name} Leaderboard`)}
+        </div>
+
         <!-- 3-Stage Testing Arena Section -->
         <div class="bg-slate-900/90 border-2 border-slate-700 rounded-3xl p-6 shadow-2xl mb-8">
           <h3 class="font-ninja text-xl text-yellow-400 font-bold mb-1">Belt Examination Hall</h3>
           <p class="text-xs text-slate-400 mb-4">Pass three quizzes in order with faster timers. Complete 10/10 training on all skills for the Stage 3 Final!</p>
+          <p class="text-xs text-emerald-300 mb-4">Endless best: ${profile?.endlessHighScores?.[belt.id] || 0}</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Stage 1 Test Box -->
@@ -267,6 +277,11 @@ Object.assign(App.prototype, {
               </button>
             `}
           </div>
+
+          <button onclick="window.app.startEndlessBeltTest('${belt.id}')"
+                  class="btn-ninja w-full mt-4 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 border-2 border-emerald-400 text-white font-ninja font-bold shadow-xl">
+            ♾️ Start Endless Belt Challenge
+          </button>
         </div>
 
         <!-- Skills List -->
@@ -280,6 +295,7 @@ Object.assign(App.prototype, {
         </div>
       </div>
     `;
+    ProfileManager.loadLeaderboard(`belt:${belt.id}`);
   },
 
   showPrerequisiteChecklist(beltId) {
@@ -344,5 +360,25 @@ Object.assign(App.prototype, {
     `;
 
     window.gameEngine.startBeltTest(beltId, stage);
+  },
+
+  startEndlessBeltTest(beltId) {
+    const belt = BELTS_DATA.find(item => item.id === beltId);
+    if (!belt) return;
+    this.currentView = 'game';
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    main.innerHTML = `<div class="max-w-2xl mx-auto px-4 py-6"><div id="game-arena"></div></div>`;
+    let previousSkillId = null;
+    window.gameEngine.startEndlessQuiz(
+      `${belt.name} • Endless Challenge ♾️`,
+      () => {
+        const question = QuestionGenerator.generateRandomBeltQuestion(beltId, 'standard', previousSkillId);
+        if (question) previousSkillId = question.skillId;
+        return question;
+      },
+      beltId,
+      { beltId, baseTimeSeconds: 22 }
+    );
   }
 });

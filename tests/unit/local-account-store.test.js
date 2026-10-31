@@ -19,6 +19,7 @@ test('local account store persists accounts, sessions, and per-account progress 
   assert.equal(reopened.findUserByUsername('learner_a').id, user.id);
   assert.deepEqual(reopened.findSession('session-hash', Date.now()), { id: user.id, username: user.username });
   assert.deepEqual(reopened.getProgress(user.id), { stars: 17 });
+  assert.deepEqual(reopened.getLeaderboardProfiles(), [{ username: user.username, profile: { stars: 17 } }]);
   assert.equal(reopened.findSession('session-hash', Date.now() + 20000), null);
 });
 

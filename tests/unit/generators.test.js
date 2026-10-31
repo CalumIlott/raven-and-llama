@@ -73,6 +73,24 @@ test('belt tests return the requested question count with answerable questions',
   }
 });
 
+test('endless belt questions are valid and vary skill categories', () => {
+  const { belts, generator } = loadGenerator();
+
+  for (const belt of belts) {
+    let previousSkillId = null;
+    for (let index = 0; index < 20; index++) {
+      const question = generator.generateRandomBeltQuestion(belt.id, 'standard', previousSkillId);
+      assert.ok(generator.isValidQuestion(question), `${belt.id} endless question should be answerable`);
+      assert.ok(belt.skills.some(skill => skill.id === question.skillId));
+      assert.notEqual(question.skillId, previousSkillId, `${belt.id} should not repeat a category consecutively`);
+      assert.equal(question.beltName, belt.name);
+      previousSkillId = question.skillId;
+    }
+  }
+
+  assert.equal(generator.isValidQuestion({ type: 'standard_choice', answer: 4, options: [3], timeLimitSeconds: 10 }), false);
+});
+
 test('unique question generation stops at the requested count and removes duplicates', () => {
   const { generator } = loadGenerator();
   let next = 0;
