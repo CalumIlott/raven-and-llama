@@ -129,7 +129,7 @@ test('light-theme action buttons retain readable contrast across views', async (
     buttons.forEach(button => expect(contrastRatio(button.foreground, button.background)).toBeGreaterThanOrEqual(4.5));
   };
 
-  await expectReadableButtons('#app-main button[data-action="games-hub"]');
+  await expectReadableButtons('#app-main .home-stats-link');
   await openTimesTables(page);
   await expectReadableButtons('#app-main button[data-action="times-table-quiz"], #app-main button[data-action="endless-timetables"], #app-main button[data-action="times-table-arcade"]');
 
