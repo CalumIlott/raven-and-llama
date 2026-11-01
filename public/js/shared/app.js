@@ -35,6 +35,7 @@ class App {
       '/learning': 'learning',
       '/dojo': 'dojo',
       '/timetables': 'timetables',
+      '/telling-time': 'telling-time',
       '/spelling': 'spelling'
     }[path] || null;
   }
@@ -49,6 +50,7 @@ class App {
       learning: () => this.showLearningHub(),
       dojo: () => this.showDojoHub(),
       timetables: () => this.showTimesTables(),
+      'telling-time': () => this.showTellingTime(),
       spelling: () => this.showSpellingSafari()
     };
     (views[module] || (() => this.showRavenAndLlamaHome()))();
@@ -64,7 +66,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/dojo', '/timetables', '/spelling'].includes(path)) {
+    if (['/learning', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       window.history.replaceState(null, '', '/');
     }
   }
@@ -97,6 +99,12 @@ class App {
       case 'parent-report': this.showParentOverview(); break;
       case 'dojo': this.showDojoHub(); break;
       case 'times-tables': this.showTimesTables(); break;
+      case 'telling-time': this.showTellingTime(); break;
+      case 'time-mode': this.startTimeActivity(target.dataset.timeMode); break;
+      case 'time-answer': this.answerTimeActivity(target.dataset.answer); break;
+      case 'time-next': this.advanceTimeActivity(); break;
+      case 'time-retry': this.startTimeActivity(this.timeActivity.mode); break;
+      case 'time-menu': this.showTellingTime(); break;
       case 'trophy-room': this.showTrophyRoom(); break;
       case 'account-close': this.closeProfileModal(); break;
       case 'account-avatar-open': this.showAvatarPicker(); break;
@@ -130,9 +138,17 @@ class App {
       case 'critter-start': this.startCritterCatch(); break;
       case 'critter-hole': this.selectCritterHole(Number(target.dataset.holeIndex)); break;
       case 'science-home': this.showScienceExplorers(); break;
-      case 'science-start': this.startScienceMission(target.dataset.missionId); break;
+      case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
+      case 'money-home': this.showMoneyActivity(); break;
+      case 'money-start': this.startMoneyGame(target.dataset.activityId, target.dataset.difficulty); break;
+      case 'money-answer': this.answerMoneyQuestion(Number(target.dataset.answer)); break;
+      case 'money-coin': this.addMoneyCoin(Number(target.dataset.value)); break;
+      case 'money-undo': this.undoMoneyCoin(); break;
+      case 'money-clear': this.clearMoneyCoins(); break;
+      case 'money-submit': this.submitMoneyAmount(); break;
+      case 'money-next': this.nextMoneyQuestion(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
       case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
       case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;

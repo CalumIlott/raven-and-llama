@@ -98,7 +98,7 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   const scienceLabels = await page.locator('.science-mission-topic, .science-mission-reward').evaluateAll(elements =>
     elements.map(element => ({
       color: getComputedStyle(element).color,
-      background: getComputedStyle(element.closest('button')).backgroundColor
+      background: getComputedStyle(element.closest('.science-mission-card')).backgroundColor
     }))
   );
   expect(scienceLabels).toHaveLength(8);
@@ -110,7 +110,7 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'spelling');
   const spellingAction = await page.locator('.spelling-activity-action').first().evaluate(element => ({
     color: getComputedStyle(element).color,
-    background: getComputedStyle(element.closest('button')).backgroundColor
+    background: getComputedStyle(element.closest('.spelling-activity-card')).backgroundColor
   }));
   expect(contrastRatio(spellingAction.color, spellingAction.background)).toBeGreaterThanOrEqual(4.5);
   await expectNoHorizontalOverflow();
@@ -152,7 +152,7 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
   await page.getByRole('button', { name: 'Raven & Llama home' }).click();
   await page.locator('[data-action="learning"]').first().click();
   await page.getByText('Explore Science Explorers', { exact: true }).click();
-  await page.getByRole('button', { name: /Orbit Rescue/ }).click();
+  await page.locator('[data-mission-id="orbit-rescue"][data-difficulty="medium"]').click();
 
   const expectNoHorizontalOverflow = async () => {
     const dimensions = await page.evaluate(() => ({
@@ -175,7 +175,7 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
   await page.locator('[data-action="science-home"]').click();
   await page.locator('[data-action="learning"]').first().click();
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
-  await page.getByRole('button', { name: /Spelling Sprint/ }).click();
+  await page.locator('[data-activity-id="spelling-sprint"][data-difficulty="medium"]').click();
   await expect(page.locator('.play-shell--spelling')).toBeVisible();
   await expectNoHorizontalOverflow();
   const spellingAnswer = await page.evaluate(() => window.app.spellingSafariGame.questions[0].answer);
@@ -192,7 +192,7 @@ test('Science Explorers success message has readable contrast in dark theme', as
   await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
   await page.locator('#nav-btn-learning').click();
   await page.getByText('Explore Science Explorers', { exact: true }).click();
-  await page.getByRole('button', { name: /Orbit Rescue/ }).click();
+  await page.locator('[data-mission-id="orbit-rescue"][data-difficulty="medium"]').click();
 
   const scienceAnswer = await page.evaluate(() => window.app.scienceGame.mission.questions[0].answer);
   await page.locator(`[data-science-choice="${scienceAnswer}"]`).click();

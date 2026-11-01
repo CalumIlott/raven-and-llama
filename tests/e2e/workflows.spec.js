@@ -218,16 +218,15 @@ test('Science Explorers missions teach concepts, award stars, and return to the 
   }));
   expect(scienceNavigation.currentView, JSON.stringify(scienceNavigation)).toBe('science');
   await expect(page.getByRole('heading', { name: 'Science Explorers', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Orbit Rescue/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Habitat Match/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Matter Lab/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Nature Detectives/ })).toBeVisible();
+  await expect(page.locator('[data-mission-id="orbit-rescue"][data-difficulty="easy"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="habitat-match"][data-difficulty="medium"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="matter-lab"][data-difficulty="hard"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="nature-detectives"][data-difficulty="medium"]')).toBeVisible();
 
   const missions = await page.evaluate(() => window.SCIENCE_MISSIONS.map(mission => mission.id));
   let totalStars = 0;
   for (const [missionIndex, missionId] of missions.entries()) {
-    const title = await page.evaluate(id => window.SCIENCE_MISSIONS.find(mission => mission.id === id).title, missionId);
-    await page.getByRole('button', { name: new RegExp(title) }).click();
+    await page.locator(`[data-mission-id="${missionId}"][data-difficulty="medium"]`).click();
 
     for (let questionIndex = 0; questionIndex < 5; questionIndex++) {
       const { answer, choices } = await page.evaluate(() => {

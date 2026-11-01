@@ -65,6 +65,60 @@ test('Jungle Jumble filters rounds by difficulty', () => {
   }
 });
 
+test('all Spelling Safari activities apply their selected difficulty', () => {
+  const safari = loadSafari().SpellingSafari;
+
+  for (const activity of safari.getActivities()) {
+    for (const [difficulty, optionCount] of Object.entries({ easy: 2, medium: 3, hard: 4 })) {
+      const questions = safari.createQuestions(activity.id, 6, difficulty);
+      assert.equal(questions.length, 6);
+      if (activity.type !== 'scramble') {
+        assert.ok(questions.every(question => question.options.length === optionCount));
+        assert.ok(questions.every(question => question.options.includes(question.answer)));
+      }
+    }
+  }
+});
+
+test('Phonics Easy uses accessible picture clues and Medium keeps simple text clues', () => {
+  const safari = loadSafari().SpellingSafari;
+  const easyQuestions = safari.createQuestions('phonics-trail', 999, 'easy');
+  assert.equal(easyQuestions.length, safari.getActivity('phonics-trail').questions.length);
+  assert.ok(easyQuestions.every(question => question.pictureClue));
+
+  const context = createBrowserContext();
+  context.brandWordmark = () => 'Raven &amp; Llama';
+  context.main = { innerHTML: '', dataset: {} };
+  context.arena = { innerHTML: '' };
+  context.document = {
+    getElementById: id => {
+      if (id === 'app-main') return context.main;
+      if (id === 'safari-arena') return context.arena;
+      return null;
+    }
+  };
+  context.App = class {
+    rememberModule() {}
+    updateHeader() {}
+  };
+  loadBrowserScripts(context, 'public/js/spelling/safari.js');
+  const app = new context.App();
+  app.showSpellingSafari();
+  assert.equal((context.main.innerHTML.match(/data-action="spelling-start"/g) || []).length, 12);
+
+  app.startSpellingSafari('phonics-trail', 'easy');
+  assert.match(context.arena.innerHTML, /spelling-picture-clue[^>]*role="img" aria-label="Picture clue:/);
+  assert.doesNotMatch(context.arena.innerHTML, /class="spelling-hint/);
+  assert.ok(app.spellingSafariGame.questions.every(question => question.pictureClue));
+
+  app.startSpellingSafari('phonics-trail', 'medium');
+  assert.match(context.arena.innerHTML, /class="spelling-hint[^"]*">[^<]+<\/p>/);
+  assert.doesNotMatch(context.arena.innerHTML, /spelling-picture-clue/);
+
+  app.startSpellingSafari('phonics-trail', 'hard');
+  assert.doesNotMatch(context.arena.innerHTML, /class="spelling-hint/);
+});
+
 test('unknown activities and invalid round counts return no questions', () => {
   const context = loadSafari();
   const safari = context.SpellingSafari;

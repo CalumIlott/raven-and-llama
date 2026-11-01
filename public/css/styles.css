@@ -834,6 +834,8 @@ html:not(.theme-light) #app-main[data-page="home"] {
   --learning-times: #1d5a50;
   --learning-science: #235577;
   --learning-spelling: #603b50;
+  --learning-time: #6b4c23;
+  --learning-money: #685127;
   --learning-score: #293d62;
 }
 
@@ -842,6 +844,8 @@ html.theme-light #app-main[data-page="learning"] {
   --learning-times: #d5f5e8;
   --learning-science: #d7efff;
   --learning-spelling: #f8e0ef;
+  --learning-time: #f4e3b1;
+  --learning-money: #f6e8c1;
   --learning-score: #e8efff;
 }
 
@@ -963,6 +967,8 @@ html:not(.theme-light) #app-main[data-page="home"] .home-leaderboard h3 {
 #app-main[data-page="learning"] #learning-modules-grid > *:nth-child(2) { animation-delay: 70ms; }
 #app-main[data-page="learning"] #learning-modules-grid > *:nth-child(3) { animation-delay: 140ms; }
 #app-main[data-page="learning"] #learning-modules-grid > *:nth-child(4) { animation-delay: 210ms; }
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(5) { animation-delay: 280ms; }
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(6) { animation-delay: 350ms; }
 
 #app-main[data-page="learning"] #learning-modules-grid .w-14.h-14 {
   transition: transform 180ms ease;
@@ -988,15 +994,27 @@ html:not(.theme-light) #app-main[data-page="home"] .home-leaderboard h3 {
 }
 
 #app-main[data-page="learning"] #learning-modules-grid > *:nth-child(3) {
+  border-color: #d3a847;
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--learning-time), var(--page-panel));
+}
+
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(4) {
   border-color: #56a8dd;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-science), var(--page-panel));
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(4) {
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(5) {
   border-color: #dc7791;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-spelling), var(--page-panel));
+}
+
+#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(6) {
+  border-color: #d3a847;
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--learning-money), var(--page-panel));
 }
 
 html.theme-light #app-main[data-page="learning"] #learning-modules-grid > * {
