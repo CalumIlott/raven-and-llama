@@ -33,11 +33,30 @@ class GameEngine {
     } catch {}
   }
 
+  discardSessionForAccountChange() {
+    const shouldLeaveGame = window.app?.currentView === 'game';
+    const returnToTimetables = Boolean(this.customExit);
+    const beltId = this.currentBelt?.id;
+    this.stopTimer();
+    this.clearSavedSession();
+    this.questions = [];
+    this.currentIndex = 0;
+    this.pendingAnswer = null;
+    this.resumeTimeLeft = null;
+    this.isAnswering = false;
+    if (shouldLeaveGame) {
+      if (returnToTimetables) window.app.showTimesTables();
+      else if (beltId) window.app.showBeltDetails(beltId);
+      else window.app.showDojoHub();
+    }
+  }
+
   saveSession() {
     if (this.mode === 'endless' || !this.questions.length || this.currentIndex >= this.totalQuestions) return;
     try {
       window.sessionStorage?.setItem(this.sessionStorageKey, JSON.stringify({
         mode: this.mode,
+        accountId: window.ProfileManager?.account?.id || 'guest',
         beltId: this.currentBelt?.id,
         skillId: this.currentSkill?.id,
         skillName: this.currentSkill?.name,
@@ -67,6 +86,11 @@ class GameEngine {
     if (!saved || !['training', 'belt_test_1', 'belt_test_2', 'belt_test_3'].includes(saved.mode) ||
       !Array.isArray(saved.questions) || !Number.isInteger(saved.currentIndex) ||
       saved.currentIndex < 0 || saved.currentIndex >= saved.questions.length) {
+      this.clearSavedSession();
+      return false;
+    }
+
+    if (saved.accountId !== (window.ProfileManager?.account?.id || 'guest')) {
       this.clearSavedSession();
       return false;
     }

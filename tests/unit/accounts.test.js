@@ -95,13 +95,16 @@ test('registration and logout switch between one account and unsaved guest mode'
   const account = { id: 'account-1', username: 'morgan' };
   const profile = { id: account.id, name: account.username, stars: 0, avatar: 'llama' };
   const requests = [];
-  const { accounts } = loadAccounts(async (url, options = {}) => {
+  const { context, accounts } = loadAccounts(async (url, options = {}) => {
     requests.push({ url, options });
     if (url === '/api/auth/register') return response({ user: account, profile }, 201);
     if (url === '/api/auth/logout') return response({ ok: true });
     throw new Error(`Unexpected request: ${url}`);
   });
 
+  let discardedSessions = 0;
+  context.gameEngine = { discardSessionForAccountChange() { discardedSessions++; } };
+  accounts.setGuest();
   await accounts.registerAccount('Morgan', 'a secure password 123');
   assert.equal(accounts.isAuthenticated(), true);
   assert.equal(accounts.getActiveProfile().name, 'morgan');
@@ -111,6 +114,7 @@ test('registration and logout switch between one account and unsaved guest mode'
   assert.equal(accounts.isAuthenticated(), false);
   assert.equal(accounts.getActiveProfile().name, 'Guest');
   assert.equal(accounts.getActiveProfile().stars, 0);
+  assert.equal(discardedSessions, 2);
   assert.deepEqual(requests.map(request => request.url), ['/api/auth/register', '/api/auth/logout']);
 });
 
