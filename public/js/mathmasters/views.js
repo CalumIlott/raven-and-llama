@@ -84,8 +84,8 @@ Object.assign(App.prototype, {
         </div>
 
         <!-- Dojo Header Banner -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="text-center md:text-left">
+        <section class="module-intro module-intro--dojo">
+          <div class="module-intro__copy">
             <div class="module-eyebrow">
               ${window.brandWordmark()} <span>Learning Curriculum</span>
             </div>
@@ -97,7 +97,7 @@ Object.assign(App.prototype, {
             </p>
           </div>
 
-          <div class="flex flex-wrap justify-center gap-3">
+          <div class="module-intro__actions">
             <button data-action="trophy-room" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg">
               🏆 Trophy Room
             </button>
@@ -105,7 +105,7 @@ Object.assign(App.prototype, {
               📊 Progress Stats
             </button>
           </div>
-        </div>
+        </section>
 
         <div class="mb-8">
           ${ProfileManager.renderLeaderboard('maths', 'Maths Masters Leaderboard')}

@@ -23,13 +23,12 @@ Object.assign(App.prototype, {
           <span>Back to ${window.brandWordmark()} Home</span>
         </button>
 
-        <section class="games-hub-hero">
-          <div class="games-hub-hero__copy">
-            <span class="games-hub-hero__eyebrow">🎮 Just for fun</span>
+        <section class="games-hub-hero module-intro module-intro--games">
+          <div class="games-hub-hero__copy module-intro__copy">
+            <span class="module-eyebrow games-hub-hero__eyebrow">Just for fun</span>
             <h1>Games Hub</h1>
             <p>Pick up a game, play at your own pace, and enjoy the fun. No lessons or scores to study — just play!</p>
           </div>
-          <div class="games-hub-hero__art" aria-hidden="true">🎉</div>
         </section>
 
         <div class="games-hub-section-heading">

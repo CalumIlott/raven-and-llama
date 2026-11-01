@@ -62,13 +62,13 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   await openAccountModal(page);
   await expect(page.locator('#account-avatar-options')).toBeHidden();
   await expect(page.locator('#account-avatar-current-name')).toHaveText('Raven');
-  await expect(page.locator('#account-avatar-picker-current-icon')).toHaveText('🐦‍⬛');
+  await expect(page.locator('#account-avatar-picker-current-icon img')).toHaveAttribute('src', 'assets/Raven%26Llama_Profile_Raven.jpg');
   await page.getByRole('button', { name: /Change/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose an avatar' })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Raven' })).toBeFocused();
   await expect(page.getByRole('button', { name: 'Save avatar' })).toBeDisabled();
-  await expect(page.locator('#account-avatar-options label')).toHaveCount(12);
-  await expect(page.locator('#account-avatar-options label').first().locator('span')).toHaveCount(1);
+  await expect(page.locator('#account-avatar-options label')).toHaveCount(4);
+  await expect(page.locator('#account-avatar-options label img')).toHaveCount(4);
   await page.locator('#account-avatar-options label').filter({ has: page.getByRole('radio', { name: 'Owl' }) }).click();
   await expect(page.getByRole('radio', { name: 'Owl' })).toBeChecked();
   await expect(page.getByRole('button', { name: 'Save avatar' })).toBeEnabled();
@@ -88,10 +88,10 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   await expect(page.locator('#account-message')).toHaveText('Avatar updated.');
   await expect(page.locator('#account-avatar-picker')).toBeHidden();
   await expect(page.locator('#account-avatar-current-name')).toHaveText('Owl');
-  await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
+  await expect(page.locator('#header-profile-avatar img')).toHaveAttribute('src', 'assets/Raven%26Llama_Profile_Owl.jpg');
   await page.reload();
   await expect(page.locator('#header-profile-name')).toHaveText(username);
-  await expect(page.locator('#header-profile-avatar')).toHaveText('🦉');
+  await expect(page.locator('#header-profile-avatar img')).toHaveAttribute('src', 'assets/Raven%26Llama_Profile_Owl.jpg');
 
   await openAccountModal(page);
   await expect(page.locator('#account-avatar-options')).toBeHidden();
