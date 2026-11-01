@@ -128,7 +128,7 @@ class App {
       case 'critter-start': this.startCritterCatch(); break;
       case 'critter-hole': this.selectCritterHole(Number(target.dataset.holeIndex)); break;
       case 'science-home': this.showScienceExplorers(); break;
-      case 'science-start': this.startScienceMission(target.dataset.missionId); break;
+      case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
