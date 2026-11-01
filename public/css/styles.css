@@ -5,6 +5,7 @@
   --app-border: #34443a;
   --app-text: #f1f5f2;
   --app-accent: #8bd6b4;
+  --brand-amp: #facc15;
   --app-radius: 0.375rem;
   --font-display: 'Fredoka', cursive, sans-serif;
   --font-body: 'Quicksand', sans-serif;
@@ -21,6 +22,7 @@ html.theme-light {
   --app-border: #d7e0d8;
   --app-text: #18251e;
   --app-accent: #187c57;
+  --brand-amp: #b77900;
 }
 
 body {
@@ -33,6 +35,35 @@ body {
 html.theme-light body {
   background-color: #f8fafc;
   color: #0f172a;
+}
+
+.site-brand__amp,
+.brand-wordmark__amp { color: var(--brand-amp); }
+
+.font-sans { font-family: var(--font-body); }
+
+.brand-wordmark {
+  color: var(--app-text);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.module-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-bottom: 0.5rem;
+  color: var(--page-accent);
+  font: 700 0.75rem/1.3 var(--font-body);
+  text-transform: uppercase;
+}
+
+.module-banner-aside {
+  max-width: 13rem;
+  color: var(--page-accent);
+  font: 600 1rem/1.35 var(--font-display);
+  text-align: right;
+  text-wrap: balance;
 }
 
 html.theme-light [class*="bg-slate-950"],
@@ -61,28 +92,68 @@ html.theme-light [class*="border-zinc-800"] { border-color: #cbd5e1 !important; 
 html.theme-light [class*="border-slate-700"],
 html.theme-light [class*="border-zinc-700"] { border-color: #94a3b8 !important; }
 
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"]) {
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"]) {
   background-color: #dcfce7 !important;
 }
 
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"]) {
+#app-main[data-page="home"] .home-learning-icon {
+  color: #2b7884;
+  background: #e2f4f1;
+  border: 1px solid #a6d7cd;
+}
+
+#app-main[data-page="home"] .home-learning-eyebrow,
+#app-main[data-page="home"] .home-learning-action { color: #187c8b; }
+
+#app-main[data-page="home"] .home-hub-status {
+  padding: 0.25rem 0.55rem;
+  border: 1px solid #a6d7cd;
+  border-radius: 999px;
+  color: #236d5c;
+  background: #e5f4e8;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="home"] .home-games-icon {
+  color: #f3bf5b;
+  background: #453615;
+  border-color: #896b2a;
+}
+
+#app-main[data-page="home"] .home-games-label,
+#app-main[data-page="home"] .home-games-action { color: #f3bf5b; }
+
+html.theme-light #app-main[data-page="home"] .home-games-icon {
+  color: #875300;
+  background: #fff3d4;
+  border-color: #e7c977;
+}
+
+html.theme-light #app-main[data-page="home"] .home-games-label,
+html.theme-light #app-main[data-page="home"] .home-games-action { color: #875300; }
+
+html.theme-light #app-main[data-page="home"] .home-learning-eyebrow,
+html.theme-light #app-main[data-page="home"] .home-learning-action { color: #17606a; }
+
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"]) {
   background-color: #e0f2fe !important;
 }
 
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"]) {
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"]) {
   background-color: #fef3c7 !important;
 }
 
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"]) {
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"]) {
   background-color: #ede9fe !important;
 }
 
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]) {
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]) {
   background-color: #ffe4e6 !important;
 }
 
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"], [class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"], [class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"], [class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"], [class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]),
-html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"], [class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"], [class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"], [class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"], [class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]) * {
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"], [class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"], [class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"], [class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"], [class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]),
+html.theme-light #app-main[data-page] button:not(.play-arcade-card):not(.play-answer-button):not(.science-choice):not(.spelling-choice):is([class*="bg-emerald-"], [class*="bg-green-"], [class*="bg-lime-"], [class*="bg-teal-"], [class*="bg-blue-"], [class*="bg-cyan-"], [class*="bg-sky-"], [class*="bg-amber-"], [class*="bg-orange-"], [class*="bg-yellow-"], [class*="bg-fuchsia-"], [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-violet-"], [class*="bg-pink-"], [class*="bg-red-"], [class*="bg-rose-"]) * {
   color: #0f172a !important;
 }
 
@@ -300,6 +371,18 @@ a:focus-visible,
   backdrop-filter: blur(16px);
 }
 
+#account-status-banner {
+  color: #cfe8d8;
+  background-color: #193528;
+  border-color: #375d46;
+}
+
+html.theme-light #account-status-banner {
+  color: #24583d;
+  background-color: #e7f3e9;
+  border-color: #b9d5bd;
+}
+
 .site-header__inner,
 .site-footer__inner {
   width: min(100% - 2rem, 76rem);
@@ -358,7 +441,8 @@ a:focus-visible,
   white-space: nowrap;
 }
 
-.site-brand__amp { color: #efad52; }
+.site-brand__amp,
+.brand-wordmark__amp { color: var(--brand-amp); }
 
 .site-brand__badge {
   padding: 0.22rem 0.48rem;
@@ -638,29 +722,42 @@ html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-40
   color: #825b0b !important;
 }
 
-/* Home: a composed, calm family portal */
-#app-main[data-page="home"] > div:first-child > div:first-child {
-  position: relative;
-  display: block;
-  gap: 2rem;
-  padding: clamp(1.5rem, 4vw, 3rem);
-  border: 1px solid var(--page-edge);
-  border-radius: 1.25rem;
-  background: var(--page-panel);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 14%);
+/* Home: direct access to programs without a second hero panel */
+#app-main[data-page="home"] {
+  --home-score: #e8efff;
+  --home-score-edge: #a9b9e2;
+  --home-academy: #d5f5e8;
+  --home-academy-edge: #45b994;
+  --home-games: #fff0c2;
+  --home-games-edge: #e8a947;
 }
 
-#app-main[data-page="home"] > div:first-child > div:first-child > div:first-child {
+html:not(.theme-light) #app-main[data-page="home"] {
+  --home-score: #293d62;
+  --home-score-edge: #536b8e;
+  --home-academy: #1d5a50;
+  --home-academy-edge: #45b994;
+  --home-games: #493b1e;
+  --home-games-edge: #a77c2d;
+}
+
+#app-main[data-page="home"] .home-brand-heading {
+  margin-bottom: 1.5rem;
+}
+
+#app-main[data-page="home"] .home-brand-heading h1 {
+  margin: 0;
+  color: var(--page-ink);
+  font: 700 2.5rem/1.1 var(--font-display);
+}
+
+#app-main[data-page="home"] .home-section-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 1rem;
 }
 
-#app-main[data-page="home"] .blur-3xl { display: none; }
-#app-main[data-page="home"] .home-hero-logo,
-#app-main[data-page="home"] .w-24.h-24 { border-radius: 1rem; }
-#app-main[data-page="home"] h1 { font-size: clamp(2.1rem, 5vw, 3.6rem); line-height: 1.05; }
 #app-main[data-page="home"] h2 { font-size: 1.15rem; }
 #app-main[data-page="home"] .app-card-link {
   border-color: var(--page-edge);
@@ -669,9 +766,50 @@ html.theme-light #app-main[data-page="dojo"] .app-card-link [class~="text-sky-40
   box-shadow: none;
 }
 
+#app-main[data-page="home"] .home-hub-card {
+  border: 2px solid;
+  border-radius: 1.5rem;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="home"] .home-learning-card {
+  border-color: var(--home-academy-edge);
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--home-academy), var(--page-panel));
+}
+
+#app-main[data-page="home"] .home-games-card {
+  border-color: var(--home-games-edge);
+  border-top-width: 5px;
+  background: linear-gradient(145deg, var(--home-games), var(--page-panel));
+}
+
 #app-main[data-page="home"] .app-card-link:hover {
-  border-color: #83bca0;
+  border-color: var(--page-accent);
   box-shadow: 0 18px 34px rgb(0 0 0 / 15%);
+}
+
+#app-main[data-page="home"] .home-learning-card:hover { border-color: var(--home-academy-edge); }
+#app-main[data-page="home"] .home-games-card:hover { border-color: var(--home-games-edge); }
+
+#app-main[data-page="home"] .home-stats-link {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.65rem;
+  color: var(--page-accent);
+  background: var(--page-panel);
+  font: 600 0.8rem/1.2 var(--font-body);
+  cursor: pointer;
+}
+
+#app-main[data-page="home"] .home-stats-link:hover {
+  border-color: var(--page-accent);
+  background: var(--page-panel-raised);
 }
 
 #app-main[data-page="home"] [class*="bg-zinc-950/60"] {
@@ -720,35 +858,58 @@ html.theme-light #app-main[data-page="learning"] {
   font-weight: 700;
 }
 
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) {
-  position: relative;
-  overflow: hidden;
-  padding: clamp(1.5rem, 4vw, 2.75rem);
-  border: 0;
-  border-radius: 1.25rem;
-  background: linear-gradient(118deg, #f8cf58 0%, #f7de8d 55%, #a8dfc7 100%);
-  box-shadow: 0 22px 50px rgb(0 0 0 / 16%);
+#app-main[data-page="learning"] .learning-intro {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) h1,
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) p { color: #253629; }
+#app-main[data-page="learning"] .learning-intro__copy { max-width: 46rem; }
 
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) h1 { color: #253629 !important; }
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) h1 span {
-  background-image: linear-gradient(90deg, #227c91, #a65d37, #8b6711);
-}
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) p { color: #3c5143 !important; }
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) > div:first-child > div:first-child {
-  color: #425746 !important;
+#app-main[data-page="learning"] .learning-intro__title {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 2.75rem;
+  line-height: 1.1;
 }
 
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) h1 { font-size: clamp(2rem, 4vw, 3rem); }
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) button { border-radius: 0.75rem; }
-#app-main[data-page="learning"] > div:first-child > div:nth-child(2) button[data-action="trophy-room"] {
-  border-color: #9c7228;
-  color: #68460d;
-  background: #fff8df;
+#app-main[data-page="learning"] .learning-intro__title .brand-wordmark {
+  font-family: inherit;
 }
+
+#app-main[data-page="learning"] .learning-title-accent { color: #247e88; }
+
+html:not(.theme-light) #app-main[data-page="learning"] .learning-title-accent { color: #8bd6d0; }
+
+#app-main[data-page="learning"] .learning-intro__description {
+  max-width: 42rem;
+  margin: 0.6rem auto 0;
+}
+
+#app-main[data-page="learning"] .learning-intro__actions {
+  width: min(100%, 27rem);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+#app-main[data-page="learning"] .learning-intro__actions button {
+  min-width: 0;
+  min-height: 2.8rem;
+  justify-content: center;
+  padding-inline: 0.6rem;
+  border-radius: 0.75rem;
+}
+
+#app-main[data-page="learning"] .learning-intro__actions button[data-action="trophy-room"] { border-color: #9c7228; }
+
+@media (max-width: 480px) {
+  #app-main[data-page="learning"] .learning-intro__title { font-size: 2rem; }
+}
+
 #app-main[data-page="learning"] h2 { font-size: clamp(1.25rem, 2.5vw, 1.65rem); }
 #app-main[data-page="learning"] #learning-modules-grid { gap: 1rem; }
 #app-main[data-page] section[class*="bg-slate-950"] {
@@ -765,6 +926,21 @@ html.theme-light #app-main[data-page="learning"] {
 
 html.theme-light #app-main[data-page="learning"] section[class*="bg-slate-950"] {
   border-color: #a9b9e2;
+}
+
+ #app-main[data-page="home"] .home-leaderboard {
+  border: 1px solid var(--home-score-edge);
+  border-color: var(--home-score-edge);
+  border-radius: 1.25rem;
+  background: var(--home-score);
+}
+
+html.theme-light #app-main[data-page="home"] .home-leaderboard h3 {
+  color: #845a0b;
+}
+
+html:not(.theme-light) #app-main[data-page="home"] .home-leaderboard h3 {
+  color: #facc15;
 }
 
 #app-main[data-page="learning"] .app-card-link,
@@ -1105,12 +1281,17 @@ html.theme-light #app-main[data-page="games"] .game-choice__action { color: #557
   50% { transform: translateY(-0.45rem) rotate(3deg); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .site-header__inner {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.5rem;
-    padding-block: 0.55rem;
   }
+
+  #app-main[data-page="home"] .home-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #app-main[data-page="home"] .home-brand-heading h1 { font-size: 2.1rem; }
 
   .site-nav {
     grid-column: 1 / -1;
@@ -1120,6 +1301,9 @@ html.theme-light #app-main[data-page="games"] .game-choice__action { color: #557
 
   .site-nav__button { flex: 1; }
   .site-hud { grid-column: 2; grid-row: 1; }
+}
+
+@media (max-width: 760px) {
   .site-brand__badge { display: none; }
   .site-account-button__name,
   .site-account-button__arrow { display: none; }
@@ -1130,11 +1314,6 @@ html.theme-light #app-main[data-page="games"] .game-choice__action { color: #557
 
   #app-main[data-page="home"] > div:first-child > div:first-child {
     padding: clamp(1.5rem, 4vw, 3rem);
-  }
-
-  #app-main[data-page="home"] > div:first-child > div:first-child > div:first-child {
-    align-items: flex-start;
-    flex-direction: column;
   }
 
   #app-main[data-page="games"] .games-hub-hero { gap: 0.5rem; }

@@ -4083,7 +4083,7 @@ Object.assign(App.prototype, {
         <div class="flex items-center justify-between mb-6">
           <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to Raven &amp; Llama Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning</span>
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
@@ -4091,15 +4091,14 @@ Object.assign(App.prototype, {
         <div class="relative bg-gradient-to-r from-sky-950 via-slate-900 to-emerald-950 border-2 border-sky-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 overflow-hidden">
           <div class="relative flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="text-center md:text-left">
-              <div class="inline-flex items-center gap-2 bg-sky-500/20 text-sky-300 text-xs font-bold px-3 py-1 rounded-full border border-sky-500/30 mb-2">
-                <span>🔬</span><span>Raven &amp; Llama Discovery Lab</span>
+              <div class="module-eyebrow science-lab-badge">
+                ${window.brandWordmark()} <span>Discovery Lab</span>
               </div>
               <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">Science Explorers</h1>
               <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">Ask questions, follow the clues, and earn a star for every correct discovery.</p>
             </div>
-            <div class="text-center bg-slate-950/60 border border-sky-800/70 rounded-2xl px-5 py-3">
-              <div class="text-3xl">🪶 🦙</div>
-              <p class="text-xs text-sky-200 mt-1">Curiosity is your superpower!</p>
+            <div class="module-banner-aside">
+              <p>Curiosity is your superpower!</p>
             </div>
           </div>
         </div>

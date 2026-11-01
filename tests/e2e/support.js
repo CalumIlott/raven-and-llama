@@ -2,7 +2,7 @@ const { expect } = require('@playwright/test');
 
 async function setupApp(page) {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Raven & Llama', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Programs & Spaces', exact: true })).toBeVisible();
   await expect(page.locator('#account-status-banner')).toContainText('Guest mode: progress will not be saved');
 }
 
@@ -36,7 +36,7 @@ async function loginAccount(page, username, password) {
 }
 
 async function openLearningHub(page) {
-  await page.getByRole('button', { name: /Enter Learning Hub/ }).click();
+  await page.locator('#nav-btn-learning').click();
   await expect(page.getByRole('heading', { name: 'Raven & Llama Learning', exact: true })).toBeVisible();
 }
 

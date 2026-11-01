@@ -15,9 +15,9 @@
 
     <!-- Deep Jet Black Raven Feathers -->
     <linearGradient id="ravenFeathers" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1c1917" />
-      <stop offset="40%" stop-color="#09090b" />
-      <stop offset="100%" stop-color="#000000" />
+      <stop offset="0%" stop-color="#465b70" />
+      <stop offset="45%" stop-color="#293c50" />
+      <stop offset="100%" stop-color="#152433" />
     </linearGradient>
 
     <linearGradient id="ravenBeak" x1="0%" y1="0%" x2="100%" y2="50%">
@@ -100,20 +100,26 @@
 
   <!-- ==================== RAVEN (LEFT SIDE - JET BLACK FEATHERS) ==================== -->
   <g id="raven-group">
-    <!-- Raven Body & Wing - Rich Jet Black -->
-    <path d="M 195 400 C 185 320 180 250 160 215 C 145 190 125 185 105 210 C 85 240 95 320 100 400 Z" fill="url(#ravenFeathers)" stroke="#27272a" stroke-width="1.5" />
+    <!-- Raven Body & Wing -->
+    <path d="M 195 400 C 185 320 180 250 160 215 C 145 190 125 185 105 210 C 85 240 95 320 100 400 Z" fill="url(#ravenFeathers)" stroke="#60778b" stroke-width="1.5" />
 
-    <!-- Feather Wings Folded - Jet Black Layering -->
-    <path d="M 175 250 C 195 285 205 340 170 395 C 150 365 145 310 155 260 Z" fill="#09090b" stroke="#3f3f46" stroke-width="1.5" />
-    <path d="M 155 275 C 175 310 180 355 150 405 C 135 375 130 330 140 285 Z" fill="#000000" stroke="#27272a" stroke-width="1.2"/>
+    <!-- Layered slate-blue wing feathers -->
+    <path d="M 175 250 C 195 285 205 340 170 395 C 150 365 145 310 155 260 Z" fill="#263a4d" stroke="#60788d" stroke-width="1.5" />
+    <path d="M 155 275 C 175 310 180 355 150 405 C 135 375 130 330 140 285 Z" fill="#1c2f40" stroke="#4c6479" stroke-width="1.2"/>
 
-    <!-- Sharp Jet Black Individual Quill Details -->
-    <path d="M 145 320 Q 170 345 155 385" stroke="#3f3f46" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M 135 335 Q 155 360 142 395" stroke="#27272a" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Distinct feather shafts -->
+    <path d="M 145 320 Q 170 345 155 385" stroke="#8097aa" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M 135 335 Q 155 360 142 395" stroke="#5d768b" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Feather crest -->
+    <path d="M 148 165 C 135 150 137 134 147 123 C 153 140 159 147 166 154 Z" fill="#30485d" stroke="#70889c" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 163 158 C 157 139 166 124 178 117 C 177 136 183 146 184 160 Z" fill="#3b566c" stroke="#8097aa" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M 179 160 C 180 145 190 135 202 132 C 196 147 197 155 197 166 Z" fill="#293f53" stroke="#647d92" stroke-width="1.5" stroke-linejoin="round"/>
 
     <!-- Raven Head -->
-    <circle cx="170" cy="185" r="32" fill="url(#ravenFeathers)" stroke="#27272a" stroke-width="1" />
-    <path d="M 148 165 C 140 175 142 195 150 205 Z" fill="#09090b"/>
+    <circle cx="170" cy="185" r="32" fill="url(#ravenFeathers)" stroke="#60778b" stroke-width="1.5" />
+    <path d="M 148 165 C 140 175 142 195 150 205 Z" fill="#26394c"/>
+    <path d="M 151 168 Q 163 160 176 167" stroke="#7891a4" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.85"/>
 
     <!-- Sleek Golden Beak -->
     <path d="M 142 185 Q 85 196 98 206 Q 140 208 152 201 Z" fill="url(#ravenBeak)" stroke="#92400e" stroke-width="1.5" />
@@ -124,9 +130,9 @@
     <circle cx="161" cy="180" r="4.5" fill="#000000" />
     <circle cx="159" cy="178" r="1.8" fill="#ffffff" />
 
-    <!-- Jet Black Floating Feather Symbol in Wing -->
-    <path d="M 115 280 C 105 250 115 230 135 220 C 130 240 128 260 130 285 Z" fill="#000000" stroke="#52525b" stroke-width="1.5"/>
-    <path d="M 125 240 L 122 285" stroke="#71717a" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Floating feather detail in the wing -->
+    <path d="M 115 280 C 105 250 115 230 135 220 C 130 240 128 260 130 285 Z" fill="#1c3042" stroke="#7a94a8" stroke-width="1.5"/>
+    <path d="M 125 240 L 122 285" stroke="#a0b4c3" stroke-width="1.2" stroke-linecap="round"/>
   </g>
 
   <!-- ==================== CENTER GLOWING OPEN BOOK ==================== -->

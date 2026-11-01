@@ -6,86 +6,48 @@ Object.assign(App.prototype, {
     if (!main) return;
     main.dataset.page = 'home';
 
-    const profile = ProfileManager.getActiveProfile();
     this.updateHeader();
 
     main.innerHTML = `
-      <div class="max-w-6xl mx-auto px-4 py-8 sm:py-14 font-sans">
+      <div class="max-w-6xl mx-auto px-4 py-8 sm:py-14">
 
-        <!-- Modern Hero Section -->
-        <div class="relative bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-12 shadow-2xl overflow-hidden mb-12">
-          <!-- Subtle Glow Highlights -->
-          <div class="absolute -top-32 -right-32 w-80 h-80 bg-zinc-600/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="home-brand-heading">
+          <h1>${window.brandWordmark()}</h1>
+        </div>
 
-          <div class="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-              <!-- Crisp Modern Logo Emblem -->
-              <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-0.5 bg-gradient-to-tr from-zinc-700 via-zinc-800 to-zinc-700 shadow-xl flex-shrink-0">
-                <img src="assets/raven-llama-logo.svg" alt="Raven &amp; Llama" class="w-full h-full object-contain rounded-2xl bg-zinc-950" />
-              </div>
-
-              <div>
-                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-                  Raven &amp; Llama
-                </h1>
-                <p class="text-zinc-400 text-sm sm:text-base mt-2 max-w-lg font-normal leading-relaxed">
-                  Where curiosity meets mastery. An ecosystem of educational programs, tools, and challenges.
-                </p>
-
-                <!-- Active Account Indicator (Clean, NOT childish) -->
-                <div class="mt-4 inline-flex items-center gap-2.5 bg-zinc-950/80 border border-zinc-800 px-3.5 py-1.5 rounded-xl text-xs text-zinc-300">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  <span>${ProfileManager.isAuthenticated() ? 'Signed in as:' : 'Guest:'}</span>
-                  <strong class="text-zinc-100 font-semibold">${profile?.name || 'Guest'}</strong>
-                  <button data-action="account-open" class="text-zinc-400 hover:text-white underline ml-1 text-xs transition">
-                    Account
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Quick Access Nav Cards -->
-            <div class="flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto">
-              <button data-action="learning" class="px-5 py-3 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
-                <span>Enter Learning Hub</span>
-                <span>→</span>
-              </button>
-              <button data-action="games-hub" class="px-5 py-3 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-semibold text-xs sm:text-sm shadow transition flex items-center justify-center gap-2">
-                <span>Enter Games Hub</span>
-                <span>→</span>
-              </button>
-              <button data-action="parent-report" class="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white font-medium text-xs transition flex items-center justify-center gap-1.5">
-                <span>📊</span> <span>Mastery Stats</span>
-              </button>
-            </div>
-          </div>
+        <div class="mb-8">
+          ${ProfileManager.renderLeaderboard('all', window.brandWordmark() + ' Leaderboard', 'Raven & Llama Leaderboard', 'home-leaderboard')}
         </div>
 
         <!-- Tier 1 Section Gateways -->
-        <div class="mb-6">
+        <div class="home-section-heading mb-6">
+          <div>
           <h2 class="text-lg sm:text-xl font-bold tracking-tight text-zinc-200">Programs &amp; Spaces</h2>
           <p class="text-zinc-500 text-xs sm:text-sm mt-0.5">Explore the active learning academy and interactive activities</p>
+          </div>
+          <button data-action="parent-report" class="home-stats-link">
+            <span aria-hidden="true">📊</span><span>Mastery Stats</span>
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
 
           <!-- CARD 1: RAVEN & LLAMA LEARNING (FLAGSHIP SUB-PAGE) -->
-           <div class="app-card-link group relative p-6 sm:p-8 shadow-xl flex flex-col justify-between md:col-span-2">
+           <div class="app-card-link home-hub-card home-learning-card group relative p-6 sm:p-7 shadow-xl flex flex-col justify-between">
             <div>
               <div class="flex items-start justify-between gap-4 mb-4">
                 <div class="flex items-center gap-3.5">
-                  <div class="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-2xl shadow">
+                  <div class="home-learning-icon w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow">
                     🎓
                   </div>
                   <div>
-                    <span class="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider">Educational Academy</span>
+                    <span class="home-learning-eyebrow text-[11px] font-semibold uppercase tracking-wider">Educational Academy</span>
                     <h3 class="text-xl sm:text-2xl font-bold text-white group-hover:text-cyan-300 transition">
-                      Raven &amp; Llama Learning
+                      ${window.brandWordmark()} Learning
                     </h3>
                   </div>
                 </div>
-                <span class="text-xs px-2.5 py-1 rounded-full bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 font-semibold">
+                <span class="home-hub-status">
                   Active Hub
                 </span>
               </div>
@@ -94,7 +56,7 @@ Object.assign(App.prototype, {
                 Our educational wing: practice maths with the 7-belt <strong>Maths Masters Dojo</strong>, build fluency in <strong>Times Tables Dojo</strong>, and explore science missions.
               </p>
 
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs bg-zinc-950/60 p-3.5 rounded-2xl border border-zinc-800/80 mb-6">
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mb-6">
                 <div>
                   <div class="text-[10px] text-zinc-500 uppercase tracking-wider">Curriculum</div>
                   <div class="font-bold text-zinc-200 mt-0.5">Maths Masters Dojo</div>
@@ -113,7 +75,7 @@ Object.assign(App.prototype, {
               </div>
             </div>
 
-            <a href="#learning" data-action="learning" class="flex items-center justify-between pt-4 border-t border-zinc-800/80 text-sm font-semibold text-cyan-400 group-hover:text-cyan-300 no-underline">
+            <a href="#learning" data-action="learning" class="home-learning-action flex items-center justify-between pt-4 border-t border-zinc-800/80 text-sm font-semibold no-underline">
               <span>Open Learning Academy</span>
               <span class="group-hover:translate-x-1.5 transition-transform text-base">→</span>
             </a>
@@ -121,14 +83,14 @@ Object.assign(App.prototype, {
 
        <!-- CARD 2: GAMES HUB -->
        <a href="#games" data-action="games-hub"
-         class="app-card-link group p-6 sm:p-7 shadow-xl flex flex-col justify-between hover:border-violet-500/60">
+         class="app-card-link home-hub-card home-games-card group p-6 sm:p-7 shadow-xl flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-3 mb-3">
-                <div class="w-11 h-11 rounded-xl bg-violet-950/70 border border-violet-800/60 flex items-center justify-center text-xl shadow">
+                <div class="home-games-icon w-11 h-11 rounded-xl border flex items-center justify-center text-xl shadow">
                   🎮
                 </div>
                 <div>
-                  <span class="text-[11px] font-semibold text-violet-400 uppercase tracking-wider">Play for fun</span>
+                  <span class="home-games-label text-[11px] font-semibold uppercase tracking-wider">Play for fun</span>
                   <h3 class="text-lg font-bold text-white">Games Hub</h3>
                 </div>
               </div>
@@ -138,7 +100,7 @@ Object.assign(App.prototype, {
               </p>
             </div>
 
-            <div class="pt-4 border-t border-zinc-800/80 text-xs font-semibold text-violet-300 group-hover:text-violet-200 flex items-center justify-between">
+            <div class="home-games-action pt-4 border-t border-zinc-800/80 text-xs font-semibold flex items-center justify-between">
               <span>Play Critter Catch</span>
               <span class="group-hover:translate-x-1 transition-transform">→</span>
             </div>
@@ -146,26 +108,13 @@ Object.assign(App.prototype, {
 
         </div>
 
-        <div class="mb-10">
-          ${ProfileManager.renderLeaderboard('all', 'Raven &amp; Llama Leaderboard')}
-        </div>
-
         <!-- Secondary Section: Creative & Studio Preview -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-zinc-500">
-          <div class="bg-zinc-950 border border-zinc-800/60 rounded-2xl p-4 flex items-center gap-3.5">
+        <div class="home-studio-note flex items-center gap-3.5 text-xs text-zinc-500">
             <span class="text-xl opacity-60">🎨</span>
             <div>
               <span class="font-semibold text-zinc-300">Creative Studio</span>
               <p class="text-[11px] text-zinc-500">Drawing, storytelling, and creative canvas tools in development.</p>
             </div>
-          </div>
-          <div class="bg-zinc-950 border border-zinc-800/60 rounded-2xl p-4 flex items-center gap-3.5">
-            <span class="text-xl opacity-60">📜</span>
-            <div>
-              <span class="font-semibold text-zinc-300">Achievements Archive</span>
-              <p class="text-[11px] text-zinc-500">Centralized storage for certificates and milestone records.</p>
-            </div>
-          </div>
         </div>
 
       </div>

@@ -15,32 +15,31 @@ Object.assign(App.prototype, {
         <!-- Breadcrumb: Back to Raven & Llama Top Level Page -->
         <button data-action="home" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 mb-6 transition font-bold group">
           <span class="group-hover:-translate-x-1 transition-transform">←</span>
-          <span>Back to Raven &amp; Llama Home</span>
+          <span>Back to ${window.brandWordmark()} Home</span>
         </button>
 
-        <!-- Learning Sub-Page Header Banner -->
-        <div class="relative bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-900 border-2 border-indigo-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="text-center md:text-left">
-            <div class="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30 mb-2">
-              <span>🪶 Academy for curious minds</span>
+        <section class="learning-intro">
+          <div class="learning-intro__copy">
+            <div class="module-eyebrow">
+              <span>Academy for curious minds</span>
             </div>
-            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">
-              Raven &amp; Llama <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-amber-300 to-yellow-400">Learning</span>
+            <h1 class="learning-intro__title font-ninja font-bold">
+              ${window.brandWordmark()} <span class="learning-title-accent">Learning</span>
             </h1>
-            <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
+            <p class="learning-intro__description">
               Train your maths skills, master times tables, explore spelling, or set off on a science discovery mission!
             </p>
           </div>
 
-          <div class="flex flex-wrap justify-center gap-3">
+          <div class="learning-intro__actions">
             <button data-action="trophy-room" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg text-sm">
               🏆 Trophy Room
             </button>
             <button data-action="parent-report" class="btn-ninja px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 text-slate-200 font-medium flex items-center gap-2 shadow-lg text-xs sm:text-sm">
-              📊 Progress Stats
+              📊 Progress
             </button>
           </div>
-        </div>
+        </section>
 
         <div class="mb-8">
           ${ProfileManager.renderLeaderboard('learning', 'Learning Hub Leaderboard')}
@@ -76,7 +75,7 @@ Object.assign(App.prototype, {
               </div>
 
               <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                The complete Raven &amp; Llama Maths Masters curriculum! Train skills in the dojo grounds, pass 3-stage timed belt exams, and graduate from White to Platinum Grand Master.
+                The complete ${window.brandWordmark()} Maths Masters curriculum! Train skills in the dojo grounds, pass 3-stage timed belt exams, and graduate from White to Platinum Grand Master.
               </p>
 
               <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">

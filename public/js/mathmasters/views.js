@@ -76,18 +76,18 @@ Object.assign(App.prototype, {
         <div class="flex items-center justify-between mb-6">
           <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to Raven &amp; Llama Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning</span>
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">
-            🏠 Raven &amp; Llama Home
+            🏠 ${window.brandWordmark()} Home
           </button>
         </div>
 
         <!-- Dojo Header Banner -->
         <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div class="text-center md:text-left">
-            <div class="inline-flex items-center gap-2 bg-cyan-500/20 text-cyan-300 text-xs font-bold px-3 py-1 rounded-full border border-cyan-500/30 mb-2">
-              <span>🪶</span> <span>Raven &amp; Llama Learning Curriculum</span>
+            <div class="module-eyebrow">
+              ${window.brandWordmark()} <span>Learning Curriculum</span>
             </div>
             <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">
               Maths Masters <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-300">Ninja Dojo</span>
@@ -176,7 +176,7 @@ Object.assign(App.prototype, {
           </button>
           <div class="flex items-center gap-3">
             <button data-action="learning" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold">
-              Raven &amp; Llama Learning
+              ${window.brandWordmark()} Learning
             </button>
             <span class="text-slate-600">•</span>
             <button data-action="home" class="text-xs text-slate-400 hover:text-white">

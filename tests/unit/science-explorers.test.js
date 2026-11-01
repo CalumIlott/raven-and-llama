@@ -7,6 +7,7 @@ function createScienceContext() {
   context.main = { innerHTML: '', dataset: {} };
   context.document = { getElementById: id => id === 'app-main' ? context.main : null };
   context.profile = { stars: 0 };
+  context.brandWordmark = () => 'Raven &amp; Llama';
   context.ProfileManager = {
     getActiveProfile: () => context.profile,
     updateProfile: profile => { context.profile = profile; }

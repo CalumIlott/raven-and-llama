@@ -19,7 +19,7 @@ Object.assign(App.prototype, {
         <div class="flex items-center justify-between mb-5">
           <button data-action="learning" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to Raven &amp; Llama Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning</span>
           </button>
           <div class="flex items-center gap-3">
             <button data-action="dojo" class="text-xs text-amber-400 hover:text-amber-300 font-semibold">

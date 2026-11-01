@@ -3876,14 +3876,14 @@ Object.assign(App.prototype, {
         <div class="flex items-center justify-between mb-6">
           <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to Raven &amp; Llama Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning</span>
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
         <div class="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8">
           <div class="text-center md:text-left">
-            <div class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30 mb-2">
-              <span>🌿</span><span>Word Adventure Lab</span>
+            <div class="module-eyebrow">
+              <span>Word Adventure Lab</span>
             </div>
             <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spelling Safari</h1>
             <p class="text-slate-300 text-sm sm:text-base mt-2">Explore sounds, spell tricky words, discover new meanings, and unscramble the jungle!</p>

@@ -85,6 +85,16 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
 
   await page.locator('[data-action="science-home"]').click();
   await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'science');
+  const scienceLabBadge = await page.locator('.science-lab-badge').evaluate(element => ({
+    color: getComputedStyle(element).color,
+    background: getComputedStyle(element).backgroundColor,
+    borderWidth: getComputedStyle(element).borderWidth
+  }));
+  expect(scienceLabBadge.background).toBe('rgba(0, 0, 0, 0)');
+  expect(scienceLabBadge.borderWidth).toBe('0px');
+  ['rgb(201, 232, 244)', 'rgb(188, 231, 215)', 'rgb(230, 233, 166)'].forEach(background => {
+    expect(contrastRatio(scienceLabBadge.color, background)).toBeGreaterThanOrEqual(4.5);
+  });
   const scienceLabels = await page.locator('.science-mission-topic, .science-mission-reward').evaluateAll(elements =>
     elements.map(element => ({
       color: getComputedStyle(element).color,
@@ -119,7 +129,7 @@ test('light-theme action buttons retain readable contrast across views', async (
     buttons.forEach(button => expect(contrastRatio(button.foreground, button.background)).toBeGreaterThanOrEqual(4.5));
   };
 
-  await expectReadableButtons('#app-main button[data-action="games-hub"]');
+  await expectReadableButtons('#app-main .home-stats-link');
   await openTimesTables(page);
   await expectReadableButtons('#app-main button[data-action="times-table-quiz"], #app-main button[data-action="endless-timetables"], #app-main button[data-action="times-table-arcade"]');
 
@@ -180,7 +190,7 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
 test('Science Explorers success message has readable contrast in dark theme', async ({ page }) => {
   await setupApp(page);
   await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
-  await page.getByRole('button', { name: /Enter Learning Hub/ }).click();
+  await page.locator('#nav-btn-learning').click();
   await page.getByText('Explore Science Explorers', { exact: true }).click();
   await page.locator('[data-mission-id="orbit-rescue"][data-difficulty="medium"]').click();
 

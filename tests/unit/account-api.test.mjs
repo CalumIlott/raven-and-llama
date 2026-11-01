@@ -221,7 +221,7 @@ test('theme and last-module preferences persist independently on each account', 
   const secondRestoredProfile = (await secondSession.json()).profile;
   assert.equal(firstRestoredProfile.theme, 'light');
   assert.equal(firstRestoredProfile.lastModule, 'timetables');
-  assert.equal(secondRestoredProfile.theme, 'dark');
+  assert.equal(secondRestoredProfile.theme, 'light');
   assert.equal(secondRestoredProfile.lastModule, null);
 
   const invalidTheme = await request(store, '/api/progress', 'PUT', {

@@ -32,7 +32,7 @@ class ProfileManager {
       id: 'guest',
       name: 'Guest',
       avatar: ProfileManager.getAvatar('raven'),
-      theme: 'dark',
+      theme: 'light',
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -61,7 +61,7 @@ class ProfileManager {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
       avatar: ProfileManager.getAvatar(avatarId),
-      theme: source.theme === 'light' ? 'light' : 'dark',
+      theme: source.theme === 'dark' ? 'dark' : 'light',
       lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
@@ -91,9 +91,9 @@ class ProfileManager {
 
   static readGuestThemePreference() {
     try {
-      return localStorage.getItem(ProfileManager.GUEST_THEME_KEY) === 'light' ? 'light' : 'dark';
+      return localStorage.getItem(ProfileManager.GUEST_THEME_KEY) === 'dark' ? 'dark' : 'light';
     } catch {
-      return 'dark';
+      return 'light';
     }
   }
 
@@ -263,10 +263,11 @@ class ProfileManager {
     return ProfileManager.saveQueue;
   }
 
-  static renderLeaderboard(scope, title) {
+  static renderLeaderboard(scope, title, accessibleTitle = title, surfaceClass = '') {
     const id = `leaderboard-${scope.replace(/[^a-z0-9-]/gi, '-')}`;
+    const surface = surfaceClass || 'bg-slate-950/70 border border-slate-800';
     return `
-      <section class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4" aria-label="${title}">
+      <section class="${surface} rounded-2xl p-4" aria-label="${accessibleTitle}">
         <h3 class="font-ninja text-lg text-yellow-400 font-bold mb-3">🏆 ${title}</h3>
         <ol id="${id}" class="space-y-2 text-sm text-slate-300" aria-live="polite">
           <li class="text-slate-500">Loading scores…</li>

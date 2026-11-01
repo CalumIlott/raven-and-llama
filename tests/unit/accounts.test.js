@@ -27,7 +27,7 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(accounts.isAuthenticated(), false);
   assert.equal(guest.id, 'guest');
   assert.equal(guest.name, 'Guest');
-  assert.equal(guest.theme, 'dark');
+  assert.equal(guest.theme, 'light');
   assert.equal(guest.currentBelt, 'white');
   accounts.recordTrainingScore('addition', 8, 10);
   await accounts.flush();
@@ -77,17 +77,19 @@ test('account theme is restored, applied, and saved without local storage', asyn
 test('guest theme is saved separately and restored without persisting progress', async () => {
   const { context, accounts } = loadAccounts(async () => response({}, 401));
   await accounts.initialize();
-  assert.equal(accounts.getActiveProfile().theme, 'dark');
-
-  assert.equal(await accounts.setTheme('light'), true);
   assert.equal(accounts.getActiveProfile().theme, 'light');
-  assert.equal(context.localStorage.getItem('raven_llama_guest_theme'), 'light');
+
+  assert.equal(await accounts.setTheme('dark'), true);
+  assert.equal(accounts.getActiveProfile().theme, 'dark');
+  assert.equal(context.localStorage.getItem('raven_llama_guest_theme'), 'dark');
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 
   accounts.setGuest();
+  assert.equal(accounts.getActiveProfile().theme, 'dark');
+  assert.equal(await accounts.setTheme('light'), true);
+  assert.equal(context.localStorage.getItem('raven_llama_guest_theme'), 'light');
+  accounts.setGuest();
   assert.equal(accounts.getActiveProfile().theme, 'light');
-  assert.equal(await accounts.setTheme('dark'), true);
-  assert.equal(context.localStorage.getItem('raven_llama_guest_theme'), 'dark');
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 

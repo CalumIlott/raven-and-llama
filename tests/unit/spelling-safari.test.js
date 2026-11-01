@@ -88,6 +88,7 @@ test('Phonics Easy uses accessible picture clues and Medium keeps simple text cl
   assert.ok(easyQuestions.every(question => question.pictureClue));
 
   const context = createBrowserContext();
+  context.brandWordmark = () => 'Raven &amp; Llama';
   context.main = { innerHTML: '', dataset: {} };
   context.arena = { innerHTML: '' };
   context.document = {
