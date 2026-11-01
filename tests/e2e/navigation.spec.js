@@ -6,11 +6,92 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('home starts with program choices and keeps mastery stats accessible', async ({ page }) => {
-  await expect(page.locator('.home-brand-heading')).toHaveText('Raven & Llama');
+  await expect(page.locator('.home-brand-heading h1')).toHaveClass(/sr-only/);
+  const homeLogo = page.locator('.home-brand-logo');
+  await expect(homeLogo).toBeVisible();
+  await expect(homeLogo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
+  await expect(page.locator('.home-learning-art')).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
+  await expect(page.locator('.home-games-art')).toHaveAttribute('src', 'assets/Raven%26Llama_Gaming%20Hub.jpg');
+  await expect(page.locator('.home-studio-art')).toHaveAttribute('src', 'assets/Raven%26Llama_Creative%20Hub.jpg');
+  const logoCornerAlpha = await homeLogo.evaluate(async image => {
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0);
+    return context.getImageData(0, 0, 1, 1).data[3];
+  });
+  expect(logoCornerAlpha).toBe(0);
   await expect(page.locator('#app-main[data-page="home"] .home-section-heading')).toBeVisible();
   await expect(page.locator('#app-main[data-page="home"] .home-hero')).toHaveCount(0);
   await expect(page.getByText('Achievements Archive', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Mastery Stats/ })).toBeVisible();
+});
+
+test('header brand mark follows the active hub', async ({ page }) => {
+  const logo = page.locator('#header-brand-logo');
+  await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
+
+  await page.locator('#nav-btn-learning').click();
+  await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
+  await expect(logo).toHaveClass(/is-hub-mark/);
+  await page.locator('[data-action="science-home"]').first().click();
+  await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
+
+  await page.locator('#nav-btn-games').click();
+  await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Gaming%20Hub.jpg');
+
+  await page.goto('/timetables');
+  await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
+
+  await page.locator('#nav-btn-home').click();
+  await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
+});
+
+test('hub introductions align their copy to the left', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openLearningHub(page);
+  const learningIntro = page.locator('.learning-intro');
+  await expect(learningIntro).toHaveCSS('text-align', 'left');
+  await expect(learningIntro).toHaveCSS('background-image', 'none');
+  await expect(learningIntro).toHaveCSS('border-width', '0px');
+
+  await page.locator('[data-action="science-home"]').first().click();
+  const scienceIntro = page.locator('.module-intro');
+  await expect(scienceIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(scienceIntro).toHaveCSS('background-image', 'none');
+  await expect(scienceIntro).toHaveCSS('border-width', '0px');
+  await expect(page.locator('.module-banner-aside')).toHaveCSS('text-align', 'left');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('.module-intro')).toHaveCSS('flex-direction', 'column');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="dojo"]').first().click();
+  const dojoIntro = page.locator('.module-intro');
+  await expect(dojoIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(dojoIntro).toHaveCSS('background-image', 'none');
+  await expect(dojoIntro).toHaveCSS('border-width', '0px');
+
+  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="spelling-home"]').click();
+  const spellingIntro = page.locator('.module-intro');
+  await expect(spellingIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(spellingIntro).toHaveCSS('background-image', 'none');
+  await expect(spellingIntro).toHaveCSS('border-width', '0px');
+
+  await page.goto('/timetables');
+  const timetablesIntro = page.locator('.module-intro');
+  await expect(timetablesIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(timetablesIntro).toHaveCSS('background-image', 'none');
+  await expect(timetablesIntro).toHaveCSS('border-width', '0px');
+  await page.locator('#nav-btn-games').click();
+  const gamesIntro = page.locator('.games-hub-hero');
+  await expect(gamesIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(gamesIntro).toHaveCSS('background-image', 'none');
+  await expect(gamesIntro).toHaveCSS('border-width', '0px');
 });
 
 test('home hub cards align and the guest banner follows the active theme', async ({ page }) => {
@@ -28,9 +109,14 @@ test('home hub cards align and the guest banner follows the active theme', async
   expect(cards[1].borderRadius).toBe('24px');
   cards.forEach(card => expect(card.backgroundImage).toContain('linear-gradient'));
   const leaderboard = page.locator('#app-main .home-leaderboard');
+  await expect(leaderboard.locator('h3')).toHaveText('Leaderboard');
+  await expect(leaderboard.locator('.leaderboard-trophy')).toHaveAttribute('aria-hidden', 'true');
   await page.evaluate(() => window.ProfileManager.applyTheme('light'));
-  await expect(leaderboard).toHaveCSS('border-radius', '20px');
   await expect(leaderboard).toHaveCSS('background-color', 'rgb(232, 239, 255)');
+  await expect(leaderboard).toHaveCSS('border-radius', '16px');
+  await expect(leaderboard).toHaveCSS('border-width', '1px');
+  await expect(leaderboard.locator('li').first()).toHaveClass(/leaderboard__top-score/);
+  await expect(leaderboard.locator('li').first()).toHaveCSS('border-radius', '9.6px');
 
   const statusBanner = page.locator('#account-status-banner');
   const wordmarkAmp = page.locator('#app-main .brand-wordmark__amp').first();
@@ -47,6 +133,35 @@ test('home hub cards align and the guest banner follows the active theme', async
     await page.setViewportSize({ width, height: 900 });
     await expect(page.locator('#app-main .home-section-heading')).toHaveCSS('flex-direction', direction);
   }
+});
+
+test('homepage leaderboard preview centers its heading and shows sample scores', async ({ page }) => {
+  await page.goto('/?leaderboardPreview=1');
+  const leaderboard = page.locator('.home-leaderboard');
+  await expect(leaderboard.locator('h3')).toHaveText('Leaderboard');
+  await expect(leaderboard.locator('h3')).toHaveCSS('text-align', 'center');
+  await expect(leaderboard.locator('li')).toHaveCount(4);
+  await expect(leaderboard.locator('li').first()).toHaveClass(/leaderboard__top-score/);
+  await expect(leaderboard.locator('li').first()).toHaveCSS('text-align', 'center');
+  await expect(leaderboard.locator('li').first()).toHaveCSS('flex-direction', 'row');
+  await expect(leaderboard.locator('li').first()).toHaveCSS('border-bottom-width', '1px');
+  const scoreRows = await leaderboard.locator('li').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().y));
+  expect(new Set(scoreRows).size).toBe(4);
+  const rowAlignment = await leaderboard.locator('li').evaluateAll(rows => rows.map(row => {
+    const rowBounds = row.getBoundingClientRect();
+    const nameBounds = row.querySelector('span').getBoundingClientRect();
+    const scoreBounds = row.querySelector('strong').getBoundingClientRect();
+    return {
+      centerOffset: Math.abs((nameBounds.left + scoreBounds.right) / 2 - (rowBounds.left + rowBounds.right) / 2),
+      gap: scoreBounds.left - nameBounds.right
+    };
+  }));
+  rowAlignment.forEach(({ centerOffset, gap }) => {
+    expect(centerOffset).toBeLessThanOrEqual(1);
+    expect(gap).toBeGreaterThanOrEqual(24);
+  });
+  await expect(leaderboard).toContainText('LlamaLegend');
+  await expect(leaderboard).toContainText('1,480 points');
 });
 
 test('module brand kickers keep their descriptors visually separated on mobile', async ({ page }) => {
@@ -180,7 +295,7 @@ test('parent progress report and trophy room render their full states', async ({
   expect(reportLayout.scrollWidth).toBeGreaterThan(reportLayout.clientWidth);
   expect(await page.evaluate(() => document.documentElement.scrollWidth))
     .toBeLessThanOrEqual(await page.evaluate(() => document.documentElement.clientWidth));
-  await page.getByRole('button', { name: 'Close Report' }).click();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
 
   await page.locator('#nav-btn-learning').click();
   await page.getByRole('button', { name: /Trophy Room/ }).click();

@@ -5,6 +5,7 @@ Object.assign(App.prototype, {
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'timetables';
+    this.updateHeader();
 
     const buttons = Array.from({length: 11}, (_, i) => i + 2).map(n => `
       <button data-action="times-table-start" data-table="${n}"
@@ -32,15 +33,14 @@ Object.assign(App.prototype, {
           </div>
         </div>
 
-        <div class="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 border-2 border-emerald-600 rounded-3xl p-6 sm:p-8 mb-6 shadow-2xl">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="text-3xl">✖️</span>
-            <h1 class="font-ninja text-3xl text-emerald-400 font-bold">Times Tables Dojo</h1>
-          </div>
+        <section class="module-intro module-intro--timetables">
+          <div class="module-intro__copy">
+            <h1 class="font-ninja font-bold">Times Tables Dojo</h1>
           <p class="text-slate-300 text-sm max-w-xl">
             Choose any individual times table from 2× to 12×, challenge yourself with a mixed sprint, or complete the 33-question mastery test!
           </p>
-        </div>
+          </div>
+        </section>
 
         <div class="mb-6">
           ${ProfileManager.renderLeaderboard('times_tables', 'Times Tables Leaderboard')}

@@ -4088,9 +4088,8 @@ Object.assign(App.prototype, {
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
 
-        <div class="relative bg-gradient-to-r from-sky-950 via-slate-900 to-emerald-950 border-2 border-sky-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8 overflow-hidden">
-          <div class="relative flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="text-center md:text-left">
+        <section class="module-intro module-intro--science">
+            <div class="module-intro__copy">
               <div class="module-eyebrow science-lab-badge">
                 ${window.brandWordmark()} <span>Discovery Lab</span>
               </div>
@@ -4100,8 +4099,7 @@ Object.assign(App.prototype, {
             <div class="module-banner-aside">
               <p>Curiosity is your superpower!</p>
             </div>
-          </div>
-        </div>
+        </section>
 
         <div class="mb-4 flex items-center justify-between">
           <h2 class="font-ninja text-2xl text-white font-bold">Choose a Mission</h2>

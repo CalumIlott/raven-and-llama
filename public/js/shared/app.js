@@ -8,6 +8,12 @@ function escapeHtml(value) {
   })[character]);
 }
 
+function renderAvatarArtwork(avatar) {
+  return avatar?.image
+    ? `<img class="profile-avatar-art" src="${avatar.image}" alt="">`
+    : avatar?.emoji || '';
+}
+
 window.brandWordmark = () => '<span class="brand-wordmark"><span>Raven</span> <span class="brand-wordmark__amp">&amp;</span> <span>Llama</span></span>';
 
 // Raven & Llama: Multi-Tiered Educational Platform Controller
@@ -259,6 +265,7 @@ class App {
 
   updateHeader() {
     const profile = ProfileManager.getActiveProfile();
+    const brandLogoEl = document.getElementById('header-brand-logo');
     const nameEl = document.getElementById('header-profile-name');
     const avatarEl = document.getElementById('header-profile-avatar');
     const starsEl = document.getElementById('header-stars-count');
@@ -274,9 +281,21 @@ class App {
 
     if (nameEl) nameEl.textContent = ProfileManager.account?.username || 'Guest';
     if (accountButton) accountButton.title = ProfileManager.isAuthenticated() ? 'Account settings' : 'Sign in or create an account';
+    if (brandLogoEl) {
+      const brandLogos = {
+        home: 'assets/raven-llama-home-logo.png',
+        learning: 'assets/Raven%26Llama_Learning%20Centre.jpg',
+        games: 'assets/Raven%26Llama_Gaming%20Hub.jpg',
+        'critter-catch': 'assets/Raven%26Llama_Gaming%20Hub.jpg',
+        creative: 'assets/Raven%26Llama_Creative%20Hub.jpg'
+      };
+      brandLogoEl.src = brandLogos[this.currentView] || brandLogos.learning;
+      brandLogoEl.classList.toggle('is-hub-mark', this.currentView !== 'home');
+    }
     if (avatarEl) {
-      avatarEl.innerHTML = profile?.avatar?.emoji || '🐦‍⬛';
-      avatarEl.className = `site-account-button__avatar w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${profile?.avatar?.color || 'bg-black text-white border border-zinc-700'}`;
+      const avatar = profile?.avatar || ProfileManager.getAvatar('raven');
+      avatarEl.innerHTML = renderAvatarArtwork(avatar);
+      avatarEl.className = `site-account-button__avatar w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${avatar.image ? '' : avatar.color}`;
     }
     if (starsEl) starsEl.textContent = profile?.stars || 0;
     if (statusBanner && statusMessage) {
@@ -551,7 +570,7 @@ class App {
     if (options) options.innerHTML = ProfileManager.AVATARS.map(avatar => `
       <label class="flex flex-col items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-950 p-2 text-center text-[11px] text-zinc-300 cursor-pointer hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/50">
         <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === activeAvatar.id ? 'checked' : ''}>
-        <span aria-hidden="true" class="w-9 h-9 rounded-full flex items-center justify-center text-xl ${avatar.color}">${avatar.emoji}</span>
+        <span aria-hidden="true" class="w-9 h-9 rounded-full flex items-center justify-center text-xl ${avatar.image ? '' : avatar.color}">${renderAvatarArtwork(avatar)}</span>
       </label>
     `).join('');
     this.updateAvatarSaveButton();
@@ -559,10 +578,10 @@ class App {
     const pickerCurrentAvatarIcon = document.getElementById('account-avatar-picker-current-icon');
     const currentAvatarName = document.getElementById('account-avatar-current-name');
     if (currentAvatarIcon) {
-      currentAvatarIcon.textContent = activeAvatar.emoji;
-      currentAvatarIcon.className = `account-avatar-current__icon ${activeAvatar.color}`;
+      currentAvatarIcon.innerHTML = renderAvatarArtwork(activeAvatar);
+      currentAvatarIcon.className = `account-avatar-current__icon ${activeAvatar.image ? '' : activeAvatar.color}`;
     }
-    if (pickerCurrentAvatarIcon) pickerCurrentAvatarIcon.textContent = activeAvatar.emoji;
+    if (pickerCurrentAvatarIcon) pickerCurrentAvatarIcon.innerHTML = renderAvatarArtwork(activeAvatar);
     if (currentAvatarName) currentAvatarName.textContent = activeAvatar.name;
   }
 

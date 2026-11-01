@@ -8,10 +8,13 @@ class ProfileManager {
   static LAST_MODULES = new Set(['learning', 'dojo', 'timetables', 'spelling']);
 
   static AVATARS = [
-    { id: 'raven', name: 'Raven', emoji: '🐦‍⬛', color: 'bg-black text-white border-2 border-zinc-700 shadow-md', icon: 'feather' },
-    { id: 'llama', name: 'Llama', emoji: '🦙', color: 'bg-amber-100 text-amber-950 border border-amber-400', icon: 'smile' },
-    { id: 'hippo', name: 'Hippo', emoji: '🦛', color: 'bg-teal-900 text-teal-200 border border-teal-400/50', icon: 'shield' },
-    { id: 'owl', name: 'Owl', emoji: '🦉', color: 'bg-amber-900 text-amber-100 border border-amber-400/50', icon: 'book' },
+    { id: 'raven', name: 'Raven', emoji: '🐦‍⬛', image: 'assets/Raven%26Llama_Profile_Raven.jpg', color: 'bg-black text-white border-2 border-zinc-700 shadow-md', icon: 'feather' },
+    { id: 'llama', name: 'Llama', emoji: '🦙', image: 'assets/Raven%26Llama_Profile_Llama.jpg', color: 'bg-amber-100 text-amber-950 border border-amber-400', icon: 'smile' },
+    { id: 'hippo', name: 'Hippo', emoji: '🦛', image: 'assets/Raven%26Llama_Profile_Hippo.jpg', color: 'bg-teal-900 text-teal-200 border border-teal-400/50', icon: 'shield' },
+    { id: 'owl', name: 'Owl', emoji: '🦉', image: 'assets/Raven%26Llama_Profile_Owl.jpg', color: 'bg-amber-900 text-amber-100 border border-amber-400', icon: 'book' }
+  ];
+
+  static LEGACY_AVATARS = [
     { id: 'fire', name: 'Fire Ninja', emoji: '🔥', color: 'bg-red-500 text-white', icon: 'flame' },
     { id: 'ice', name: 'Frost Ninja', emoji: '❄️', color: 'bg-cyan-500 text-white', icon: 'snowflake' },
     { id: 'lightning', name: 'Thunder Ninja', emoji: '⚡', color: 'bg-amber-400 text-slate-900', icon: 'zap' },
@@ -23,7 +26,8 @@ class ProfileManager {
   ];
 
   static getAvatar(avatarId) {
-    return ProfileManager.AVATARS.find(avatar => avatar.id === avatarId) || ProfileManager.AVATARS[0];
+    return [...ProfileManager.AVATARS, ...ProfileManager.LEGACY_AVATARS].find(avatar => avatar.id === avatarId)
+      || ProfileManager.AVATARS[0];
   }
 
   static createGuestProfile() {
@@ -268,7 +272,15 @@ class ProfileManager {
     const surface = surfaceClass || 'bg-slate-950/70 border border-slate-800';
     return `
       <section class="${surface} rounded-2xl p-4" aria-label="${accessibleTitle}">
-        <h3 class="font-ninja text-lg text-yellow-400 font-bold mb-3">🏆 ${title}</h3>
+        <h3 class="leaderboard-title font-ninja text-lg text-yellow-400 font-bold mb-3">
+          <span class="leaderboard-trophy" aria-hidden="true">
+            <span class="leaderboard-trophy__cup"></span>
+            <span class="leaderboard-trophy__stem"></span>
+            <span class="leaderboard-trophy__base"></span>
+            <span class="leaderboard-trophy__spark"></span>
+          </span>
+          <span>${title}</span>
+        </h3>
         <ol id="${id}" class="space-y-2 text-sm text-slate-300" aria-live="polite">
           <li class="text-slate-500">Loading scores…</li>
         </ol>
@@ -292,7 +304,7 @@ class ProfileManager {
       }
       entries.forEach((entry, index) => {
         const row = document.createElement('li');
-        row.className = 'flex items-center justify-between gap-3';
+        row.className = `flex items-center justify-between gap-3${index === 0 ? ' leaderboard__top-score' : ''}`;
         const username = document.createElement('span');
         username.className = 'truncate';
         username.textContent = `${index + 1}. ${entry.username}`;

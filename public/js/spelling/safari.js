@@ -3880,15 +3880,15 @@ Object.assign(App.prototype, {
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
-        <div class="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 border-2 border-emerald-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8">
-          <div class="text-center md:text-left">
+        <section class="module-intro module-intro--spelling">
+          <div class="module-intro__copy">
             <div class="module-eyebrow">
               <span>Word Adventure Lab</span>
             </div>
             <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spelling Safari</h1>
             <p class="text-slate-300 text-sm sm:text-base mt-2">Explore sounds, spell tricky words, discover new meanings, and unscramble the jungle!</p>
           </div>
-        </div>
+        </section>
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose your adventure</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           ${SpellingSafari.getActivities().map(activity => `
