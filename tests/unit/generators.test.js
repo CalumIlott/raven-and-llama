@@ -91,6 +91,32 @@ test('endless belt questions are valid and vary skill categories', () => {
   assert.equal(generator.isValidQuestion({ type: 'standard_choice', answer: 4, options: [3], timeLimitSeconds: 10 }), false);
 });
 
+test('under-varied curriculum skills generate varied subject-specific questions', () => {
+  const { generator } = loadGenerator();
+  const skills = [
+    ['green_reading_writing', /reading & writing/i],
+    ['brown_counting', /counting/i],
+    ['brown_read_write', /read and write/i],
+    ['brown_renaming', /renaming/i],
+    ['black_counting', /counting/i],
+    ['black_multiplication', /multiplication/i],
+    ['black_fraction_order', /fraction order/i],
+    ['black_multiplicative', /ratio|rate|proportion/i],
+    ['platinum_fraction', /fraction/i],
+    ['platinum_decimal', /decimal/i],
+    ['platinum_challenge', /challenge/i]
+  ];
+
+  for (const [skillId, titlePattern] of skills) {
+    const questions = Array.from({ length: 30 }, () => generator.getQuestionForSkill(skillId));
+    assert.ok(questions.every(question => generator.isValidQuestion(question)), `${skillId} should generate valid questions`);
+    assert.ok(questions.every(question => titlePattern.test(question.title)), `${skillId} should match its curriculum skill`);
+    const variants = questions.map(question =>
+      [question.prompt, question.answer, ...question.options].join('|'));
+    assert.ok(new Set(variants).size >= 5, `${skillId} should generate varied questions`);
+  }
+});
+
 test('unique question generation stops at the requested count and removes duplicates', () => {
   const { generator } = loadGenerator();
   let next = 0;

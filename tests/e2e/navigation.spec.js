@@ -122,12 +122,12 @@ test('learning hub uses colorful, rounded program cards', async ({ page }) => {
   );
   const expectColorfulRoundedCards = async () => {
     const cards = await getCardStyles();
-    expect(cards).toHaveLength(4);
+    expect(cards).toHaveLength(6);
     cards.forEach(card => {
       expect(card.borderRadius).toBe('24px');
       expect(card.backgroundImage).toContain('linear-gradient');
     });
-    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(4);
+    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(6);
   };
 
   await expectColorfulRoundedCards();
@@ -135,6 +135,30 @@ test('learning hub uses colorful, rounded program cards', async ({ page }) => {
     .toHaveCSS('border-radius', '20px');
   await page.evaluate(() => window.ProfileManager.applyTheme('light'));
   await expectColorfulRoundedCards();
+});
+
+test('Telling Time teaches analogue and digital clock matching', async ({ page }) => {
+  await openLearningHub(page);
+  await page.getByRole('button', { name: /Explore Telling Time/ }).click();
+  await expect(page.getByRole('heading', { name: 'Telling Time', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Five-Minute Clock Match/ })).toBeVisible();
+
+  await page.getByRole('button', { name: /Five-Minute Clock Match/ }).click();
+  await expect(page.getByRole('heading', { name: 'What digital time does this clock show?' })).toBeVisible();
+  await expect(page.locator('svg[aria-label^="Analogue clock showing"]')).toBeVisible();
+  const answer = await page.evaluate(() => window.app.timeActivity.questions[0].answer);
+  await page.locator(`[data-action="time-answer"][data-answer="${answer}"]`).click();
+  await expect(page.locator('#app-main [role="status"]')).toContainText('Correct!');
+  await page.getByRole('button', { name: 'Next question' }).click();
+  await expect(page.getByText('Question 2 of 10')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Activities' }).click();
+  await page.getByRole('button', { name: /Digital to Analogue/ }).click();
+  await expect(page.getByRole('heading', { name: 'Which analogue clock shows this time?' })).toBeVisible();
+  await expect(page.locator('[data-action="time-answer"] svg')).toHaveCount(4);
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth))
+    .toBeLessThanOrEqual(await page.evaluate(() => document.documentElement.clientWidth));
 });
 
 test('certificate text cannot create markup and mobile zoom remains available', async ({ page }) => {
