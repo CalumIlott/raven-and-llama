@@ -232,6 +232,48 @@ Object.assign(App.prototype, {
               <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
             </div>
           </button>
+
+          <button type="button" data-action="money-home"
+                  class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-amber-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400"></div>
+            <div>
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-3xl shadow-lg border border-yellow-300">
+                    💷
+                  </div>
+                  <div>
+                    <span class="text-xs uppercase tracking-wider text-amber-400 font-bold">Everyday Maths</span>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-amber-300 transition">Money Masters</h3>
+                  </div>
+                </div>
+                <span class="bg-amber-950 text-amber-300 border border-amber-600/60 text-xs font-bold px-3 py-1 rounded-full">
+                  3 Money Games 💰
+                </span>
+              </div>
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                Recognise British coins and notes, build exact totals, and practise giving change at easy, medium, or hard difficulty.
+              </p>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Recognise</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">Coins &amp; Notes</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Practise</div>
+                  <div class="font-ninja font-bold text-emerald-300 mt-0.5">Make a Total</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Challenge</div>
+                  <div class="font-ninja font-bold text-cyan-300 mt-0.5">Give Change</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-amber-400 group-hover:text-yellow-300">
+              <span>Explore Money Masters</span>
+              <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
+            </div>
+          </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">

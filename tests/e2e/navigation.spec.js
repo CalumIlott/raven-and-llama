@@ -122,12 +122,12 @@ test('learning hub uses colorful, rounded program cards', async ({ page }) => {
   );
   const expectColorfulRoundedCards = async () => {
     const cards = await getCardStyles();
-    expect(cards).toHaveLength(4);
+    expect(cards).toHaveLength(5);
     cards.forEach(card => {
       expect(card.borderRadius).toBe('24px');
       expect(card.backgroundImage).toContain('linear-gradient');
     });
-    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(4);
+    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(5);
   };
 
   await expectColorfulRoundedCards();

@@ -131,6 +131,14 @@ class App {
       case 'science-start': this.startScienceMission(target.dataset.missionId); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
+      case 'money-home': this.showMoneyActivity(); break;
+      case 'money-start': this.startMoneyGame(target.dataset.activityId, target.dataset.difficulty); break;
+      case 'money-answer': this.answerMoneyQuestion(Number(target.dataset.answer)); break;
+      case 'money-coin': this.addMoneyCoin(Number(target.dataset.value)); break;
+      case 'money-undo': this.undoMoneyCoin(); break;
+      case 'money-clear': this.clearMoneyCoins(); break;
+      case 'money-submit': this.submitMoneyAmount(); break;
+      case 'money-next': this.nextMoneyQuestion(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
       case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
       case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
