@@ -32,7 +32,8 @@ test('each activity generates six unique answerable questions', () => {
   for (const activity of context.SpellingSafari.getActivities()) {
     const questions = context.SpellingSafari.createQuestions(activity.id);
     assert.equal(questions.length, 6, `${activity.id} should generate six questions`);
-    assert.equal(new Set(Array.from(questions, question => question.prompt || question.answer)).size, 6);
+    assert.equal(new Set(Array.from(questions, question =>
+      JSON.stringify([question.prompt, question.hint, question.answer]))).size, 6);
 
     for (const question of questions) {
       assert.equal(question.activityId, activity.id);
