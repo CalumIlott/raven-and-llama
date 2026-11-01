@@ -282,7 +282,7 @@ Object.assign(App.prototype, {
               <div class="flex items-start justify-between gap-4 mb-4">
                 <div class="flex items-center gap-3">
                   <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-3xl shadow-lg border border-yellow-300">
-                    💷
+                    🇦🇺
                   </div>
                   <div>
                     <span class="text-xs uppercase tracking-wider text-amber-400 font-bold">Everyday Maths</span>
@@ -294,7 +294,7 @@ Object.assign(App.prototype, {
                 </span>
               </div>
               <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                Recognise British coins and notes, build exact totals, and practise giving change at easy, medium, or hard difficulty.
+                Recognise Australian coins and notes, build exact totals, and practise giving change at easy, medium, or hard difficulty.
               </p>
               <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
                 <div>

@@ -1,17 +1,16 @@
 class MoneyMasters {
   static DENOMINATIONS = [
-    { value: 1, label: '1p', type: 'coin' },
-    { value: 2, label: '2p', type: 'coin' },
-    { value: 5, label: '5p', type: 'coin' },
-    { value: 10, label: '10p', type: 'coin' },
-    { value: 20, label: '20p', type: 'coin' },
-    { value: 50, label: '50p', type: 'coin' },
-    { value: 100, label: '£1', type: 'coin' },
-    { value: 200, label: '£2', type: 'coin' },
-    { value: 500, label: '£5', type: 'note' },
-    { value: 1000, label: '£10', type: 'note' },
-    { value: 2000, label: '£20', type: 'note' },
-    { value: 5000, label: '£50', type: 'note' }
+    { value: 5, label: '5c', type: 'coin' },
+    { value: 10, label: '10c', type: 'coin' },
+    { value: 20, label: '20c', type: 'coin' },
+    { value: 50, label: '50c', type: 'coin' },
+    { value: 100, label: '$1', type: 'coin' },
+    { value: 200, label: '$2', type: 'coin' },
+    { value: 500, label: '$5', type: 'note' },
+    { value: 1000, label: '$10', type: 'note' },
+    { value: 2000, label: '$20', type: 'note' },
+    { value: 5000, label: '$50', type: 'note' },
+    { value: 10000, label: '$100', type: 'note' }
   ];
 
   static ACTIVITIES = [
@@ -19,7 +18,7 @@ class MoneyMasters {
       id: 'coin-recognition',
       title: 'Coin & Note Match',
       emoji: '🪙',
-      description: 'Learn to recognise British coins and notes and remember what each one is worth.'
+      description: 'Learn to recognise Australian coins and notes and remember what each one is worth.'
     },
     {
       id: 'build-total',
@@ -30,7 +29,7 @@ class MoneyMasters {
     {
       id: 'give-change',
       title: 'Change Challenge',
-      emoji: '💷',
+      emoji: '🇦🇺',
       description: 'Work out how much change to give when someone pays for an item.'
     }
   ];
@@ -49,18 +48,22 @@ class MoneyMasters {
   }
 
   static formatMoney(value) {
-    return value < 100 ? `${value}p` : `£${(value / 100).toFixed(2)}`;
+    return value < 100 ? `${value}c` : `$${(value / 100).toFixed(2)}`;
+  }
+
+  static randomAmount(min, max) {
+    return this.randomInt(Math.ceil(min / 5), Math.floor(max / 5)) * 5;
   }
 
   static getDenominations(difficulty) {
-    const maxValue = difficulty === 'easy' ? 20 : difficulty === 'medium' ? 200 : 5000;
+    const maxValue = difficulty === 'easy' ? 50 : difficulty === 'medium' ? 200 : 10000;
     return this.DENOMINATIONS.filter(denomination => denomination.value <= maxValue);
   }
 
   static generateChoices(answer, min, max) {
     const choices = new Set([answer]);
     while (choices.size < 4) {
-      choices.add(this.randomInt(min, max));
+      choices.add(this.randomAmount(min, max));
     }
     return this.shuffle(Array.from(choices));
   }
@@ -88,7 +91,7 @@ class MoneyMasters {
       const [min, max] = level === 'easy' ? [5, 60] : level === 'medium' ? [100, 1000] : [500, 5000];
       return {
         prompt: 'Choose coins and notes to make this exact amount.',
-        target: this.randomInt(min, max),
+        target: this.randomAmount(min, max),
         denominations
       };
     }
@@ -99,7 +102,7 @@ class MoneyMasters {
         ? [100, 200, 500, 1000]
         : [500, 1000, 2000, 5000];
     const payment = paymentOptions[this.randomInt(0, paymentOptions.length - 1)];
-    const price = this.randomInt(1, payment - 1);
+    const price = this.randomAmount(5, payment - 5);
     const answer = payment - price;
     return {
       prompt: `An item costs ${this.formatMoney(price)}. You pay with ${this.formatMoney(payment)}. How much change do you get?`,
@@ -129,9 +132,9 @@ Object.assign(App.prototype, {
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
         <div class="bg-gradient-to-r from-amber-950 via-yellow-950 to-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8">
-          <span class="text-3xl">💷</span>
+          <span class="text-3xl">🇦🇺</span>
           <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold mt-2">Money Masters</h1>
-          <p class="text-slate-300 text-sm sm:text-base mt-2">Explore British coins and notes, make totals, and practise giving change.</p>
+          <p class="text-slate-300 text-sm sm:text-base mt-2">Explore Australian coins and notes, make totals, and practise giving change.</p>
         </div>
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose a money game</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

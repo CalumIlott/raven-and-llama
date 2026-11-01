@@ -23,10 +23,13 @@ test('money games generate valid questions for every difficulty', () => {
           assert.ok(question.options.every(option => money.getDenominations(difficulty).some(item => item.value === option.value)));
         } else if (activity.id === 'build-total') {
           assert.ok(question.target > 0);
-          assert.ok(question.denominations.some(item => item.value === 1));
+          assert.equal(question.target % 5, 0);
+          assert.ok(question.denominations.some(item => item.value === 5));
           assert.ok(question.denominations.every(item => money.getDenominations(difficulty).some(coin => coin.value === item.value)));
         } else {
           assert.equal(question.price + question.answer, question.payment);
+          assert.equal(question.price % 5, 0);
+          assert.equal(question.answer % 5, 0);
           assert.equal(question.options.length, 4);
           assert.equal(new Set(question.options).size, 4);
           assert.ok(question.options.includes(question.answer));
@@ -38,21 +41,38 @@ test('money games generate valid questions for every difficulty', () => {
   }
 });
 
-test('difficulty levels progressively introduce coins, notes, and larger amounts', () => {
+test('Australian denominations progress from coins to notes and larger amounts', () => {
   const money = loadMoneyMasters();
 
-  assert.ok(money.getDenominations('easy').every(item => item.type === 'coin' && item.value <= 20));
+  assert.deepEqual(
+    Array.from(money.DENOMINATIONS, ({ value, label, type }) => [value, label, type]),
+    [
+      [5, '5c', 'coin'],
+      [10, '10c', 'coin'],
+      [20, '20c', 'coin'],
+      [50, '50c', 'coin'],
+      [100, '$1', 'coin'],
+      [200, '$2', 'coin'],
+      [500, '$5', 'note'],
+      [1000, '$10', 'note'],
+      [2000, '$20', 'note'],
+      [5000, '$50', 'note'],
+      [10000, '$100', 'note']
+    ]
+  );
+  assert.ok(money.getDenominations('easy').every(item => item.type === 'coin' && item.value <= 50));
   assert.ok(money.getDenominations('medium').some(item => item.value === 200));
   assert.ok(money.getDenominations('medium').every(item => item.type === 'coin'));
   assert.ok(money.getDenominations('hard').some(item => item.type === 'note'));
-  assert.equal(money.getDenominations('hard').at(-1).value, 5000);
+  assert.equal(money.getDenominations('hard').at(-1).value, 10000);
+  assert.ok(money.DENOMINATIONS.every(item => item.value % 5 === 0));
   assert.equal(money.generateQuestion('unknown-activity'), null);
 });
 
-test('money values are formatted in pence and pounds', () => {
+test('money values are formatted in cents and Australian dollars', () => {
   const money = loadMoneyMasters();
 
-  assert.equal(money.formatMoney(75), '75p');
-  assert.equal(money.formatMoney(100), '£1.00');
-  assert.equal(money.formatMoney(125), '£1.25');
+  assert.equal(money.formatMoney(75), '75c');
+  assert.equal(money.formatMoney(100), '$1.00');
+  assert.equal(money.formatMoney(125), '$1.25');
 });
