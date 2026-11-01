@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
 
-function loadGameEngine(sessionValues = new Map()) {
+function loadGameEngine(sessionValues = new Map(), account = null) {
   const elements = new Map();
   const delayedCallbacks = [];
   const context = createBrowserContext({
@@ -37,6 +37,7 @@ function loadGameEngine(sessionValues = new Map()) {
       }
     },
     app: { currentView: '', showTimesTables() {} },
+    ProfileManager: { account },
     setInterval: () => 1,
     clearInterval() {},
     setTimeout(callback) {
@@ -107,6 +108,24 @@ test('finite quiz sessions resume their saved question after reload', () => {
   assert.equal(resumed.context.app.currentView, 'game');
 
   resumed.engine.exitGame();
+  assert.equal(sessionValues.size, 0);
+});
+
+test('saved quiz sessions are not restored under a different account', () => {
+  const sessionValues = new Map();
+  const questions = [{
+    type: 'standard_choice',
+    prompt: '2 × 2 = ?',
+    answer: 4,
+    options: [3, 4],
+    timeLimitSeconds: 20
+  }];
+  const first = loadGameEngine(sessionValues, { id: 'account-1' });
+  first.engine.startCustomQuiz('Account quiz', questions, true);
+  first.engine.saveSession();
+
+  const second = loadGameEngine(sessionValues, { id: 'account-2' });
+  assert.equal(second.engine.restoreSession(), false);
   assert.equal(sessionValues.size, 0);
 });
 

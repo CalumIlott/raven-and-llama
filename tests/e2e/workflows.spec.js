@@ -109,6 +109,20 @@ test('a Times Tables quiz resumes at the same question after reloading', async (
   await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible();
 });
 
+test('signing in during a guest quiz discards the guest session', async ({ page }) => {
+  await openTimesTables(page);
+  await page.getByRole('button', { name: /Quick Mixed Quiz/ }).click();
+  await chooseQuestionAnswer(page);
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible({ timeout: 5000 });
+
+  await registerAccount(page);
+
+  await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toHaveCount(0);
+});
+
 test('Times Tables quizzes let learners retry incorrect answers', async ({ page }) => {
   await openTimesTables(page);
   await page.getByRole('button', { name: '2× Table', exact: true }).click();

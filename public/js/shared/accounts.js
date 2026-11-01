@@ -78,11 +78,15 @@ class ProfileManager {
   }
 
   static setGuest() {
+    const previousAccountId = ProfileManager.account?.id || (ProfileManager.currentProfile ? 'guest' : null);
     ProfileManager.account = null;
     ProfileManager.currentProfile = ProfileManager.createGuestProfile();
     ProfileManager.currentProfile.theme = ProfileManager.readGuestThemePreference();
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.lastSaveError = '';
+    if (previousAccountId && previousAccountId !== 'guest') {
+      window.gameEngine?.discardSessionForAccountChange();
+    }
   }
 
   static readGuestThemePreference() {
@@ -94,11 +98,15 @@ class ProfileManager {
   }
 
   static acceptSession(data) {
+    const previousAccountId = ProfileManager.account?.id || (ProfileManager.currentProfile ? 'guest' : null);
     ProfileManager.account = data.user;
     ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, data.user);
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
     ProfileManager.accountServiceAvailable = true;
     ProfileManager.lastSaveError = '';
+    if (previousAccountId && previousAccountId !== data.user.id) {
+      window.gameEngine?.discardSessionForAccountChange();
+    }
   }
 
   static applyTheme(theme) {

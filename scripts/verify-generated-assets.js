@@ -7,12 +7,13 @@ const projectRoot = path.resolve(__dirname, '..');
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'raven-generated-assets-'));
 const cssOutput = path.join(temporaryDirectory, 'tailwind.css');
 const confettiOutput = path.join(temporaryDirectory, 'confetti.js');
-const tailwindCli = path.join(projectRoot, 'node_modules', 'tailwindcss', 'lib', 'cli.js');
+const tailwindPackagePath = require.resolve('@tailwindcss/cli/package.json');
+const tailwindPackage = require(tailwindPackagePath);
+const tailwindCli = path.resolve(path.dirname(tailwindPackagePath), tailwindPackage.bin.tailwindcss);
 
 try {
   const build = spawnSync(process.execPath, [
     tailwindCli,
-    '--config', path.join(projectRoot, 'tailwind.config.js'),
     '--input', path.join(projectRoot, 'tailwind.input.css'),
     '--output', cssOutput,
     '--minify'

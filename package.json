@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "prestart": "npm run build",
-    "build:css": "tailwindcss --config tailwind.config.js --input ./tailwind.input.css --output ./public/css/tailwind.css --minify",
+    "build:css": "tailwindcss --input ./tailwind.input.css --output ./public/css/tailwind.css --minify",
     "build:assets": "node scripts/copy-client-assets.js",
     "build": "npm run build:css && npm run build:assets",
     "pretest": "npm run build",
@@ -25,8 +25,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "@tailwindcss/cli": "4.3.3",
     "canvas-confetti": "^1.9.4",
-    "tailwindcss": "3.4.17",
+    "tailwindcss": "4.3.3",
     "wrangler": "^4.156.0"
   }
 }
