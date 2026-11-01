@@ -144,7 +144,7 @@ test('homepage leaderboard preview centers its heading and shows sample scores',
   await expect(leaderboard.locator('li').first()).toHaveClass(/leaderboard__top-score/);
   await expect(leaderboard.locator('li').first()).toHaveCSS('text-align', 'center');
   await expect(leaderboard.locator('li').first()).toHaveCSS('flex-direction', 'row');
-  await expect(leaderboard.locator('li').first()).toHaveCSS('border-bottom-width', '0px');
+  await expect(leaderboard.locator('li').first()).toHaveCSS('border-bottom-width', '1px');
   const scoreRows = await leaderboard.locator('li').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().y));
   expect(new Set(scoreRows).size).toBe(4);
   const rowAlignment = await leaderboard.locator('li').evaluateAll(rows => rows.map(row => {
@@ -295,7 +295,7 @@ test('parent progress report and trophy room render their full states', async ({
   expect(reportLayout.scrollWidth).toBeGreaterThan(reportLayout.clientWidth);
   expect(await page.evaluate(() => document.documentElement.scrollWidth))
     .toBeLessThanOrEqual(await page.evaluate(() => document.documentElement.clientWidth));
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
 
   await page.locator('#nav-btn-learning').click();
   await page.getByRole('button', { name: /Trophy Room/ }).click();

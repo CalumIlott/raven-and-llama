@@ -263,7 +263,7 @@ test('Parent Report keeps keyboard focus inside its dialog on mobile', async ({ 
 
   const reportDialog = page.getByRole('dialog', { name: 'Mastery & Progress Report' });
   const headerClose = page.getByRole('button', { name: 'Close progress report' });
-  const footerClose = page.getByRole('button', { name: 'Close' });
+  const footerClose = page.getByRole('button', { name: 'Close', exact: true });
   await expect(reportDialog).toBeVisible();
   await expect(headerClose).toBeFocused();
 
