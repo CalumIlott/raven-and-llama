@@ -42,6 +42,11 @@ test('home hub cards align and the guest banner follows the active theme', async
   await expect(statusBanner).toHaveCSS('background-color', 'rgb(25, 53, 40)');
   await expect(wordmarkAmp).toHaveCSS('color', 'rgb(250, 204, 21)');
   await expect(leaderboard).toHaveCSS('background-color', 'rgb(41, 61, 98)');
+
+  for (const [width, direction] of [[900, 'column'], [901, 'row']]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.locator('#app-main .home-section-heading')).toHaveCSS('flex-direction', direction);
+  }
 });
 
 test('module brand kickers keep their descriptors visually separated on mobile', async ({ page }) => {

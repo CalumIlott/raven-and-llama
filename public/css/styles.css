@@ -1266,6 +1266,8 @@ html.theme-light #app-main[data-page="games"] .game-choice__action { color: #557
 @media (max-width: 900px) {
   .site-header__inner {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
   #app-main[data-page="home"] .home-section-heading {
     align-items: flex-start;
     flex-direction: column;
