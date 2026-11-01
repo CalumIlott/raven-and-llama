@@ -4067,6 +4067,8 @@ const SCIENCE_MISSIONS = [
 
 window.SCIENCE_MISSIONS = SCIENCE_MISSIONS;
 
+const SCIENCE_DIFFICULTY_CHOICE_COUNTS = { easy: 2, medium: 3, hard: 4 };
+
 Object.assign(App.prototype, {
   showScienceExplorers() {
     this.currentView = 'science';
@@ -4105,8 +4107,7 @@ Object.assign(App.prototype, {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           ${SCIENCE_MISSIONS.map(mission => `
-            <button type="button" data-action="science-start" data-mission-id="${mission.id}"
-                    class="group w-full text-left relative bg-slate-900 border-2 border-slate-700 ${mission.theme.border} rounded-3xl p-5 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div class="science-mission-card group w-full text-left relative bg-slate-900 border-2 border-slate-700 ${mission.theme.border} rounded-3xl p-5 sm:p-6 shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div class="flex items-start gap-4">
                 <div class="w-14 h-14 rounded-2xl ${mission.theme.icon} border flex items-center justify-center text-3xl">${mission.icon}</div>
                 <div class="flex-1">
@@ -4120,24 +4121,52 @@ Object.assign(App.prototype, {
                 <span class="text-slate-400">5 questions · Learn as you play</span>
                 <span class="science-mission-reward text-amber-300 font-bold">⭐ 5 stars to find</span>
               </div>
-            </button>
+              <p class="mt-4 text-xs font-bold text-sky-300">Choose your difficulty</p>
+              <div class="grid grid-cols-3 gap-2 mt-2">
+                ${Object.keys(SCIENCE_DIFFICULTY_CHOICE_COUNTS).map(difficulty => `
+                  <button type="button" data-action="science-start" data-mission-id="${mission.id}" data-difficulty="${difficulty}"
+                          aria-label="${mission.title}, ${difficulty} difficulty"
+                          class="rounded-xl bg-sky-900 hover:bg-sky-800 px-2 py-2 text-sm font-bold text-white capitalize">${difficulty}</button>
+                `).join('')}
+              </div>
+            </div>
           `).join('')}
         </div>
       </div>
     `;
   },
 
-  startScienceMission(missionId) {
+  startScienceMission(missionId, difficulty = 'medium') {
     const mission = SCIENCE_MISSIONS.find(item => item.id === missionId);
     if (!mission) return this.showScienceExplorers();
+    if (!Object.hasOwn(SCIENCE_DIFFICULTY_CHOICE_COUNTS, difficulty)) difficulty = 'medium';
     const pool = [...mission.questions];
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    const selectedQuestions = pool.slice(0, 5);
+    const selectedQuestions = pool.slice(0, 5).map(question => {
+      const correctChoice = question.choices[question.answer];
+      const choices = question.choices.filter((_, index) => index !== question.answer);
+      if (difficulty === 'hard') {
+        const otherChoices = [...new Set(mission.questions.flatMap(item => item.choices))]
+          .filter(choice => choice !== correctChoice && !question.choices.includes(choice));
+        for (let i = otherChoices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [otherChoices[i], otherChoices[j]] = [otherChoices[j], otherChoices[i]];
+        }
+        choices.push(...otherChoices.slice(0, 1));
+      }
+      const selectedChoices = [correctChoice, ...choices.slice(0, SCIENCE_DIFFICULTY_CHOICE_COUNTS[difficulty] - 1)];
+      for (let i = selectedChoices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [selectedChoices[i], selectedChoices[j]] = [selectedChoices[j], selectedChoices[i]];
+      }
+      return { ...question, choices: selectedChoices, answer: selectedChoices.indexOf(correctChoice) };
+    });
     this.scienceGame = {
       mission: { ...mission, questions: selectedQuestions },
+      difficulty,
       index: 0,
       correct: 0,
       answered: false,
@@ -4159,7 +4188,7 @@ Object.assign(App.prototype, {
       <div class="play-shell play-shell--science max-w-3xl mx-auto px-4 py-6 sm:py-8">
         <div class="play-hud flex items-center justify-between mb-6">
           <button data-action="science-home" class="play-hud__exit text-sm text-sky-300 hover:text-white font-bold">← Back to missions</button>
-          <span class="play-hud__title text-xs text-slate-400">${game.mission.icon} ${game.mission.title}</span>
+          <span class="play-hud__title text-xs text-slate-400">${game.mission.icon} ${game.mission.title} · ${game.difficulty} difficulty</span>
         </div>
         <div class="play-question-card science-question-card bg-slate-900 border-2 border-sky-800/70 rounded-3xl p-5 sm:p-8 shadow-2xl">
           <div class="flex items-center justify-between gap-4 mb-3">

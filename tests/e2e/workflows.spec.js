@@ -109,6 +109,20 @@ test('a Times Tables quiz resumes at the same question after reloading', async (
   await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible();
 });
 
+test('signing in during a guest quiz discards the guest session', async ({ page }) => {
+  await openTimesTables(page);
+  await page.getByRole('button', { name: /Quick Mixed Quiz/ }).click();
+  await chooseQuestionAnswer(page);
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible({ timeout: 5000 });
+
+  await registerAccount(page);
+
+  await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toHaveCount(0);
+});
+
 test('Times Tables quizzes let learners retry incorrect answers', async ({ page }) => {
   await openTimesTables(page);
   await page.getByRole('button', { name: '2× Table', exact: true }).click();
@@ -116,7 +130,7 @@ test('Times Tables quizzes let learners retry incorrect answers', async ({ page 
   await chooseQuestionAnswer(page, false);
   const incorrectAnswer = page.locator('#game-arena .play-answer-button.is-incorrect');
   await expect(incorrectAnswer).toHaveCount(1);
-  await expect(incorrectAnswer).toHaveCSS('background-color', 'rgb(139, 53, 64)');
+  await expect(incorrectAnswer).toHaveCSS('background-color', 'rgb(250, 227, 229)');
   await expect(page.locator('#feedback-banner')).toContainText('Not quite! Keep exploring!');
   await page.waitForTimeout(1900);
   await expect(page.getByText('Question 1 of 12', { exact: true })).toBeVisible();
@@ -124,7 +138,7 @@ test('Times Tables quizzes let learners retry incorrect answers', async ({ page 
   await chooseQuestionAnswer(page);
   const correctAnswer = page.locator('#game-arena .play-answer-button.is-correct');
   await expect(correctAnswer).toHaveCount(1);
-  await expect(correctAnswer).toHaveCSS('background-color', 'rgb(23, 107, 72)');
+  await expect(correctAnswer).toHaveCSS('background-color', 'rgb(225, 243, 232)');
   await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible({ timeout: 5000 });
 });
 
@@ -218,16 +232,15 @@ test('Science Explorers missions teach concepts, award stars, and return to the 
   }));
   expect(scienceNavigation.currentView, JSON.stringify(scienceNavigation)).toBe('science');
   await expect(page.getByRole('heading', { name: 'Science Explorers', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Orbit Rescue/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Habitat Match/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Matter Lab/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Nature Detectives/ })).toBeVisible();
+  await expect(page.locator('[data-mission-id="orbit-rescue"][data-difficulty="easy"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="habitat-match"][data-difficulty="medium"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="matter-lab"][data-difficulty="hard"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="nature-detectives"][data-difficulty="medium"]')).toBeVisible();
 
   const missions = await page.evaluate(() => window.SCIENCE_MISSIONS.map(mission => mission.id));
   let totalStars = 0;
   for (const [missionIndex, missionId] of missions.entries()) {
-    const title = await page.evaluate(id => window.SCIENCE_MISSIONS.find(mission => mission.id === id).title, missionId);
-    await page.getByRole('button', { name: new RegExp(title) }).click();
+    await page.locator(`[data-mission-id="${missionId}"][data-difficulty="medium"]`).click();
 
     for (let questionIndex = 0; questionIndex < 5; questionIndex++) {
       const { answer, choices } = await page.evaluate(() => {

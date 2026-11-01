@@ -7,6 +7,7 @@ function createScienceContext() {
   context.main = { innerHTML: '', dataset: {} };
   context.document = { getElementById: id => id === 'app-main' ? context.main : null };
   context.profile = { stars: 0 };
+  context.brandWordmark = () => 'Raven &amp; Llama';
   context.ProfileManager = {
     getActiveProfile: () => context.profile,
     updateProfile: profile => { context.profile = profile; }
@@ -69,6 +70,25 @@ test('science missions randomly select 5 questions per quiz session', () => {
   assert.equal(app.scienceGame.mission.questions.length, 5);
   for (const q of app.scienceGame.mission.questions) {
     assert.ok(mission.questions.some(item => item.prompt === q.prompt));
+  }
+});
+
+test('science missions offer three difficulty levels with increasing answer choices', () => {
+  const context = createScienceContext();
+  const app = context.app;
+  app.showScienceExplorers();
+  assert.equal((context.main.innerHTML.match(/data-action="science-start"/g) || []).length, 12);
+
+  for (const [difficulty, choiceCount] of Object.entries({ easy: 2, medium: 3, hard: 4 })) {
+    app.startScienceMission(context.SCIENCE_MISSIONS[0].id, difficulty);
+    assert.equal(app.scienceGame.difficulty, difficulty);
+    assert.ok(app.scienceGame.mission.questions.every(question => question.choices.length === choiceCount));
+    for (const question of app.scienceGame.mission.questions) {
+      assert.equal(question.choices[question.answer], context.SCIENCE_MISSIONS[0].questions
+        .find(item => item.prompt === question.prompt).choices[
+          context.SCIENCE_MISSIONS[0].questions.find(item => item.prompt === question.prompt).answer
+        ]);
+    }
   }
 });
 

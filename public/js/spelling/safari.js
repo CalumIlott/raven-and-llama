@@ -3781,6 +3781,28 @@ const JUNGLE_JUMBLE_DIFFICULTIES = {
   hard: answer => answer.length >= 8
 };
 
+const SPELLING_SAFARI_DIFFICULTY_OPTIONS = { easy: 2, medium: 3, hard: 4 };
+const PHONICS_PICTURE_CLUES = {
+  ship: '🚢', frog: '🐸', clap: '👏', brush: '🪥', chick: '🐥', whale: '🐋',
+  stone: '🪨', smile: '🙂', duck: '🦆', truck: '🚚', flag: '🚩', crab: '🦀',
+  drum: '🥁', snack: '🍎', swim: '🏊', skip: '🤸', trip: '🧳', drop: '💧',
+  stop: '🛑', spot: '🔴', plum: '🍑', slug: '🐌', clock: '🕒', block: '🧱',
+  chest: '📦', nest: '🪺', best: '🏆', west: '🌇', rest: '😴', tent: '⛺',
+  hunt: '🔎', pond: '🏞️', wind: '🍃', sand: '🏖️', hand: '✋', land: '🌍',
+  band: '🎸', camp: '🏕️', lamp: '💡', jump: '🤾', bump: '🤕', pump: '🚲',
+  milk: '🥛', silk: '🧵', belt: '👖', melt: '🫠', help: '🤝', golf: '⛳',
+  film: '🎬', cold: '🥶', gold: '🪙', hold: '🤲', wild: '🐾', child: '🧒',
+  bank: '🏦', tank: '🛢️', pink: '🩷', sink: '🚰', wink: '😉', honk: '📣',
+  cube: '🧊', tube: '🧪', mole: '🦫', pole: '🪵', hole: '🕳️', rope: '🪢',
+  home: '🏠', bone: '🦴', cone: '🍦', zone: '📍', time: '⏰', kite: '🪁',
+  bike: '🚲', hike: '🥾', lime: '🍋', pine: '🌲', fire: '🔥', wire: '⚡',
+  cave: '🪨', wave: '🌊', game: '🎲', name: '🏷️', lake: '🏞️', bake: '🧁',
+  cake: '🎂', make: '🛠️', tale: '📖', sale: '🏷️', gate: '🚪', plate: '🍽️',
+  skate: '⛸️', flute: '🎶', mule: '🫏', rule: '📏', juice: '🧃', soup: '🍲',
+  tun: '🎵', rose: '🌹', nose: '👃', hose: '🧯', bird: '🐦', girl: '👧',
+  shirt: '👕', skirt: '👗', turn: '🔄', burn: '🔥', fern: '🌿', herd: '🐄'
+};
+
 const SpellingSafari = {
   getActivities() {
     return SPELLING_SAFARI_ACTIVITIES;
@@ -3812,7 +3834,20 @@ const SpellingSafari = {
     const questionCount = Math.min(Math.floor(count), questionPool.length);
     return this.shuffle(questionPool).slice(0, questionCount).map(question => {
       const result = { ...question };
-      if (question.options) result.options = this.shuffle(question.options);
+      if (question.options) {
+        const optionCount = Object.hasOwn(SPELLING_SAFARI_DIFFICULTY_OPTIONS, difficulty)
+          ? SPELLING_SAFARI_DIFFICULTY_OPTIONS[difficulty]
+          : question.options.length;
+        const otherOptions = question.options.filter(option => option !== question.answer);
+        result.options = this.shuffle([
+          question.answer,
+          ...this.shuffle(otherOptions).slice(0, optionCount - 1)
+        ]);
+      }
+      if (activity.type === 'phonics' && difficulty === 'easy') {
+        const word = question.prompt.replace('_', question.answer);
+        result.pictureClue = PHONICS_PICTURE_CLUES[word];
+      }
       if (activity.type === 'scramble') {
         const letters = this.shuffle(Array.from(question.answer));
         if (letters.join('') === question.answer) letters.push(letters.shift());
@@ -3856,29 +3891,24 @@ Object.assign(App.prototype, {
         </section>
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose your adventure</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          ${SpellingSafari.getActivities().map(activity => activity.type === 'scramble' ? `
-            <div class="text-left bg-slate-900 border-2 border-slate-700 rounded-2xl p-5 shadow-lg">
+          ${SpellingSafari.getActivities().map(activity => `
+            <div class="spelling-activity-card text-left bg-slate-900 border-2 border-slate-700 rounded-2xl p-5 shadow-lg">
               <span class="text-3xl">${activity.emoji}</span>
               <h3 class="font-ninja text-xl font-bold text-white mt-2">${activity.title}</h3>
               <p class="text-sm text-slate-400 mt-1">${activity.description}</p>
               <p class="spelling-activity-action mt-4 text-xs font-bold text-emerald-300">Choose your difficulty · 6 rounds</p>
               <div class="grid grid-cols-3 gap-2 mt-2">
                 <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="easy"
+                        aria-label="${activity.title}, easy difficulty"
                         class="rounded-xl bg-emerald-900 hover:bg-emerald-800 px-2 py-2 text-sm font-bold text-white">Easy</button>
                 <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="medium"
+                        aria-label="${activity.title}, medium difficulty"
                         class="rounded-xl bg-emerald-900 hover:bg-emerald-800 px-2 py-2 text-sm font-bold text-white">Medium</button>
                 <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="hard"
+                        aria-label="${activity.title}, hard difficulty"
                         class="rounded-xl bg-emerald-900 hover:bg-emerald-800 px-2 py-2 text-sm font-bold text-white">Hard</button>
               </div>
             </div>
-          ` : `
-            <button data-action="spelling-start" data-activity-id="${activity.id}"
-                    class="text-left bg-slate-900 border-2 border-slate-700 hover:border-emerald-400 rounded-2xl p-5 transition shadow-lg group">
-              <span class="text-3xl">${activity.emoji}</span>
-              <h3 class="font-ninja text-xl font-bold text-white group-hover:text-emerald-300 mt-2">${activity.title}</h3>
-              <p class="text-sm text-slate-400 mt-1">${activity.description}</p>
-              <span class="spelling-activity-action inline-block mt-4 text-xs font-bold text-emerald-300">6 rounds · Play now →</span>
-            </button>
           `).join('')}
         </div>
       </div>
@@ -3888,7 +3918,7 @@ Object.assign(App.prototype, {
   startSpellingSafari(activityId, difficulty) {
     const activity = SpellingSafari.getActivity(activityId);
     if (!activity) return this.showSpellingSafari();
-    const selectedDifficulty = activity.type === 'scramble' && Object.hasOwn(JUNGLE_JUMBLE_DIFFICULTIES, difficulty)
+    const selectedDifficulty = Object.hasOwn(SPELLING_SAFARI_DIFFICULTY_OPTIONS, difficulty)
       ? difficulty
       : null;
     this.spellingSafariGame = {
@@ -3957,6 +3987,12 @@ Object.assign(App.prototype, {
         </div>
       `;
     const prompt = question.type === 'phonics' ? `Complete the word: ${question.prompt}` : question.prompt || `Unscramble: ${question.scramble.join(' ')}`;
+    const pictureClue = question.pictureClue
+      ? `<div class="spelling-picture-clue text-6xl my-4" role="img" aria-label="Picture clue: ${question.hint}">${question.pictureClue}</div>`
+      : '';
+    const hint = game.difficulty !== 'hard' && question.hint && !question.pictureClue
+      ? `<p class="spelling-hint text-sm text-slate-400 mt-2">${question.hint}</p>`
+      : '';
     const feedback = game.answered
       ? `<div id="safari-feedback" role="status" class="play-feedback spelling-feedback mt-5 p-3 rounded-xl ${game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect'}">${game.lastAnswerCorrect ? 'Great work! 🌟' : 'Not quite! Keep exploring!'}</div>
         <button data-action="spelling-next" class="spelling-next-button mt-4 w-full py-3 rounded-xl font-bold">Next word →</button>`
@@ -3975,7 +4011,8 @@ Object.assign(App.prototype, {
         </div>
         <div class="text-center">
           <p class="play-prompt font-ninja text-xl sm:text-2xl text-white font-bold">${prompt}</p>
-          ${question.hint ? `<p class="spelling-hint text-sm text-slate-400 mt-2">${question.hint}</p>` : ''}
+          ${pictureClue}
+          ${hint}
         </div>
         ${choices}
         ${feedback}
