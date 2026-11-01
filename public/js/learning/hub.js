@@ -148,6 +148,48 @@ Object.assign(App.prototype, {
             </div>
           </a>
 
+          <button type="button" data-action="telling-time"
+                  class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-amber-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-400"></div>
+            <div>
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-3xl shadow-lg border border-yellow-300">
+                    🕒
+                  </div>
+                  <div>
+                    <span class="text-xs uppercase tracking-wider text-amber-400 font-bold">Maths Skills</span>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-amber-300 transition">Telling Time</h3>
+                  </div>
+                </div>
+                <span class="bg-amber-950 text-amber-300 border border-amber-600/60 text-xs font-bold px-3 py-1 rounded-full">
+                  4 Activities 🕰️
+                </span>
+              </div>
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                Learn to read and match analogue and digital clocks, from o'clock and half past to five-minute intervals.
+              </p>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Learn</div>
+                  <div class="font-ninja font-bold text-white mt-0.5">Clock Faces</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Match</div>
+                  <div class="font-ninja font-bold text-yellow-300 mt-0.5">Digital Time</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Practise</div>
+                  <div class="font-ninja font-bold text-amber-300 mt-0.5">4 Games</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-amber-400 group-hover:text-yellow-300">
+              <span>Explore Telling Time</span>
+              <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
+            </div>
+          </button>
+
           <!-- 3. SCIENCE EXPLORERS -->
           <button type="button" data-action="science-home"
                   class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-sky-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">

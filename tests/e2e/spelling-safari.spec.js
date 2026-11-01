@@ -34,13 +34,19 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
 
   for (const activity of ['Spelling Sprint', 'Phonics Trail', 'Word Explorer', 'Jungle Jumble']) {
+    const activityId = {
+      'Spelling Sprint': 'spelling-sprint',
+      'Phonics Trail': 'phonics-trail',
+      'Word Explorer': 'word-explorer',
+      'Jungle Jumble': 'jungle-jumble'
+    }[activity];
     if (activity === 'Jungle Jumble') {
       const card = page.locator('[data-activity-id="jungle-jumble"][data-difficulty="medium"]');
       await expect(card).toHaveText('Medium');
       await card.click();
       await expect(page.getByText('medium difficulty')).toBeVisible();
     } else {
-      await page.getByRole('button', { name: new RegExp(activity) }).click();
+      await page.locator(`[data-activity-id="${activityId}"][data-difficulty="medium"]`).click();
     }
     await expect(page.getByRole('heading', { name: new RegExp(activity) })).toBeVisible();
 
@@ -65,12 +71,28 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   }
 });
 
+test('Phonics Easy uses a picture clue and Medium uses a simple text clue', async ({ page }) => {
+  await setupApp(page);
+  await openLearningHub(page);
+  await page.getByRole('button', { name: /Spelling Safari/ }).click();
+
+  await page.locator('[data-activity-id="phonics-trail"][data-difficulty="easy"]').click();
+  await expect(page.locator('.spelling-picture-clue[role="img"]')).toBeVisible();
+  await expect(page.locator('.spelling-picture-clue')).toHaveAttribute('aria-label', /^Picture clue:/);
+  await expect(page.locator('.spelling-hint')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Exit' }).click();
+  await page.locator('[data-activity-id="phonics-trail"][data-difficulty="medium"]').click();
+  await expect(page.locator('.spelling-hint')).toBeVisible();
+  await expect(page.locator('.spelling-picture-clue')).toHaveCount(0);
+});
+
 test('Spelling Safari does not reveal the correct answer on incorrect guesses', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await setupApp(page);
   await openLearningHub(page);
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
-  await page.getByRole('button', { name: /Spelling Sprint/ }).click();
+  await page.locator('[data-activity-id="spelling-sprint"][data-difficulty="medium"]').click();
 
   const question = await page.evaluate(() => {
     const game = window.app.spellingSafariGame;
