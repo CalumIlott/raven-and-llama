@@ -25,11 +25,9 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   await page.setViewportSize({ width: 1280, height: 900 });
   await setupApp(page);
   await openLearningCentre(page);
-  await expect(page.getByRole('heading', { name: 'Learning Modules' })).toBeVisible();
-  const moduleCards = page.locator('#learning-modules-grid > *');
-  await expect(page.locator('#learning-modules-grid > button[data-action="spelling-home"]')).toBeVisible();
-  const cardHeights = await moduleCards.evaluateAll(cards => cards.map(card => card.getBoundingClientRect().height));
-  expect(cardHeights[3]).toBeGreaterThanOrEqual(Math.min(...cardHeights.slice(0, 3)) * 0.75);
+  await expect(page.getByRole('heading', { name: 'Explore by subject' })).toBeVisible();
+  await expect(page.locator('#learning-modules-grid > .learning-subject-card')).toHaveCount(7);
+  await expect(page.locator('#learning-modules-grid [data-subject="spelling-words"] button[data-action="spelling-home"]')).toBeVisible();
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
 
