@@ -843,18 +843,18 @@ html:not(.theme-light) #app-main[data-page="home"] {
   background: var(--page-panel-raised);
 }
 
-#app-main[data-page="home"] button[data-action="learning"],
+#app-main[data-page="home"] button[data-action="learning-centre"],
 #app-main[data-page="home"] button[data-action="games-hub"] {
   min-height: 2.8rem;
   border-radius: 0.75rem;
   transition: transform 140ms ease, filter 140ms ease;
 }
 
-#app-main[data-page="home"] button[data-action="learning"]:hover,
+#app-main[data-page="home"] button[data-action="learning-centre"]:hover,
 #app-main[data-page="home"] button[data-action="games-hub"]:hover { transform: translateY(-2px); }
 
 /* Learning: bright, welcoming academy with clear program choices */
-#app-main[data-page="learning"] {
+#app-main[data-page="learning-centre"] {
   --learning-maths: #49365f;
   --learning-times: #1d5a50;
   --learning-science: #235577;
@@ -864,7 +864,7 @@ html:not(.theme-light) #app-main[data-page="home"] {
   --learning-score: #293d62;
 }
 
-html.theme-light #app-main[data-page="learning"] {
+html.theme-light #app-main[data-page="learning-centre"] {
   --learning-maths: #fff0c2;
   --learning-times: #d5f5e8;
   --learning-science: #d7efff;
@@ -874,7 +874,7 @@ html.theme-light #app-main[data-page="learning"] {
   --learning-score: #e8efff;
 }
 
-#app-main[data-page="learning"] > div:first-child > button:first-child,
+#app-main[data-page="learning-centre"] > div:first-child > button:first-child,
 #app-main[data-page="games"] > div:first-child > button:first-child,
 #app-main[data-page="critter-catch"] > div:first-child > button:first-child {
   min-height: 2.5rem;
@@ -883,7 +883,7 @@ html.theme-light #app-main[data-page="learning"] {
   font-weight: 700;
 }
 
-#app-main[data-page="learning"] .learning-intro {
+#app-main[data-page="learning-centre"] .learning-intro {
   display: grid;
   justify-items: start;
   gap: 1.25rem;
@@ -891,9 +891,9 @@ html.theme-light #app-main[data-page="learning"] {
   text-align: left;
 }
 
-#app-main[data-page="learning"] .learning-intro__copy { max-width: 46rem; }
+#app-main[data-page="learning-centre"] .learning-intro__copy { max-width: 46rem; }
 
-#app-main[data-page="learning"] .learning-intro__title {
+#app-main[data-page="learning-centre"] .learning-intro__title {
   margin: 0;
   color: var(--page-ink);
   font-family: 'Unkempt', cursive;
@@ -901,27 +901,27 @@ html.theme-light #app-main[data-page="learning"] {
   line-height: 1.1;
 }
 
-#app-main[data-page="learning"] .learning-intro__title .brand-wordmark {
+#app-main[data-page="learning-centre"] .learning-intro__title .brand-wordmark {
   font-family: inherit;
 }
 
-#app-main[data-page="learning"] .learning-title-accent { color: #247e88; }
+#app-main[data-page="learning-centre"] .learning-title-accent { color: #247e88; }
 
-html:not(.theme-light) #app-main[data-page="learning"] .learning-title-accent { color: #8bd6d0; }
+html:not(.theme-light) #app-main[data-page="learning-centre"] .learning-title-accent { color: #8bd6d0; }
 
-#app-main[data-page="learning"] .learning-intro__description {
+#app-main[data-page="learning-centre"] .learning-intro__description {
   max-width: 42rem;
   margin: 0.6rem 0 0;
 }
 
-#app-main[data-page="learning"] .learning-intro__actions {
+#app-main[data-page="learning-centre"] .learning-intro__actions {
   width: min(100%, 27rem);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-#app-main[data-page="learning"] .learning-intro__actions button {
+#app-main[data-page="learning-centre"] .learning-intro__actions button {
   min-width: 0;
   min-height: 2.8rem;
   justify-content: center;
@@ -929,27 +929,27 @@ html:not(.theme-light) #app-main[data-page="learning"] .learning-title-accent { 
   border-radius: 0.75rem;
 }
 
-#app-main[data-page="learning"] .learning-intro__actions button[data-action="trophy-room"] { border-color: #9c7228; }
+#app-main[data-page="learning-centre"] .learning-intro__actions button[data-action="trophy-room"] { border-color: #9c7228; }
 
 @media (max-width: 480px) {
-  #app-main[data-page="learning"] .learning-intro__title { font-size: 2rem; }
+  #app-main[data-page="learning-centre"] .learning-intro__title { font-size: 2rem; }
 }
 
-#app-main[data-page="learning"] h2 { font-size: clamp(1.25rem, 2.5vw, 1.65rem); }
-#app-main[data-page="learning"] #learning-modules-grid { gap: 1rem; }
+#app-main[data-page="learning-centre"] h2 { font-size: clamp(1.25rem, 2.5vw, 1.65rem); }
+#app-main[data-page="learning-centre"] #learning-modules-grid { gap: 1rem; }
 #app-main[data-page] section[class*="bg-slate-950"] {
   border-color: var(--page-edge);
   border-radius: 0.5rem;
   background: var(--page-panel);
 }
 
-#app-main[data-page="learning"] section[class*="bg-slate-950"] {
+#app-main[data-page="learning-centre"] section[class*="bg-slate-950"] {
   border-color: #687db0;
   border-radius: 1.25rem;
   background: var(--learning-score);
 }
 
-html.theme-light #app-main[data-page="learning"] section[class*="bg-slate-950"] {
+html.theme-light #app-main[data-page="learning-centre"] section[class*="bg-slate-950"] {
   border-color: #a9b9e2;
 }
 
@@ -1094,8 +1094,8 @@ html:not(.theme-light) #app-main[data-page="home"] .home-leaderboard li strong {
 
 }
 
-#app-main[data-page="learning"] .app-card-link,
-#app-main[data-page="learning"] #learning-modules-grid > button {
+#app-main[data-page="learning-centre"] .app-card-link,
+#app-main[data-page="learning-centre"] #learning-modules-grid > button {
   min-width: 0;
   border: 2px solid var(--page-edge);
   border-radius: 1.5rem;
@@ -1104,75 +1104,75 @@ html:not(.theme-light) #app-main[data-page="home"] .home-leaderboard li strong {
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-#app-main[data-page="learning"] .app-card-link:hover,
-#app-main[data-page="learning"] #learning-modules-grid > button:hover {
+#app-main[data-page="learning-centre"] .app-card-link:hover,
+#app-main[data-page="learning-centre"] #learning-modules-grid > button:hover {
   transform: translateY(-3px);
   border-color: #e4b844;
   box-shadow: 0 16px 30px rgb(0 0 0 / 16%);
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > * {
+#app-main[data-page="learning-centre"] #learning-modules-grid > * {
   animation: academy-arrive 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(2) { animation-delay: 70ms; }
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(3) { animation-delay: 140ms; }
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(4) { animation-delay: 210ms; }
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(5) { animation-delay: 280ms; }
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(6) { animation-delay: 350ms; }
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(2) { animation-delay: 70ms; }
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(3) { animation-delay: 140ms; }
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(4) { animation-delay: 210ms; }
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(5) { animation-delay: 280ms; }
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(6) { animation-delay: 350ms; }
 
-#app-main[data-page="learning"] #learning-modules-grid .w-14.h-14 {
+#app-main[data-page="learning-centre"] #learning-modules-grid .w-14.h-14 {
   transition: transform 180ms ease;
 }
 
-#app-main[data-page="learning"] #learning-modules-grid .app-card-link:hover .w-14.h-14,
-#app-main[data-page="learning"] #learning-modules-grid > button:hover .w-14.h-14 {
+#app-main[data-page="learning-centre"] #learning-modules-grid .app-card-link:hover .w-14.h-14,
+#app-main[data-page="learning-centre"] #learning-modules-grid > button:hover .w-14.h-14 {
   transform: rotate(-6deg) scale(1.06);
 }
 
-#app-main[data-page="learning"] .app-card-link:nth-child(1),
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(1) {
+#app-main[data-page="learning-centre"] .app-card-link:nth-child(1),
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(1) {
   border-color: #e8a947;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-maths), var(--page-panel));
 }
 
-#app-main[data-page="learning"] .app-card-link:nth-child(2),
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(2) {
+#app-main[data-page="learning-centre"] .app-card-link:nth-child(2),
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(2) {
   border-color: #45b994;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-times), var(--page-panel));
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(3) {
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(3) {
   border-color: #d3a847;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-time), var(--page-panel));
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(4) {
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(4) {
   border-color: #56a8dd;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-science), var(--page-panel));
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(5) {
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(5) {
   border-color: #dc7791;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-spelling), var(--page-panel));
 }
 
-#app-main[data-page="learning"] #learning-modules-grid > *:nth-child(6) {
+#app-main[data-page="learning-centre"] #learning-modules-grid > *:nth-child(6) {
   border-color: #d3a847;
   border-top-width: 5px;
   background: linear-gradient(145deg, var(--learning-money), var(--page-panel));
 }
 
-html.theme-light #app-main[data-page="learning"] #learning-modules-grid > * {
+html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid > * {
   color: #26352c;
 }
 
-#app-main[data-page="learning"] #learning-modules-grid [class*="bg-slate-950/70"] {
+#app-main[data-page="learning-centre"] #learning-modules-grid [class*="bg-slate-950/70"] {
   border: 0;
   border-radius: 1rem;
   background: var(--page-panel-raised);
@@ -1439,6 +1439,11 @@ html.theme-light #app-main[data-page="games"] .game-choice__action { color: #557
 @keyframes arcade-drift {
   0%, 100% { transform: translateY(0) rotate(-3deg); }
   50% { transform: translateY(-0.45rem) rotate(3deg); }
+}
+
+@media (min-width: 901px) and (max-width: 1023px) {
+  .site-header__inner { gap: 0.75rem; }
+  .site-nav__button { padding-inline: 0.55rem; }
 }
 
 @media (max-width: 900px) {

@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { openLearningHub, setupApp } = require('./support');
+const { openLearningCentre, setupApp } = require('./support');
 
 const games = [
   { id: 'coin-recognition', title: 'Coin & Note Match', difficulty: 'easy' },
@@ -34,7 +34,7 @@ async function answerCurrentMoneyQuestion(page, activityId) {
 
 test('Money Masters offers three games with difficulty levels and completes each game', async ({ page }) => {
   await setupApp(page);
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
   await expect(page.getByRole('heading', { name: 'Money Masters' })).toBeVisible();
 

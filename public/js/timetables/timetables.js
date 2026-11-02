@@ -18,9 +18,9 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-4xl mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-5">
-          <button data-action="learning" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 group">
+          <button data-action="learning-centre" class="text-sm text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1.5 group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to ${window.brandWordmark()} Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning Centre</span>
           </button>
           <div class="flex items-center gap-3">
             <button data-action="dojo" class="text-xs text-amber-400 hover:text-amber-300 font-semibold">

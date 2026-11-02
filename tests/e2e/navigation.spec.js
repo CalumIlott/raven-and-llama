@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { chooseQuestionAnswer, openLearningHub, setupApp } = require('./support');
+const { chooseQuestionAnswer, openLearningCentre, setupApp } = require('./support');
 
 test.beforeEach(async ({ page }) => {
   await setupApp(page);
@@ -33,7 +33,25 @@ test('header brand mark follows the active hub', async ({ page }) => {
   const logo = page.locator('#header-brand-logo');
   await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
 
+  await page.goto('/learning-centre');
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect(page.locator('#app-main[data-page="learning-centre"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+  await page.goto('/learning');
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect(page.locator('#app-main[data-page="learning-centre"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+  await page.goto('/');
+
   await page.locator('#nav-btn-learning').click();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect(page.locator('#app-main[data-page="learning-centre"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+  await expect(page.locator('#header-stars-pill')).toBeVisible();
+  await expect(page.locator('#header-sound-btn')).toBeVisible();
+  await expect(page.locator('header [data-action="account-open"]')).toBeVisible();
+  await expect(page.locator('#account-status-banner')).toContainText('Guest mode: progress will not be saved');
+  await expect(page.locator('.site-footer')).toBeVisible();
   await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
   await expect(logo).toHaveClass(/is-hub-mark/);
   await page.locator('[data-action="science-home"]').first().click();
@@ -49,9 +67,64 @@ test('header brand mark follows the active hub', async ({ page }) => {
   await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
 });
 
+test('browser back and forward restore routed views', async ({ page }) => {
+  await page.locator('#nav-btn-learning').click();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+
+  await page.locator('[data-action="dojo"]').first().click();
+  await expect(page).toHaveURL(/\/dojo$/);
+
+  await page.locator('#nav-btn-games').click();
+  await expect(page).toHaveURL(/\/games$/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/dojo$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('dojo');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('home');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/dojo$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('dojo');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/games$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('games');
+
+  await page.getByRole('button', { name: /Play Critter Catch/ }).click();
+  await expect(page).toHaveURL(/\/critter-catch$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/games$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('games');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/critter-catch$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
+
+  await page.locator('#nav-btn-home').click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('home');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/critter-catch$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
+});
+
 test('hub introductions align their copy to the left', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await openLearningHub(page);
+  await openLearningCentre(page);
   const learningIntro = page.locator('.learning-intro');
   await expect(learningIntro).toHaveCSS('text-align', 'left');
   await expect(learningIntro).toHaveCSS('background-image', 'none');
@@ -68,14 +141,14 @@ test('hub introductions align their copy to the left', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.setViewportSize({ width: 1280, height: 900 });
 
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
   await page.locator('[data-action="dojo"]').first().click();
   const dojoIntro = page.locator('.module-intro');
   await expect(dojoIntro).toHaveCSS('align-items', 'flex-start');
   await expect(dojoIntro).toHaveCSS('background-image', 'none');
   await expect(dojoIntro).toHaveCSS('border-width', '0px');
 
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
   await page.locator('[data-action="spelling-home"]').click();
   const spellingIntro = page.locator('.module-intro');
   await expect(spellingIntro).toHaveCSS('align-items', 'flex-start');
@@ -166,7 +239,7 @@ test('homepage leaderboard preview centers its heading and shows sample scores',
 
 test('module brand kickers keep their descriptors visually separated on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.locator('[data-action="science-home"]').first().click();
 
   const getDescriptorGap = selector => page.locator(selector).evaluate(element => {
@@ -175,14 +248,14 @@ test('module brand kickers keep their descriptors visually separated on mobile',
   });
   expect(await getDescriptorGap('.science-lab-badge')).toBeGreaterThanOrEqual(4);
 
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
   await page.locator('[data-action="dojo"]').first().click();
   expect(await getDescriptorGap('#app-main .module-eyebrow')).toBeGreaterThanOrEqual(4);
 });
 
 test('active module badge never sits beneath the navigation', async ({ page }) => {
   await page.setViewportSize({ width: 761, height: 900 });
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.locator('[data-action="science-home"]').first().click();
 
   for (const width of [761, 820, 900, 901, 1024]) {
@@ -193,7 +266,7 @@ test('active module badge never sits beneath the navigation', async ({ page }) =
       return badge.width > 0 && badge.right > nav.left && badge.left < nav.right
         && badge.bottom > nav.top && badge.top < nav.bottom;
     });
-    expect(overlaps).toBe(false);
+    expect(overlaps, `Learning badge overlaps navigation at ${width}px`).toBe(false);
   }
 });
 
@@ -240,7 +313,7 @@ test('home counts, module navigation, and exam failure, retry, and pass gates wo
   }));
   await expect(page.getByText(`${curriculum.belts} Belt Levels • ${curriculum.skills} Skills`, { exact: true })).toBeVisible();
 
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await expect(page.getByText(`${curriculum.skills} Skills`, { exact: true })).toBeVisible();
   await page.getByText('Open Maths Masters Dojo', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
@@ -303,8 +376,8 @@ test('parent progress report and trophy room render their full states', async ({
   await expect(page.getByText('No Grand Master certificates earned yet.')).toBeVisible();
 });
 
-test('learning hub uses colorful, rounded program cards', async ({ page }) => {
-  await openLearningHub(page);
+test('Learning Centre uses colorful, rounded program cards', async ({ page }) => {
+  await openLearningCentre(page);
 
   const getCardStyles = () => page.locator('#learning-modules-grid > *').evaluateAll(elements =>
     elements.map(element => ({
@@ -323,7 +396,7 @@ test('learning hub uses colorful, rounded program cards', async ({ page }) => {
   };
 
   await expectColorfulRoundedCards();
-  await expect(page.locator('#app-main section[aria-label="Learning Hub Leaderboard"]'))
+  await expect(page.locator('#app-main section[aria-label="Learning Centre Leaderboard"]'))
     .toHaveCSS('border-radius', '20px');
   await page.evaluate(() => window.ProfileManager.applyTheme('light'));
   await expectColorfulRoundedCards();
@@ -331,7 +404,7 @@ test('learning hub uses colorful, rounded program cards', async ({ page }) => {
 
 test('learning heading is unframed and its actions share a row beneath it', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await expect(page.locator('[data-action="parent-report"]')).toContainText('Progress');
   await expect(page.locator('[data-action="parent-report"]')).not.toContainText('Stats');
 
@@ -352,7 +425,7 @@ test('learning heading is unframed and its actions share a row beneath it', asyn
 });
 
 test('Learning heading uses Unkempt throughout with a yellow ampersand', async ({ page }) => {
-  await openLearningHub(page);
+  await openLearningCentre(page);
   const title = page.locator('.learning-intro__title');
 
   for (const [theme, expectedAmpColor] of [['light', 'rgb(183, 121, 0)'], ['dark', 'rgb(250, 204, 21)']]) {
@@ -367,7 +440,7 @@ test('Learning heading uses Unkempt throughout with a yellow ampersand', async (
 });
 
 test('Telling Time teaches analogue and digital clock matching', async ({ page }) => {
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.getByRole('button', { name: /Explore Telling Time/ }).click();
   await expect(page.getByRole('heading', { name: 'Telling Time', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: /Five-Minute Clock Match/ })).toBeVisible();
