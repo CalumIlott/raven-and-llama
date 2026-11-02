@@ -36,7 +36,7 @@ The tests cover password/session handling, account isolation, cross-context prog
 public/index.html          App shell and static site root
 public/js/shared/          App shell, accounts, audio, and shared renderers
 public/js/home/            Home page view
-public/js/learning/        Learning hub view
+public/js/learning/        Learning hub view and `/learning-centre` route
 public/js/mathmasters/     Curriculum, question generators, dojo views, and arcade/game engines
 public/js/timetables/      Times Tables practice and arcade views
 public/css/                Application styles

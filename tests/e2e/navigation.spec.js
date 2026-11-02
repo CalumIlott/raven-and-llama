@@ -33,7 +33,24 @@ test('header brand mark follows the active hub', async ({ page }) => {
   const logo = page.locator('#header-brand-logo');
   await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
 
+  await page.goto('/learning-centre');
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect(page.locator('#app-main[data-page="learning"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+  await page.goto('/learning');
+  await expect(page.locator('#app-main[data-page="learning"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning');
+  await page.goto('/');
+
   await page.locator('#nav-btn-learning').click();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect(page.locator('#app-main[data-page="learning"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+  await expect(page.locator('#header-stars-pill')).toBeVisible();
+  await expect(page.locator('#header-sound-btn')).toBeVisible();
+  await expect(page.locator('header [data-action="account-open"]')).toBeVisible();
+  await expect(page.locator('#account-status-banner')).toContainText('Guest mode: progress will not be saved');
+  await expect(page.locator('.site-footer')).toBeVisible();
   await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
   await expect(logo).toHaveClass(/is-hub-mark/);
   await page.locator('[data-action="science-home"]').first().click();

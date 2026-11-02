@@ -1,7 +1,7 @@
 Object.assign(App.prototype, {
-  showLearningHub() {
-    this.currentView = 'learning';
-    this.rememberModule('learning');
+  showLearningHub(route = 'learning') {
+    this.currentView = route;
+    this.rememberModule(route);
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'learning';

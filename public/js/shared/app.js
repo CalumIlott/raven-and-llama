@@ -39,6 +39,7 @@ class App {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     return {
       '/learning': 'learning',
+      '/learning-centre': 'learning-centre',
       '/dojo': 'dojo',
       '/timetables': 'timetables',
       '/telling-time': 'telling-time',
@@ -54,6 +55,7 @@ class App {
   showModule(module) {
     const views = {
       learning: () => this.showLearningHub(),
+      'learning-centre': () => this.showLearningHub('learning-centre'),
       dojo: () => this.showDojoHub(),
       timetables: () => this.showTimesTables(),
       'telling-time': () => this.showTellingTime(),
@@ -72,7 +74,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       window.history.replaceState(null, '', '/');
     }
   }
@@ -99,6 +101,7 @@ class App {
     switch (target.dataset.action) {
       case 'home': this.showRavenAndLlamaHome(); break;
       case 'learning': this.showLearningHub(); break;
+      case 'learning-centre': this.showLearningHub('learning-centre'); break;
       case 'games-hub': this.showGamesHub(); break;
       case 'critter-open': this.showCritterCatch(); break;
       case 'account-open': this.openProfileModal(); break;
@@ -285,6 +288,7 @@ class App {
       const brandLogos = {
         home: 'assets/raven-llama-home-logo.png',
         learning: 'assets/Raven%26Llama_Learning%20Centre.jpg',
+        'learning-centre': 'assets/Raven%26Llama_Learning%20Centre.jpg',
         games: 'assets/Raven%26Llama_Gaming%20Hub.jpg',
         'critter-catch': 'assets/Raven%26Llama_Gaming%20Hub.jpg',
         creative: 'assets/Raven%26Llama_Creative%20Hub.jpg'
@@ -317,8 +321,8 @@ class App {
     if (subBadge) {
       if (this.currentView === 'home') {
         subBadge.classList.add('hidden');
-      } else if (this.currentView === 'learning') {
-        subBadge.textContent = 'Learning';
+      } else if (this.currentView === 'learning' || this.currentView === 'learning-centre') {
+        subBadge.textContent = this.currentView === 'learning-centre' ? 'Learning Centre' : 'Learning';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
@@ -368,8 +372,8 @@ class App {
     this.updateHeader();
     if (this.currentView === 'home') {
       this.showRavenAndLlamaHome();
-    } else if (this.currentView === 'learning') {
-      this.showLearningHub();
+    } else if (this.currentView === 'learning' || this.currentView === 'learning-centre') {
+      this.showLearningHub(this.currentView);
     } else if (this.currentView === 'games') {
       this.showGamesHub();
     } else if (this.currentView === 'critter-catch') {
