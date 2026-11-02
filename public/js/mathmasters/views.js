@@ -74,9 +74,9 @@ Object.assign(App.prototype, {
 
         <!-- Breadcrumb Navigation -->
         <div class="flex items-center justify-between mb-6">
-          <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
+          <button data-action="learning-centre" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to ${window.brandWordmark()} Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning Centre</span>
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">
             🏠 ${window.brandWordmark()} Home
@@ -175,7 +175,7 @@ Object.assign(App.prototype, {
             ← Back to Maths Masters Belts
           </button>
           <div class="flex items-center gap-3">
-            <button data-action="learning" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold">
+            <button data-action="learning-centre" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold">
               ${window.brandWordmark()} Learning
             </button>
             <span class="text-slate-600">•</span>

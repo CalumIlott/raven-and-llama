@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { openLearningHub, setupApp } = require('./support');
+const { openLearningCentre, setupApp } = require('./support');
 
 async function answerCurrentQuestion(page) {
   const question = await page.evaluate(() => {
@@ -24,7 +24,7 @@ async function answerCurrentQuestion(page) {
 test('Spelling Safari offers and completes all four word-game adventures', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await setupApp(page);
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await expect(page.getByRole('heading', { name: 'Learning Modules' })).toBeVisible();
   const moduleCards = page.locator('#learning-modules-grid > *');
   await expect(page.locator('#learning-modules-grid > button[data-action="spelling-home"]')).toBeVisible();
@@ -73,7 +73,7 @@ test('Spelling Safari offers and completes all four word-game adventures', async
 
 test('Phonics Easy uses a picture clue and Medium uses a simple text clue', async ({ page }) => {
   await setupApp(page);
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
 
   await page.locator('[data-activity-id="phonics-trail"][data-difficulty="easy"]').click();
@@ -90,7 +90,7 @@ test('Phonics Easy uses a picture clue and Medium uses a simple text clue', asyn
 test('Spelling Safari does not reveal the correct answer on incorrect guesses', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await setupApp(page);
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
   await page.locator('[data-activity-id="spelling-sprint"][data-difficulty="medium"]').click();
 

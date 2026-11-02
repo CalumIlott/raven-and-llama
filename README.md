@@ -36,7 +36,7 @@ The tests cover password/session handling, account isolation, cross-context prog
 public/index.html          App shell and static site root
 public/js/shared/          App shell, accounts, audio, and shared renderers
 public/js/home/            Home page view
-public/js/learning/        Learning hub view and `/learning-centre` route
+public/js/learning/        Learning Centre view
 public/js/games/           Games Hub and Critter Catch routes
 public/js/mathmasters/     Curriculum, question generators, dojo views, and arcade/game engines
 public/js/timetables/      Times Tables practice and arcade views
@@ -70,7 +70,7 @@ The repository is configured for Cloudflare Workers Builds with static assets in
 
 Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser sessions use HttpOnly, SameSite cookies; progress endpoints resolve the account from the session and never expose an account list. Signed-in users can choose a dark or light theme in account settings; this preference is stored with that account's progress and syncs across browsers. Guest sessions use the default dark theme without saving it. The legacy shared `profiles.json` data is not imported because it has no account ownership. Password recovery by email is not available because accounts do not collect email addresses; users can change their password while signed in.
 
-Leaderboards are public and show only the top ten usernames and scores for the overall learning hub, Maths Masters, Times Tables, and each Maths Masters belt. Guest progress is not included.
+Leaderboards are public and show only the top ten usernames and scores for the Learning Centre, Maths Masters, Times Tables, and each Maths Masters belt. Guest progress is not included.
 
 Registration is limited to 30 attempts per source per minute. Login is limited to 60 attempts per source per minute and 10 attempts per source/username pair per minute. Worker Rate Limiting bindings are approximate and local to each Cloudflare location; the local Node server enforces the same limits per process and socket peer. If the Node server is behind a reverse proxy, configure rate limiting at that proxy as well because local requests share the proxy's socket address. Wrangler rate-limit namespace IDs must remain unique within the Cloudflare account; production and Preview use separate IDs and counters.
 

@@ -1,7 +1,7 @@
 const { expect, test } = require('@playwright/test');
 const {
   chooseQuestionAnswer,
-  openLearningHub,
+  openLearningCentre,
   openMathsDojo,
   openTimesTables,
   registerAccount,
@@ -32,7 +32,7 @@ test('a perfect practice round records mastery and updates the dojo', async ({ p
   await expect(page.getByText('10 / 10', { exact: true }).first()).toBeVisible();
 });
 
-test('leaderboards show the top saved scores throughout the learning hubs', async ({ page }) => {
+test('leaderboards show the top saved scores throughout the Learning Centre and modules', async ({ page }) => {
   const { username } = await registerAccount(page);
   await page.evaluate(async () => {
     const profile = window.ProfileManager.getActiveProfile();
@@ -46,7 +46,7 @@ test('leaderboards show the top saved scores throughout the learning hubs', asyn
 
   await expect(page.locator('#leaderboard-all')).toContainText(username);
   await expect(page.locator('#leaderboard-all')).toContainText('42 points');
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await expect(page.locator('#leaderboard-learning')).toContainText('42 points');
   await expect(page.locator('#leaderboard-maths')).toContainText(username);
   await expect(page.locator('#leaderboard-times-tables')).toContainText('12 points');
@@ -156,7 +156,7 @@ test('endless belt and timetable challenges continue, finish, and retain best sc
   await expect(page.locator('#app-main')).toContainText('Endless best: 1');
 
   await page.getByRole('button', { name: /Back to Maths Masters Belts/ }).click();
-  await page.getByRole('button', { name: /Back to Raven & Llama Learning/ }).click();
+  await page.getByRole('button', { name: /Back to Raven & Llama Learning Centre/ }).click();
   await page.getByText('Open Times Tables Dojo', { exact: true }).click();
   await page.getByRole('button', { name: /Endless Timetables Challenge/ }).click();
   await expect(page.getByText('Question 1 • Endless', { exact: true })).toBeVisible();
@@ -222,7 +222,7 @@ test('all seven Maths Masters arcades launch and return to their belt dojo', asy
 });
 
 test('Science Explorers missions teach concepts, award stars, and return to the mission map', async ({ page }) => {
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await expect(page.getByRole('heading', { name: 'Learning Modules', exact: true })).toBeVisible();
   await page.getByText('Explore Science Explorers', { exact: true }).click();
   const scienceNavigation = await page.evaluate(() => ({

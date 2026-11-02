@@ -35,19 +35,19 @@ async function loginAccount(page, username, password) {
   await expect(page.locator('#header-profile-name')).toHaveText(username);
 }
 
-async function openLearningHub(page) {
+async function openLearningCentre(page) {
   await page.locator('#nav-btn-learning').click();
-  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning Centre', exact: true })).toBeVisible();
 }
 
 async function openMathsDojo(page) {
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.getByText('Open Maths Masters Dojo', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Maths Masters Ninja Dojo', exact: true })).toBeVisible();
 }
 
 async function openTimesTables(page) {
-  await openLearningHub(page);
+  await openLearningCentre(page);
   await page.getByText('Open Times Tables Dojo', { exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Times Tables Dojo', exact: true })).toBeVisible();
 }
@@ -71,7 +71,7 @@ module.exports = {
   chooseQuestionAnswer,
   loginAccount,
   openAccountModal,
-  openLearningHub,
+  openLearningCentre,
   openMathsDojo,
   openTimesTables,
   registerAccount,

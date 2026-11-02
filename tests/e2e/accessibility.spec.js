@@ -44,7 +44,7 @@ test('navigation and account dialog support keyboard use on narrow screens', asy
   const learningLink = page.getByRole('link', { name: /Open Learning Academy/ });
   await learningLink.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning Centre', exact: true })).toBeVisible();
 
   const mathsLink = page.getByRole('link', { name: /Open Maths Masters Dojo/ });
   await mathsLink.focus();
@@ -73,7 +73,7 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   await setupApp(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => window.ProfileManager.applyTheme('light'));
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
 
   const expectNoHorizontalOverflow = async () => {
     const dimensions = await page.evaluate(() => ({
@@ -105,7 +105,7 @@ test('light-theme Science and Spelling cards keep accent text readable on mobile
   scienceLabels.forEach(label => expect(contrastRatio(label.color, label.background)).toBeGreaterThanOrEqual(4.5));
   await expectNoHorizontalOverflow();
 
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
   await page.locator('[data-action="spelling-home"]').click();
   await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'spelling');
   const spellingAction = await page.locator('.spelling-activity-action').first().evaluate(element => ({
@@ -150,7 +150,7 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => window.ProfileManager.applyTheme('light'));
   await page.getByRole('button', { name: 'Raven & Llama home' }).click();
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
   await page.getByText('Explore Science Explorers', { exact: true }).click();
   await page.locator('[data-mission-id="orbit-rescue"][data-difficulty="medium"]').click();
 
@@ -173,7 +173,7 @@ test('active Science and Spelling rounds fit mobile light theme with readable fe
   expect(contrastRatio(scienceColors.foreground, scienceColors.background)).toBeGreaterThanOrEqual(4.5);
 
   await page.locator('[data-action="science-home"]').click();
-  await page.locator('[data-action="learning"]').first().click();
+  await page.locator('[data-action="learning-centre"]').first().click();
   await page.getByRole('button', { name: /Spelling Safari/ }).click();
   await page.locator('[data-activity-id="spelling-sprint"][data-difficulty="medium"]').click();
   await expect(page.locator('.play-shell--spelling')).toBeVisible();

@@ -75,7 +75,7 @@ Object.assign(App.prototype, {
               </div>
             </div>
 
-            <a href="#learning" data-action="learning" class="home-learning-action flex items-center justify-between pt-4 border-t border-zinc-800/80 text-sm font-semibold no-underline">
+            <a href="/learning-centre" data-action="learning-centre" class="home-learning-action flex items-center justify-between pt-4 border-t border-zinc-800/80 text-sm font-semibold no-underline">
               <span>Open Learning Academy</span>
               <span class="group-hover:translate-x-1.5 transition-transform text-base">→</span>
             </a>

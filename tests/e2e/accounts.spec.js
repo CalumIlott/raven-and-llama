@@ -113,7 +113,7 @@ test('last module is restored on home load without overriding explicit routes or
   await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
 
   await page.goto('/learning');
-  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning Centre', exact: true })).toBeVisible();
   await page.locator('header button').filter({ has: page.locator('#header-profile-name') }).click();
   await page.getByRole('button', { name: 'Sign out' }).click();
 

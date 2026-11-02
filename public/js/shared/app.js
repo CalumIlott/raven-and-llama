@@ -40,7 +40,7 @@ class App {
   moduleForPath() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
     return {
-      '/learning': 'learning',
+      '/learning': 'learning-centre',
       '/learning-centre': 'learning-centre',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
@@ -58,8 +58,8 @@ class App {
 
   showModule(module) {
     const views = {
-      learning: () => this.showLearningHub(),
-      'learning-centre': () => this.showLearningHub('learning-centre'),
+      learning: () => this.showLearningCentre(),
+      'learning-centre': () => this.showLearningCentre(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -78,9 +78,9 @@ class App {
     }
   }
 
-  navigateToPath(path) {
+  navigateToPath(path, replace = false) {
     if (window.location.pathname === path) return;
-    if (this.isInitializing) window.history.replaceState(null, '', path);
+    if (replace || this.isInitializing) window.history.replaceState(null, '', path);
     else window.history.pushState(null, '', path);
   }
 
@@ -113,8 +113,8 @@ class App {
 
     switch (target.dataset.action) {
       case 'home': this.showRavenAndLlamaHome(); break;
-      case 'learning': this.showLearningHub(); break;
-      case 'learning-centre': this.showLearningHub('learning-centre'); break;
+      case 'learning': this.showLearningCentre(); break;
+      case 'learning-centre': this.showLearningCentre(); break;
       case 'games-hub': this.showGamesHub(); break;
       case 'critter-open': this.showCritterCatch(); break;
       case 'account-open': this.openProfileModal(); break;
@@ -300,13 +300,12 @@ class App {
     if (brandLogoEl) {
       const brandLogos = {
         home: 'assets/raven-llama-home-logo.png',
-        learning: 'assets/Raven%26Llama_Learning%20Centre.jpg',
         'learning-centre': 'assets/Raven%26Llama_Learning%20Centre.jpg',
         games: 'assets/Raven%26Llama_Gaming%20Hub.jpg',
         'critter-catch': 'assets/Raven%26Llama_Gaming%20Hub.jpg',
         creative: 'assets/Raven%26Llama_Creative%20Hub.jpg'
       };
-      brandLogoEl.src = brandLogos[this.currentView] || brandLogos.learning;
+      brandLogoEl.src = brandLogos[this.currentView] || brandLogos['learning-centre'];
       brandLogoEl.classList.toggle('is-hub-mark', this.currentView !== 'home');
     }
     if (avatarEl) {
@@ -330,12 +329,12 @@ class App {
       soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
     }
 
-    // Dynamic header subtitle: Only show badge when within learning or dojo!
+    // Dynamic header subtitle: Only show a badge within a hub or dojo.
     if (subBadge) {
       if (this.currentView === 'home') {
         subBadge.classList.add('hidden');
-      } else if (this.currentView === 'learning' || this.currentView === 'learning-centre') {
-        subBadge.textContent = this.currentView === 'learning-centre' ? 'Learning Centre' : 'Learning';
+      } else if (this.currentView === 'learning-centre') {
+        subBadge.textContent = 'Learning';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
@@ -385,8 +384,8 @@ class App {
     this.updateHeader();
     if (this.currentView === 'home') {
       this.showRavenAndLlamaHome();
-    } else if (this.currentView === 'learning' || this.currentView === 'learning-centre') {
-      this.showLearningHub(this.currentView);
+    } else if (this.currentView === 'learning-centre') {
+      this.showLearningCentre();
     } else if (this.currentView === 'games') {
       this.showGamesHub();
     } else if (this.currentView === 'critter-catch') {
@@ -493,9 +492,9 @@ class App {
     main.innerHTML = `
       <div class="max-w-4xl mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-6">
-          <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
+          <button data-action="learning-centre" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to ${window.brandWordmark()} Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning Centre</span>
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">
             🏠 ${window.brandWordmark()} Home

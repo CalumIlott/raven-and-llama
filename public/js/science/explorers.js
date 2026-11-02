@@ -4081,9 +4081,9 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
         <div class="flex items-center justify-between mb-6">
-          <button data-action="learning" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
+          <button data-action="learning-centre" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold group">
             <span class="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Back to ${window.brandWordmark()} Learning</span>
+            <span>Back to ${window.brandWordmark()} Learning Centre</span>
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>

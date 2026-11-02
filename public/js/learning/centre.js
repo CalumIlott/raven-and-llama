@@ -1,10 +1,13 @@
 Object.assign(App.prototype, {
-  showLearningHub(route = 'learning') {
-    this.currentView = route;
-    this.rememberModule(route);
+  showLearningCentre() {
+    this.currentView = 'learning-centre';
+    if (window.location.pathname.replace(/\/+$/, '') === '/learning') {
+      this.navigateToPath('/learning-centre', true);
+    }
+    this.rememberModule('learning-centre');
     const main = document.getElementById('app-main');
     if (!main) return;
-    main.dataset.page = 'learning';
+    main.dataset.page = 'learning-centre';
 
     const profile = ProfileManager.getActiveProfile();
     this.updateHeader();
@@ -24,7 +27,7 @@ Object.assign(App.prototype, {
               <span>Academy for curious minds</span>
             </div>
             <h1 class="learning-intro__title font-ninja font-bold">
-              ${window.brandWordmark()} <span class="learning-title-accent">Learning</span>
+              ${window.brandWordmark()} <span class="learning-title-accent">Learning Centre</span>
             </h1>
             <p class="learning-intro__description">
               Train your maths skills, master times tables, explore spelling, or set off on a science discovery mission!
@@ -42,7 +45,7 @@ Object.assign(App.prototype, {
         </section>
 
         <div class="mb-8">
-          ${ProfileManager.renderLeaderboard('learning', 'Learning Hub Leaderboard')}
+          ${ProfileManager.renderLeaderboard('learning', 'Learning Centre Leaderboard')}
         </div>
 
         <!-- Learning Modules -->
