@@ -11,6 +11,7 @@ Object.assign(App.prototype, {
   showGamesHub() {
     this.stopCritterCatch();
     this.currentView = 'games';
+    this.navigateToPath('/games');
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'games';
@@ -57,6 +58,7 @@ Object.assign(App.prototype, {
   showCritterCatch() {
     this.stopCritterCatch();
     this.currentView = 'critter-catch';
+    this.navigateToPath('/critter-catch');
     this.critterCatchState = {
       score: 0,
       secondsLeft: 30,

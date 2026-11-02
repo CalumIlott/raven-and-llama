@@ -66,6 +66,61 @@ test('header brand mark follows the active hub', async ({ page }) => {
   await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
 });
 
+test('browser back and forward restore routed views', async ({ page }) => {
+  await page.locator('#nav-btn-learning').click();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+
+  await page.locator('[data-action="dojo"]').first().click();
+  await expect(page).toHaveURL(/\/dojo$/);
+
+  await page.locator('#nav-btn-games').click();
+  await expect(page).toHaveURL(/\/games$/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/dojo$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('dojo');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('home');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('learning-centre');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/dojo$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('dojo');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/games$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('games');
+
+  await page.getByRole('button', { name: /Play Critter Catch/ }).click();
+  await expect(page).toHaveURL(/\/critter-catch$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/games$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('games');
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/critter-catch$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
+
+  await page.locator('#nav-btn-home').click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('home');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/critter-catch$/);
+  await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
+});
+
 test('hub introductions align their copy to the left', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await openLearningHub(page);

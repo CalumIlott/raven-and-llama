@@ -25,6 +25,7 @@ class App {
   }
 
   async init() {
+    this.isInitializing = true;
     await ProfileManager.initialize();
     this.updateHeader();
     const module = this.moduleForPath();
@@ -32,6 +33,7 @@ class App {
       ? ProfileManager.getActiveProfile().lastModule
       : null;
     if (!window.gameEngine.restoreSession()) this.showModule(module || profileModule);
+    this.isInitializing = false;
     this.attachEventListeners();
   }
 
@@ -40,6 +42,8 @@ class App {
     return {
       '/learning': 'learning',
       '/learning-centre': 'learning-centre',
+      '/games': 'games',
+      '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
       '/timetables': 'timetables',
       '/telling-time': 'telling-time',
@@ -56,6 +60,8 @@ class App {
     const views = {
       learning: () => this.showLearningHub(),
       'learning-centre': () => this.showLearningHub('learning-centre'),
+      games: () => this.showGamesHub(),
+      'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
       timetables: () => this.showTimesTables(),
       'telling-time': () => this.showTellingTime(),
@@ -66,16 +72,22 @@ class App {
 
   rememberModule(module) {
     const profile = ProfileManager.getActiveProfile();
-    if (window.location.pathname !== `/${module}`) window.history.replaceState(null, '', `/${module}`);
+    this.navigateToPath(`/${module}`);
     if (ProfileManager.isAuthenticated() && profile.lastModule !== module) {
       void ProfileManager.updateProfile({ ...profile, lastModule: module });
     }
   }
 
+  navigateToPath(path) {
+    if (window.location.pathname === path) return;
+    if (this.isInitializing) window.history.replaceState(null, '', path);
+    else window.history.pushState(null, '', path);
+  }
+
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
-      window.history.replaceState(null, '', '/');
+    if (['/learning', '/learning-centre', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+      this.navigateToPath('/');
     }
   }
 
@@ -91,6 +103,7 @@ class App {
     document.addEventListener('click', event => this.handleClickAction(event));
     document.addEventListener('submit', event => this.handleSubmitAction(event));
     document.addEventListener('change', event => this.handleChangeAction(event));
+    window.addEventListener('popstate', () => this.showModule(this.moduleForPath()));
   }
 
   handleClickAction(event) {
