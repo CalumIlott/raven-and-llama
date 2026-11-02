@@ -376,7 +376,45 @@ test('parent progress report and trophy room render their full states', async ({
   await expect(page.getByText('No Grand Master certificates earned yet.')).toBeVisible();
 });
 
-test('Learning Centre uses colorful, rounded program cards', async ({ page }) => {
+test('Learning Centre groups its existing programs under the right subjects', async ({ page }) => {
+  await openLearningCentre(page);
+
+  const subject = id => page.locator(`#learning-modules-grid [data-subject="${id}"]`);
+  await expect(page.locator('#learning-modules-grid > .learning-subject-card')).toHaveCount(7);
+
+  const expectedSubjects = {
+    'maths-world': 'Maths World',
+    'science-lab': 'Science Lab',
+    'spelling-words': 'Spelling & Words',
+    'geography-world': 'Geography & The World',
+    'history-discovery': 'History & Discovery',
+    'brain-power': 'Brain Power',
+    'life-skills': 'Life Skills'
+  };
+  for (const [subjectId, name] of Object.entries(expectedSubjects)) {
+    await expect(subject(subjectId).getByRole('heading', { name, exact: true })).toBeVisible();
+  }
+
+  const expectedPrograms = {
+    'maths-world': ['dojo', 'times-tables'],
+    'science-lab': ['science-home'],
+    'spelling-words': ['spelling-home'],
+    'life-skills': ['telling-time', 'money-home']
+  };
+  for (const [subjectId, actions] of Object.entries(expectedPrograms)) {
+    for (const action of actions) {
+      const program = subject(subjectId).locator(`[data-action="${action}"]`);
+      await expect(program).toHaveCount(1);
+      await expect(program).toBeVisible();
+    }
+  }
+
+  for (const subjectId of ['geography-world', 'history-discovery', 'brain-power']) {
+    await expect(subject(subjectId).getByText('Coming soon', { exact: true })).toBeVisible();
+  }
+});
+
+test('Learning Centre uses colorful, rounded subject cards', async ({ page }) => {
   await openLearningCentre(page);
 
   const getCardStyles = () => page.locator('#learning-modules-grid > *').evaluateAll(elements =>
@@ -387,12 +425,12 @@ test('Learning Centre uses colorful, rounded program cards', async ({ page }) =>
   );
   const expectColorfulRoundedCards = async () => {
     const cards = await getCardStyles();
-    expect(cards).toHaveLength(6);
+    expect(cards).toHaveLength(7);
     cards.forEach(card => {
       expect(card.borderRadius).toBe('24px');
       expect(card.backgroundImage).toContain('linear-gradient');
     });
-    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(6);
+    expect(new Set(cards.map(card => card.backgroundImage)).size).toBe(7);
   };
 
   await expectColorfulRoundedCards();

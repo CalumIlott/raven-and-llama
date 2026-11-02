@@ -48,10 +48,10 @@ Object.assign(App.prototype, {
           ${ProfileManager.renderLeaderboard('learning', 'Learning Centre Leaderboard')}
         </div>
 
-        <!-- Learning Modules -->
+        <!-- Learning Centre Subjects -->
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="font-ninja text-2xl text-white font-bold">Learning Modules</h2>
-          <span class="text-xs text-slate-400">Choose a program to start exploring</span>
+          <h2 class="font-ninja text-2xl text-white font-bold">Explore by subject</h2>
+          <span class="text-xs text-slate-400">Choose a subject to start exploring</span>
         </div>
 
         <div id="learning-modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
@@ -327,6 +327,134 @@ Object.assign(App.prototype, {
 
       </div>
     `;
+
+    const modulesGrid = main.querySelector('#learning-modules-grid');
+    if (!modulesGrid) throw new Error('Learning Centre subject grid was not rendered');
+
+    const modulesByAction = new Map();
+    Array.from(modulesGrid.children).forEach(module => {
+      const action = module.dataset.action;
+      if (!action || modulesByAction.has(action)) {
+        throw new Error(`Learning Centre program has a missing or duplicate action: ${action || '(none)'}`);
+      }
+      modulesByAction.set(action, module);
+    });
+
+    const subjects = [
+      {
+        id: 'maths-world',
+        name: 'Maths World',
+        icon: '🔢',
+        description: 'Build number confidence and multiplication fluency.',
+        actions: ['dojo', 'times-tables']
+      },
+      {
+        id: 'science-lab',
+        name: 'Science Lab',
+        icon: '🔬',
+        description: 'Explore space, habitats, and the natural world.',
+        actions: ['science-home']
+      },
+      {
+        id: 'spelling-words',
+        name: 'Spelling & Words',
+        icon: '📚',
+        description: 'Practise phonics, spelling, and vocabulary.',
+        actions: ['spelling-home']
+      },
+      {
+        id: 'geography-world',
+        name: 'Geography & The World',
+        icon: '🌍',
+        description: 'Discover places, people, and our planet.',
+        actions: []
+      },
+      {
+        id: 'history-discovery',
+        name: 'History & Discovery',
+        icon: '🏺',
+        description: 'Travel through time and uncover the past.',
+        actions: []
+      },
+      {
+        id: 'brain-power',
+        name: 'Brain Power',
+        icon: '🧠',
+        description: 'Stretch your thinking with puzzles and challenges.',
+        actions: []
+      },
+      {
+        id: 'life-skills',
+        name: 'Life Skills',
+        icon: '🌟',
+        description: 'Learn practical skills for everyday life.',
+        actions: ['telling-time', 'money-home']
+      }
+    ];
+
+    const subjectCards = subjects.map(subjectDefinition => {
+      const subject = document.createElement('section');
+      subject.className = 'learning-subject-card';
+      subject.dataset.subject = subjectDefinition.id;
+
+      const heading = document.createElement('div');
+      heading.className = 'learning-subject-heading';
+      const icon = document.createElement('span');
+      icon.className = 'learning-subject-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = subjectDefinition.icon;
+
+      const copy = document.createElement('div');
+      const title = document.createElement('h3');
+      title.className = 'learning-subject-title';
+      title.id = `${subjectDefinition.id}-title`;
+      title.textContent = subjectDefinition.name;
+      subject.setAttribute('aria-labelledby', title.id);
+
+      const description = document.createElement('p');
+      description.className = 'learning-subject-description';
+      description.textContent = subjectDefinition.description;
+      copy.append(title, description);
+      heading.append(icon, copy);
+      subject.append(heading);
+
+      const programs = document.createElement('div');
+      programs.className = 'learning-subject-programs';
+      subjectDefinition.actions.forEach(action => {
+        const module = modulesByAction.get(action);
+        if (!module) throw new Error(`Learning Centre program is missing: ${action}`);
+        modulesByAction.delete(action);
+        module.classList.add('learning-program-card');
+
+        const moduleTitle = module.querySelector('h3');
+        if (moduleTitle) {
+          const accessibleTitle = document.createElement('h4');
+          accessibleTitle.className = moduleTitle.className;
+          accessibleTitle.textContent = moduleTitle.textContent;
+          moduleTitle.replaceWith(accessibleTitle);
+        }
+        programs.append(module);
+      });
+
+      if (subjectDefinition.actions.length === 0) {
+        const comingSoon = document.createElement('p');
+        comingSoon.className = 'learning-subject-empty';
+        const status = document.createElement('span');
+        status.className = 'learning-subject-status';
+        status.textContent = 'Coming soon';
+        comingSoon.append(status, document.createTextNode('New adventures are on the way.'));
+        programs.append(comingSoon);
+      }
+
+      subject.append(programs);
+      return subject;
+    });
+
+    if (modulesByAction.size > 0) {
+      throw new Error(`Learning Centre programs are not assigned to a subject: ${Array.from(modulesByAction.keys()).join(', ')}`);
+    }
+    modulesGrid.replaceChildren(...subjectCards);
+
     ProfileManager.loadLeaderboard('learning');
     ProfileManager.loadLeaderboard('maths');
     ProfileManager.loadLeaderboard('times_tables');
