@@ -166,6 +166,21 @@ test('selected quiz answers are highlighted green when correct and red when inco
   }
 });
 
+test('numeric-entry quiz questions accept equivalent number formats', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startCustomQuiz('Renaming Riddle', [{
+    type: 'numeric_input',
+    prompt: '1 hundred and 9 tens = ?',
+    answer: 190,
+    timeLimitSeconds: 20
+  }]);
+
+  assert.match(elements.get('game-arena').innerHTML, /game-answer-input/);
+  engine.submitAnswer('0190');
+
+  assert.equal(engine.score, 1);
+});
+
 test('ordinary quizzes let learners retry after an incorrect answer', () => {
   const { engine, elements, delayedCallbacks, sessionValues } = loadGameEngine();
   engine.startCustomQuiz('Retry practice', [

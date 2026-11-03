@@ -32,6 +32,33 @@ test('a perfect practice round records mastery and updates the dojo', async ({ p
   await expect(page.getByText('10 / 10', { exact: true }).first()).toBeVisible();
 });
 
+test('belt activity shelf launches a non-quiz subitising game', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Subitising Snap/ }).click();
+
+  await expect(page.getByRole('heading', { name: 'Subitising Snap' })).toBeVisible();
+  await expect(page.locator('#ma-body')).toContainText('Round 1 / 5');
+  const answer = await page.evaluate(() => String(window.arcadeEngine.mathsActivity.question.answer));
+  await page.locator('#ma-body [data-action="arcade-maths-answer"]').filter({ hasText: answer }).click();
+  await expect(page.locator('#ma-body')).toContainText('Round 2 / 5');
+
+  await page.getByRole('button', { name: /Exit Arcade/ }).click();
+  await expect(page.getByRole('heading', { name: 'Interactive Dojo Activities' })).toBeVisible();
+});
+
+test('multiplicative activity accepts a typed numeric answer', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'Brown Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Multiplicative Word Problems/ }).click();
+
+  await expect(page.locator('#ma-answer')).toBeVisible();
+  const answer = await page.evaluate(() => String(window.arcadeEngine.mathsActivity.question.answer));
+  await page.locator('#ma-answer').fill(answer);
+  await page.getByRole('button', { name: 'Check', exact: true }).click();
+  await expect(page.locator('#ma-body')).toContainText('Round 2 / 5');
+});
+
 test('leaderboards show the top saved scores throughout the Learning Centre and modules', async ({ page }) => {
   const { username } = await registerAccount(page);
   await page.evaluate(async () => {

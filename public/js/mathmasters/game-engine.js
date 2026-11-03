@@ -357,6 +357,18 @@ class GameEngine {
     let controlsHtml = '';
     if (q.type === 'order_drag') {
       controlsHtml = this.renderOrderControls(q);
+    } else if (q.type === 'numeric_input' || q.type === 'short_answer') {
+      const inputMode = q.type === 'numeric_input' ? 'decimal' : 'text';
+      controlsHtml = `
+        <form data-submit-action="game-answer" class="max-w-sm mx-auto mt-6 flex gap-3">
+          <label class="sr-only" for="game-answer-input">Your answer</label>
+          <input id="game-answer-input" name="answer" type="text" inputmode="${inputMode}" autocomplete="off"
+                 class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white focus:border-sky-400 focus:outline-none focus:ring-4 focus:ring-sky-500/30"
+                 aria-describedby="game-answer-help">
+          <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check</button>
+          <span id="game-answer-help" class="sr-only">Enter a number, then choose Check.</span>
+        </form>
+      `;
     } else if (q.options && q.options.length > 0) {
       controlsHtml = `
         <div class="play-answer-grid grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-xl mx-auto mt-6">
@@ -490,7 +502,12 @@ class GameEngine {
 
     const q = this.questions[this.currentIndex];
     const normalizedAnswer = String(selectedAnswer).trim().toLowerCase();
-    const isCorrect = normalizedAnswer === String(q.answer).trim().toLowerCase();
+    const expectedAnswer = String(q.answer).trim().toLowerCase();
+    const isNumericInput = q.type === 'numeric_input' &&
+      Number.isFinite(Number(normalizedAnswer)) && Number.isFinite(Number(expectedAnswer));
+    const isCorrect = isNumericInput
+      ? Number(normalizedAnswer) === Number(expectedAnswer)
+      : normalizedAnswer === expectedAnswer;
     const selectedIndex = q.options?.findIndex(option => String(option).trim().toLowerCase() === normalizedAnswer);
     if (selectedIndex >= 0) {
       document.getElementById(`opt-btn-${selectedIndex}`)?.classList.add(isCorrect ? 'is-correct' : 'is-incorrect');
