@@ -3788,6 +3788,109 @@ function safeSpellingAudioHint(question) {
   if (typeof hint !== 'string' || hint.toLocaleLowerCase().includes(String(question.answer).toLocaleLowerCase())) return null;
   return hint;
 }
+
+const SpellingPronunciation = (() => {
+  let requestId = 0;
+  let pendingVoiceLoad = null;
+
+  function readVoices(speech) {
+    return typeof speech.getVoices === 'function' ? speech.getVoices() : [];
+  }
+
+  function waitForVoices(speech, voices) {
+    if (voices.length || typeof speech.addEventListener !== 'function') return Promise.resolve(voices);
+
+    return new Promise(resolve => {
+      let settled = false;
+      let timeout;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        speech.removeEventListener?.('voiceschanged', finish);
+        if (pendingVoiceLoad === finish) pendingVoiceLoad = null;
+        resolve(readVoices(speech));
+      };
+      pendingVoiceLoad = finish;
+      speech.addEventListener('voiceschanged', finish);
+      timeout = setTimeout(finish, 1000);
+    });
+  }
+
+  function setStatus(statusElement, message) {
+    if (statusElement) statusElement.textContent = message;
+  }
+
+  function cancel() {
+    requestId++;
+    pendingVoiceLoad?.();
+    const speech = window.speechSynthesis;
+    if (speech && typeof speech.cancel === 'function') speech.cancel();
+  }
+
+  async function speak(word, statusElement) {
+    cancel();
+    const currentRequestId = requestId;
+    const speech = window.speechSynthesis;
+    const Utterance = window.SpeechSynthesisUtterance;
+    if (!speech || typeof speech.speak !== 'function' || typeof speech.cancel !== 'function' || typeof Utterance !== 'function') {
+      setStatus(statusElement, 'Speech playback is unavailable in this browser. You can still read the clue and continue.');
+      return false;
+    }
+    if (window.soundFX?.isMuted?.()) {
+      setStatus(statusElement, 'Sound is muted. Turn on app sound to hear the word.');
+      return false;
+    }
+
+    let voices;
+    try {
+      const availableVoices = readVoices(speech);
+      if (!availableVoices.length && typeof speech.addEventListener === 'function') {
+        setStatus(statusElement, 'Loading a pronunciation voice...');
+      }
+      voices = await waitForVoices(speech, availableVoices);
+    } catch (error) {
+      voices = [];
+    }
+    if (currentRequestId !== requestId) return false;
+
+    const utterance = new Utterance(String(word));
+    utterance.lang = 'en-AU';
+    utterance.rate = 0.82;
+    const voice = voices.find(candidate => candidate.lang?.toLowerCase() === 'en-au')
+      || voices.find(candidate => candidate.lang?.toLowerCase().startsWith('en-'))
+      || voices.find(candidate => candidate.lang?.toLowerCase() === 'en')
+      || null;
+    if (voice) utterance.voice = voice;
+    utterance.onend = () => {
+      if (currentRequestId === requestId) setStatus(statusElement, 'Pronunciation finished.');
+    };
+    utterance.onerror = event => {
+      if (currentRequestId === requestId) {
+        const detail = event?.error ? `: ${event.error}` : '';
+        setStatus(statusElement, `Pronunciation could not be played${detail}. You can still read the clue and continue.`);
+      }
+    };
+
+    try {
+      speech.speak(utterance);
+    } catch (error) {
+      setStatus(statusElement, 'Pronunciation could not be played. You can still read the clue and continue.');
+      return false;
+    }
+
+    if (voice) setStatus(statusElement, 'Playing word pronunciation.');
+    else if (voices.length) setStatus(statusElement, 'No English voice is available. Playing with your device default voice.');
+    else setStatus(statusElement, 'No voice is ready. Playing with your device default voice.');
+    return true;
+  }
+
+  return { speak, cancel };
+})();
+
+window.SpellingPronunciation = SpellingPronunciation;
+window.addEventListener('pagehide', SpellingPronunciation.cancel);
+
 const PHONICS_PICTURE_CLUES = {
   ship: '🚢', frog: '🐸', clap: '👏', brush: '🪥', chick: '🐥', whale: '🐋',
   stone: '🪨', smile: '🙂', duck: '🦆', truck: '🚚', flag: '🚩', crab: '🦀',
@@ -3870,8 +3973,9 @@ window.SpellingSafari = SpellingSafari;
 
 Object.assign(App.prototype, {
   showSpellingSafari() {
+    SpellingPronunciation.cancel();
     this.currentView = 'spelling';
-    this.rememberModule('spelling');
+    this.rememberModule('spelling', '/learning-centre/spelling');
     const recommendedDifficulty = ProfileManager.getSubjectDifficulty('english');
     const recommendedLabel = recommendedDifficulty[0].toUpperCase() + recommendedDifficulty.slice(1);
     const main = document.getElementById('app-main');
@@ -3891,10 +3995,10 @@ Object.assign(App.prototype, {
         <section class="module-intro module-intro--spelling">
           <div class="module-intro__copy">
             <div class="module-eyebrow">
-              <span>Word Adventure Lab</span>
+              <span>Spelling &amp; Words</span>
             </div>
-            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spelling Safari</h1>
-            <p class="text-slate-300 text-sm sm:text-base mt-2">Explore sounds, spell tricky words, discover new meanings, and unscramble the jungle!</p>
+            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spelling &amp; Words</h1>
+            <p class="text-slate-300 text-sm sm:text-base mt-2">Hear words with your device's built-in voice, then choose a Spelling Safari adventure.</p>
           </div>
         </section>
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose your adventure</h2>
@@ -3922,6 +4026,7 @@ Object.assign(App.prototype, {
   },
 
   startSpellingSafari(activityId, difficulty = ProfileManager.getSubjectDifficulty('english')) {
+    SpellingPronunciation.cancel();
     const activity = SpellingSafari.getActivity(activityId);
     if (!activity) return this.showSpellingSafari();
     const selectedDifficulty = Object.hasOwn(SPELLING_SAFARI_DIFFICULTY_OPTIONS, difficulty)
@@ -3950,6 +4055,16 @@ Object.assign(App.prototype, {
     if (!main) return;
     main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
     this.renderSpellingSafariQuestion();
+  },
+
+  speakSpellingSafariWord() {
+    const game = this.spellingSafariGame;
+    const question = game?.questions[game.index];
+    if (!question) return;
+    void SpellingPronunciation.speak(
+      question.answer,
+      document.getElementById('spelling-pronunciation-status')
+    );
   },
 
   renderSpellingSafariQuestion() {
@@ -4037,6 +4152,13 @@ Object.assign(App.prototype, {
         </div>
         <div class="text-center">
           <p class="play-prompt font-ninja text-xl sm:text-2xl text-white font-bold">${prompt}</p>
+          <div class="mt-4 flex flex-col items-center gap-2">
+            <button type="button" data-action="spelling-pronunciation" aria-label="Hear the word pronunciation"
+                    class="spelling-pronunciation-button inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+              <span aria-hidden="true">🔊</span>Hear the word
+            </button>
+            <span id="spelling-pronunciation-status" class="text-xs text-slate-400" role="status" aria-live="polite" aria-atomic="true"></span>
+          </div>
           ${pictureClue}
           ${hint}
         </div>
@@ -4047,6 +4169,7 @@ Object.assign(App.prototype, {
   },
 
   submitSpellingSafariAnswer(answer) {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game || game.answered) return;
     const question = game.questions[game.index];
@@ -4060,6 +4183,7 @@ Object.assign(App.prototype, {
   },
 
   retrySpellingSafariQuestion() {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game?.answered || !this.spellingActivityEngine.allowRetry()) return;
     game.answered = false;
@@ -4070,6 +4194,7 @@ Object.assign(App.prototype, {
   },
 
   pickSpellingSafariLetter(index) {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game || game.answered || game.selectedLetters.includes(index)) return;
     const question = game.questions[game.index];
@@ -4082,6 +4207,7 @@ Object.assign(App.prototype, {
   },
 
   clearSpellingSafariLetters() {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game || game.answered) return;
     game.selectedLetters = [];
@@ -4089,6 +4215,7 @@ Object.assign(App.prototype, {
   },
 
   nextSpellingSafariQuestion() {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game?.answered) return;
     if (!game.lastAnswerCorrect) game.mistakes.push(game.questions[game.index].answer);

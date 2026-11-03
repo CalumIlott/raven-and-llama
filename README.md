@@ -72,6 +72,8 @@ Accounts are stored in D1 in production. Passwords are PBKDF2-hashed; browser se
 
 The Mastery & Progress Report stores curriculum skill scores separately from named Learning Centre activity scores in `activityProgress`. Activity definitions use the versioned standard JSON Schema at [public/schemas/activity-v1.schema.json](public/schemas/activity-v1.schema.json); both quizzes and arcade-style games share the same activity lifecycle and scoring interface. Quiz feedback can include an explanation, an audio hint, and a structured worked example; the shared Educational Feedback component renders these safely and offers retry actions where supported.
 
+The Spelling & Words hub is available at `/learning-centre/spelling` and reuses the four Spelling Safari adventures. Learners can replay word pronunciations with the browser's built-in speech synthesis; no words are sent to an external speech service, and playback follows the app sound setting.
+
 Leaderboards are public and show only the top ten usernames and scores for the Learning Centre, Maths Masters, Times Tables, and each Maths Masters belt. Guest progress is not included.
 
 Registration is limited to 30 attempts per source per minute. Login is limited to 60 attempts per source per minute and 10 attempts per source/username pair per minute. Worker Rate Limiting bindings are approximate and local to each Cloudflare location; the local Node server enforces the same limits per process and socket peer. If the Node server is behind a reverse proxy, configure rate limiting at that proxy as well because local requests share the proxy's socket address. Wrangler rate-limit namespace IDs must remain unique within the Cloudflare account; production and Preview use separate IDs and counters.

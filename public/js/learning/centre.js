@@ -245,7 +245,7 @@ Object.assign(App.prototype, {
                     🦁
                   </div>
                   <div>
-                    <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Word Adventures</span>
+                    <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Spelling &amp; Words</span>
                     <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-sky-300 transition">Spelling Safari</h3>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ Object.assign(App.prototype, {
                 </span>
               </div>
               <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                Phonics, tricky spelling, vocabulary and word-scramble adventures.
+                Hear word pronunciations and explore the existing Spelling Safari phonics, spelling, vocabulary and word-scramble adventures.
               </p>
               <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
                 <div>
@@ -272,7 +272,7 @@ Object.assign(App.prototype, {
               </div>
             </div>
             <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-sky-400 group-hover:text-cyan-300">
-              <span>Explore Spelling Safari</span>
+              <span>Open Spelling &amp; Words</span>
               <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
             </div>
           </button>
