@@ -209,6 +209,11 @@ class App {
       case 'plant-life-cycle-place': this.placeSelectedPlantLifeCycleStage(Number(target.dataset.positionIndex)); break;
       case 'plant-life-cycle-submit': this.submitPlantLifeCycleAnswer(); break;
       case 'plant-life-cycle-restart': this.startPlantLifeCycleActivity(); break;
+      case 'virtual-lab-start': this.startVirtualLabActivity(); break;
+      case 'virtual-lab-select': this.selectVirtualLabMaterial(target.dataset.materialId); break;
+      case 'virtual-lab-place': this.placeSelectedVirtualLabMaterial(Number(target.dataset.slotIndex)); break;
+      case 'virtual-lab-run': this.runVirtualLabSimulation(); break;
+      case 'virtual-lab-reset': this.resetVirtualLabWorkspace(); break;
       case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
@@ -465,7 +470,8 @@ class App {
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'science-lab' ||
         this.currentView === 'science-solar-system' ||
-        this.currentView === 'science-plant-life-cycle') {
+        this.currentView === 'science-plant-life-cycle' ||
+        this.currentView === 'science-virtual-lab') {
         subBadge.textContent = 'Science Lab';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'spelling') {
@@ -526,6 +532,8 @@ class App {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {
       this.renderPlantLifeCycleActivity();
+    } else if (this.currentView === 'science-virtual-lab' && this.virtualLabGame) {
+      this.renderVirtualLabActivity();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
     } else if (this.currentView === 'spelling') {
