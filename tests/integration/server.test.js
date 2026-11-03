@@ -132,6 +132,8 @@ test('accounts persist securely and progress stays private to the authenticated 
     ...first.body.profile,
     stars: 17,
     passedBelts: ['white'],
+    earnedBadges: ['activity-explorer', 'unknown-badge'],
+    skillsProgress: { green_order: { bestScore: 10, timesTrained: 1 } },
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
@@ -185,10 +187,12 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.activityProgress['maths-number-builder'].skillId, 'green_order');
   assert.equal(firstProfile.activityProgress['maths-number-builder'].correctAnswers, 4);
   assert.equal(firstProfile.activityProgress['maths-number-builder'].totalAnswers, 5);
+  assert.deepEqual(firstProfile.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
   assert.equal(firstProfile.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'maths-number-builder');
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+  assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });

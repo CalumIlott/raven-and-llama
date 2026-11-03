@@ -132,6 +132,9 @@ test('local Worker enforces account boundaries, rate limits, and security header
       profile: {
         stars: 9,
         certificates: [],
+        passedBelts: ['white'],
+        earnedBadges: ['activity-explorer', 'unknown-badge'],
+        skillsProgress: { science_virtual_lab: { bestScore: 10, timesTrained: 1 } },
         schoolYear: 5,
         subjectYears: { science: 2 },
         spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
@@ -177,6 +180,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].skillId, 'science_virtual_lab');
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 1);
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 1);
+  assert.deepEqual(savedProgress.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
   assert.equal(savedProgress.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'science-solar-system-order');
 
   const otherRegister = await fetch(`${baseUrl}/api/auth/register`, {
@@ -191,6 +195,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(otherProfile.spellingLists, []);
   assert.equal(otherProfile.activeSpellingListId, null);
   assert.deepEqual(otherProfile.activityProgress, {});
+  assert.deepEqual(otherProfile.earnedBadges, []);
   assert.deepEqual(otherProfile.dailyChallenges, { days: {} });
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {

@@ -60,6 +60,7 @@ class ProfileManager {
       stars: 0,
       skillsProgress: {},
       activityProgress: {},
+      earnedBadges: [],
       dailyChallenges: { days: {} },
       endlessHighScores: {},
       spellingLists: [],
@@ -84,6 +85,18 @@ class ProfileManager {
     const activeSpellingListId = spellingLists.some(list => list.id === source.activeSpellingListId)
       ? source.activeSpellingListId
       : null;
+    const activityProgress = ProfileManager.normalizeActivityProgress(source.activityProgress);
+    const skillsProgress = source.skillsProgress && typeof source.skillsProgress === 'object' && !Array.isArray(source.skillsProgress)
+      ? source.skillsProgress
+      : {};
+    const passedBelts = Array.isArray(source.passedBelts) ? source.passedBelts : [];
+    const earnedBadges = window.AchievementBadges
+      ? window.AchievementBadges.normalizeEarnedIds(source.earnedBadges, {
+        activityProgress,
+        skillsProgress,
+        passedBelts
+      })
+      : [];
     return {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
@@ -96,10 +109,11 @@ class ProfileManager {
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
       stage2PassedBelts: Array.isArray(source.stage2PassedBelts) ? source.stage2PassedBelts : [],
       stage3PassedBelts: Array.isArray(source.stage3PassedBelts) ? source.stage3PassedBelts : [],
-      passedBelts: Array.isArray(source.passedBelts) ? source.passedBelts : [],
+      passedBelts,
       stars: typeof source.stars === 'number' ? source.stars : 0,
-      skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
-      activityProgress: ProfileManager.normalizeActivityProgress(source.activityProgress),
+      skillsProgress,
+      activityProgress,
+      earnedBadges,
       dailyChallenges: ProfileManager.normalizeDailyChallenges(source.dailyChallenges),
       endlessHighScores,
       spellingLists,

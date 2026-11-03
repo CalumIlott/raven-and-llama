@@ -162,6 +162,10 @@ test('accounts can only read and update their own progress', async () => {
       spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
       activeSpellingListId: 'week-one',
       endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' },
+      earnedBadges: ['activity-explorer', 'unknown-badge'],
+      skillsProgress: {
+        white_addition: { bestScore: 10, timesTrained: 1 }
+      },
       dailyChallenges,
       activityProgress: {
         'science-water-cycle': {
@@ -197,6 +201,7 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(firstProfile.activeSpellingListId, 'week-one');
   assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
   assert.deepEqual(firstProfile.dailyChallenges, dailyChallenges);
+  assert.deepEqual(firstProfile.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
   assert.deepEqual(firstProfile.activityProgress, {
     'science-water-cycle': {
       title: 'Water Cycle',
@@ -220,7 +225,20 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(secondProfile.activeSpellingListId, null);
   assert.deepEqual(secondProfile.endlessHighScores, {});
   assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
+  assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+
+  const reset = await request(store, '/api/progress', 'PUT', {
+    profile: {
+      ...firstProfile,
+      earnedBadges: ['activity-explorer'],
+      passedBelts: [],
+      skillsProgress: {},
+      activityProgress: {}
+    }
+  }, firstCookie);
+  assert.equal(reset.status, 200);
+  assert.deepEqual((await reset.json()).profile.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
 
   const anonymousRead = await request(store, '/api/progress');
   assert.equal(anonymousRead.status, 401);

@@ -757,6 +757,26 @@ class App {
     const profile = ProfileManager.getActiveProfile();
     const passedBelts = profile?.passedBelts || [];
     const certificates = profile?.certificates || [];
+    const earnedBadgeIds = new Set(profile?.earnedBadges || []);
+    const badgeCatalog = window.AchievementBadges?.catalog || [];
+    const badgesHtml = badgeCatalog.map(badge => {
+      const earned = earnedBadgeIds.has(badge.id);
+      return `
+        <article role="listitem" data-badge-id="${escapeHtml(badge.id)}" aria-label="${escapeHtml(badge.name)}: ${earned ? 'earned' : 'locked'}"
+          class="rounded-2xl border ${earned ? 'border-emerald-500/60 bg-emerald-950/30' : 'border-slate-700 bg-slate-950/40'} p-4">
+          <div class="flex items-start gap-3">
+            <span aria-hidden="true" class="text-3xl">${escapeHtml(badge.icon)}</span>
+            <div>
+              <h4 class="font-ninja text-base font-bold text-white">${escapeHtml(badge.name)}</h4>
+              <p class="mt-1 text-sm text-slate-300">${escapeHtml(badge.description)}</p>
+              <p class="mt-2 text-xs ${earned ? 'text-emerald-300' : 'text-slate-300'}">
+                <strong>${earned ? 'Earned' : 'Locked'}.</strong> ${escapeHtml(badge.criteria)}
+              </p>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
 
     let certificatesHtml = certificates.length === 0
       ? `<div class="text-center p-8 bg-slate-900/60 rounded-2xl border border-slate-800 text-slate-400">
@@ -820,6 +840,11 @@ class App {
                 </div>
               `;
             }).join('')}
+          </div>
+
+          <h3 class="font-ninja text-lg text-yellow-400 font-bold mb-3">Achievement Badges:</h3>
+          <div role="list" aria-label="Achievement badges" class="grid gap-3 sm:grid-cols-2 mb-8">
+            ${badgesHtml}
           </div>
 
           <h3 class="font-ninja text-lg text-yellow-400 font-bold mb-3">Earned Certificates:</h3>
