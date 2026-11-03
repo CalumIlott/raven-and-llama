@@ -49,7 +49,8 @@ class App {
       '/dojo': 'dojo',
       '/timetables': 'timetables',
       '/telling-time': 'telling-time',
-      '/spelling': 'spelling'
+      '/spelling': 'spelling',
+      '/learning-centre/spelling': 'spelling'
     }[path] || null;
   }
 
@@ -59,6 +60,7 @@ class App {
   }
 
   showModule(module) {
+    window.SpellingPronunciation?.cancel();
     const views = {
       learning: () => this.showLearningCentre(),
       'learning-centre': () => this.showLearningCentre(),
@@ -74,9 +76,9 @@ class App {
     (views[module] || (() => this.showRavenAndLlamaHome()))();
   }
 
-  rememberModule(module) {
+  rememberModule(module, path = `/${module}`) {
     const profile = ProfileManager.getActiveProfile();
-    this.navigateToPath(`/${module}`);
+    this.navigateToPath(path);
     if (ProfileManager.isAuthenticated() && profile.lastModule !== module) {
       void ProfileManager.updateProfile({ ...profile, lastModule: module });
     }
@@ -84,13 +86,14 @@ class App {
 
   navigateToPath(path, replace = false) {
     if (window.location.pathname === path) return;
+    window.SpellingPronunciation?.cancel();
     if (replace || this.isInitializing) window.history.replaceState(null, '', path);
     else window.history.pushState(null, '', path);
   }
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -212,8 +215,18 @@ class App {
       case 'money-clear': this.clearMoneyCoins(); break;
       case 'money-submit': this.submitMoneyAmount(); break;
       case 'money-next': this.nextMoneyQuestion(); break;
+      case 'spelling-pronunciation': this.speakSpellingSafariWord(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
       case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
+      case 'spell-it-open': this.showSpellItLists(); break;
+      case 'spell-it-start': void this.startSpellIt(target.dataset.listId); break;
+      case 'spell-it-pronunciation': this.speakSpellItWord(); break;
+      case 'spell-it-retry': this.retrySpellItQuestion(); break;
+      case 'spell-it-next': this.nextSpellItQuestion(); break;
+      case 'spelling-list-edit': this.editSpellingList(target.dataset.listId); break;
+      case 'spelling-list-delete': void this.deleteSpellingList(target.dataset.listId); break;
+      case 'spelling-list-active': void this.setActiveSpellingList(target.dataset.listId); break;
+      case 'spelling-list-cancel': this.cancelSpellingListEdit(); break;
       case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
       case 'spelling-clear': this.clearSpellingSafariLetters(); break;
       case 'spelling-answer': this.submitSpellingSafariAnswer(decodeURIComponent(target.dataset.answer)); break;
@@ -268,6 +281,14 @@ class App {
       case 'account-avatar': this.changeAvatarSubmit(event); break;
       case 'account-password': this.changePasswordSubmit(event); break;
       case 'account-delete': this.deleteAccount(event); break;
+      case 'spelling-list-save':
+        event.preventDefault();
+        void this.saveSpellingList(event);
+        break;
+      case 'spell-it-answer':
+        event.preventDefault();
+        this.submitSpellItAnswer(event.target.elements.answer.value);
+        break;
       case 'game-answer':
         event.preventDefault();
         window.gameEngine.submitAnswer(event.target.elements.answer.value);
@@ -441,7 +462,7 @@ class App {
         subBadge.textContent = 'Science Lab';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'spelling') {
-        subBadge.textContent = 'Spelling Safari';
+        subBadge.textContent = 'Spelling & Words';
         subBadge.classList.remove('hidden');
       } else {
         subBadge.classList.add('hidden');
@@ -465,6 +486,7 @@ class App {
 
   toggleSound() {
     const isMuted = window.soundFX?.toggleMute();
+    if (isMuted) window.SpellingPronunciation?.cancel();
     const soundBtn = document.getElementById('header-sound-btn');
     if (soundBtn) soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
   }
@@ -989,6 +1011,9 @@ class App {
     const studentNameEl = document.getElementById('parent-student-name');
     if (studentNameEl) studentNameEl.textContent = profile ? profile.name : 'Learner';
 
+    this.spellingListEditingId = null;
+    this.setSpellingListStatus('');
+    this.renderParentSpellingLists();
     this.openDialog(modal);
   }
 

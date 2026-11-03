@@ -22,6 +22,20 @@ test('Spelling Safari activities have unique ids and at least 100 questions', ()
   assert.ok(activities.every(activity => activity.questions.length >= 100));
 });
 
+test('Spell It normalizes only case and surrounding whitespace and uses only the selected list', () => {
+  const safari = loadSafari().SpellingSafari;
+  const list = { id: 'week-one', name: 'Week One', words: ['quokka.', 'mother-in-law'] };
+  const questions = safari.createSpellItQuestions(list);
+
+  assert.equal(safari.normalizeSpellItAnswer('  QuOkKa.  '), 'quokka.');
+  assert.equal(safari.normalizeSpellItAnswer('mother in law'), 'mother in law');
+  assert.deepEqual(
+    new Set(questions.map(question => question.answer)),
+    new Set(list.words)
+  );
+  assert.equal(safari.createSpellItQuestions({ ...list, words: [] }).length, 0);
+});
+
 test('Phonics Trail identifies chick as a young bird', () => {
   const context = loadSafari();
   const activity = context.SpellingSafari.getActivity('phonics-trail');

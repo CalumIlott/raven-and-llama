@@ -3788,6 +3788,109 @@ function safeSpellingAudioHint(question) {
   if (typeof hint !== 'string' || hint.toLocaleLowerCase().includes(String(question.answer).toLocaleLowerCase())) return null;
   return hint;
 }
+
+const SpellingPronunciation = (() => {
+  let requestId = 0;
+  let pendingVoiceLoad = null;
+
+  function readVoices(speech) {
+    return typeof speech.getVoices === 'function' ? speech.getVoices() : [];
+  }
+
+  function waitForVoices(speech, voices) {
+    if (voices.length || typeof speech.addEventListener !== 'function') return Promise.resolve(voices);
+
+    return new Promise(resolve => {
+      let settled = false;
+      let timeout;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        speech.removeEventListener?.('voiceschanged', finish);
+        if (pendingVoiceLoad === finish) pendingVoiceLoad = null;
+        resolve(readVoices(speech));
+      };
+      pendingVoiceLoad = finish;
+      speech.addEventListener('voiceschanged', finish);
+      timeout = setTimeout(finish, 1000);
+    });
+  }
+
+  function setStatus(statusElement, message) {
+    if (statusElement) statusElement.textContent = message;
+  }
+
+  function cancel() {
+    requestId++;
+    pendingVoiceLoad?.();
+    const speech = window.speechSynthesis;
+    if (speech && typeof speech.cancel === 'function') speech.cancel();
+  }
+
+  async function speak(word, statusElement) {
+    cancel();
+    const currentRequestId = requestId;
+    const speech = window.speechSynthesis;
+    const Utterance = window.SpeechSynthesisUtterance;
+    if (!speech || typeof speech.speak !== 'function' || typeof speech.cancel !== 'function' || typeof Utterance !== 'function') {
+      setStatus(statusElement, 'Speech playback is unavailable in this browser. You can still read the clue and continue.');
+      return false;
+    }
+    if (window.soundFX?.isMuted?.()) {
+      setStatus(statusElement, 'Sound is muted. Turn on app sound to hear the word.');
+      return false;
+    }
+
+    let voices;
+    try {
+      const availableVoices = readVoices(speech);
+      if (!availableVoices.length && typeof speech.addEventListener === 'function') {
+        setStatus(statusElement, 'Loading a pronunciation voice...');
+      }
+      voices = await waitForVoices(speech, availableVoices);
+    } catch (error) {
+      voices = [];
+    }
+    if (currentRequestId !== requestId) return false;
+
+    const utterance = new Utterance(String(word));
+    utterance.lang = 'en-AU';
+    utterance.rate = 0.82;
+    const voice = voices.find(candidate => candidate.lang?.toLowerCase() === 'en-au')
+      || voices.find(candidate => candidate.lang?.toLowerCase().startsWith('en-'))
+      || voices.find(candidate => candidate.lang?.toLowerCase() === 'en')
+      || null;
+    if (voice) utterance.voice = voice;
+    utterance.onend = () => {
+      if (currentRequestId === requestId) setStatus(statusElement, 'Pronunciation finished.');
+    };
+    utterance.onerror = event => {
+      if (currentRequestId === requestId) {
+        const detail = event?.error ? `: ${event.error}` : '';
+        setStatus(statusElement, `Pronunciation could not be played${detail}. You can still read the clue and continue.`);
+      }
+    };
+
+    try {
+      speech.speak(utterance);
+    } catch (error) {
+      setStatus(statusElement, 'Pronunciation could not be played. You can still read the clue and continue.');
+      return false;
+    }
+
+    if (voice) setStatus(statusElement, 'Playing word pronunciation.');
+    else if (voices.length) setStatus(statusElement, 'No English voice is available. Playing with your device default voice.');
+    else setStatus(statusElement, 'No voice is ready. Playing with your device default voice.');
+    return true;
+  }
+
+  return { speak, cancel };
+})();
+
+window.SpellingPronunciation = SpellingPronunciation;
+window.addEventListener('pagehide', SpellingPronunciation.cancel);
+
 const PHONICS_PICTURE_CLUES = {
   ship: '🚢', frog: '🐸', clap: '👏', brush: '🪥', chick: '🐥', whale: '🐋',
   stone: '🪨', smile: '🙂', duck: '🦆', truck: '🚚', flag: '🚩', crab: '🦀',
@@ -3812,6 +3915,15 @@ const PHONICS_PICTURE_CLUES = {
 const SpellingSafari = {
   getActivities() {
     return SPELLING_SAFARI_ACTIVITIES;
+  },
+
+  normalizeSpellItAnswer(value) {
+    return typeof value === 'string' ? value.trim().toLowerCase() : '';
+  },
+
+  createSpellItQuestions(list) {
+    if (!list || !Array.isArray(list.words)) return [];
+    return this.shuffle(list.words).map(answer => ({ type: 'short_answer', answer }));
   },
 
   getActivity(activityId) {
@@ -3870,8 +3982,12 @@ window.SpellingSafari = SpellingSafari;
 
 Object.assign(App.prototype, {
   showSpellingSafari() {
+    SpellingPronunciation.cancel();
     this.currentView = 'spelling';
-    this.rememberModule('spelling');
+    this.spellItGame = null;
+    this.spellItListScreenActive = false;
+    window.scrollTo?.(0, 0);
+    this.rememberModule('spelling', '/learning-centre/spelling');
     const recommendedDifficulty = ProfileManager.getSubjectDifficulty('english');
     const recommendedLabel = recommendedDifficulty[0].toUpperCase() + recommendedDifficulty.slice(1);
     const main = document.getElementById('app-main');
@@ -3891,10 +4007,10 @@ Object.assign(App.prototype, {
         <section class="module-intro module-intro--spelling">
           <div class="module-intro__copy">
             <div class="module-eyebrow">
-              <span>Word Adventure Lab</span>
+              <span>Spelling &amp; Words</span>
             </div>
-            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spelling Safari</h1>
-            <p class="text-slate-300 text-sm sm:text-base mt-2">Explore sounds, spell tricky words, discover new meanings, and unscramble the jungle!</p>
+            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spelling &amp; Words</h1>
+            <p class="text-slate-300 text-sm sm:text-base mt-2">Hear words with your device's built-in voice, then choose a Spelling Safari adventure or practise a weekly list in Spell It.</p>
           </div>
         </section>
         <h2 class="font-ninja text-xl text-white font-bold mb-3">Choose your adventure</h2>
@@ -3916,12 +4032,498 @@ Object.assign(App.prototype, {
               </div>
             </div>
           `).join('')}
+          <section class="spelling-activity-card text-left bg-slate-900 border-2 border-cyan-700 rounded-2xl p-5 shadow-lg">
+            <span class="text-3xl" aria-hidden="true">🔤</span>
+            <h3 class="font-ninja text-xl font-bold text-white mt-2">Spell It</h3>
+            <p class="text-sm text-slate-300 mt-1">Listen to words from a parent-managed weekly spelling list and type each spelling.</p>
+            <button data-action="spell-it-open" class="mt-4 rounded-xl bg-cyan-700 hover:bg-cyan-600 px-4 py-3 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+              Start Spell It
+            </button>
+          </section>
         </div>
       </div>
     `;
   },
 
+  showSpellItLists() {
+    SpellingPronunciation.cancel();
+    this.currentView = 'spelling';
+    this.spellItGame = null;
+    this.spellItListScreenActive = true;
+    this.rememberModule('spelling', '/learning-centre/spelling');
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    window.scrollTo?.(0, 0);
+    main.dataset.page = 'spelling';
+    this.updateHeader();
+    main.innerHTML = `
+      <div class="max-w-3xl mx-auto px-4 py-8">
+        <div class="flex items-center justify-between mb-6">
+          <button data-action="spelling-home" class="text-sm text-cyan-300 hover:text-cyan-200 font-bold">← Back to Spelling &amp; Words</button>
+          <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
+        </div>
+        <section class="module-intro module-intro--spelling">
+          <div class="module-intro__copy">
+            <div class="module-eyebrow"><span>Weekly spelling practice</span></div>
+            <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold">Spell It</h1>
+            <p class="text-slate-300 text-sm sm:text-base mt-2">Choose a list, listen to each word, and type the spelling. The word stays hidden until you have tried it.</p>
+          </div>
+        </section>
+        <div id="spell-it-list-options" class="grid gap-3" aria-label="Available spelling lists"></div>
+        <p id="spell-it-list-status" class="mt-3 text-sm text-slate-300" role="status" aria-live="polite"></p>
+        <div class="flex flex-wrap gap-3 mt-6">
+          <button data-action="parent-report" class="rounded-xl bg-slate-700 hover:bg-slate-600 px-4 py-3 text-sm font-bold text-white">Manage weekly lists</button>
+          <button data-action="spelling-home" class="rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-3 text-sm font-bold text-white">Choose another activity</button>
+        </div>
+      </div>
+    `;
+    this.renderSpellItListChoices();
+  },
+
+  renderSpellItListChoices() {
+    const options = document.getElementById('spell-it-list-options');
+    const status = document.getElementById('spell-it-list-status');
+    if (!options) return;
+    options.replaceChildren();
+    const profile = ProfileManager.getActiveProfile();
+    const lists = profile.spellingLists || [];
+    if (!lists.length) {
+      if (status) status.textContent = 'No spelling lists yet. Ask a parent or teacher to add one.';
+      return;
+    }
+    if (status) status.textContent = '';
+
+    for (const list of lists) {
+      const card = document.createElement('section');
+      card.className = 'rounded-2xl border border-slate-700 bg-slate-900 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3';
+      const details = document.createElement('div');
+      const title = document.createElement('h2');
+      title.className = 'font-ninja text-lg font-bold text-white';
+      title.textContent = list.name;
+      details.append(title);
+      const summary = document.createElement('p');
+      summary.className = 'text-sm text-slate-300';
+      summary.textContent = `${list.words.length} ${list.words.length === 1 ? 'word' : 'words'}${profile.activeSpellingListId === list.id ? ' · Active list' : ''}`;
+      details.append(summary);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.action = 'spell-it-start';
+      button.dataset.listId = list.id;
+      button.className = 'rounded-xl bg-cyan-700 hover:bg-cyan-600 disabled:bg-slate-700 disabled:text-slate-300 px-4 py-3 text-sm font-bold text-white';
+      button.textContent = list.words.length ? 'Practise this list' : 'Add words to start';
+      button.disabled = list.words.length === 0;
+      card.append(details, button);
+      options.append(card);
+    }
+  },
+
+  async startSpellIt(listId) {
+    SpellingPronunciation.cancel();
+    const profile = ProfileManager.getActiveProfile();
+    const list = (profile.spellingLists || []).find(item => item.id === listId);
+    if (!list || !list.words.length) {
+      this.showSpellItLists();
+      return;
+    }
+    if (profile.activeSpellingListId !== list.id) {
+      await ProfileManager.updateProfile({ ...profile, activeSpellingListId: list.id });
+    }
+
+    const questions = SpellingSafari.createSpellItQuestions(list);
+    this.spellItListScreenActive = false;
+    this.spellItGame = {
+      listId: list.id,
+      listName: list.name,
+      questions,
+      index: 0,
+      attempts: 0,
+      score: 0,
+      answered: false,
+      lastAnswerCorrect: null
+    };
+    this.spellItActivityEngine = new ActivityEngine();
+    this.spellItActivityEngine.startQuiz({
+      id: 'spelling-spell-it',
+      title: 'Spell It',
+      subject: 'Spelling & Words',
+      questions,
+      settings: { trackProgress: true }
+    });
+    this.currentView = 'spelling';
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    window.scrollTo?.(0, 0);
+    main.dataset.page = 'spelling';
+    this.updateHeader();
+    main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="spell-it-arena"></div></div>';
+    this.renderSpellItQuestion();
+  },
+
+  renderSpellItQuestion() {
+    const game = this.spellItGame;
+    const arena = document.getElementById('spell-it-arena');
+    if (!game || !arena) return;
+
+    if (game.index >= game.questions.length) {
+      this.spellItActivityEngine.complete();
+      arena.innerHTML = `
+        <section class="play-question-card spelling-result-card text-center bg-slate-900 border-2 border-cyan-600 rounded-3xl p-7 shadow-2xl">
+          <div class="text-5xl mb-3" aria-hidden="true">🏆</div>
+          <h2 class="font-ninja text-2xl text-white font-bold">Spell It complete!</h2>
+          <p id="spell-it-result" class="text-slate-300 mt-2"></p>
+          <div class="flex flex-wrap justify-center gap-3 mt-6">
+            <button data-action="spell-it-start" data-list-id="${game.listId}" class="rounded-xl bg-cyan-700 hover:bg-cyan-600 px-5 py-3 text-white font-bold">Play this list again</button>
+            <button data-action="spell-it-open" class="rounded-xl bg-slate-700 hover:bg-slate-600 px-5 py-3 text-white font-bold">Choose another list</button>
+            <button data-action="spelling-home" class="rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-3 text-white font-bold">Back to Spelling &amp; Words</button>
+          </div>
+        </section>
+      `;
+      arena.querySelector('#spell-it-result').textContent =
+        `You scored ${game.score} out of ${game.questions.length} in ${game.listName}.`;
+      return;
+    }
+
+    const question = game.questions[game.index];
+    arena.innerHTML = `
+      <section class="play-question-card spelling-question-card bg-slate-900 border-2 border-cyan-700 rounded-3xl p-5 sm:p-7 shadow-2xl">
+        <div class="play-hud spelling-hud flex items-center justify-between border-b border-slate-800 pb-3 mb-5">
+          <button data-action="spell-it-open" class="play-hud__exit text-xs text-slate-300 hover:text-white">← Choose a list</button>
+          <div class="play-hud__title text-center">
+            <h2 class="font-ninja text-lg text-cyan-200 font-bold">Spell It</h2>
+            <p id="spell-it-list-name" class="text-xs text-slate-300"></p>
+            <p class="text-xs text-slate-300">Word ${game.index + 1} of ${game.questions.length}</p>
+          </div>
+          <span class="play-hud__stat text-sm font-bold text-white">⭐ ${game.score}</span>
+        </div>
+        <div class="text-center">
+          <p class="play-prompt font-ninja text-xl sm:text-2xl text-white font-bold">Listen to the word, then spell it.</p>
+          <button type="button" data-action="spell-it-pronunciation" aria-label="Hear the word pronunciation"
+                  class="spelling-pronunciation-button mt-4 inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-3 text-sm font-bold text-white hover:bg-cyan-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+            <span aria-hidden="true">🔊</span>Hear the word
+          </button>
+          <p id="spell-it-pronunciation-status" class="mt-2 text-xs text-slate-300" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+        <form data-submit-action="spell-it-answer" class="mt-6">
+          <label for="spell-it-answer" class="block text-sm font-bold text-white mb-2">Your spelling</label>
+          <input id="spell-it-answer" name="answer" type="text" maxlength="100" autocomplete="off" autocapitalize="none" spellcheck="false"
+                 aria-describedby="spell-it-feedback" ${game.answered ? 'disabled' : ''}
+                 class="w-full rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-lg text-white focus:border-cyan-400 focus:outline-none disabled:opacity-70">
+          <button type="submit" ${game.answered ? 'disabled' : ''}
+                  class="mt-3 w-full rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:bg-slate-700 px-4 py-3 font-bold text-white">
+            Check spelling
+          </button>
+        </form>
+        <p id="spell-it-feedback" class="mt-4 min-h-6 text-center text-sm font-semibold text-slate-200" role="status" aria-live="polite" aria-atomic="true"></p>
+        <div id="spell-it-follow-up" class="flex flex-wrap justify-center gap-3 mt-4"></div>
+      </section>
+    `;
+    arena.querySelector('#spell-it-list-name').textContent = game.listName;
+    const feedback = arena.querySelector('#spell-it-feedback');
+    const followUp = arena.querySelector('#spell-it-follow-up');
+    if (game.answered) {
+      if (game.lastAnswerCorrect) {
+        feedback.textContent = 'Correct! Great spelling.';
+      } else {
+        feedback.textContent = `The correct spelling is ${question.answer}. You can try it again or move on.`;
+      }
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.dataset.action = game.lastAnswerCorrect ? 'spell-it-next' : 'spell-it-retry';
+      next.className = 'rounded-xl bg-cyan-700 hover:bg-cyan-600 px-5 py-3 font-bold text-white';
+      next.textContent = game.lastAnswerCorrect ? 'Next word' : 'Try this word again';
+      followUp.append(next);
+      if (!game.lastAnswerCorrect) {
+        const skip = document.createElement('button');
+        skip.type = 'button';
+        skip.dataset.action = 'spell-it-next';
+        skip.className = 'rounded-xl bg-slate-700 hover:bg-slate-600 px-5 py-3 font-bold text-white';
+        skip.textContent = 'Move on';
+        followUp.append(skip);
+      }
+    } else if (game.attempts) {
+      feedback.textContent = `Not quite. Listen again and try once more. ${3 - game.attempts} ${game.attempts === 2 ? 'try' : 'tries'} left.`;
+    }
+    if (!game.answered) arena.querySelector('#spell-it-answer').focus();
+    else followUp.querySelector('button')?.focus();
+  },
+
+  speakSpellItWord() {
+    const game = this.spellItGame;
+    const question = game?.questions[game.index];
+    if (!question) return;
+    void SpellingPronunciation.speak(
+      question.answer,
+      document.getElementById('spell-it-pronunciation-status')
+    );
+  },
+
+  submitSpellItAnswer(answer) {
+    SpellingPronunciation.cancel();
+    const game = this.spellItGame;
+    if (!game || game.answered) return;
+    if (!SpellingSafari.normalizeSpellItAnswer(answer)) {
+      game.feedback = 'Type a spelling before checking.';
+      const feedback = document.getElementById('spell-it-feedback');
+      if (feedback) feedback.textContent = game.feedback;
+      document.getElementById('spell-it-answer')?.focus();
+      return;
+    }
+
+    const question = game.questions[game.index];
+    const isCorrect = SpellingSafari.normalizeSpellItAnswer(answer) ===
+      SpellingSafari.normalizeSpellItAnswer(question.answer);
+    this.spellItActivityEngine.recordOutcome(isCorrect);
+    game.lastAnswerCorrect = isCorrect;
+    game.score = this.spellItActivityEngine.score;
+    if (isCorrect) {
+      game.answered = true;
+    } else {
+      game.attempts++;
+      if (game.attempts < 3) {
+        this.spellItActivityEngine.allowRetry();
+      } else {
+        game.answered = true;
+      }
+    }
+    this.renderSpellItQuestion();
+  },
+
+  retrySpellItQuestion() {
+    SpellingPronunciation.cancel();
+    const game = this.spellItGame;
+    if (!game?.answered || game.lastAnswerCorrect || !this.spellItActivityEngine.allowRetry()) return;
+    game.answered = false;
+    game.lastAnswerCorrect = null;
+    game.attempts = 0;
+    this.renderSpellItQuestion();
+  },
+
+  nextSpellItQuestion() {
+    SpellingPronunciation.cancel();
+    const game = this.spellItGame;
+    if (!game?.answered) return;
+    const hasNextQuestion = this.spellItActivityEngine.nextQuestion();
+    game.index = hasNextQuestion ? this.spellItActivityEngine.currentIndex : game.questions.length;
+    game.answered = false;
+    game.attempts = 0;
+    game.lastAnswerCorrect = null;
+    this.renderSpellItQuestion();
+  },
+
+  renderParentSpellingLists() {
+    const listContainer = document.getElementById('parent-spelling-list-items');
+    const status = document.getElementById('parent-spelling-list-status');
+    const form = document.getElementById('parent-spelling-list-form');
+    const submit = document.getElementById('parent-spelling-list-submit');
+    const cancel = document.getElementById('parent-spelling-list-cancel');
+    if (!listContainer || !form || !submit || !cancel) return;
+
+    listContainer.replaceChildren();
+    const profile = ProfileManager.getActiveProfile();
+    const lists = profile.spellingLists || [];
+    if (!lists.length) {
+      const empty = document.createElement('p');
+      empty.className = 'text-sm text-slate-300';
+      empty.textContent = 'No weekly spelling lists yet.';
+      listContainer.append(empty);
+    }
+
+    for (const list of lists) {
+      const item = document.createElement('li');
+      item.className = 'rounded-xl border border-slate-700 bg-slate-950 p-4';
+      const header = document.createElement('div');
+      header.className = 'flex flex-wrap items-center gap-2';
+      const name = document.createElement('h5');
+      name.className = 'font-bold text-white';
+      name.textContent = list.name;
+      header.append(name);
+      if (profile.activeSpellingListId === list.id) {
+        const active = document.createElement('span');
+        active.className = 'rounded-full bg-emerald-900 px-2 py-1 text-xs font-bold text-emerald-200';
+        active.textContent = 'Active for Spell It';
+        header.append(active);
+      }
+      item.append(header);
+
+      const wordDetails = document.createElement('details');
+      wordDetails.className = 'mt-2 text-sm text-slate-300';
+      const summary = document.createElement('summary');
+      summary.className = 'cursor-pointer';
+      summary.textContent = `${list.words.length} ${list.words.length === 1 ? 'word' : 'words'}`;
+      wordDetails.append(summary);
+      const words = document.createElement('ul');
+      words.className = 'mt-2 list-disc pl-5';
+      for (const word of list.words) {
+        const entry = document.createElement('li');
+        entry.textContent = word;
+        words.append(entry);
+      }
+      wordDetails.append(words);
+      item.append(wordDetails);
+
+      const actions = document.createElement('div');
+      actions.className = 'flex flex-wrap gap-2 mt-3';
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.dataset.action = 'spelling-list-edit';
+      edit.dataset.listId = list.id;
+      edit.className = 'rounded-lg bg-slate-700 hover:bg-slate-600 px-3 py-2 text-sm font-bold text-white';
+      edit.textContent = 'Edit';
+      actions.append(edit);
+      const activate = document.createElement('button');
+      activate.type = 'button';
+      activate.dataset.action = 'spelling-list-active';
+      activate.dataset.listId = list.id;
+      activate.disabled = profile.activeSpellingListId === list.id;
+      activate.className = 'rounded-lg bg-cyan-800 hover:bg-cyan-700 disabled:bg-slate-800 disabled:text-slate-300 px-3 py-2 text-sm font-bold text-white';
+      activate.textContent = activate.disabled ? 'Active list' : 'Set active for Spell It';
+      actions.append(activate);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.dataset.action = 'spelling-list-delete';
+      remove.dataset.listId = list.id;
+      remove.className = 'rounded-lg bg-rose-900 hover:bg-rose-800 px-3 py-2 text-sm font-bold text-white';
+      remove.textContent = 'Delete';
+      remove.setAttribute('aria-label', `Delete ${list.name}`);
+      actions.append(remove);
+      item.append(actions);
+      listContainer.append(item);
+    }
+
+    if (!this.spellingListEditingId) form.reset();
+    submit.textContent = this.spellingListEditingId ? 'Save changes' : 'Create list';
+    cancel.classList.toggle('hidden', !this.spellingListEditingId);
+    if (status && !status.textContent) this.setSpellingListStatus('');
+  },
+
+  setSpellingListStatus(message, isError = false) {
+    const status = document.getElementById('parent-spelling-list-status');
+    if (!status) return;
+    status.textContent = message;
+    status.className = `mt-2 min-h-5 text-sm ${isError ? 'text-rose-300' : 'text-emerald-300'}`;
+  },
+
+  editSpellingList(listId) {
+    const profile = ProfileManager.getActiveProfile();
+    const list = (profile.spellingLists || []).find(item => item.id === listId);
+    if (!list) {
+      this.spellingListEditingId = null;
+      this.renderParentSpellingLists();
+      this.setSpellingListStatus('That spelling list is no longer available.', true);
+      return;
+    }
+    this.spellingListEditingId = list.id;
+    document.getElementById('parent-spelling-list-name').value = list.name;
+    document.getElementById('parent-spelling-list-words').value = list.words.join('\n');
+    document.getElementById('parent-spelling-list-submit').textContent = 'Save changes';
+    document.getElementById('parent-spelling-list-cancel').classList.remove('hidden');
+    this.setSpellingListStatus(`Editing ${list.name}.`);
+    document.getElementById('parent-spelling-list-name').focus();
+  },
+
+  cancelSpellingListEdit() {
+    this.spellingListEditingId = null;
+    document.getElementById('parent-spelling-list-form')?.reset();
+    this.renderParentSpellingLists();
+    this.setSpellingListStatus('');
+  },
+
+  async saveSpellingList(event) {
+    event.preventDefault();
+    const profile = ProfileManager.getActiveProfile();
+    const name = document.getElementById('parent-spelling-list-name').value.trim();
+    const enteredWords = document.getElementById('parent-spelling-list-words').value.trim();
+    const words = enteredWords ? enteredWords.split(/\r?\n/).map(word => word.trim()) : [];
+    const existingIndex = (profile.spellingLists || []).findIndex(list => list.id === this.spellingListEditingId);
+    const id = this.spellingListEditingId || `list-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    if (this.spellingListEditingId && existingIndex < 0) {
+      this.setSpellingListStatus('That spelling list is no longer available. Refresh the list and try again.', true);
+      this.cancelSpellingListEdit();
+      return;
+    }
+    const updatedList = { id, name, words };
+    const lists = [...(profile.spellingLists || [])];
+    if (existingIndex < 0) lists.push(updatedList);
+    else lists[existingIndex] = updatedList;
+    const validationError = ProfileManager.validateSpellingLists(lists);
+    if (validationError) {
+      this.setSpellingListStatus(validationError, true);
+      return;
+    }
+    const activeSpellingListId = lists.some(list => list.id === profile.activeSpellingListId)
+      ? profile.activeSpellingListId
+      : (lists[0]?.id || null);
+    const saved = await ProfileManager.updateProfile({ ...profile, spellingLists: lists, activeSpellingListId });
+    if (!ProfileManager.account) {
+      this.setSpellingListStatus('List saved for this visit only. Guest lists are not kept after you leave.');
+    } else if (!saved) {
+      if (!this.spellingListEditingId) this.spellingListEditingId = id;
+      this.setSpellingListStatus(ProfileManager.lastSaveError || 'Unable to save this spelling list.', true);
+      this.renderParentSpellingLists();
+      if (this.spellItListScreenActive || this.spellItGame?.listId === id) this.showSpellItLists();
+      return;
+    } else {
+      this.setSpellingListStatus('Spelling list saved to this account.');
+    }
+
+    this.spellingListEditingId = null;
+    this.renderParentSpellingLists();
+    if (this.spellItListScreenActive || this.spellItGame?.listId === id) this.showSpellItLists();
+  },
+
+  async setActiveSpellingList(listId) {
+    const profile = ProfileManager.getActiveProfile();
+    if (!(profile.spellingLists || []).some(list => list.id === listId)) {
+      this.setSpellingListStatus('That spelling list is no longer available.', true);
+      this.renderParentSpellingLists();
+      return;
+    }
+    const saved = await ProfileManager.updateProfile({ ...profile, activeSpellingListId: listId });
+    if (!ProfileManager.account) {
+      this.setSpellingListStatus('Active list set for this visit only.');
+    } else if (!saved) {
+      this.setSpellingListStatus(ProfileManager.lastSaveError || 'Unable to update the active spelling list.', true);
+      this.renderParentSpellingLists();
+      if (this.spellItListScreenActive) this.showSpellItLists();
+      return;
+    } else {
+      this.setSpellingListStatus('Active spelling list updated.');
+    }
+    this.renderParentSpellingLists();
+    if (this.spellItListScreenActive) this.showSpellItLists();
+  },
+
+  async deleteSpellingList(listId) {
+    const profile = ProfileManager.getActiveProfile();
+    const lists = (profile.spellingLists || []).filter(list => list.id !== listId);
+    if (lists.length === (profile.spellingLists || []).length) {
+      this.setSpellingListStatus('That spelling list is no longer available.', true);
+      this.renderParentSpellingLists();
+      return;
+    }
+    const activeSpellingListId = profile.activeSpellingListId === listId
+      ? (lists[0]?.id || null)
+      : profile.activeSpellingListId;
+    const saved = await ProfileManager.updateProfile({ ...profile, spellingLists: lists, activeSpellingListId });
+    if (!ProfileManager.account) {
+      this.setSpellingListStatus('List deleted for this visit only.');
+    } else if (!saved) {
+      this.setSpellingListStatus(ProfileManager.lastSaveError || 'Unable to delete this spelling list.', true);
+      this.renderParentSpellingLists();
+      if (this.spellItListScreenActive || this.spellItGame?.listId === listId) this.showSpellItLists();
+      return;
+    } else {
+      this.setSpellingListStatus('Spelling list deleted.');
+    }
+    if (this.spellingListEditingId === listId) this.spellingListEditingId = null;
+    this.renderParentSpellingLists();
+    if (this.spellItListScreenActive || this.spellItGame?.listId === listId) this.showSpellItLists();
+  },
+
   startSpellingSafari(activityId, difficulty = ProfileManager.getSubjectDifficulty('english')) {
+    SpellingPronunciation.cancel();
+    this.spellItGame = null;
+    this.spellItListScreenActive = false;
     const activity = SpellingSafari.getActivity(activityId);
     if (!activity) return this.showSpellingSafari();
     const selectedDifficulty = Object.hasOwn(SPELLING_SAFARI_DIFFICULTY_OPTIONS, difficulty)
@@ -3950,6 +4552,16 @@ Object.assign(App.prototype, {
     if (!main) return;
     main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
     this.renderSpellingSafariQuestion();
+  },
+
+  speakSpellingSafariWord() {
+    const game = this.spellingSafariGame;
+    const question = game?.questions[game.index];
+    if (!question) return;
+    void SpellingPronunciation.speak(
+      question.answer,
+      document.getElementById('spelling-pronunciation-status')
+    );
   },
 
   renderSpellingSafariQuestion() {
@@ -4037,6 +4649,13 @@ Object.assign(App.prototype, {
         </div>
         <div class="text-center">
           <p class="play-prompt font-ninja text-xl sm:text-2xl text-white font-bold">${prompt}</p>
+          <div class="mt-4 flex flex-col items-center gap-2">
+            <button type="button" data-action="spelling-pronunciation" aria-label="Hear the word pronunciation"
+                    class="spelling-pronunciation-button inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+              <span aria-hidden="true">🔊</span>Hear the word
+            </button>
+            <span id="spelling-pronunciation-status" class="text-xs text-slate-400" role="status" aria-live="polite" aria-atomic="true"></span>
+          </div>
           ${pictureClue}
           ${hint}
         </div>
@@ -4047,6 +4666,7 @@ Object.assign(App.prototype, {
   },
 
   submitSpellingSafariAnswer(answer) {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game || game.answered) return;
     const question = game.questions[game.index];
@@ -4060,6 +4680,7 @@ Object.assign(App.prototype, {
   },
 
   retrySpellingSafariQuestion() {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game?.answered || !this.spellingActivityEngine.allowRetry()) return;
     game.answered = false;
@@ -4070,6 +4691,7 @@ Object.assign(App.prototype, {
   },
 
   pickSpellingSafariLetter(index) {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game || game.answered || game.selectedLetters.includes(index)) return;
     const question = game.questions[game.index];
@@ -4082,6 +4704,7 @@ Object.assign(App.prototype, {
   },
 
   clearSpellingSafariLetters() {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game || game.answered) return;
     game.selectedLetters = [];
@@ -4089,6 +4712,7 @@ Object.assign(App.prototype, {
   },
 
   nextSpellingSafariQuestion() {
+    SpellingPronunciation.cancel();
     const game = this.spellingSafariGame;
     if (!game?.answered) return;
     if (!game.lastAnswerCorrect) game.mistakes.push(game.questions[game.index].answer);
