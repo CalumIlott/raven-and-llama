@@ -222,6 +222,19 @@ test('Spelling Safari offers and completes all four word-game adventures', async
     await expect(page.getByRole('heading', { name: new RegExp(activity) })).toBeVisible();
 
     for (let round = 1; round <= 6; round++) {
+      if (activity === 'Jungle Jumble' && round === 1) {
+        const question = await page.evaluate(() => {
+          const game = window.app.spellingSafariGame;
+          return game.questions[game.index];
+        });
+        for (let index = 0; index < question.scramble.length; index++) {
+          await page.locator(`#safari-letter-${index}`).click();
+        }
+        await expect(page.locator('#safari-feedback')).toContainText('Not quite! Keep exploring!');
+        await expect(page.locator('#safari-feedback')).not.toContainText(question.answer);
+        await page.getByRole('button', { name: 'Try again' }).click();
+      }
+
       await answerCurrentQuestion(page);
       await expect(page.locator('#safari-feedback')).toContainText('Great work!');
       await page.getByRole('button', { name: 'Next word' }).click();
@@ -240,6 +253,45 @@ test('Spelling Safari offers and completes all four word-game adventures', async
       await page.getByRole('button', { name: 'Choose another adventure' }).click();
     }
   }
+});
+
+test('Jungle Jumble has safe empty-pool and speech-fallback states', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: undefined
+    });
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: undefined
+    });
+  });
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: /Spelling & Words/ }).click();
+  await page.evaluate(() => {
+    window.__createSpellingQuestions = window.SpellingSafari.createQuestions;
+    window.SpellingSafari.createQuestions = () => [];
+  });
+
+  await page.locator('[data-activity-id="jungle-jumble"][data-difficulty="easy"]').click();
+  await expect(page.getByRole('alert')).toContainText('No questions are ready for this adventure');
+  await page.getByRole('button', { name: 'Back to Spelling & Words' }).click();
+
+  await page.evaluate(() => {
+    window.SpellingSafari.createQuestions = window.__createSpellingQuestions;
+    delete window.__createSpellingQuestions;
+  });
+  await page.locator('[data-activity-id="jungle-jumble"][data-difficulty="easy"]').click();
+  const answer = await page.evaluate(() => window.app.spellingSafariGame.questions[0].answer);
+  await expect(page.locator('.spelling-hint')).toBeVisible();
+  expect((await page.locator('#app-main').innerText()).toLowerCase()).not.toContain(answer.toLowerCase());
+  await page.getByRole('button', { name: 'Hear the word pronunciation' }).click();
+  await expect(page.locator('#spelling-pronunciation-status'))
+    .toContainText('Speech playback is unavailable');
+
+  await page.evaluate(value => window.app.submitSpellingSafariAnswer(` ${value.toUpperCase()} `), answer);
+  await expect(page.locator('#safari-feedback')).toContainText('Great work!');
 });
 
 test('Phonics Easy uses a picture clue and Medium uses a simple text clue', async ({ page }) => {

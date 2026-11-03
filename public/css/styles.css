@@ -3786,6 +3786,21 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
   border: 1px solid var(--page-edge);
   border-radius: 1rem;
   background: #d7ecf3;
+  touch-action: none;
+  user-select: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map.is-draggable {
+  cursor: grab;
+}
+
+#app-main[data-page="geography-world"] .geography-map.is-draggable .geography-map__region {
+  cursor: grab;
+}
+
+#app-main[data-page="geography-world"] .geography-map.is-panning,
+#app-main[data-page="geography-world"] .geography-map.is-panning .geography-map__region {
+  cursor: grabbing;
 }
 
 #app-main[data-page="geography-world"] .geography-map__ocean {

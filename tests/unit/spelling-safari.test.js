@@ -3,7 +3,13 @@ const test = require('node:test');
 const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
 function loadSafari() {
-  const context = createBrowserContext({ document: { getElementById: () => null } });
+  const main = { innerHTML: '', dataset: {} };
+  const arena = { innerHTML: '' };
+  const context = createBrowserContext({
+    document: {
+      getElementById: id => id === 'app-main' ? main : id === 'safari-arena' ? arena : null
+    }
+  });
   context.App = class {};
   context.ProfileManager = {
     getSubjectDifficulty: () => 'hard',
@@ -82,6 +88,38 @@ test('Jungle Jumble filters rounds by difficulty', () => {
     const questions = safari.createQuestions('jungle-jumble', 6, difficulty);
     assert.equal(questions.length, 6);
     assert.ok(questions.every(question => matchesDifficulty(question.answer)));
+  }
+});
+
+test('Jungle Jumble preserves repeated and punctuated characters and never returns the source order', () => {
+  const safari = loadSafari().SpellingSafari;
+  safari.shuffle = items => [...items];
+
+  for (const answer of ['letter', "can't", 'at']) {
+    const scramble = safari.createScramble(answer);
+    assert.notEqual(scramble.join(''), answer);
+    assert.deepEqual(Array.from(scramble).sort(), Array.from(answer).sort());
+  }
+
+  assert.equal(safari.createScramble('a'), null);
+  assert.equal(safari.createScramble('aaa'), null);
+  assert.equal(safari.normalizeSpellItAnswer('  CAN\'T!  '), "can't!");
+  assert.notEqual(
+    safari.normalizeSpellItAnswer('cant!'),
+    safari.normalizeSpellItAnswer("can't!")
+  );
+});
+
+test('Jungle Jumble returns no rounds when its pool has no scrambleable words', () => {
+  const safari = loadSafari().SpellingSafari;
+  const activity = safari.getActivity('jungle-jumble');
+  const originalQuestions = activity.questions;
+  activity.questions = [{ answer: 'a' }, { answer: 'eeee' }];
+
+  try {
+    assert.deepEqual(Array.from(safari.createQuestions('jungle-jumble', 6, 'easy')), []);
+  } finally {
+    activity.questions = originalQuestions;
   }
 });
 

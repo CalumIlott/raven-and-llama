@@ -69,10 +69,75 @@ test('country markers align to their map outlines and picker zoom controls work'
   await expect(page.getByRole('heading', { name: 'Fiji', exact: true })).toBeVisible();
   await expect(page.locator('#geography-country-picker')).toHaveValue('fiji');
   await page.getByRole('button', { name: 'Zoom in' }).click();
-  await expect(page.locator('#geography-world-map')).not.toHaveAttribute('viewBox', '0 0 360 180');
+  const mapViewBox = (await page.locator('#geography-world-map').getAttribute('viewBox')).split(' ').map(Number);
+  expect(mapViewBox[0]).toBeGreaterThanOrEqual(0);
+  expect(mapViewBox[1]).toBeGreaterThanOrEqual(0);
+  expect(mapViewBox[0] + mapViewBox[2]).toBeLessThanOrEqual(360);
+  expect(mapViewBox[1] + mapViewBox[3]).toBeLessThanOrEqual(180);
   await expect(page.locator('#geography-map-zoom-status')).toContainText('Fiji');
   await page.getByRole('button', { name: 'Reset map view' }).click();
   await expect(page.locator('#geography-world-map')).toHaveAttribute('viewBox', '0 0 360 180');
+});
+
+test('zoomed map supports mouse panning without selecting a country', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByLabel('Find a country').selectOption('germany');
+  await page.getByRole('button', { name: 'Zoom in' }).click();
+
+  const map = page.locator('#geography-world-map');
+  await map.scrollIntoViewIfNeeded();
+  const bounds = await map.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+  });
+  const before = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  const startX = bounds.x + bounds.width / 2;
+  const startY = bounds.y + bounds.height / 2;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  expect(await page.evaluate(() => window.app.geographyMapPan)).toBeDefined();
+  await page.mouse.move(startX + 48, startY - 24, { steps: 4 });
+  const duringPan = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  await page.mouse.up();
+
+  const after = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  expect(duringPan[0]).toBeLessThan(before[0]);
+  expect(duringPan[1]).toBeGreaterThan(before[1]);
+  expect(after).toEqual(duringPan);
+  expect(after[0]).toBeGreaterThanOrEqual(0);
+  expect(after[1]).toBeGreaterThanOrEqual(0);
+  expect(after[0] + after[2]).toBeLessThanOrEqual(360);
+  expect(after[1] + after[3]).toBeLessThanOrEqual(180);
+  await expect(page.getByRole('heading', { name: 'Germany', exact: true })).toBeVisible();
+});
+
+test('zoomed map supports touch panning', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByLabel('Find a country').selectOption('japan');
+  await page.getByRole('button', { name: 'Zoom in' }).click();
+
+  const viewBoxes = await page.locator('#geography-world-map').evaluate(map => {
+    const bounds = map.getBoundingClientRect();
+    const before = map.getAttribute('viewBox');
+    const startX = bounds.left + bounds.width / 2;
+    const startY = bounds.top + bounds.height / 2;
+    const pointerEvent = (type, clientX, clientY) => new PointerEvent(type, {
+      bubbles: true,
+      pointerId: 1,
+      pointerType: 'touch',
+      isPrimary: true,
+      button: 0,
+      clientX,
+      clientY
+    });
+    map.dispatchEvent(pointerEvent('pointerdown', startX, startY));
+    map.dispatchEvent(pointerEvent('pointermove', startX + 36, startY + 18));
+    map.dispatchEvent(pointerEvent('pointerup', startX + 36, startY + 18));
+    return { before, after: map.getAttribute('viewBox') };
+  });
+  expect(viewBoxes.after).not.toBe(viewBoxes.before);
 });
 
 test('country facts can be spoken with a clear fallback when speech is unavailable', async ({ page }) => {
