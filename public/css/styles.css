@@ -1628,6 +1628,73 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   font-weight: 700;
 }
 
+#app-main[data-page="geography-world"] .geography-map-controls {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-picker {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 12rem;
+  gap: 0.3rem;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="geography-world"] .geography-country-picker select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font: inherit;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls output {
+  min-width: 5.5rem;
+  color: var(--page-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+#app-main[data-page="geography-world"] .geography-map-controls select:focus-visible,
+#app-main[data-page="geography-world"] .geography-map-zoom-controls button:focus-visible {
+  outline: 3px solid #6ee7c8;
+  outline-offset: 2px;
+}
+
 #app-main[data-page="geography-world"] .geography-map-figure {
   margin: 0;
 }
@@ -1823,6 +1890,21 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
 @media (max-width: 900px) {
   #app-main[data-page="geography-world"] .geography-explorer {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  #app-main[data-page="geography-world"] .geography-map-panel {
+    padding: 0.9rem;
+  }
+
+  #app-main[data-page="geography-world"] .geography-map-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #app-main[data-page="geography-world"] .geography-map-zoom-controls {
+    justify-content: space-between;
   }
 }
 
