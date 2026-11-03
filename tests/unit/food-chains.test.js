@@ -46,6 +46,8 @@ test('food-chain data is sourced and each consumer link points to the organism i
 test('organism shuffle preserves the chain, and placement moves without duplicates', () => {
   const context = createFoodChainsContext();
   const chain = context.FoodChains.chains[0];
+  const chains = Array.from(context.FoodChains.chains);
+  const shuffledChains = Array.from(context.FoodChains.shuffleChains(chains, () => 0));
   const organismIds = Array.from(chain.organisms, organism => organism.id);
   const shuffled = Array.from(
     context.FoodChains.shuffleOrganisms(chain, () => 0),
@@ -59,6 +61,8 @@ test('organism shuffle preserves the chain, and placement moves without duplicat
   );
   const movedPlacement = context.FoodChains.moveOrganism(firstPlacement, chain, organismIds[0], 2);
 
+  assert.notDeepEqual(shuffledChains.map(item => item.name), chains.map(item => item.name));
+  assert.deepEqual([...shuffledChains].sort((a, b) => a.name.localeCompare(b.name)), [...chains].sort((a, b) => a.name.localeCompare(b.name)));
   assert.notDeepEqual(shuffled, organismIds);
   assert.deepEqual([...shuffled].sort(), [...organismIds].sort());
   assert.deepEqual(Array.from(firstPlacement), [organismIds[0], null, null]);
@@ -86,14 +90,18 @@ test('incorrect chains identify the producer-to-consumer relationship that is mi
 test('Food Chains uses ActivityEngine retry and records completion once across all chains', () => {
   const context = createFoodChainsContext();
   const app = context.app;
-  app.startFoodChainsActivity();
+  app.startFoodChainsActivity(() => 0);
 
   assert.equal(app.foodChainsActivityEngine.definition.id, 'science-food-chains');
   assert.equal(app.foodChainsActivityEngine.definition.skillId, 'science_food_chains');
+  assert.notDeepEqual(
+    app.foodChainsGame.chains.map(chain => chain.name),
+    context.FoodChains.chains.map(chain => chain.name)
+  );
   assert.equal(app.submitFoodChainAnswer(), false);
   assert.equal(app.foodChainsActivityEngine.status, 'active');
 
-  const firstChain = context.FoodChains.chains[0];
+  const firstChain = app.foodChainsGame.chains[0];
   for (const [index, organism] of Array.from(firstChain.organisms).reverse().entries()) {
     app.placeFoodChainOrganism(organism.id, index);
   }
@@ -101,13 +109,13 @@ test('Food Chains uses ActivityEngine retry and records completion once across a
   assert.ok(app.foodChainsGame.mismatches.length > 0);
   assert.equal(app.clearFoodChain(), true);
 
-  for (let chainIndex = 0; chainIndex < context.FoodChains.chains.length; chainIndex++) {
-    const chain = context.FoodChains.chains[chainIndex];
+  for (let chainIndex = 0; chainIndex < app.foodChainsGame.chains.length; chainIndex++) {
+    const chain = app.foodChainsGame.chains[chainIndex];
     for (const [positionIndex, organism] of Array.from(chain.organisms).entries()) {
       app.placeFoodChainOrganism(organism.id, positionIndex);
     }
     assert.equal(app.submitFoodChainAnswer(), true);
-    if (chainIndex < context.FoodChains.chains.length - 1) {
+    if (chainIndex < app.foodChainsGame.chains.length - 1) {
       assert.equal(app.nextFoodChain(), true);
     } else {
       assert.equal(app.nextFoodChain(), true);
