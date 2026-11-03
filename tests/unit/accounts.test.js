@@ -10,7 +10,8 @@ function loadAccounts(fetchImplementation) {
   const context = loadBrowserScripts(
     createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) }),
     'public/js/mathmasters/curriculum.js',
-    'public/js/shared/accounts.js'
+    'public/js/shared/accounts.js',
+    'public/js/shared/achievement-badges.js'
   );
   return { context, accounts: context.ProfileManager };
 }
@@ -60,6 +61,35 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(fetchCount, 1);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
   assert.equal(context.localStorage.getItem(accounts.GUEST_THEME_KEY), null);
+});
+
+test('guest achievement badges derive from progress and remain memory only', async () => {
+  const { context, accounts } = loadAccounts();
+  await accounts.initialize();
+
+  const guest = accounts.getActiveProfile();
+  await accounts.updateProfile({
+    ...guest,
+    activityProgress: {
+      'science-water-cycle': {
+        title: 'Water Cycle',
+        subject: 'Science Lab',
+        kind: 'quiz',
+        scoreUnit: 'questions',
+        bestScore: 1,
+        bestTotal: 1,
+        correct: 1,
+        total: 1,
+        correctAnswers: 1,
+        totalAnswers: 1,
+        timesPlayed: 1
+      }
+    },
+    earnedBadges: ['activity-explorer', 'first-steps', 'unknown-badge']
+  });
+
+  assert.deepEqual(Array.from(accounts.getActiveProfile().earnedBadges), ['first-steps']);
+  assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 
 test('spelling lists are normalized and validated with bounded unique entries', () => {
