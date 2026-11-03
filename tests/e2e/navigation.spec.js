@@ -414,6 +414,75 @@ test('Learning Centre groups its existing programs under the right subjects', as
   }
 });
 
+test('Maths World route filters topics and completes Number Builder with retry and progress', async ({ page }) => {
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: 'Explore Maths World' }).click();
+  await expect(page).toHaveURL(/\/learning-centre\/maths$/);
+
+  await page.goto('/learning-centre/maths');
+  await expect(page).toHaveURL(/\/learning-centre\/maths$/);
+  await expect(page.getByRole('heading', { name: 'Numbers, patterns, and problem-solving' })).toBeVisible();
+
+  const fractions = page.locator('[data-action="maths-topic"][data-topic="fractions"]');
+  await fractions.click();
+  await expect(fractions).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText('Fraction Pizza will bring visual fraction-building challenges to Maths World.')).toBeVisible();
+
+  const money = page.locator('[data-action="maths-topic"][data-topic="money"]');
+  await money.click();
+  await expect(money).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Explore Money Masters' })).toBeVisible();
+
+  const number = page.locator('[data-action="maths-topic"][data-topic="number"]');
+  await number.click();
+  await page.locator('[data-action="number-builder-start"][data-difficulty="easy"]').click();
+  await expect(page.getByRole('heading', { name: 'Number Builder', exact: true })).toBeVisible();
+
+  for (let round = 0; round < 5; round++) {
+    const correctOrder = await page.evaluate(() => {
+      const game = window.app.numberBuilderGame;
+      return game.questions[game.index].correctOrder;
+    });
+
+    if (round === 0) {
+      for (const value of [...correctOrder].reverse()) {
+        await page.locator(`[data-action="number-builder-pick"][data-value="${value}"]`).click();
+      }
+      await page.getByRole('button', { name: 'Check order' }).click();
+      await expect(page.locator('#number-builder-feedback')).toHaveClass(/is-incorrect/);
+      await page.getByRole('button', { name: 'Try again' }).click();
+    }
+
+    for (const value of correctOrder) {
+      const tile = page.locator(`[data-action="number-builder-pick"][data-value="${value}"]`);
+      if (round === 0 && value === correctOrder[0]) {
+        await tile.focus();
+        await tile.press('Enter');
+        await expect.poll(() => page.evaluate(() => document.activeElement.dataset.action))
+          .toBe('number-builder-pick');
+      } else {
+        await tile.click();
+      }
+    }
+    await page.getByRole('button', { name: 'Check order' }).click();
+    await expect(page.locator('#number-builder-feedback')).toHaveClass(/is-correct/);
+    await page.getByRole('button', { name: round === 4 ? 'Finish activity' : 'Next sequence →' }).click();
+  }
+
+  await expect(page.getByRole('heading', { name: 'Number Builder complete!' })).toBeVisible();
+  await expect(page.locator('#number-builder-arena')).toContainText('5 of 5 sequences correctly');
+  await page.getByRole('button', { name: 'Maths World topics' }).click();
+  await page.getByRole('button', { name: 'Back to Learning Centre' }).click();
+  await expect(page).toHaveURL(/\/learning-centre$/);
+  await page.locator('[data-action="parent-report"]').click();
+  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await expect(page.locator('#parent-stats-tbody')).toContainText('Number Builder');
+  await expect(page.locator('#parent-stats-tbody')).toContainText('5 / 5');
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/learning-centre\/maths$/);
+});
+
 test('Learning Centre uses colorful, rounded subject cards', async ({ page }) => {
   await openLearningCentre(page);
 

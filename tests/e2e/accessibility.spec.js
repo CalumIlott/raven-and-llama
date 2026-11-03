@@ -1,5 +1,12 @@
 const { expect, test } = require('@playwright/test');
-const { openAccountModal, openMathsDojo, openTimesTables, registerAccount, setupApp } = require('./support');
+const {
+  openAccountModal,
+  openLearningCentre,
+  openMathsDojo,
+  openTimesTables,
+  registerAccount,
+  setupApp
+} = require('./support');
 
 function contrastRatio(foreground, background) {
   const luminance = color => {
@@ -11,6 +18,140 @@ function contrastRatio(foreground, background) {
   };
   const values = [luminance(foreground), luminance(background)].sort((first, second) => second - first);
   return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
+async function findTextContrastFailures(page) {
+  return page.locator('#app-main').evaluate(root => {
+    const parseColor = value => {
+      if (value.startsWith('oklch(')) {
+        const channels = value.match(/-?[\d.]+/g);
+        if (!channels || channels.length < 3) return null;
+        const lightness = Number(channels[0]);
+        const chroma = Number(channels[1]);
+        const angle = Number(channels[2]) * Math.PI / 180;
+        const a = chroma * Math.cos(angle);
+        const b = chroma * Math.sin(angle);
+        const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+        const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+        const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+        const linearChannels = [
+          4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+          -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+          -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
+        ];
+        return [
+          ...linearChannels.map(channel => {
+            const value = channel <= 0.0031308
+              ? 12.92 * channel
+              : 1.055 * Math.max(0, channel) ** (1 / 2.4) - 0.055;
+            return Math.max(0, Math.min(255, value * 255));
+          }),
+          channels.length > 3 ? Number(channels[3]) : 1
+        ];
+      }
+      const channels = value.match(/[\d.]+/g);
+      if (!channels || channels.length < 3) return null;
+      return [
+        Number(channels[0]),
+        Number(channels[1]),
+        Number(channels[2]),
+        channels.length > 3 ? Number(channels[3]) : 1
+      ];
+    };
+    const composite = (foreground, background) => {
+      const alpha = foreground[3];
+      return [
+        foreground[0] * alpha + background[0] * (1 - alpha),
+        foreground[1] * alpha + background[1] * (1 - alpha),
+        foreground[2] * alpha + background[2] * (1 - alpha),
+        1
+      ];
+    };
+    const luminance = color => {
+      const channels = color.slice(0, 3).map(channel => {
+        const value = channel / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+      return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    };
+    const ratio = (first, second) => {
+      const values = [luminance(first), luminance(second)].sort((a, b) => b - a);
+      return (values[0] + 0.05) / (values[1] + 0.05);
+    };
+    const bodyBackground = parseColor(getComputedStyle(document.body).backgroundColor) || [255, 255, 255, 1];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const failures = [];
+
+    while (walker.nextNode()) {
+      const textNode = walker.currentNode;
+      const element = textNode.parentElement;
+      const text = textNode.textContent.trim();
+      if (!text || !element || element.closest('[aria-hidden="true"], .sr-only, :disabled')) continue;
+      const bounds = element.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) continue;
+
+      const style = getComputedStyle(element);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const ancestry = [];
+      for (let current = element; current && current !== document.body; current = current.parentElement) {
+        ancestry.unshift(current);
+      }
+
+      let backgrounds = [bodyBackground];
+      let unsupportedBackgroundImage = null;
+      for (const current of ancestry) {
+        const currentStyle = getComputedStyle(current);
+        const color = parseColor(currentStyle.backgroundColor);
+        if (color && color[3] > 0) {
+          backgrounds = backgrounds.map(background => composite(color, background));
+        }
+        if (currentStyle.backgroundImage !== 'none') {
+          const gradientColors = [...currentStyle.backgroundImage.matchAll(/(?:rgb|rgba|oklch)\([^)]+\)/g)]
+            .map(match => parseColor(match[0]))
+            .filter(Boolean);
+          if (!gradientColors.length) {
+            unsupportedBackgroundImage = currentStyle.backgroundImage;
+          } else {
+            backgrounds = gradientColors.flatMap(gradientColor =>
+              backgrounds.map(background => composite(gradientColor, background))
+            );
+          }
+        }
+      }
+
+      let opacity = 1;
+      for (let current = element; current; current = current.parentElement) {
+        opacity *= Number(getComputedStyle(current).opacity);
+      }
+      if (opacity < 0.01) continue;
+      const foreground = parseColor(style.color);
+      if (!foreground) continue;
+      foreground[3] *= opacity;
+      const contrastSamples = backgrounds.map(background => ({
+        contrast: ratio(composite(foreground, background), background),
+        background
+      }));
+      const worstSample = contrastSamples.reduce((worst, sample) =>
+        sample.contrast < worst.contrast ? sample : worst
+      );
+      const contrast = worstSample.contrast;
+      const fontSize = Number.parseFloat(style.fontSize);
+      const fontWeight = Number.parseInt(style.fontWeight, 10);
+      const minimum = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700) ? 3 : 4.5;
+      if (unsupportedBackgroundImage || contrast + 0.01 < minimum) {
+        failures.push({
+          text: text.slice(0, 50),
+          contrast: Number(contrast.toFixed(2)),
+          minimum,
+          foreground: style.color,
+          background: `rgb(${worstSample.background.slice(0, 3).map(Math.round).join(', ')})`,
+          ...(unsupportedBackgroundImage ? { unsupportedBackgroundImage } : {})
+        });
+      }
+    }
+
+    return failures;
+  });
 }
 
 test('navigation and account dialog support keyboard use on narrow screens', async ({ page }) => {
@@ -274,4 +415,59 @@ test('Parent Report keeps keyboard focus inside its dialog on mobile', async ({ 
   await page.keyboard.press('Escape');
   await expect(reportDialog).toBeHidden();
   await expect(reportButton).toBeFocused();
+});
+
+test('Maths World and Number Builder text meet WCAG AA contrast in both themes', async ({ page }) => {
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: 'Explore Maths World' }).click();
+
+  const checkBothThemes = async surface => {
+    for (const theme of ['dark', 'light']) {
+      await page.evaluate(value => window.ProfileManager.applyTheme(value), theme);
+      const failures = await findTextContrastFailures(page);
+      expect(failures, `${surface} (${theme} theme): ${JSON.stringify(failures)}`).toEqual([]);
+    }
+    await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
+  };
+
+  await checkBothThemes('Maths World');
+  await page.locator('[data-action="maths-topic"][data-topic="number"]').click();
+  await checkBothThemes('Number Builder card');
+
+  await page.locator('[data-action="number-builder-start"][data-difficulty="easy"]').click();
+  await checkBothThemes('Number Builder activity');
+
+  for (let round = 0; round < 5; round++) {
+    const correctOrder = await page.evaluate(() =>
+      window.app.numberBuilderGame.questions[window.app.numberBuilderGame.index].correctOrder
+    );
+
+    if (round === 0) {
+      for (const value of [...correctOrder].reverse()) {
+        await page.locator(`[data-action="number-builder-pick"][data-value="${value}"]`).click();
+      }
+      await page.getByRole('button', { name: 'Check order' }).click();
+      await expect(page.locator('#number-builder-feedback')).toHaveClass(/is-incorrect/);
+      await checkBothThemes('Number Builder incorrect feedback');
+      await page.getByRole('button', { name: 'Try again' }).click();
+    }
+
+    for (const value of correctOrder) {
+      await page.locator(`[data-action="number-builder-pick"][data-value="${value}"]`).click();
+    }
+    if (round === 0) {
+      await page.getByRole('button', { name: 'Check order' }).hover();
+      await checkBothThemes('Number Builder check button hover');
+    }
+    await page.getByRole('button', { name: 'Check order' }).click();
+    await expect(page.locator('#number-builder-feedback')).toHaveClass(/is-correct/);
+    if (round === 0) await checkBothThemes('Number Builder correct feedback');
+    await page.getByRole('button', {
+      name: round === 4 ? 'Finish activity' : 'Next sequence →'
+    }).click();
+  }
+
+  await expect(page.getByRole('heading', { name: 'Number Builder complete!' })).toBeVisible();
+  await checkBothThemes('Number Builder results');
 });
