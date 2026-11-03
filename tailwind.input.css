@@ -1,2 +1,45 @@
 @import "tailwindcss";
 @config "./tailwind.config.js";
+
+[draggable="true"]:not(:disabled) {
+  cursor: grab;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+body.activity-drag-active,
+body.activity-drag-active * {
+  cursor: grabbing !important;
+}
+
+.activity-drag-source {
+  opacity: 0.45 !important;
+  transform: scale(0.98);
+}
+
+.activity-drag-preview {
+  position: fixed !important;
+  top: 0;
+  left: -10000px;
+  z-index: 9999;
+  pointer-events: none !important;
+  opacity: 0.94;
+  transform: rotate(2deg) scale(1.04);
+  box-shadow: 0 12px 28px rgb(15 23 42 / 45%);
+}
+
+[data-drag-drop-target] {
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+[data-drag-drop-target].activity-drop-target {
+  transform: scale(1.02);
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgb(56 189 248 / 22%), 0 10px 24px rgb(15 23 42 / 35%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [draggable="true"],
+  [data-drag-drop-target] {
+    transition: none;
+  }
+}

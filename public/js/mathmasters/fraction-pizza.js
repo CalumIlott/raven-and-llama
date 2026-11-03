@@ -351,7 +351,7 @@ Object.assign(App.prototype, {
           ? `draggable="true" data-fraction-drag-token="${tokenId}" data-fraction-source="slot" data-fraction-slot="${slotIndex}"`
           : '';
         return `
-          <button type="button" data-action="fraction-pizza-slot" data-slot="${slotIndex}"
+          <button type="button" data-action="fraction-pizza-slot" data-slot="${slotIndex}" data-drag-drop-target
             aria-label="Pizza ${pizzaIndex + 1}, slice ${sliceIndex + 1} of ${question.data.denominator}, ${filled ? 'filled' : 'empty'}"
             aria-pressed="${filled}" ${dragAttributes} ${engine.answered ? 'disabled' : ''}
             class="fraction-pizza__slice flex aspect-square min-h-0 items-center justify-center rounded-lg border-2 border-amber-900 text-2xl font-bold text-amber-950 transition hover:brightness-110 focus-visible:outline focus-visible:outline-4 focus-visible:outline-sky-300 disabled:cursor-default">
@@ -363,7 +363,7 @@ Object.assign(App.prototype, {
         <section class="min-w-0" aria-label="Pizza ${pizzaIndex + 1}">
           <h3 class="mb-2 text-center font-bold text-amber-100">Pizza ${pizzaIndex + 1}</h3>
           <div class="fraction-pizza__plate mx-auto grid aspect-square w-56 ${FRACTION_PIZZA_GRID_COLUMNS[question.data.denominator]} gap-1 p-3 sm:w-64"
-            data-fraction-drop-pizza="${pizzaIndex}" role="group"
+            data-fraction-drop-pizza="${pizzaIndex}" data-drag-drop-target role="group"
             aria-label="Pizza ${pizzaIndex + 1}, divided into ${question.data.denominator} equal slices">
             ${slots}
           </div>
@@ -419,7 +419,7 @@ Object.assign(App.prototype, {
             <p class="text-sm text-slate-300">${selectedCount} slice${selectedCount === 1 ? '' : 's'} placed</p>
           </div>
           <div class="mt-3 flex min-h-16 flex-wrap gap-2 rounded-xl border-2 border-dashed border-slate-600 p-3"
-            data-fraction-pizza-tray role="group" aria-label="Available pizza slices">
+            data-fraction-pizza-tray data-drag-drop-target role="group" aria-label="Available pizza slices">
             ${tokenMarkup || '<p class="self-center text-sm text-slate-400">All slices are on the pizzas.</p>'}
           </div>
           <p class="mt-3 text-sm text-slate-300" role="status" aria-live="polite">${game.statusMessage}</p>

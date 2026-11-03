@@ -258,7 +258,7 @@ Object.assign(App.prototype, {
       const material = VIRTUAL_LAB_MATERIALS.find(item => item.id === materialId);
       const contents = material ? `${material.icon} ${material.name}` : 'Empty';
       return `
-        <button type="button" data-action="virtual-lab-place" data-slot-index="${index}" data-virtual-lab-slot-index="${index}"
+        <button type="button" data-action="virtual-lab-place" data-slot-index="${index}" data-virtual-lab-slot-index="${index}" data-drag-drop-target
                 aria-label="Workspace Slot ${index + 1}, ${material?.name || 'empty'}. Place the selected item here."
                 aria-describedby="virtual-lab-instructions"
                 class="min-h-20 rounded-xl border-2 border-slate-700 bg-slate-950/70 px-3 py-3 text-left text-white hover:border-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors motion-reduce:transition-none">

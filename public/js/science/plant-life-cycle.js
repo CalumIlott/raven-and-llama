@@ -279,7 +279,7 @@ Object.assign(App.prototype, {
         ? `Position ${index + 1}, ${stage.name}. Place the selected stage here.`
         : `Position ${index + 1}${index === 0 ? ', beginning of the cycle' : ''}, empty. Place the selected stage here.`;
       return `
-        <button type="button" data-action="plant-life-cycle-place" data-position-index="${index}" data-cycle-position-index="${index}"
+        <button type="button" data-action="plant-life-cycle-place" data-position-index="${index}" data-cycle-position-index="${index}" data-drag-drop-target
                 aria-label="${label}" aria-describedby="plant-life-cycle-instructions"
                 class="min-h-16 rounded-xl border-2 border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-white hover:border-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors motion-reduce:transition-none">
           <span class="block text-xs text-slate-400">Position ${index + 1}</span>

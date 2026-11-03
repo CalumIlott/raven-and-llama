@@ -400,7 +400,7 @@ Object.assign(App.prototype, {
             </dl>
           </section>
         ` : ''}
-        <div ${isShopkeeper ? 'role="group" data-money-change-drop-target aria-label="Selected change; drop coins and notes here"' : ''} class="my-5 rounded-2xl ${isShopkeeper ? 'border-2 border-dashed border-amber-500' : 'border border-slate-700'} bg-slate-950 p-4 text-center">
+        <div ${isShopkeeper ? 'role="group" data-money-change-drop-target data-drag-drop-target data-drag-drop-effect="copy" aria-label="Selected change; drop coins and notes here"' : ''} class="my-5 rounded-2xl ${isShopkeeper ? 'border-2 border-dashed border-amber-500' : 'border border-slate-700'} bg-slate-950 p-4 text-center">
           <p class="text-xs uppercase tracking-wider text-slate-400">${isShopkeeper ? 'Your change' : 'Your amount'}</p>
           <p id="money-selected-total" class="font-ninja text-3xl font-bold text-amber-300">${MoneyMasters.formatMoney(selectedTotal)}</p>
           ${isShopkeeper ? `<p class="mt-1 text-sm text-slate-300">Drag a coin or note here, or select its button with a tap, Enter, or Space.</p>

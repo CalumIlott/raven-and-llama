@@ -370,7 +370,7 @@ Object.assign(App.prototype, {
       const label = planet ? `Orbit ${ordinal}, ${planet.name}. Place the selected planet here.` :
         `Orbit ${ordinal}${distance ? `, ${distance}` : ''}, empty. Place the selected planet here.`;
       return `
-        <button type="button" data-action="solar-system-place" data-orbit-index="${index}" data-solar-orbit-index="${index}"
+        <button type="button" data-action="solar-system-place" data-orbit-index="${index}" data-solar-orbit-index="${index}" data-drag-drop-target
                 aria-label="${label}" aria-describedby="solar-system-instructions"
                 class="min-h-16 rounded-xl border-2 border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-white hover:border-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors motion-reduce:transition-none">
           <span class="block text-xs text-slate-400">Orbit ${ordinal}</span>
