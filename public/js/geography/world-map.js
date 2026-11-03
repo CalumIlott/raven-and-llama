@@ -154,7 +154,7 @@ Object.assign(App.prototype, {
                   `).join('')}
                 </g>
               </svg>
-              <figcaption class="geography-map-caption">The country outlines are simplified for learning and are not to scale.</figcaption>
+              <figcaption class="geography-map-caption">Zoom in, then drag the map to pan. Country outlines are simplified and not to scale.</figcaption>
             </figure>
             <p class="geography-map-attribution">
               Map outlines: <a href="${escapeGeographyHtml(window.GEOGRAPHY_COUNTRY_DATA.mapSourceUrl)}" target="_blank" rel="noopener noreferrer">Natural Earth (public domain)</a>.
@@ -201,6 +201,17 @@ Object.assign(App.prototype, {
       event.preventDefault();
       this.selectGeographyCountry(target.dataset.countryId);
     };
+    const map = document.getElementById('geography-world-map');
+    map.onpointerdown = event => this.startGeographyMapPan(event);
+    map.onpointermove = event => this.moveGeographyMapPan(event);
+    map.onpointerup = event => this.endGeographyMapPan(event);
+    map.onpointercancel = event => this.endGeographyMapPan(event);
+    map.addEventListener('click', event => {
+      if (!this.geographyMapSuppressClick) return;
+      this.geographyMapSuppressClick = false;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
     this.renderGeographyCountrySelection(selectedCountry);
   },
 
@@ -235,13 +246,15 @@ Object.assign(App.prototype, {
       const bounds = region.getBBox();
       const width = 360 / zoom;
       const height = 180 / zoom;
-      const left = bounds.x + bounds.width / 2 - width / 2;
-      const top = bounds.y + bounds.height / 2 - height / 2;
-      map.setAttribute('viewBox', [left, top, width, height]
-        .map(value => Number(value.toFixed(2)))
-        .join(' '));
+      this.setGeographyMapViewBox(
+        bounds.x + bounds.width / 2 - width / 2,
+        bounds.y + bounds.height / 2 - height / 2,
+        width,
+        height
+      );
     }
 
+    map.classList.toggle('is-draggable', zoom > 1);
     const status = document.getElementById('geography-map-zoom-status');
     if (status) status.textContent = zoom === 1 ? 'World view' : `${zoom}× · ${country.name}`;
     const zoomOut = document.querySelector('[data-action="geography-map-zoom"][data-delta="-1"]');
@@ -269,6 +282,73 @@ Object.assign(App.prototype, {
     const country = geographyCountryById(this.geographySelectedCountryId)
       || GEOGRAPHY_COUNTRIES[0];
     this.updateGeographyMapView(country);
+  },
+
+  setGeographyMapViewBox(x, y, width, height) {
+    const map = document.getElementById('geography-world-map');
+    if (!map) throw new Error('Geography map was not rendered');
+    const left = Math.max(0, Math.min(360 - width, x));
+    const top = Math.max(0, Math.min(180 - height, y));
+    map.setAttribute('viewBox', [left, top, width, height]
+      .map(value => Number(value.toFixed(2)))
+      .join(' '));
+  },
+
+  startGeographyMapPan(event) {
+    const zoomIndex = Number.isInteger(this.geographyMapZoomIndex) ? this.geographyMapZoomIndex : 0;
+    if (zoomIndex === 0 || event.button !== 0 || event.isPrimary === false) return;
+    const map = document.getElementById('geography-world-map');
+    if (!map) throw new Error('Geography map was not rendered');
+    const { x, y, width, height } = map.viewBox.baseVal;
+    this.geographyMapSuppressClick = false;
+    this.geographyMapPan = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startViewBox: { x, y, width, height },
+      moved: false
+    };
+  },
+
+  moveGeographyMapPan(event) {
+    const pan = this.geographyMapPan;
+    if (!pan || pan.pointerId !== event.pointerId) return;
+    const deltaX = event.clientX - pan.startX;
+    const deltaY = event.clientY - pan.startY;
+    if (!pan.moved && Math.hypot(deltaX, deltaY) < 4) return;
+    const map = document.getElementById('geography-world-map');
+    if (!map) throw new Error('Geography map was not rendered');
+
+    if (!pan.moved) {
+      pan.moved = true;
+      map.classList.add('is-panning');
+      if (typeof map.setPointerCapture === 'function' && event.isTrusted) {
+        map.setPointerCapture(event.pointerId);
+      }
+    }
+
+    event.preventDefault();
+    const bounds = map.getBoundingClientRect();
+    this.setGeographyMapViewBox(
+      pan.startViewBox.x - deltaX * pan.startViewBox.width / bounds.width,
+      pan.startViewBox.y - deltaY * pan.startViewBox.height / bounds.height,
+      pan.startViewBox.width,
+      pan.startViewBox.height
+    );
+  },
+
+  endGeographyMapPan(event) {
+    const pan = this.geographyMapPan;
+    if (!pan || pan.pointerId !== event.pointerId) return;
+    const map = document.getElementById('geography-world-map');
+    this.geographyMapPan = null;
+    if (pan.moved) {
+      this.geographyMapSuppressClick = true;
+      map?.classList.remove('is-panning');
+      if (map?.hasPointerCapture?.(event.pointerId)) {
+        map.releasePointerCapture(event.pointerId);
+      }
+    }
   },
 
   selectGeographyCountry(countryId) {
