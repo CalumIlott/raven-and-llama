@@ -97,6 +97,28 @@ test('Australian denominations progress from coins to notes and larger amounts',
   assert.equal(money.generateQuestion('unknown-activity'), null);
 });
 
+test('Australian currency visuals show the correct coin shapes, finishes, and note colours', () => {
+  const money = loadMoneyMasters();
+  const fiftyCentCoin = money.DENOMINATIONS.find(item => item.value === 50);
+  const oneDollarCoin = money.DENOMINATIONS.find(item => item.value === 100);
+  const fiveDollarNote = money.DENOMINATIONS.find(item => item.value === 500);
+
+  assert.deepEqual(
+    [fiftyCentCoin.shape, fiftyCentCoin.colour, oneDollarCoin.colour, fiveDollarNote.colour],
+    ['dodecagon', 'silver', 'gold', 'pink']
+  );
+  assert.match(money.renderDenomination(fiftyCentCoin), /money-currency--dodecagon/);
+  assert.match(money.renderDenomination(oneDollarCoin), /money-currency--gold/);
+  assert.match(money.renderDenomination(fiveDollarNote), /money-currency--pink/);
+
+  const amount = money.renderMoneyAmount(1050, true);
+  assert.match(amount, /money-currency--blue/);
+  assert.match(amount, /money-currency--dodecagon/);
+  assert.match(amount, /\$10/);
+  assert.match(amount, /50c/);
+  assert.throws(() => money.renderMoneyAmount(101), /5-cent increments/);
+});
+
 test('money values are formatted in cents and Australian dollars', () => {
   const money = loadMoneyMasters();
 
