@@ -13,6 +13,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `unit/solar-system.test.js` checks the stable planet order and skill mapping, unique placement rules, corrective feedback, and shared activity scoring.
 - `unit/accounts.test.js` checks temporary guest state, session restoration, account-scoped progress sync, memory-only guest spelling lists, profile list validation, training aggregation, final-exam prerequisites, and graduation/certificate recording.
 - `unit/account-api.test.mjs` checks input validation, password hashing, secure sessions, owner-scoped progress and spelling lists, bounded list validation, password changes, account deletion, same-origin protections, and auth throttling behavior.
+- `unit/plant-life-cycle.test.js` checks the canonical stage sequence, stage metadata, unique placement rules, relationship-based feedback, and shared activity scoring.
 - `unit/worker-auth-rate-limit.test.mjs` checks Worker rate-limit keys and denied decisions without remote bindings.
 - `unit/local-account-store.test.js` checks SQLite persistence, legacy JSON import, session expiry, account deletion, and concurrent writes from separate Node processes.
 - `integration/server.test.js` starts the HTTP server with a temporary data directory and verifies registration, login, owner-only progress and spelling-list persistence, logout, malformed input, legacy endpoint rejection, and private-file protection.
@@ -22,6 +23,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `e2e/spelling-safari.spec.js` completes all four spelling adventures, checks the direct refresh-safe hub, verifies pronunciation replay without answer disclosure, and tests parent list CRUD flowing into typed-answer Spell It on desktop and mobile.
 - `e2e/solar-system.spec.js` checks the refresh-safe Science Lab route, existing Science Explorers navigation, accessible planet facts, keyboard/touch/drag placement, retry feedback, completion, and return navigation on desktop and mobile Chromium.
 - `unit/spelling-pronunciation.test.js` checks local voice selection/loading, playback cancellation, muted and unsupported-browser feedback, and default-voice fallback.
+- `e2e/plant-life-cycle.spec.js` checks stage labels and explanations, keyboard/touch/drag ordering, next/previous-stage feedback, retry, completion, and return navigation on desktop and mobile Chromium.
 - `e2e/shopkeeper.spec.js` completes Shopkeeper transactions using desktop drag-and-drop, keyboard controls, and mobile touch selection.
 - `e2e/accounts.spec.js` checks guest notice, registration, session restore, password change, login, logout, account deletion, and progress sync across separate browser contexts with account isolation.
 - `e2e/workflows.spec.js` checks full skill training and progress, all three Times Tables quiz modes, Product Pair Match scoring, all seven belt arcade launch/exit paths, progress reporting, and the trophy room.
