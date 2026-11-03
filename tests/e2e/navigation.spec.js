@@ -426,7 +426,8 @@ test('Maths World route filters topics and completes Number Builder with retry a
   const fractions = page.locator('[data-action="maths-topic"][data-topic="fractions"]');
   await fractions.click();
   await expect(fractions).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByText('Fraction Pizza will bring visual fraction-building challenges to Maths World.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Fraction Pizza', exact: true })).toBeVisible();
+  await expect(page.locator('[data-action="fraction-pizza-start"]')).toHaveCount(3);
 
   const money = page.locator('[data-action="maths-topic"][data-topic="money"]');
   await money.click();
