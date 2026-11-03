@@ -60,6 +60,7 @@ class ProfileManager {
       stars: 0,
       skillsProgress: {},
       activityProgress: {},
+      dailyChallenges: { days: {} },
       endlessHighScores: {},
       spellingLists: [],
       activeSpellingListId: null,
@@ -99,6 +100,7 @@ class ProfileManager {
       stars: typeof source.stars === 'number' ? source.stars : 0,
       skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
       activityProgress: ProfileManager.normalizeActivityProgress(source.activityProgress),
+      dailyChallenges: ProfileManager.normalizeDailyChallenges(source.dailyChallenges),
       endlessHighScores,
       spellingLists,
       activeSpellingListId,
@@ -309,6 +311,51 @@ class ProfileManager {
     return Object.fromEntries(Object.entries(value).filter(([subject, year]) =>
       subjects.has(subject) && ProfileManager.isValidSchoolYear(year)
     ));
+  }
+
+  static isValidDailyChallengeDayKey(dayKey) {
+    if (typeof dayKey !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return false;
+    const [year, month, day] = dayKey.split('-').map(Number);
+    if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31) return false;
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day;
+  }
+
+  static normalizeDailyChallenges(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      !value.days || typeof value.days !== 'object' || Array.isArray(value.days)) {
+      return { days: {} };
+    }
+
+    const days = {};
+    for (const [dayKey, rawDay] of Object.entries(value.days)
+      .filter(([dayKey]) => ProfileManager.isValidDailyChallengeDayKey(dayKey))
+      .sort(([first], [second]) => first.localeCompare(second))
+      .slice(-31)) {
+      if (!rawDay || typeof rawDay !== 'object' || Array.isArray(rawDay) ||
+        !Array.isArray(rawDay.activityIds) || rawDay.activityIds.length > 4 ||
+        !Array.isArray(rawDay.completedActivityIds) || rawDay.completedActivityIds.length > 4 ||
+        typeof rawDay.bonusAwarded !== 'boolean') continue;
+
+      const activityIds = rawDay.activityIds;
+      const completedActivityIds = rawDay.completedActivityIds;
+      const completedAll = activityIds.length > 0 &&
+        completedActivityIds.length === activityIds.length;
+      if (activityIds.some(id => typeof id !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(id)) ||
+        new Set(activityIds).size !== activityIds.length ||
+        completedActivityIds.some(id => !activityIds.includes(id)) ||
+        new Set(completedActivityIds).size !== completedActivityIds.length ||
+        rawDay.bonusAwarded !== completedAll) continue;
+
+      days[dayKey] = {
+        activityIds: [...activityIds],
+        completedActivityIds: [...completedActivityIds],
+        bonusAwarded: rawDay.bonusAwarded
+      };
+    }
+    return { days };
   }
 
   static getSchoolYearLabel(year) {

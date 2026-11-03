@@ -211,6 +211,7 @@ class App {
       case 'money-retry': this.retryMoneyQuestion(); break;
       case 'learning': this.showLearningCentre(); break;
       case 'learning-centre': this.showLearningCentre(); break;
+      case 'daily-challenge-start': this.startDailyChallenge(target.dataset.challengeId); break;
       case 'maths-world': this.showMathsWorld(); break;
       case 'history-hub': this.showHistoryHub(); break;
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;

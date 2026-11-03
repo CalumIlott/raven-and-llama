@@ -45,6 +45,10 @@ Object.assign(App.prototype, {
         </section>
 
         <div class="mb-8">
+          ${this.renderDailyChallenges()}
+        </div>
+
+        <div class="mb-8">
           ${ProfileManager.renderLeaderboard('learning', 'Learning Centre Leaderboard')}
         </div>
 

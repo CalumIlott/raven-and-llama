@@ -124,6 +124,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(session.status, 200);
   assert.equal((await session.json()).user.username, username);
 
+  const dailyChallengeDayKey = new Date().toISOString().slice(0, 10);
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
     headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
@@ -135,6 +136,15 @@ test('local Worker enforces account boundaries, rate limits, and security header
         subjectYears: { science: 2 },
         spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
         activeSpellingListId: 'week-one',
+        dailyChallenges: {
+          days: {
+            [dailyChallengeDayKey]: {
+              activityIds: ['science-solar-system-order', 'brain-power-pattern-recognition'],
+              completedActivityIds: ['science-solar-system-order'],
+              bonusAwarded: false
+            }
+          }
+        },
         activityProgress: {
           'science-virtual-lab': {
             title: 'Virtual Laboratory',
@@ -167,6 +177,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].skillId, 'science_virtual_lab');
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 1);
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 1);
+  assert.equal(savedProgress.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'science-solar-system-order');
 
   const otherRegister = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',
@@ -180,6 +191,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(otherProfile.spellingLists, []);
   assert.equal(otherProfile.activeSpellingListId, null);
   assert.deepEqual(otherProfile.activityProgress, {});
+  assert.deepEqual(otherProfile.dailyChallenges, { days: {} });
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',

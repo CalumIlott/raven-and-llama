@@ -141,6 +141,16 @@ test('accounts can only read and update their own progress', async () => {
   const firstCookie = sessionCookie(first);
   const secondCookie = sessionCookie(second);
   const firstData = await first.json();
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const dailyChallenges = {
+    days: {
+      [dayKey]: {
+        activityIds: ['fraction-pizza', 'spelling-spelling-sprint'],
+        completedActivityIds: ['fraction-pizza'],
+        bonusAwarded: false
+      }
+    }
+  };
 
   const save = await request(store, '/api/progress', 'PUT', {
     profile: {
@@ -152,6 +162,7 @@ test('accounts can only read and update their own progress', async () => {
       spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
       activeSpellingListId: 'week-one',
       endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' },
+      dailyChallenges,
       activityProgress: {
         'science-water-cycle': {
           title: 'Water Cycle',
@@ -185,6 +196,7 @@ test('accounts can only read and update their own progress', async () => {
   ]);
   assert.equal(firstProfile.activeSpellingListId, 'week-one');
   assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
+  assert.deepEqual(firstProfile.dailyChallenges, dailyChallenges);
   assert.deepEqual(firstProfile.activityProgress, {
     'science-water-cycle': {
       title: 'Water Cycle',
@@ -207,6 +219,7 @@ test('accounts can only read and update their own progress', async () => {
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.equal(secondProfile.activeSpellingListId, null);
   assert.deepEqual(secondProfile.endlessHighScores, {});
+  assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
   assert.deepEqual(secondProfile.activityProgress, {});
 
   const anonymousRead = await request(store, '/api/progress');
@@ -247,6 +260,43 @@ test('progress rejects invalid, duplicate, and oversized spelling-list data', as
     profile: { ...profile, spellingLists: [validList], activeSpellingListId: 'deleted-list' }
   }, cookie);
   assert.equal(staleSelection.status, 400);
+});
+
+test('progress rejects malformed daily challenge days and completion records', async () => {
+  const store = new MemoryAccountStore();
+  const registered = await request(store, '/api/auth/register', 'POST', {
+    username: 'daily_owner',
+    password: 'a secure password 123'
+  });
+  const cookie = sessionCookie(registered);
+  const profile = (await registered.json()).profile;
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const day = {
+    activityIds: ['fraction-pizza', 'brain-power-pattern-recognition'],
+    completedActivityIds: ['fraction-pizza'],
+    bonusAwarded: false
+  };
+  const invalidDailyChallenges = [
+    { days: { '2025-02-30': day } },
+    { days: { [dayKey]: { ...day, activityIds: ['fraction-pizza', 'fraction-pizza'] } } },
+    { days: { [dayKey]: { ...day, activityIds: ['unknown-activity'] } } },
+    { days: { [dayKey]: { ...day, completedActivityIds: ['unknown-activity'] } } },
+    { days: { [dayKey]: { ...day, bonusAwarded: true } } },
+    { days: { [dayKey]: { ...day, activityIds: Array.from({ length: 5 }, (_, index) => `activity-${index}`) } } },
+    {
+      days: Object.fromEntries(Array.from({ length: 32 }, (_, index) => {
+        const key = new Date(Date.UTC(2025, 0, index + 1)).toISOString().slice(0, 10);
+        return [key, day];
+      }))
+    }
+  ];
+
+  for (const dailyChallenges of invalidDailyChallenges) {
+    const response = await request(store, '/api/progress', 'PUT', {
+      profile: { ...profile, dailyChallenges }
+    }, cookie);
+    assert.equal(response.status, 400);
+  }
 });
 
 test('leaderboards expose only the top ten usernames and scoped scores', async () => {
