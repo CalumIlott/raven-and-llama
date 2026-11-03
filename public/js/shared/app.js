@@ -48,7 +48,8 @@ class App {
       '/dojo': 'dojo',
       '/timetables': 'timetables',
       '/telling-time': 'telling-time',
-      '/spelling': 'spelling'
+      '/spelling': 'spelling',
+      '/learning-centre/spelling': 'spelling'
     }[path] || null;
   }
 
@@ -58,6 +59,7 @@ class App {
   }
 
   showModule(module) {
+    window.SpellingPronunciation?.cancel();
     const views = {
       learning: () => this.showLearningCentre(),
       'learning-centre': () => this.showLearningCentre(),
@@ -72,9 +74,9 @@ class App {
     (views[module] || (() => this.showRavenAndLlamaHome()))();
   }
 
-  rememberModule(module) {
+  rememberModule(module, path = `/${module}`) {
     const profile = ProfileManager.getActiveProfile();
-    this.navigateToPath(`/${module}`);
+    this.navigateToPath(path);
     if (ProfileManager.isAuthenticated() && profile.lastModule !== module) {
       void ProfileManager.updateProfile({ ...profile, lastModule: module });
     }
@@ -82,13 +84,14 @@ class App {
 
   navigateToPath(path, replace = false) {
     if (window.location.pathname === path) return;
+    window.SpellingPronunciation?.cancel();
     if (replace || this.isInitializing) window.history.replaceState(null, '', path);
     else window.history.pushState(null, '', path);
   }
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -204,6 +207,7 @@ class App {
       case 'money-clear': this.clearMoneyCoins(); break;
       case 'money-submit': this.submitMoneyAmount(); break;
       case 'money-next': this.nextMoneyQuestion(); break;
+      case 'spelling-pronunciation': this.speakSpellingSafariWord(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
       case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
       case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
@@ -429,7 +433,7 @@ class App {
       } else if (this.currentView === 'science') {
         subBadge.textContent = 'Science Explorers';
       } else if (this.currentView === 'spelling') {
-        subBadge.textContent = 'Spelling Safari';
+        subBadge.textContent = 'Spelling & Words';
         subBadge.classList.remove('hidden');
       } else {
         subBadge.classList.add('hidden');
@@ -453,6 +457,7 @@ class App {
 
   toggleSound() {
     const isMuted = window.soundFX?.toggleMute();
+    if (isMuted) window.SpellingPronunciation?.cancel();
     const soundBtn = document.getElementById('header-sound-btn');
     if (soundBtn) soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
   }
