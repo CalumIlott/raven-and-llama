@@ -64,7 +64,11 @@ function placeHistoryEvent(placements, eventId, positionIndex) {
 
   const nextPlacements = [...placements];
   const previousPosition = nextPlacements.indexOf(eventId);
-  if (previousPosition >= 0) nextPlacements[previousPosition] = null;
+  if (previousPosition >= 0 && previousPosition !== positionIndex) {
+    [nextPlacements[previousPosition], nextPlacements[positionIndex]] =
+      [nextPlacements[positionIndex], eventId];
+    return nextPlacements;
+  }
   nextPlacements[positionIndex] = eventId;
   return nextPlacements;
 }
@@ -242,7 +246,7 @@ Object.assign(App.prototype, {
             <div>
               <p class="history-eyebrow">History &amp; Discovery</p>
               <h1 id="history-timeline-title">${complete ? 'Timeline Complete!' : 'Timeline Builder'}</h1>
-              <p>Arrange the selected events from earliest to most recent. Their dates are approximate and appear after you finish.</p>
+              <p>Drag event cards onto the timeline, or select a card and position. Drag placed events to reorder them.</p>
             </div>
             <span class="history-timeline-count">${game.placements.filter(Boolean).length} of ${HISTORY_EVENTS.length} placed</span>
           </div>
@@ -254,11 +258,11 @@ Object.assign(App.prototype, {
           <section class="history-event-tray" aria-labelledby="history-event-tray-title">
             <div class="history-subheading">
               <h2 id="history-event-tray-title">Event cards</h2>
-              <p>Choose a card to read its clue, then choose a position.</p>
+              <p>Choose a card to read its clue, then choose a position, or drag it onto the timeline.</p>
             </div>
             <div class="history-event-tray__cards">
               ${game.eventTray.filter(event => !placedEventIds.has(event.id)).map(event => `
-                <button type="button" class="history-event-card ${game.selectedEventId === event.id ? 'is-selected' : ''}" data-action="history-event-select" data-event-id="${event.id}" aria-pressed="${game.selectedEventId === event.id}" ${complete ? 'disabled' : ''}>
+                <button type="button" class="history-event-card ${game.selectedEventId === event.id ? 'is-selected' : ''}" data-action="history-event-select" data-event-id="${event.id}" data-history-drag-event-id="${event.id}" draggable="${!complete}" aria-pressed="${game.selectedEventId === event.id}" ${complete ? 'disabled' : ''}>
                   <span class="history-event-card__icon" aria-hidden="true">${escapeHistoryHtml(event.icon)}</span>
                   <span class="history-event-card__copy">
                     <span class="history-event-card__era">${escapeHistoryHtml(event.era)}</span>
@@ -282,7 +286,7 @@ Object.assign(App.prototype, {
                   : `Position ${index + 1}, empty.`;
                 return `
                   <li class="history-timeline-slot" data-history-position-index="${index}">
-                    <button type="button" class="history-timeline-slot__place ${event ? 'has-event' : ''} ${selectedEvent?.id === event?.id ? 'is-selected' : ''}" data-action="history-timeline-place" data-position-index="${index}" aria-label="${escapeHistoryHtml(label)} ${selectedEvent ? 'Place the selected event here.' : event ? 'Select this event to move it.' : 'Choose an event card first.'}" aria-pressed="${selectedEvent?.id === event?.id}" ${complete ? 'disabled' : ''}>
+                    <button type="button" class="history-timeline-slot__place ${event ? 'has-event' : ''} ${selectedEvent?.id === event?.id ? 'is-selected' : ''}" data-action="history-timeline-place" data-position-index="${index}" data-history-drop-position-index="${index}" ${event && !complete ? `data-history-drag-event-id="${event.id}" draggable="true"` : ''} ${complete ? '' : 'data-drag-drop-target'} aria-label="${escapeHistoryHtml(label)} ${selectedEvent ? 'Place the selected event here.' : event ? 'Select this event to move it. Drag to reorder.' : 'Choose an event card first, or drop an event here.'}" aria-pressed="${selectedEvent?.id === event?.id}" ${complete ? 'disabled' : ''}>
                       <span class="history-timeline-slot__number">${index + 1}</span>
                       ${event ? `
                         <span class="history-timeline-slot__event">
@@ -309,6 +313,30 @@ Object.assign(App.prototype, {
       </div>
     `;
     document.getElementById('history-event-fact').innerHTML = renderHistoryEventFact(inspectedEvent);
+
+    main.querySelectorAll('[data-history-drag-event-id]').forEach(source => {
+      source.addEventListener('dragstart', event => {
+        if (!event.dataTransfer) return;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', source.dataset.historyDragEventId);
+      });
+    });
+    main.querySelectorAll('[data-history-drop-position-index]').forEach(position => {
+      position.addEventListener('dragover', event => {
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+      });
+      position.addEventListener('drop', event => {
+        event.preventDefault();
+        const eventId = event.dataTransfer?.getData('text/plain');
+        if (!eventId) {
+          game.message = 'Choose an event card before dragging it onto the timeline.';
+          this.renderHistoryTimelineActivity();
+          return;
+        }
+        this.dropHistoryEvent(eventId, Number(position.dataset.historyDropPositionIndex));
+      });
+    });
   },
 
   selectHistoryEvent(eventId) {
@@ -338,6 +366,24 @@ Object.assign(App.prototype, {
     game.placements = placements;
     game.selectedEventId = null;
     game.message = 'Event placed. Choose another card or check the timeline when all positions are filled.';
+    this.renderHistoryTimelineActivity();
+    return true;
+  },
+
+  dropHistoryEvent(eventId, positionIndex) {
+    const game = this.historyTimelineGame;
+    if (!game || game.complete || game.submitted) return false;
+    if (!historyEventById(eventId)) throw new RangeError(`Unknown history event: ${eventId}`);
+    const previousPosition = game.placements.indexOf(eventId);
+    const displacedEvent = game.placements[positionIndex];
+    const placements = placeHistoryEvent(game.placements, eventId, positionIndex);
+    if (!placements) throw new RangeError(`Invalid timeline position: ${positionIndex}`);
+    game.placements = placements;
+    game.selectedEventId = null;
+    game.inspectedEventId = eventId;
+    game.message = previousPosition >= 0 && displacedEvent
+      ? `${historyEventById(eventId).title} moved to position ${positionIndex + 1}; the events were reordered.`
+      : `${historyEventById(eventId).title} moved to position ${positionIndex + 1}.`;
     this.renderHistoryTimelineActivity();
     return true;
   },
