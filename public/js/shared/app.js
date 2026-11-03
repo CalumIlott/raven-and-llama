@@ -94,6 +94,7 @@ class App {
   }
 
   attachEventListeners() {
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
     const initAudio = () => {
       window.soundFX?.init();
       document.removeEventListener('click', initAudio);
@@ -105,13 +106,17 @@ class App {
     document.addEventListener('click', event => this.handleClickAction(event));
     document.addEventListener('submit', event => this.handleSubmitAction(event));
     document.addEventListener('change', event => this.handleChangeAction(event));
-    window.addEventListener('popstate', () => this.showModule(this.moduleForPath()));
+    window.addEventListener('popstate', () => {
+      this.showModule(this.moduleForPath());
+      window.scrollTo?.(0, 0);
+    });
   }
 
   handleClickAction(event) {
     const target = event.target.closest?.('[data-action]');
     if (!target) return;
     if (target instanceof HTMLAnchorElement) event.preventDefault();
+    const previousView = this.currentView;
 
     switch (target.dataset.action) {
       case 'feedback-speak':
@@ -235,6 +240,7 @@ class App {
       case 'arcade-turret': window.arcadeEngine.fireTurret(Number(target.dataset.value)); break;
       case 'arcade-maths-answer': window.arcadeEngine.answerMathsActivity(decodeURIComponent(target.dataset.value)); break;
       case 'arcade-maths-order': window.arcadeEngine.pickMathsOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
+      case 'arcade-maths-model-next': window.arcadeEngine.advanceNumberModelRound(); break;
       case 'arcade-maths-cell': window.arcadeEngine.toggleMathsActivityCell(Number(target.dataset.index)); break;
       case 'arcade-maths-submit': window.arcadeEngine.submitMathsActivity(); break;
       case 'arcade-maths-clear': window.arcadeEngine.clearMathsActivitySelection(); break;
@@ -244,6 +250,8 @@ class App {
       case 'arcade-return': this.showBeltDetails(target.dataset.beltId); break;
       case 'timetable-exit': this.showTimesTables(); break;
     }
+
+    if (this.currentView !== previousView) window.scrollTo?.(0, 0);
   }
 
   handleSubmitAction(event) {

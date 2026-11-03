@@ -97,6 +97,46 @@ function evaluateBodmasExpression(expression) {
   }
 }
 
+function createConversionPairs() {
+  return Array.from({ length: 101 }, (_, percent) => ({
+    fraction: percent === 0 ? '0/1' : percent === 100 ? '1/1' : QuestionGenerator.formatFraction(percent, 100),
+    decimal: String(Number((percent / 100).toFixed(2))),
+    percent: `${percent}%`
+  }));
+}
+
+function generateBodmasChallenge() {
+  const operators = ['+', '-', '*', '/', '^'];
+  const expressionForms = [
+    (numbers, ops) => `(${numbers[0]} ${ops[0]} ${numbers[1]}) ${ops[1]} ${numbers[2]}`,
+    (numbers, ops) => `${numbers[0]} ${ops[0]} (${numbers[1]} ${ops[1]} ${numbers[2]})`
+  ];
+
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const digits = QuestionGenerator.shuffle(['2', '0', '1', '8']);
+    const cuts = QuestionGenerator.shuffle([1, 2, 3]).slice(0, 2).sort((a, b) => a - b);
+    const boundaries = [0, ...cuts, digits.length];
+    const numbers = Array.from({ length: 3 }, (_, index) => {
+      const number = digits.slice(boundaries[index], boundaries[index + 1]).join('');
+      if (number.length < 2 || Math.random() > 0.5) return number;
+      const decimalPoint = QuestionGenerator.randomInt(1, number.length - 1);
+      return `${number.slice(0, decimalPoint)}.${number.slice(decimalPoint)}`;
+    });
+    const selectedOperators = Array.from({ length: 2 }, () =>
+      operators[QuestionGenerator.randomInt(0, operators.length - 1)]
+    );
+    const form = expressionForms[QuestionGenerator.randomInt(0, expressionForms.length - 1)];
+    const expression = form(numbers, selectedOperators);
+    const value = evaluateBodmasExpression(expression);
+    const target = Number(value.toFixed(3));
+    if (Number.isFinite(value) && target > 0 && target <= 10000 && Math.abs(value - target) < 1e-9) {
+      return { expression, target };
+    }
+  }
+
+  throw new Error('Unable to generate a valid BODMAS target.');
+}
+
 Object.assign(ArcadeEngine.prototype, {
   startMathsActivity(containerId, beltId, activityId) {
     this.stopGame();
@@ -119,9 +159,10 @@ Object.assign(ArcadeEngine.prototype, {
       selectedCells: new Set(),
       assignments: [],
       matchedPairs: new Set(),
-      selectedLeft: null,
+      selectedPairItems: {},
       stage: 0,
-      target: 0
+      target: 0,
+      targets: []
     };
 
     container.innerHTML = this.renderArcadeShell(
@@ -144,7 +185,10 @@ Object.assign(ArcadeEngine.prototype, {
     }
 
     if (activityId === 'number-models') {
-      this.mathsActivity.target = QuestionGenerator.randomInt(1, 10);
+      this.mathsActivity.targets = QuestionGenerator.shuffle(
+        Array.from({ length: 10 }, (_, index) => index + 1)
+      ).slice(0, this.mathsActivity.maxRounds);
+      this.mathsActivity.target = this.mathsActivity.targets[0];
       this.mathsActivity.stage = 0;
       this.renderNumberModelStage();
     } else if (activityId === 'tens-frame-fill') {
@@ -243,11 +287,12 @@ Object.assign(ArcadeEngine.prototype, {
     } else if (question.type === 'numeric_input' || question.type === 'short_answer') {
       const inputMode = question.type === 'numeric_input' ? 'decimal' : 'text';
       controls = `
-        <form data-submit-action="arcade-maths-answer" class="mx-auto mt-5 flex max-w-sm gap-3">
+        <form data-submit-action="arcade-maths-answer" class="mx-auto mt-5 flex max-w-sm gap-3" ${question.answerFormatHint ? 'aria-describedby="ma-answer-format"' : ''}>
           <label class="sr-only" for="ma-answer">Your answer</label>
           <input id="ma-answer" name="answer" type="text" inputmode="${inputMode}" autocomplete="off" class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
           <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check</button>
-        </form>`;
+        </form>
+        ${question.answerFormatHint ? `<p id="ma-answer-format" class="mx-auto mt-2 max-w-sm text-center text-sm text-slate-300">Answer format: ${question.answerFormatHint}</p>` : ''}`;
     } else {
       controls = `
         <div class="mx-auto mt-5 grid max-w-xl grid-cols-2 gap-3">
@@ -263,6 +308,7 @@ Object.assign(ArcadeEngine.prototype, {
       ${question.hint ? `<p class="mt-3 text-center text-sm text-sky-300">${question.hint}</p>` : ''}
       ${controls}
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+    document.getElementById('ma-answer')?.focus?.({ preventScroll: true });
   },
 
   answerMathsActivity(answer) {
@@ -325,32 +371,47 @@ Object.assign(ArcadeEngine.prototype, {
       ? `<div class="my-6 flex flex-wrap justify-center gap-3 text-3xl" aria-label="${count} apples">${objects}</div>`
       : stage === 1
       ? `<div class="my-6">${VisualRenderers.renderSubitise(count, 'dots', '🔵')}</div>`
-      : `<p class="my-6 text-center text-5xl font-bold text-amber-300" aria-label="The numeral for the group">?</p>`;
+      : `<p id="ma-number-model-value" class="my-6 text-center text-5xl font-bold text-amber-300" aria-label="Number model value">${count}</p>`;
+    const controls = stage < 2
+      ? `<form data-submit-action="arcade-maths-stage" class="mx-auto flex max-w-sm gap-3">
+          <label class="sr-only" for="ma-stage-answer">Your answer</label>
+          <input id="ma-stage-answer" name="answer" type="text" inputmode="numeric" autocomplete="off" class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
+          <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check</button>
+        </form>`
+      : `<div class="text-center">
+          <p class="mb-4 text-slate-300">The objects and picture both represent ${count}.</p>
+          <button data-action="arcade-maths-model-next" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">${activity.round + 1 === activity.targets.length ? 'Finish activity' : 'Next number'}</button>
+        </div>`;
     body.innerHTML = `
-      <p class="text-center text-sm text-slate-300">Step ${stage + 1} of 3 · ${labels[stage]}</p>
-      <h3 class="mt-3 text-center text-xl font-bold text-white">${stage < 2 ? `How many objects are there?` : 'Type the numeral for this quantity.'}</h3>
+      <p class="text-center text-sm text-slate-300">Round ${activity.round + 1} / ${activity.targets.length} · Step ${stage + 1} of 3 · ${labels[stage]}</p>
+      <h3 class="mt-3 text-center text-xl font-bold text-white">${stage < 2 ? 'How many objects are there?' : 'Here is the numeral for this quantity.'}</h3>
       ${model}
-      <form data-submit-action="arcade-maths-stage" class="mx-auto flex max-w-sm gap-3">
-        <label class="sr-only" for="ma-stage-answer">Your answer</label>
-        <input id="ma-stage-answer" name="answer" type="text" inputmode="numeric" autocomplete="off" class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
-        <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">${stage === 2 ? 'Finish' : 'Next'}</button>
-      </form>
+      ${controls}
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+    if (stage < 2) document.getElementById('ma-stage-answer')?.focus?.({ preventScroll: true });
   },
 
   submitNumberModelStage(answer) {
-    if (Number(answer) !== this.mathsActivity.target) {
+    const activity = this.mathsActivity;
+    if (!activity || activity.activityId !== 'number-models' || activity.stage >= 2) return;
+    if (Number(answer) !== activity.target) {
       const feedback = document.getElementById('ma-feedback');
       if (feedback) feedback.textContent = 'Look closely at the objects or picture, then try again.';
       return;
     }
-    this.mathsActivity.stage++;
-    if (this.mathsActivity.stage === 3) {
-      this.addScore(30, 'ma-score');
-      this.finishMathsActivity();
-    } else {
-      this.renderNumberModelStage();
-    }
+    this.addScore(10, 'ma-score');
+    activity.stage++;
+    this.renderNumberModelStage();
+  },
+
+  advanceNumberModelRound() {
+    const activity = this.mathsActivity;
+    if (!activity || activity.activityId !== 'number-models' || activity.stage !== 2) return;
+    activity.round++;
+    if (activity.round >= activity.targets.length) return this.finishMathsActivity();
+    activity.target = activity.targets[activity.round];
+    activity.stage = 0;
+    this.renderNumberModelStage();
   },
 
   renderTensFrame() {
@@ -366,7 +427,6 @@ Object.assign(ArcadeEngine.prototype, {
           return `<button data-action="arcade-maths-cell" data-index="${index}" aria-pressed="${filled}" aria-label="Frame cell ${index + 1}${filled ? ', filled' : ', empty'}" class="h-12 rounded-lg border-2 ${filled ? 'border-amber-300 bg-amber-400 text-slate-950' : 'border-slate-600 bg-slate-950 text-slate-500'}">${filled ? '●' : '○'}</button>`;
         }).join('')}
       </div>
-      <p class="text-center text-slate-300"><span id="ma-filled-count">${activity.selectedCells.size}</span> of ${activity.target} filled</p>
       <div class="mt-4 flex justify-center gap-3">
         <button data-action="arcade-maths-submit" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check frame</button>
         <button data-action="arcade-maths-clear" class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white">Clear</button>
@@ -394,60 +454,106 @@ Object.assign(ArcadeEngine.prototype, {
     activity.matchKind = kind;
     if (kind === 'tens') {
       activity.pairs = [1, 2, 3, 4, 5].map(number => ({ left: number, right: 10 - number }));
+      activity.pairSides = ['left', 'right'];
     } else {
-      const pairs = [
-        ['1/2', '0.5 = 50%'], ['1/4', '0.25 = 25%'], ['3/4', '0.75 = 75%'],
-        ['1/5', '0.2 = 20%'], ['3/5', '0.6 = 60%']
-      ];
-      activity.pairs = QuestionGenerator.shuffle(pairs).map(([left, right]) => ({ left, right }));
+      activity.pairs = QuestionGenerator.shuffle(createConversionPairs()).slice(0, 5);
+      activity.pairSides = ['fraction', 'decimal', 'percent'];
     }
-    const leftValues = QuestionGenerator.shuffle(activity.pairs.map((pair, index) => ({ value: pair.left, index })));
-    const rightValues = QuestionGenerator.shuffle(activity.pairs.map((pair, index) => ({ value: pair.right, index })));
-    activity.leftValues = leftValues;
-    activity.rightValues = rightValues;
+    activity.selectedPairItems = {};
+    const valuesBySide = Object.fromEntries(activity.pairSides.map(side => [
+      side,
+      QuestionGenerator.shuffle(activity.pairs.map((pair, index) => ({ value: pair[side], index })))
+    ]));
+    const labels = {
+      left: 'Numbers',
+      right: 'Tens mates',
+      fraction: 'Fractions',
+      decimal: 'Decimals',
+      percent: 'Percents'
+    };
     const body = document.getElementById('ma-body');
     if (!body) return;
-    const renderCards = (items, side) => items.map(item =>
-      `<button data-action="arcade-maths-pair" data-side="${side}" data-index="${item.index}" class="arcade-game__tile btn-ninja rounded-xl border-2 border-slate-600 bg-slate-800 p-3 text-lg font-bold text-white">${item.value}</button>`
-    ).join('');
+    const renderCards = (items, side) => items.map(item => {
+      const selected = activity.selectedPairItems[side] === item.index;
+      const completed = activity.matchedPairs.has(item.index);
+      const stateClasses = completed
+        ? 'border-slate-700 bg-slate-900 text-slate-500 opacity-50 grayscale cursor-not-allowed'
+        : selected
+          ? 'border-amber-300 bg-amber-400 text-slate-950 ring-4 ring-amber-300/70'
+          : 'border-slate-600 bg-slate-800 text-white';
+      return `<button data-action="arcade-maths-pair" data-side="${side}" data-index="${item.index}" aria-pressed="${selected}" ${completed ? 'disabled' : ''} class="arcade-game__tile btn-ninja rounded-xl border-2 ${stateClasses} p-3 text-lg font-bold">${item.value}</button>`;
+    }).join('');
     body.innerHTML = `
-      <p class="mb-4 text-center text-slate-300">${kind === 'tens' ? 'Match each left card with its friend to make 10.' : 'Match each fraction with an equivalent percentage.'}</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-2">${renderCards(leftValues, 'left')}</div>
-        <div class="grid gap-2">${renderCards(rightValues, 'right')}</div>
+      <p class="mb-4 text-center text-slate-300">${kind === 'tens' ? 'Match each number with its tens mate.' : 'Match a fraction, decimal, and percent that show the same value.'}</p>
+      <div class="${kind === 'tens' ? 'grid grid-cols-2 gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3'}">
+        ${activity.pairSides.map(side => `
+          <div role="group" aria-label="${labels[side]}">
+            <h4 class="mb-2 text-center font-bold text-slate-300">${labels[side]}</h4>
+            <div class="grid gap-2">${renderCards(valuesBySide[side], side)}</div>
+          </div>`).join('')}
       </div>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
   },
 
   selectMathsPair(side, index) {
     const activity = this.mathsActivity;
-    const selected = document.querySelector(`[data-action="arcade-maths-pair"][data-side="${side}"][data-index="${index}"]`);
+    if (!activity || !activity.pairSides.includes(side)) return;
+    const selector = `[data-action="arcade-maths-pair"][data-side="${side}"][data-index="${index}"]`;
+    const selected = document.querySelector(selector);
     if (!selected || selected.disabled || activity.matchedPairs.has(index)) return;
-    if (side === 'left') {
-      activity.selectedLeft = index;
-      selected.classList.add('is-selected');
-      return;
+
+    const previousIndex = activity.selectedPairItems[side];
+    if (previousIndex === index) {
+      delete activity.selectedPairItems[side];
+      selected.classList.remove('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+      selected.classList.add('border-slate-600', 'bg-slate-800', 'text-white');
+      selected.setAttribute('aria-pressed', 'false');
+    } else {
+      if (previousIndex !== undefined) {
+        const previous = document.querySelector(`[data-action="arcade-maths-pair"][data-side="${side}"][data-index="${previousIndex}"]`);
+        if (previous) {
+          previous.classList.remove('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+          previous.classList.add('border-slate-600', 'bg-slate-800', 'text-white');
+          previous.setAttribute('aria-pressed', 'false');
+        }
+      }
+      activity.selectedPairItems[side] = index;
+      selected.classList.remove('border-slate-600', 'bg-slate-800', 'text-white');
+      selected.classList.add('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+      selected.setAttribute('aria-pressed', 'true');
     }
-    if (activity.selectedLeft === null) return;
-    const left = activity.pairs[activity.selectedLeft];
-    const right = activity.pairs[index];
+
+    if (!activity.pairSides.every(pairSide => activity.selectedPairItems[pairSide] !== undefined)) return;
+
+    const selectedIndices = activity.pairSides.map(pairSide => activity.selectedPairItems[pairSide]);
     const isCorrect = activity.matchKind === 'tens'
-      ? left.left + right.right === 10
-      : activity.selectedLeft === index;
-    const leftButton = document.querySelector(`[data-action="arcade-maths-pair"][data-side="left"][data-index="${activity.selectedLeft}"]`);
+      ? activity.pairs[selectedIndices[0]].left + activity.pairs[selectedIndices[1]].right === 10
+      : selectedIndices.every(pairIndex => pairIndex === selectedIndices[0]);
+    const feedback = document.getElementById('ma-feedback');
+    for (const [position, pairSide] of activity.pairSides.entries()) {
+      const pairIndex = selectedIndices[position];
+      const card = document.querySelector(`[data-action="arcade-maths-pair"][data-side="${pairSide}"][data-index="${pairIndex}"]`);
+      if (!card) continue;
+      card.setAttribute('aria-pressed', 'false');
+      card.classList.remove('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+      if (isCorrect) {
+        card.disabled = true;
+        card.classList.add('border-slate-700', 'bg-slate-900', 'text-slate-500', 'opacity-50', 'grayscale', 'cursor-not-allowed');
+      } else {
+        card.classList.add('border-slate-600', 'bg-slate-800', 'text-white');
+      }
+    }
+    activity.selectedPairItems = {};
+
     if (isCorrect) {
-      activity.matchedPairs.add(activity.selectedLeft);
-      if (leftButton) leftButton.disabled = true;
-      selected.disabled = true;
+      activity.matchedPairs.add(selectedIndices[0]);
       this.addScore(10, 'ma-score');
+      if (feedback) feedback.textContent = 'Correct match! Choose another set.';
       if (activity.matchedPairs.size === activity.pairs.length) this.finishMathsActivity();
     } else {
       this.deductScore(2, 'ma-score');
-      if (leftButton) leftButton.classList.remove('is-selected');
-      const feedback = document.getElementById('ma-feedback');
-      if (feedback) feedback.textContent = 'Those cards do not match. Try another pair.';
+      if (feedback) feedback.textContent = 'These cards do not match. Try another combination.';
     }
-    activity.selectedLeft = null;
   },
 
   startPartitionRound() {
@@ -519,8 +625,8 @@ Object.assign(ArcadeEngine.prototype, {
 
   startArrayRound() {
     const activity = this.mathsActivity;
-    activity.rows = QuestionGenerator.randomInt(2, 7);
-    activity.columns = QuestionGenerator.randomInt(2, 8);
+    activity.rows = QuestionGenerator.randomInt(2, 11);
+    activity.columns = QuestionGenerator.randomInt(2, 11);
     this.renderArrayRound();
   },
 
@@ -543,6 +649,7 @@ Object.assign(ArcadeEngine.prototype, {
       </form>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
     activity.question = { type: 'numeric_input', answer: count };
+    document.getElementById('ma-answer')?.focus?.({ preventScroll: true });
   },
 
   startFractionRound() {
@@ -567,13 +674,14 @@ Object.assign(ArcadeEngine.prototype, {
         }).join('')}
       </div>
       <p class="text-center text-slate-300">${activity.selectedCells.size} of ${activity.denominator} parts coloured</p>
-      <div class="mt-4 text-center"><button data-action="arcade-maths-submit" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check fraction</button></div>
+      <div class="mt-4 text-center"><button data-action="arcade-maths-submit" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check fraction</button>      </div>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
   },
 
   startBodmasRound() {
     const activity = this.mathsActivity;
-    activity.target = QuestionGenerator.randomInt(1, 20);
+    const challenge = generateBodmasChallenge();
+    activity.target = challenge.target;
     const body = document.getElementById('ma-body');
     if (!body) return;
     body.innerHTML = `
@@ -584,8 +692,9 @@ Object.assign(ArcadeEngine.prototype, {
         <input id="ma-expression" name="expression" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. 20 - 18" class="rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
         <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check expression</button>
       </form>
-      <p class="mt-3 text-center text-xs text-slate-400">Use +, −, ×, ÷, powers, and brackets. Standard operation order applies.</p>
+      <p class="mt-3 text-center text-xs text-slate-400">Use +, −, ×, ÷, powers, and brackets. You may join adjacent digits and use a decimal point.</p>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+    document.getElementById('ma-expression')?.focus?.({ preventScroll: true });
   },
 
   submitBodmasExpression(expression) {
@@ -634,4 +743,4 @@ Object.assign(ArcadeEngine.prototype, {
 });
 
 window.MATHS_ACTIVITY_CATALOG = MATHS_ACTIVITY_CATALOG;
-window.MathsActivityGames = { evaluateBodmasExpression };
+window.MathsActivityGames = { evaluateBodmasExpression, createConversionPairs, generateBodmasChallenge };

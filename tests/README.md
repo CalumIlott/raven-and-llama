@@ -5,7 +5,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 ## Coverage
 
 - `unit/curriculum.test.js` checks belt ordering, unique identifiers, skill metadata, and arcade definitions.
-- `unit/generators.test.js` exercises standard and hard question generation for every curriculum skill, answer options, choice generation, shuffling, and belt exams.
+- `unit/generators.test.js` exercises standard and hard question generation for every curriculum skill, answer options, choice generation, shuffling, and belt exams; it requires 100 distinct standard questions per skill where the taught number range allows it and asserts the exact size of finite fact sets.
 - `unit/number-builder.test.js` checks ascending and descending integer sequences, difficulty bounds, question IDs, and input limits.
 - `unit/fraction-pizza.test.js` checks proper, equivalent, and mixed-number fraction models, quiz validation, stable IDs, and invalid input handling.
 - `unit/spelling-safari.test.js` checks activity definitions, unique answerable rounds, scrambled letters, and invalid activity handling.

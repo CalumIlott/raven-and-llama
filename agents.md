@@ -73,6 +73,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 - Server, persistence, and API behavior changes must include integration coverage in `tests/integration/`.
 - UI/navigation changes must include an automated browser test in `tests/e2e/`.
 - All new functionality requires complete unit and automated test coverage for its behavior and relevant user workflows.
+- MathMasters should target at least 100 genuinely distinct questions per skill or activity where the mathematical domain permits; add tests for the target and document finite fact sets instead of manufacturing variety through shuffled choices or superficial paraphrases.
 - Tests must pass in CI before merging; run `npm test` and `npm run audit` locally before pushing.
 
 ---
