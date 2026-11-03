@@ -86,3 +86,41 @@ test('Timeline Builder gives useful retry feedback and completes in chronologica
   await page.getByRole('button', { name: 'Return to History & Discovery', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Travel Through Time', exact: true })).toBeVisible();
 });
+
+test('event cards can be dragged onto the timeline and placed events can be reordered', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'mobile-chromium', 'Touch devices use tap-to-place controls instead of native drag-and-drop.');
+  await setupApp(page);
+  await page.setViewportSize({ width: 1280, height: 1400 });
+  await page.goto('/learning-centre/history');
+  await page.locator('[data-action="history-timeline-start"]').click();
+
+  const eventIds = await page.evaluate(() =>
+    window.app.historyTimelineGame.eventTray.slice(0, 3).map(event => event.id)
+  );
+  const [firstEventId, secondEventId, thirdEventId] = eventIds;
+  const timelinePosition = index => page.locator(
+    `[data-history-position-index="${index}"] .history-timeline-slot__place`
+  );
+  const eventSource = eventId => page.locator(`[data-history-drag-event-id="${eventId}"]`);
+
+  await eventSource(firstEventId).dragTo(timelinePosition(0));
+  await expect(timelinePosition(0)).toContainText(
+    await page.evaluate(eventId => window.HistoryTimeline.eventById(eventId).title, firstEventId)
+  );
+  await eventSource(secondEventId).dragTo(timelinePosition(1));
+
+  const firstTitle = await page.evaluate(eventId =>
+    window.HistoryTimeline.eventById(eventId).title, firstEventId);
+  const secondTitle = await page.evaluate(eventId =>
+    window.HistoryTimeline.eventById(eventId).title, secondEventId);
+  await eventSource(firstEventId).dragTo(timelinePosition(1));
+  await expect(timelinePosition(0)).toContainText(secondTitle);
+  await expect(timelinePosition(1)).toContainText(firstTitle);
+
+  await eventSource(thirdEventId).dragTo(timelinePosition(1));
+  const thirdTitle = await page.evaluate(eventId =>
+    window.HistoryTimeline.eventById(eventId).title, thirdEventId);
+  await expect(timelinePosition(1)).toContainText(thirdTitle);
+  await expect(eventSource(firstEventId)).toBeVisible();
+  await expect(page.locator('.history-timeline-count')).toHaveText('2 of 6 placed');
+});

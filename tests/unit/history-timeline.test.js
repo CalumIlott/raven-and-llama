@@ -4,7 +4,7 @@ const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require
 
 function createHistoryContext() {
   const context = createBrowserContext();
-  context.main = { innerHTML: '', dataset: {} };
+  context.main = { innerHTML: '', dataset: {}, querySelectorAll: () => [] };
   context.factPanel = { innerHTML: '' };
   context.document = {
     getElementById(id) {
@@ -77,6 +77,17 @@ test('timeline placement supports moving, rejects duplicates, and reports incorr
   assert.equal(context.HistoryTimeline.isCompletePlacement([order[0], order[0], ...order.slice(2)]), false);
   assert.equal(context.HistoryTimeline.isCompletePlacement(incorrect), true);
   assert.equal(context.HistoryTimeline.getMismatches(incorrect).length, order.length);
+});
+
+test('moving an event between filled timeline positions reorders by swapping', () => {
+  const context = createHistoryContext();
+  const order = Array.from(context.HistoryTimeline.canonicalOrder(), event => event.id);
+  const placement = [...order];
+  const reordered = context.HistoryTimeline.placeEvent(placement, order[0], 1);
+
+  assert.deepEqual(Array.from(reordered), [order[1], order[0], ...order.slice(2)]);
+  assert.deepEqual(placement, order);
+  assert.equal(new Set(reordered).size, order.length);
 });
 
 test('timeline completes through ActivityEngine and records progress only once', () => {
