@@ -1623,6 +1623,27 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
 }
 
+#app-main[data-page="history-timeline"] .history-event-card[draggable="true"],
+#app-main[data-page="history-timeline"] .history-timeline-slot__place[draggable="true"] {
+  cursor: grab;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card[draggable="true"]:active,
+#app-main[data-page="history-timeline"] .history-timeline-slot__place[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card.activity-drag-source,
+#app-main[data-page="history-timeline"] .history-timeline-slot__place.activity-drag-source {
+  opacity: 0.45;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__place.activity-drop-target {
+  border-color: #6ee7c8;
+  box-shadow: 0 0 0 3px rgb(110 231 200 / 25%);
+  transform: scale(1.01);
+}
+
 #app-main[data-page="history-timeline"] .history-event-card:hover,
 #app-main[data-page="history-timeline"] .history-event-card:focus-visible,
 #app-main[data-page="history-timeline"] .history-event-card.is-selected {

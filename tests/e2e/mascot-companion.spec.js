@@ -23,7 +23,7 @@ test('provides contextual help and a safe hint, then celebrates activity complet
     window.confetti = () => { window.mascotConfettiCalls++; };
   });
   await page.locator('[data-action="history-timeline-start"]').click();
-  await expect(page.locator('#app-main')).toContainText('Put these selected events in chronological order.');
+  await expect(page.locator('#app-main')).toContainText('Drag cards onto the timeline');
   await expect(panel).toBeHidden();
   await page.getByRole('button', { name: 'Open Raven & Llama helper' }).click();
   await expect(page.locator('[data-mascot-title]')).toHaveText('Need a hand with Timeline Builder?');
