@@ -5,6 +5,10 @@ class ProfileManager {
   static lastSaveError = '';
   static saveQueue = Promise.resolve();
   static GUEST_THEME_KEY = 'raven_llama_guest_theme';
+  static MAX_SPELLING_LISTS = 10;
+  static MAX_SPELLING_WORDS_PER_LIST = 50;
+  static MAX_SPELLING_WORD_LENGTH = 100;
+  static MAX_SPELLING_LIST_NAME_LENGTH = 50;
   static LAST_MODULES = new Set(['learning', 'dojo', 'timetables', 'spelling']);
   static SCHOOL_YEAR_LEVELS = [
     { value: 0, label: 'Foundation' },
@@ -57,6 +61,8 @@ class ProfileManager {
       skillsProgress: {},
       activityProgress: {},
       endlessHighScores: {},
+      spellingLists: [],
+      activeSpellingListId: null,
       certificates: [],
       createdAt: now,
       updatedAt: now
@@ -73,6 +79,10 @@ class ProfileManager {
         (id === 'timetables' || beltIds.includes(id)) && Number.isSafeInteger(score) && score >= 0
       ))
       : {};
+    const spellingLists = ProfileManager.normalizeSpellingLists(source.spellingLists);
+    const activeSpellingListId = spellingLists.some(list => list.id === source.activeSpellingListId)
+      ? source.activeSpellingListId
+      : null;
     return {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
@@ -90,6 +100,8 @@ class ProfileManager {
       skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
       activityProgress: ProfileManager.normalizeActivityProgress(source.activityProgress),
       endlessHighScores,
+      spellingLists,
+      activeSpellingListId,
       certificates: Array.isArray(source.certificates) ? source.certificates : [],
       createdAt: source.createdAt || now,
       updatedAt: source.updatedAt || now
@@ -227,6 +239,64 @@ class ProfileManager {
 
   static isAuthenticated() {
     return Boolean(ProfileManager.account);
+  }
+
+  static validateSpellingLists(lists) {
+    if (!Array.isArray(lists)) return 'Spelling lists must be a list.';
+    if (lists.length > ProfileManager.MAX_SPELLING_LISTS) {
+      return `Keep no more than ${ProfileManager.MAX_SPELLING_LISTS} spelling lists.`;
+    }
+
+    const ids = new Set();
+    const names = new Set();
+    for (const list of lists) {
+      if (!list || typeof list !== 'object' || Array.isArray(list) ||
+        typeof list.id !== 'string' || !/^[a-zA-Z0-9_-]{1,36}$/.test(list.id)) {
+        return 'Each spelling list needs a valid ID.';
+      }
+      if (typeof list.name !== 'string' || !list.name.trim() ||
+        list.name.trim().length > ProfileManager.MAX_SPELLING_LIST_NAME_LENGTH) {
+        return `List names must be 1 to ${ProfileManager.MAX_SPELLING_LIST_NAME_LENGTH} characters.`;
+      }
+      if (!Array.isArray(list.words) || list.words.length > ProfileManager.MAX_SPELLING_WORDS_PER_LIST) {
+        return `Each list can contain no more than ${ProfileManager.MAX_SPELLING_WORDS_PER_LIST} words.`;
+      }
+
+      const normalizedName = list.name.trim().toLowerCase();
+      if (ids.has(list.id)) return 'Each spelling list must have a unique ID.';
+      if (names.has(normalizedName)) return 'List names must be unique.';
+      ids.add(list.id);
+      names.add(normalizedName);
+
+      const words = new Set();
+      for (const rawWord of list.words) {
+        if (typeof rawWord !== 'string' || !rawWord.trim()) return 'Remove blank words from the list.';
+        const word = rawWord.trim();
+        if (word.length > ProfileManager.MAX_SPELLING_WORD_LENGTH) {
+          return `Each word must be no more than ${ProfileManager.MAX_SPELLING_WORD_LENGTH} characters.`;
+        }
+        const normalizedWord = word.toLowerCase();
+        if (words.has(normalizedWord)) return 'Words in a list must be unique.';
+        words.add(normalizedWord);
+      }
+    }
+
+    return null;
+  }
+
+  static normalizeSpellingLists(value) {
+    if (!Array.isArray(value)) return [];
+    const lists = [];
+    for (const rawList of value.slice(0, ProfileManager.MAX_SPELLING_LISTS)) {
+      if (!rawList || typeof rawList !== 'object' || Array.isArray(rawList) || !Array.isArray(rawList.words)) continue;
+      const list = {
+        id: rawList.id,
+        name: typeof rawList.name === 'string' ? rawList.name.trim() : '',
+        words: rawList.words.map(word => typeof word === 'string' ? word.trim() : word)
+      };
+      if (!ProfileManager.validateSpellingLists([...lists, list])) lists.push(list);
+    }
+    return lists;
   }
 
   static isValidSchoolYear(value) {

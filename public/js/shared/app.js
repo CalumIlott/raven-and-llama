@@ -210,6 +210,15 @@ class App {
       case 'spelling-pronunciation': this.speakSpellingSafariWord(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
       case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
+      case 'spell-it-open': this.showSpellItLists(); break;
+      case 'spell-it-start': void this.startSpellIt(target.dataset.listId); break;
+      case 'spell-it-pronunciation': this.speakSpellItWord(); break;
+      case 'spell-it-retry': this.retrySpellItQuestion(); break;
+      case 'spell-it-next': this.nextSpellItQuestion(); break;
+      case 'spelling-list-edit': this.editSpellingList(target.dataset.listId); break;
+      case 'spelling-list-delete': void this.deleteSpellingList(target.dataset.listId); break;
+      case 'spelling-list-active': void this.setActiveSpellingList(target.dataset.listId); break;
+      case 'spelling-list-cancel': this.cancelSpellingListEdit(); break;
       case 'spelling-letter': this.pickSpellingSafariLetter(Number(target.dataset.index)); break;
       case 'spelling-clear': this.clearSpellingSafariLetters(); break;
       case 'spelling-answer': this.submitSpellingSafariAnswer(decodeURIComponent(target.dataset.answer)); break;
@@ -264,6 +273,14 @@ class App {
       case 'account-avatar': this.changeAvatarSubmit(event); break;
       case 'account-password': this.changePasswordSubmit(event); break;
       case 'account-delete': this.deleteAccount(event); break;
+      case 'spelling-list-save':
+        event.preventDefault();
+        void this.saveSpellingList(event);
+        break;
+      case 'spell-it-answer':
+        event.preventDefault();
+        this.submitSpellItAnswer(event.target.elements.answer.value);
+        break;
       case 'game-answer':
         event.preventDefault();
         window.gameEngine.submitAnswer(event.target.elements.answer.value);
@@ -978,6 +995,9 @@ class App {
     const studentNameEl = document.getElementById('parent-student-name');
     if (studentNameEl) studentNameEl.textContent = profile ? profile.name : 'Learner';
 
+    this.spellingListEditingId = null;
+    this.setSpellingListStatus('');
+    this.renderParentSpellingLists();
     this.openDialog(modal);
   }
 

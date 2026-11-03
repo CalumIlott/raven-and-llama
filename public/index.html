@@ -258,6 +258,30 @@
             <!-- Dynamic rows -->
           </tbody>
         </table>
+        <section id="parent-spelling-list-manager" class="mt-8 border-t border-slate-700 pt-6" aria-labelledby="parent-spelling-list-title">
+          <h4 id="parent-spelling-list-title" class="font-ninja text-xl text-white font-bold">Parent / Teacher: Weekly Spelling Lists</h4>
+          <p class="mt-1 mb-4 text-sm text-slate-300">Create and manage the words available in Spell It. Enter one word per line; each list can contain up to 50 words, with up to 100 characters per word.</p>
+          <form id="parent-spelling-list-form" data-submit-action="spelling-list-save" class="grid gap-3 rounded-2xl border border-slate-700 bg-slate-900 p-4">
+            <div>
+              <label for="parent-spelling-list-name" class="block text-sm font-bold text-white mb-1">List name</label>
+              <input id="parent-spelling-list-name" type="text" maxlength="50" required
+                     class="w-full rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-white focus:border-cyan-400 focus:outline-none">
+            </div>
+            <div>
+              <label for="parent-spelling-list-words" class="block text-sm font-bold text-white mb-1">Words</label>
+              <textarea id="parent-spelling-list-words" rows="5" maxlength="5049"
+                        class="w-full rounded-xl border border-slate-600 bg-slate-950 px-3 py-2 text-white focus:border-cyan-400 focus:outline-none"
+                        aria-describedby="parent-spelling-list-help"></textarea>
+              <p id="parent-spelling-list-help" class="mt-1 text-xs text-slate-300">Leave this blank to create a list and add words later.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="parent-spelling-list-submit" type="submit" class="rounded-xl bg-cyan-700 hover:bg-cyan-600 px-4 py-2 font-bold text-white">Create list</button>
+              <button id="parent-spelling-list-cancel" type="button" data-action="spelling-list-cancel" class="hidden rounded-xl bg-slate-700 hover:bg-slate-600 px-4 py-2 font-bold text-white">Cancel edit</button>
+            </div>
+          </form>
+          <p id="parent-spelling-list-status" class="mt-2 min-h-5 text-sm" role="status" aria-live="polite"></p>
+          <ul id="parent-spelling-list-items" class="grid gap-3 mt-3"></ul>
+        </section>
       </div>
 
       <div class="parent-report-footer mt-4 pt-3 border-t border-slate-800 flex justify-end">

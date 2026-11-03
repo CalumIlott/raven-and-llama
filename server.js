@@ -9,7 +9,7 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const accountStore = new LocalAccountStore(DATA_DIR);
 const accountHandler = import('./lib/account-api.mjs').then(module => module.handleAccountRequest);
-const MAX_REQUEST_BYTES = 65536;
+const MAX_REQUEST_BYTES = 131072;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_RATE_LIMIT_BUCKETS = 10000;
 const rateLimitBuckets = new Map();

@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { openLearningCentre, setupApp } = require('./support');
+const { openLearningCentre, registerAccount, setupApp } = require('./support');
 
 test('Spelling & Words is a direct, refresh-safe hub for the existing Safari adventures', async ({ page }) => {
   await page.goto('/learning-centre/spelling');
@@ -72,6 +72,99 @@ test('Spelling Safari pronunciation can be replayed without exposing the answer 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Explore by subject' })).toBeVisible();
   expect((await page.evaluate(() => window.__spellingSpeechCalls)).cancelled).toBeGreaterThan(cancelledBeforeNavigation);
+});
+
+test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden until submitted', async ({ page }) => {
+  await page.addInitScript(() => {
+    const spoken = [];
+    window.__spellItSpoken = spoken;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) {
+          this.text = text;
+        }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => [{ name: 'Australian English', lang: 'en-AU' }],
+        addEventListener() {},
+        removeEventListener() {},
+        cancel() {},
+        speak(utterance) {
+          spoken.push(utterance.text);
+        }
+      }
+    });
+  });
+  await setupApp(page);
+  await registerAccount(page);
+  await page.goto('/learning-centre/spelling');
+  await page.getByRole('button', { name: 'Start Spell It' }).click();
+  await expect(page.locator('#spell-it-list-status')).toContainText('No spelling lists yet');
+  await page.getByRole('button', { name: 'Manage weekly lists' }).click();
+  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await page.locator('#parent-spelling-list-name').fill('Week One');
+  await page.locator('#parent-spelling-list-words').fill('quokka');
+  await page.getByRole('button', { name: 'Create list' }).click();
+  await expect(page.locator('#parent-spelling-list-items')).toContainText('Week One');
+  await expect(page.locator('#parent-spelling-list-items')).toContainText('Active for Spell It');
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.locator('#spell-it-list-options')).toContainText('Week One');
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Start Spell It' }).click();
+  await page.getByRole('button', { name: 'Practise this list' }).click();
+  await expect(page.getByLabel('Your spelling')).toBeVisible();
+  const prompt = await page.locator('#app-main').innerText();
+  expect(prompt.toLowerCase()).not.toContain('quokka');
+  const accessibleLabels = await page.locator('#app-main [aria-label]').evaluateAll(elements =>
+    elements.map(element => element.getAttribute('aria-label').toLowerCase())
+  );
+  expect(accessibleLabels.every(label => !label.includes('quokka'))).toBe(true);
+
+  await page.getByRole('button', { name: 'Hear the word' }).click();
+  await expect(page.locator('#spell-it-pronunciation-status')).toHaveText('Playing word pronunciation.');
+  expect(await page.evaluate(() => window.__spellItSpoken)).toEqual(['quokka']);
+  await page.getByLabel('Your spelling').fill('wrong');
+  await page.getByLabel('Your spelling').press('Enter');
+  await expect(page.locator('#spell-it-feedback')).toContainText('Not quite');
+  await expect(page.locator('#spell-it-feedback')).not.toContainText('quokka');
+  await page.getByLabel('Your spelling').fill(' QUOKKA ');
+  await page.getByLabel('Your spelling').press('Enter');
+  await expect(page.locator('#spell-it-feedback')).toHaveText('Correct! Great spelling.');
+  await page.getByRole('button', { name: 'Next word' }).click();
+  await expect(page.getByRole('heading', { name: 'Spell It complete!' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Play this list again' }).click();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page.getByLabel('Your spelling').fill('wrong');
+    await page.getByLabel('Your spelling').press('Enter');
+    await expect(page.locator('#spell-it-feedback')).not.toContainText('quokka');
+  }
+  await page.getByLabel('Your spelling').fill('wrong');
+  await page.getByLabel('Your spelling').press('Enter');
+  await expect(page.locator('#spell-it-feedback')).toContainText('The correct spelling is quokka.');
+  await page.getByRole('button', { name: 'Try this word again' }).click();
+  await page.getByLabel('Your spelling').fill('quokka');
+  await page.getByLabel('Your spelling').press('Enter');
+  await expect(page.locator('#spell-it-feedback')).toHaveText('Correct! Great spelling.');
+  await page.getByRole('button', { name: 'Next word' }).click();
+
+  await page.getByRole('button', { name: 'Choose another list' }).click();
+  await page.getByRole('button', { name: 'Manage weekly lists' }).click();
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.locator('#parent-spelling-list-name').fill('Week Two');
+  await page.locator('#parent-spelling-list-words').fill('echidna');
+  await page.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.locator('#parent-spelling-list-items')).toContainText('Week Two');
+  await page.getByRole('button', { name: 'Delete Week Two' }).click();
+  await expect(page.locator('#parent-spelling-list-items')).toContainText('No weekly spelling lists yet');
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.locator('#spell-it-list-status')).toContainText('No spelling lists yet');
+  await expect(page.locator('#spell-it-list-options [data-action="spell-it-start"]')).toHaveCount(0);
 });
 
 async function answerCurrentQuestion(page) {

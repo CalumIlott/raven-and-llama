@@ -29,14 +29,39 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(guest.name, 'Guest');
   assert.equal(guest.theme, 'light');
   assert.equal(guest.schoolYear, 3);
+  assert.deepEqual(Array.from(guest.spellingLists), []);
+  assert.equal(guest.activeSpellingListId, null);
   assert.deepEqual({ ...guest.subjectYears }, {});
   assert.equal(guest.currentBelt, 'white');
   accounts.recordTrainingScore('addition', 8, 10);
+  const guestList = { id: 'guest-week', name: 'This Week', words: ['quokka'] };
+  assert.equal(await accounts.updateProfile({ ...guest, spellingLists: [guestList], activeSpellingListId: guestList.id }), false);
   await accounts.flush();
 
   assert.equal(accounts.getActiveProfile().stars, 8);
+  assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().spellingLists)), [guestList]);
+  assert.equal(accounts.getActiveProfile().activeSpellingListId, guestList.id);
   assert.equal(fetchCount, 1);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
+  assert.equal(context.localStorage.getItem(accounts.GUEST_THEME_KEY), null);
+});
+
+test('spelling lists are normalized and validated with bounded unique entries', () => {
+  const { accounts } = loadAccounts();
+  const list = { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] };
+
+  assert.equal(accounts.validateSpellingLists([list]), null);
+  assert.deepEqual(JSON.parse(JSON.stringify(accounts.normalizeProfile({
+    spellingLists: [list],
+    activeSpellingListId: 'deleted-list'
+  }).spellingLists)), [list]);
+  assert.equal(accounts.normalizeProfile({
+    spellingLists: [list],
+    activeSpellingListId: 'deleted-list'
+  }).activeSpellingListId, null);
+  assert.match(accounts.validateSpellingLists([{ ...list, words: ['quokka', ' QUOKKA '] }]), /unique/i);
+  assert.match(accounts.validateSpellingLists([{ ...list, words: [''] }]), /blank/i);
+  assert.match(accounts.validateSpellingLists([{ ...list, words: ['x'.repeat(101)] }]), /100 characters/i);
 });
 
 test('profile normalization validates subject-specific years and inherits the global year', async () => {
