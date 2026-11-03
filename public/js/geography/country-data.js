@@ -330,8 +330,8 @@ window.GEOGRAPHY_COUNTRY_DATA = {
       "factSource": "Encyclopaedia Britannica",
       "factSourceUrl": "https://www.britannica.com/place/New-Zealand",
       "mapPoint": [
-        352,
-        131
+        351,
+        134
       ],
       "mapPaths": [
         "M356.89 130.07L356.01 131.29L355.24 131.69L354.65 131.28L355.23 130.46L354.9 129.91L353.82 129.51L353.85 129.15L354.57 128.8L354.7 127.38L352.64 124.53L354.33 125.27L355.34 127.21L355.36 126.53L355.81 126.8L355.96 127.56L357.44 127.96L358.01 127.58L358.52 127.7L357.97 129.17L357.21 129.15L356.89 130.07Z",
@@ -348,8 +348,8 @@ window.GEOGRAPHY_COUNTRY_DATA = {
       "factSource": "Encyclopaedia Britannica",
       "factSourceUrl": "https://www.britannica.com/place/Fiji",
       "mapPoint": [
-        358,
-        107
+        357.8,
+        107.8
       ],
       "mapPaths": [
         "M360 106.07L360 106.56L358.73 107.01L358.6 106.64L360 106.07Z",

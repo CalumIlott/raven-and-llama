@@ -6,6 +6,7 @@ const GEOGRAPHY_CONTINENTS = [
   'Oceania',
   'South America'
 ];
+const GEOGRAPHY_MAP_ZOOM_LEVELS = [1, 1.5, 2, 3];
 
 function isValidGeographyCountryData(data) {
   if (!data || !Array.isArray(data.countries) || data.countries.length === 0 ||
@@ -124,8 +125,24 @@ Object.assign(App.prototype, {
               </div>
               <span class="geography-country-count">${GEOGRAPHY_COUNTRIES.length} countries</span>
             </div>
+            <div class="geography-map-controls">
+              <label class="geography-country-picker" for="geography-country-picker">
+                <span>Find a country</span>
+                <select id="geography-country-picker" data-action="geography-country-picker">
+                  ${GEOGRAPHY_COUNTRIES.map(country => `
+                    <option value="${country.id}" ${country.id === selectedCountry.id ? 'selected' : ''}>${escapeGeographyHtml(country.name)}</option>
+                  `).join('')}
+                </select>
+              </label>
+              <div class="geography-map-zoom-controls" role="group" aria-label="Map zoom controls">
+                <button type="button" data-action="geography-map-zoom" data-delta="-1" aria-label="Zoom out" disabled>−</button>
+                <output id="geography-map-zoom-status" aria-live="polite">World view</output>
+                <button type="button" data-action="geography-map-zoom" data-delta="1" aria-label="Zoom in">+</button>
+                <button type="button" data-action="geography-map-reset" aria-label="Reset map view">Reset</button>
+              </div>
+            </div>
             <figure class="geography-map-figure">
-              <svg class="geography-map" viewBox="0 0 360 180" role="group" aria-label="Interactive world map. Select a highlighted country to see its capital and facts.">
+              <svg id="geography-world-map" class="geography-map" viewBox="0 0 360 180" role="group" aria-label="Interactive world map. Select a highlighted country to see its capital and facts.">
                 <rect class="geography-map__ocean" x="0" y="0" width="360" height="180" rx="5"></rect>
                 <g class="geography-map__countries">
                   ${GEOGRAPHY_COUNTRIES.map(country => `
@@ -191,11 +208,67 @@ Object.assign(App.prototype, {
     const details = document.getElementById('geography-country-details');
     if (!details) throw new Error('Geography country details panel was not rendered');
     details.innerHTML = renderGeographyCountryDetails(country);
+    const picker = document.getElementById('geography-country-picker');
+    if (picker) picker.value = country.id;
+    this.updateGeographyMapView(country);
     document.querySelectorAll('[data-action="geography-country-select"]').forEach(option => {
       const selected = option.dataset.countryId === country.id;
       option.setAttribute('aria-pressed', String(selected));
       option.classList.toggle('is-selected', selected);
     });
+  },
+
+  updateGeographyMapView(country) {
+    const map = document.getElementById('geography-world-map');
+    if (!map) throw new Error('Geography map was not rendered');
+    const zoomIndex = Number.isInteger(this.geographyMapZoomIndex)
+      ? this.geographyMapZoomIndex
+      : 0;
+    const zoom = GEOGRAPHY_MAP_ZOOM_LEVELS[zoomIndex];
+    if (!zoom) throw new RangeError(`Unknown geography map zoom level: ${zoomIndex}`);
+
+    if (zoom === 1) {
+      map.setAttribute('viewBox', '0 0 360 180');
+    } else {
+      const region = map.querySelector(`[data-country-id="${country.id}"]`);
+      if (!region) throw new Error(`Geography country map was not rendered: ${country.id}`);
+      const bounds = region.getBBox();
+      const width = 360 / zoom;
+      const height = 180 / zoom;
+      const left = bounds.x + bounds.width / 2 - width / 2;
+      const top = bounds.y + bounds.height / 2 - height / 2;
+      map.setAttribute('viewBox', [left, top, width, height]
+        .map(value => Number(value.toFixed(2)))
+        .join(' '));
+    }
+
+    const status = document.getElementById('geography-map-zoom-status');
+    if (status) status.textContent = zoom === 1 ? 'World view' : `${zoom}× · ${country.name}`;
+    const zoomOut = document.querySelector('[data-action="geography-map-zoom"][data-delta="-1"]');
+    const zoomIn = document.querySelector('[data-action="geography-map-zoom"][data-delta="1"]');
+    if (zoomOut) zoomOut.disabled = zoomIndex === 0;
+    if (zoomIn) zoomIn.disabled = zoomIndex === GEOGRAPHY_MAP_ZOOM_LEVELS.length - 1;
+  },
+
+  zoomGeographyMap(delta) {
+    if (![-1, 1].includes(delta)) throw new RangeError(`Invalid geography map zoom delta: ${delta}`);
+    const currentIndex = Number.isInteger(this.geographyMapZoomIndex)
+      ? this.geographyMapZoomIndex
+      : 0;
+    this.geographyMapZoomIndex = Math.max(
+      0,
+      Math.min(GEOGRAPHY_MAP_ZOOM_LEVELS.length - 1, currentIndex + delta)
+    );
+    const country = geographyCountryById(this.geographySelectedCountryId)
+      || GEOGRAPHY_COUNTRIES[0];
+    this.updateGeographyMapView(country);
+  },
+
+  resetGeographyMapZoom() {
+    this.geographyMapZoomIndex = 0;
+    const country = geographyCountryById(this.geographySelectedCountryId)
+      || GEOGRAPHY_COUNTRIES[0];
+    this.updateGeographyMapView(country);
   },
 
   selectGeographyCountry(countryId) {

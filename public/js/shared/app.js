@@ -201,6 +201,8 @@ class App {
       case 'maths-world': this.showMathsWorld(); break;
       case 'geography-world': this.showGeographyWorld(); break;
       case 'geography-country-select': this.selectGeographyCountry(target.dataset.countryId); break;
+      case 'geography-map-zoom': this.zoomGeographyMap(Number(target.dataset.delta)); break;
+      case 'geography-map-reset': this.resetGeographyMapZoom(); break;
       case 'geography-country-speak': this.speakGeographyCountry(); break;
       case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
       case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;
@@ -384,6 +386,9 @@ class App {
 
   handleChangeAction(event) {
     if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+    if (event.target.dataset.action === 'geography-country-picker') {
+      this.selectGeographyCountry(event.target.value);
+    }
     if (event.target.dataset.action === 'school-year-select') {
       const schoolYear = Number(event.target.value);
       if (ProfileManager.isValidSchoolYear(schoolYear)) {

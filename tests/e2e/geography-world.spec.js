@@ -50,6 +50,31 @@ test('country map and list selection share facts and support keyboard activation
   await expect(page.locator('.geography-map__region[data-country-id="australia"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('country markers align to their map outlines and picker zoom controls work', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+
+  const misplacedCountries = await page.evaluate(() =>
+    window.GEOGRAPHY_COUNTRY_DATA.countries
+      .filter(country => {
+        const region = document.querySelector(`.geography-map__region[data-country-id="${country.id}"]`);
+        const point = new DOMPoint(...country.mapPoint);
+        return !Array.from(region.querySelectorAll('path')).some(path => path.isPointInFill(point));
+      })
+      .map(country => country.id)
+  );
+  expect(misplacedCountries).toEqual([]);
+
+  await page.getByLabel('Find a country').selectOption('fiji');
+  await expect(page.getByRole('heading', { name: 'Fiji', exact: true })).toBeVisible();
+  await expect(page.locator('#geography-country-picker')).toHaveValue('fiji');
+  await page.getByRole('button', { name: 'Zoom in' }).click();
+  await expect(page.locator('#geography-world-map')).not.toHaveAttribute('viewBox', '0 0 360 180');
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('Fiji');
+  await page.getByRole('button', { name: 'Reset map view' }).click();
+  await expect(page.locator('#geography-world-map')).toHaveAttribute('viewBox', '0 0 360 180');
+});
+
 test('country facts can be spoken with a clear fallback when speech is unavailable', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/geography');
