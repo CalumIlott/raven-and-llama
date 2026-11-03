@@ -372,6 +372,8 @@ Object.assign(App.prototype, {
         name: 'Geography & The World',
         icon: '🌍',
         description: 'Discover places, people, and our planet.',
+        entryAction: 'geography-world',
+        entryLabel: 'Explore Geography & The World',
         actions: []
       },
       {
@@ -428,7 +430,7 @@ Object.assign(App.prototype, {
         explore.type = 'button';
         explore.dataset.action = subjectDefinition.entryAction;
         explore.className = 'mt-4 rounded-xl border border-sky-500/60 bg-sky-950/60 px-4 py-2 text-sm font-bold text-sky-200 hover:bg-sky-900';
-        explore.textContent = 'Explore Maths World';
+        explore.textContent = subjectDefinition.entryLabel || `Explore ${subjectDefinition.name}`;
         subject.append(explore);
       }
 
@@ -450,7 +452,7 @@ Object.assign(App.prototype, {
         programs.append(module);
       });
 
-      if (subjectDefinition.actions.length === 0) {
+      if (subjectDefinition.actions.length === 0 && !subjectDefinition.entryAction) {
         const comingSoon = document.createElement('p');
         comingSoon.className = 'learning-subject-empty';
         const status = document.createElement('span');

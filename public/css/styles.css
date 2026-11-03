@@ -1368,6 +1368,278 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   background: var(--page-panel-raised);
 }
 
+#app-main[data-page="geography-world"] .geography-intro {
+  margin-bottom: 1.5rem;
+}
+
+#app-main[data-page="geography-world"] .geography-explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  align-items: start;
+  gap: 1.25rem;
+}
+
+#app-main[data-page="geography-world"] .geography-map-panel,
+#app-main[data-page="geography-world"] .geography-country-list,
+#app-main[data-page="geography-world"] .geography-country-details {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1.5rem;
+  background: var(--page-panel);
+  color: var(--page-ink);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="geography-world"] .geography-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+#app-main[data-page="geography-world"] .geography-section-heading h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+#app-main[data-page="geography-world"] .geography-eyebrow,
+#app-main[data-page="geography-world"] .geography-country-details__continent {
+  margin: 0 0 0.2rem;
+  color: #6ee7c8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="geography-world"] .geography-country-count {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="geography-world"] .geography-map-figure {
+  margin: 0;
+}
+
+#app-main[data-page="geography-world"] .geography-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: #d7ecf3;
+}
+
+#app-main[data-page="geography-world"] .geography-map__ocean {
+  fill: #d7ecf3;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region {
+  cursor: pointer;
+  outline: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region path {
+  fill: #b7d7ad;
+  stroke: #527b65;
+  stroke-width: 0.32;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: fill 120ms ease, stroke 120ms ease;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region:hover path,
+#app-main[data-page="geography-world"] .geography-map__region:focus-visible path {
+  fill: #f0c967;
+  stroke: #173c36;
+  stroke-width: 1.6;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region.is-selected path {
+  fill: #f0c967;
+  stroke: #173c36;
+  stroke-width: 1.1;
+}
+
+#app-main[data-page="geography-world"] .geography-map__marker {
+  fill: #176f65;
+  stroke: #fff;
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region.is-selected .geography-map__marker {
+  fill: #a63e2f;
+}
+
+#app-main[data-page="geography-world"] .geography-map-caption,
+#app-main[data-page="geography-world"] .geography-map-attribution {
+  margin: 0.55rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+#app-main[data-page="geography-world"] .geography-map-attribution a,
+#app-main[data-page="geography-world"] .geography-country-details__source a {
+  color: #6ee7c8;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+#app-main[data-page="geography-world"] .geography-details-column {
+  display: grid;
+  gap: 1rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__flag {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  font-size: 2rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__capital {
+  margin: 1.1rem 0 0;
+  color: var(--page-ink);
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__fact {
+  margin: 0.75rem 0 0;
+  color: var(--page-ink);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__source {
+  margin: 0.8rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+}
+
+#app-main[data-page="geography-world"] .geography-speak-button {
+  margin-top: 1rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #0f9f80;
+  border-radius: 0.8rem;
+  background: #064e46;
+  color: #fff;
+  font-weight: 700;
+}
+
+#app-main[data-page="geography-world"] .geography-speak-button:hover,
+#app-main[data-page="geography-world"] .geography-speak-button:focus-visible {
+  background: #087c68;
+}
+
+#app-main[data-page="geography-world"] .geography-speech-status {
+  min-height: 1.25rem;
+  margin: 0.4rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-groups {
+  display: grid;
+  gap: 1rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-group h3 {
+  margin: 0 0 0.45rem;
+  color: var(--page-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="geography-world"] .geography-country-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  gap: 0.4rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-option {
+  display: flex;
+  min-width: 0;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+#app-main[data-page="geography-world"] .geography-country-option:hover,
+#app-main[data-page="geography-world"] .geography-country-option:focus-visible,
+#app-main[data-page="geography-world"] .geography-country-option.is-selected {
+  border-color: #0f9f80;
+  background: #064e46;
+  color: #fff;
+}
+
+#app-main[data-page="geography-world"] .geography-country-option__flag {
+  flex: 0 0 auto;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  #app-main[data-page="geography-world"] .geography-explorer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+html.theme-light #app-main[data-page="geography-world"] .geography-eyebrow,
+html.theme-light #app-main[data-page="geography-world"] .geography-country-details__continent,
+html.theme-light #app-main[data-page="geography-world"] .geography-map-attribution a,
+html.theme-light #app-main[data-page="geography-world"] .geography-country-details__source a {
+  color: #0f766e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app-main[data-page="geography-world"] .geography-map__region path,
+  #app-main[data-page="geography-world"] .geography-country-option {
+    transition: none;
+  }
+}
+
 /* Games: a picker first, with the arcade in its own focused view */
 #app-main[data-page="games"] .games-hub-hero,
 #app-main[data-page="critter-catch"] > div:first-child > div:nth-child(2) {
