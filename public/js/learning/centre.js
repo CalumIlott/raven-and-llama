@@ -397,6 +397,8 @@ Object.assign(App.prototype, {
         name: 'Life Skills',
         icon: '🌟',
         description: 'Learn practical skills for everyday life.',
+        entryAction: 'life-skills-party',
+        entryLabel: 'Plan a Party',
         actions: ['telling-time', 'money-home']
       }
     ];

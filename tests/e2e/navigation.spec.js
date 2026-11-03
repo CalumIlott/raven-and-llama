@@ -435,6 +435,10 @@ test('Learning Centre groups its existing programs under the right subjects', as
     name: 'Explore Brain Power',
     exact: true
   })).toBeVisible();
+  await expect(subject('life-skills').getByRole('button', {
+    name: 'Plan a Party',
+    exact: true
+  })).toBeVisible();
 
   for (const subjectId of ['geography-world']) {
     await expect(subject(subjectId).getByText('Coming soon', { exact: true })).toBeVisible();

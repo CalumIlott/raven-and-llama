@@ -2180,6 +2180,241 @@ html.theme-light #app-main[data-page="brain-power-code"] .brain-power-code-clue 
   }
 }
 
+#app-main[data-page="life-skills-party"] .party-planner-panel {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--page-edge);
+  border-top: 5px solid #34d399;
+  border-radius: 1.5rem;
+  background: var(--page-panel);
+  color: var(--page-ink);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-panel h1 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-kicker {
+  margin: 0 0 0.3rem;
+  color: #6ee7b7;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-instructions,
+#app-main[data-page="life-skills-party"] .party-planner-result > p:not(.party-planner-kicker) {
+  max-width: 52rem;
+  margin: 0.6rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.6;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1.2rem 0;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget > div {
+  padding: 0.75rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.9rem;
+  background: var(--page-panel-raised);
+  text-align: center;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget dt {
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget dd {
+  margin: 0.25rem 0 0;
+  color: var(--page-ink);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item__copy {
+  min-width: 0;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item__copy p {
+  margin: 0.2rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__price,
+#app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__required {
+  color: #6ee7b7;
+  font-weight: 800;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: #065f46;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity button:disabled {
+  background: var(--page-panel);
+  color: var(--page-muted);
+  cursor: not-allowed;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity output {
+  min-width: 1.5rem;
+  color: var(--page-ink);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-status {
+  min-height: 1.5rem;
+  margin: 0.9rem 0;
+  color: var(--page-ink);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #047857;
+  border-radius: 0.85rem;
+  background: #047857;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-button:hover {
+  background: #065f46;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-button--secondary {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-back {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border: 0;
+  background: transparent;
+  color: #6ee7b7;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-result {
+  text-align: center;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-result > p:not(.party-planner-kicker) {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-result__items {
+  display: inline-grid;
+  gap: 0.25rem;
+  margin: 1rem auto 0;
+  padding-left: 1.25rem;
+  color: var(--page-ink);
+  text-align: left;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity button:focus-visible,
+#app-main[data-page="life-skills-party"] .party-planner-button:focus-visible,
+#app-main[data-page="life-skills-party"] .party-planner-back:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 3px;
+}
+
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-kicker,
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-back,
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__price,
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__required {
+  color: #065f46;
+}
+
+@media (max-width: 640px) {
+  #app-main[data-page="life-skills-party"] .party-planner-items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 460px) {
+  #app-main[data-page="life-skills-party"] .party-planner-budget {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #app-main[data-page="life-skills-party"] .party-planner-item {
+    align-items: flex-start;
+  }
+}
+
 /* Games: a picker first, with the arcade in its own focused view */
 #app-main[data-page="games"] .games-hub-hero,
 #app-main[data-page="critter-catch"] > div:first-child > div:nth-child(2) {

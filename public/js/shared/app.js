@@ -46,6 +46,7 @@ class App {
       '/learning-centre/science': 'science-lab',
       '/learning-centre/history': 'history-discovery',
       '/learning-centre/brain-power': 'brain-power-hub',
+      '/learning-centre/life-skills/party-planner': 'life-skills-party',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -70,6 +71,7 @@ class App {
       'science-lab': () => this.showScienceLab(),
       'history-discovery': () => this.showHistoryHub(),
       'brain-power-hub': () => this.showBrainPowerHub(),
+      'life-skills-party': () => this.startPartyPlanner(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -98,7 +100,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/life-skills/party-planner', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -305,6 +307,10 @@ class App {
       case 'money-clear': this.clearMoneyCoins(); break;
       case 'money-submit': this.submitMoneyAmount(); break;
       case 'money-next': this.nextMoneyQuestion(); break;
+      case 'life-skills-party': this.startPartyPlanner(); break;
+      case 'party-plan-quantity': this.adjustPartyPlannerQuantity(target.dataset.itemId, Number(target.dataset.delta)); break;
+      case 'party-plan-submit': this.submitPartyPlan(); break;
+      case 'party-plan-reset': this.resetPartyPlan(); break;
       case 'spelling-pronunciation': this.speakSpellingSafariWord(); break;
       case 'spelling-home': this.showSpellingSafari(); break;
       case 'spelling-start': this.startSpellingSafari(target.dataset.activityId, target.dataset.difficulty); break;
@@ -545,6 +551,9 @@ class App {
       } else if (['brain-power', 'brain-power-pattern', 'brain-power-memory', 'brain-power-code'].includes(this.currentView)) {
         subBadge.textContent = 'Brain Power';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'life-skills-party') {
+        subBadge.textContent = 'Life Skills';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
         subBadge.classList.remove('hidden');
@@ -629,6 +638,8 @@ class App {
       this.renderBrainPowerMemory();
     } else if (this.currentView === 'brain-power-code' && this.brainPowerCodeGame) {
       this.renderBrainPowerCodeBreaker();
+    } else if (this.currentView === 'life-skills-party' && this.partyPlannerGame) {
+      this.renderPartyPlanner();
     } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {
