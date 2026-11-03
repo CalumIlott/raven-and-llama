@@ -66,6 +66,7 @@ test('plant cycle cards explain the stages and keyboard users can retry and comp
 
 test('plant stages can be dragged and moved without duplicates', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'mobile-chromium', 'Touch devices use tap-to-place controls instead of native drag-and-drop.');
+  await page.setViewportSize({ width: 1280, height: 1200 });
   await setupApp(page);
   await page.goto('/learning-centre/science');
   await page.locator('[data-action="plant-life-cycle-start"]').click();
