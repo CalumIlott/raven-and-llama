@@ -89,6 +89,7 @@ class App {
     window.SpellingPronunciation?.cancel();
     if (replace || this.isInitializing) window.history.replaceState(null, '', path);
     else window.history.pushState(null, '', path);
+    window.scrollTo?.(0, 0);
   }
 
   showHomeRoute() {
@@ -111,10 +112,68 @@ class App {
     document.addEventListener('click', event => this.handleClickAction(event));
     document.addEventListener('submit', event => this.handleSubmitAction(event));
     document.addEventListener('change', event => this.handleChangeAction(event));
+    document.addEventListener('dragstart', event => this.handleNativeDragStart(event));
+    document.addEventListener('dragover', event => this.handleNativeDragOver(event));
+    document.addEventListener('dragleave', event => this.handleNativeDragLeave(event));
+    document.addEventListener('drop', () => this.clearNativeDragFeedback());
+    document.addEventListener('dragend', () => this.clearNativeDragFeedback());
     window.addEventListener('popstate', () => {
       this.showModule(this.moduleForPath());
       window.scrollTo?.(0, 0);
     });
+  }
+
+  handleNativeDragStart(event) {
+    const source = event.target?.closest?.('[draggable="true"]:not(:disabled)');
+    if (!source || !event.dataTransfer) return;
+
+    document.body.classList.add('activity-drag-active');
+    source.classList.add('activity-drag-source');
+    const preview = source.cloneNode(true);
+    const bounds = source.getBoundingClientRect();
+    preview.removeAttribute('id');
+    preview.removeAttribute('draggable');
+    preview.setAttribute('aria-hidden', 'true');
+    preview.classList.add('activity-drag-preview');
+    preview.style.width = `${bounds.width}px`;
+    preview.style.height = `${bounds.height}px`;
+    document.body.append(preview);
+
+    if (typeof event.dataTransfer.setDragImage === 'function') {
+      event.dataTransfer.setDragImage(
+        preview,
+        Math.min(bounds.width / 2, 48),
+        Math.min(bounds.height / 2, 48)
+      );
+    }
+  }
+
+  handleNativeDragOver(event) {
+    const target = event.target?.closest?.('[data-drag-drop-target]');
+    if (!target) return;
+    target.classList.add('activity-drop-target');
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = target.dataset.dragDropEffect === 'copy' ? 'copy' : 'move';
+    }
+  }
+
+  handleNativeDragLeave(event) {
+    const target = event.target?.closest?.('[data-drag-drop-target]');
+    const relatedTarget = event.relatedTarget;
+    if (target && !(relatedTarget instanceof Node && target.contains(relatedTarget))) {
+      target.classList.remove('activity-drop-target');
+    }
+  }
+
+  clearNativeDragFeedback() {
+    document.body.classList.remove('activity-drag-active');
+    document.querySelectorAll('.activity-drag-source').forEach(source => {
+      source.classList.remove('activity-drag-source');
+    });
+    document.querySelectorAll('.activity-drop-target').forEach(target => {
+      target.classList.remove('activity-drop-target');
+    });
+    document.querySelectorAll('.activity-drag-preview').forEach(preview => preview.remove());
   }
 
   handleClickAction(event) {

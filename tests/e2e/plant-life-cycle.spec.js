@@ -72,7 +72,9 @@ test('plant stages can be dragged and moved without duplicates', async ({ page }
   await page.locator('[data-action="plant-life-cycle-start"]').click();
   const firstPosition = page.locator('[data-cycle-position-index="0"]');
   await firstPosition.scrollIntoViewIfNeeded();
-  await page.locator('[data-cycle-stage-id="seed"]').dragTo(firstPosition);
+  const seed = page.locator('[data-cycle-stage-id="seed"]');
+  await expect(seed).toHaveCSS('cursor', 'grab');
+  await seed.dragTo(firstPosition);
 
   await expect(firstPosition).toContainText('Seed');
   await page.locator('[data-cycle-stage-id="seed"]').dragTo(page.locator('[data-cycle-position-index="3"]'));

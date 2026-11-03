@@ -32,6 +32,19 @@ test('solar system planets and activity use a stable science skill mapping', () 
   assert.ok(Array.from(context.eval('SOLAR_SYSTEM_PLANETS')).every(planet => planet.fact));
 });
 
+test('planet tray shuffle returns each planet without changing the canonical answer order', () => {
+  const context = createSolarSystemContext();
+  const canonicalOrder = Array.from(context.eval('SOLAR_SYSTEM_PLANETS'), planet => planet.id);
+  const shuffledOrder = Array.from(context.shuffleSolarSystemPlanets(() => 0), planet => planet.id);
+
+  assert.notDeepEqual(shuffledOrder, canonicalOrder);
+  assert.deepEqual([...shuffledOrder].sort(), [...canonicalOrder].sort());
+  assert.deepEqual(
+    Array.from(context.eval('SOLAR_SYSTEM_PLANETS'), planet => planet.id),
+    canonicalOrder
+  );
+});
+
 test('placing a planet moves it and cannot create duplicates', () => {
   const context = createSolarSystemContext();
   const empty = Array(8).fill(null);

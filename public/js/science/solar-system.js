@@ -50,6 +50,16 @@ const SOLAR_SYSTEM_PLANETS = [
     fact: 'Neptune is the farthest planet from the Sun. One Neptunian year lasts about 165 Earth years.'
   }
 ];
+
+function shuffleSolarSystemPlanets(random = Math.random) {
+  const planets = [...SOLAR_SYSTEM_PLANETS];
+  for (let index = planets.length - 1; index > 0; index--) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [planets[index], planets[swapIndex]] = [planets[swapIndex], planets[index]];
+  }
+  return planets;
+}
+
 const SOLAR_SYSTEM_ORBIT_LAYOUT = [
   { radius: 34, angle: -90 },
   { radius: 62, angle: -45 },
@@ -196,6 +206,7 @@ Object.assign(App.prototype, {
   startSolarSystemActivity() {
     this.currentView = 'science-solar-system';
     this.solarSystemGame = {
+      trayPlanets: shuffleSolarSystemPlanets(),
       placements: Array(SOLAR_SYSTEM_PLANETS.length).fill(null),
       selectedPlanetId: null,
       factPlanetId: null,
@@ -359,7 +370,7 @@ Object.assign(App.prototype, {
       const label = planet ? `Orbit ${ordinal}, ${planet.name}. Place the selected planet here.` :
         `Orbit ${ordinal}${distance ? `, ${distance}` : ''}, empty. Place the selected planet here.`;
       return `
-        <button type="button" data-action="solar-system-place" data-orbit-index="${index}" data-solar-orbit-index="${index}"
+        <button type="button" data-action="solar-system-place" data-orbit-index="${index}" data-solar-orbit-index="${index}" data-drag-drop-target
                 aria-label="${label}" aria-describedby="solar-system-instructions"
                 class="min-h-16 rounded-xl border-2 border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-white hover:border-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors motion-reduce:transition-none">
           <span class="block text-xs text-slate-400">Orbit ${ordinal}</span>
@@ -396,7 +407,7 @@ Object.assign(App.prototype, {
 
           <p id="solar-system-instructions" class="text-sm text-slate-300 mb-4">Select a planet and an orbit, or drag a planet to an orbit. On touch screens, tap a planet and then tap its orbit.</p>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-            ${SOLAR_SYSTEM_PLANETS.map(planet => {
+            ${game.trayPlanets.map(planet => {
               const orbitIndex = game.placements.indexOf(planet.id);
               const placement = orbitIndex >= 0 ? `Orbit ${orbitIndex + 1}` : 'Not placed';
               return `

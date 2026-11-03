@@ -18,6 +18,19 @@ test('Science Lab route survives refresh and keeps Science Explorers available',
   await expect(page.locator('[data-mission-id="orbit-rescue"][data-difficulty="easy"]')).toBeVisible();
 });
 
+test('planet tray starts in a shuffled order', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.evaluate(() => { Math.random = () => 0; });
+  await page.locator('[data-action="solar-system-start"]').click();
+
+  const trayOrder = await page.locator('[data-solar-planet-id]').evaluateAll(
+    planets => planets.map(planet => planet.dataset.solarPlanetId)
+  );
+  expect(trayOrder).not.toEqual(['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
+  expect(new Set(trayOrder).size).toBe(8);
+});
+
 test('planet order can be completed with keyboard and incorrect planets are identified', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/science');
@@ -68,12 +81,45 @@ test('planet order can be completed with keyboard and incorrect planets are iden
 
 test('planets can be dragged to orbit slots and moved without duplicates', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'mobile-chromium', 'Touch devices use tap-to-place controls instead of native drag-and-drop.');
+  await page.setViewportSize({ width: 1280, height: 1400 });
   await setupApp(page);
   await page.goto('/learning-centre/science');
   await page.locator('[data-action="solar-system-start"]').click();
-  await page.locator('[data-solar-planet-id="mercury"]').dragTo(page.locator('[data-solar-orbit-index="0"]'));
+  const mercury = page.locator('[data-solar-planet-id="mercury"]');
+  const firstOrbit = page.locator('[data-solar-orbit-index="0"]');
+  await expect(mercury).toHaveCSS('cursor', 'grab');
+  const dragFeedback = page.evaluate(() => new Promise(resolve => {
+    document.addEventListener('dragstart', event => {
+      const source = event.target.closest('[draggable="true"]');
+      const onDragOver = dragEvent => {
+        const target = dragEvent.target.closest('[data-drag-drop-target]');
+        if (!target) return;
+        document.removeEventListener('dragover', onDragOver);
+        resolve({
+          sourceCursor: getComputedStyle(source).cursor,
+          sourceIsDragging: source.classList.contains('activity-drag-source'),
+          pageIsDragging: document.body.classList.contains('activity-drag-active'),
+          previewCount: document.querySelectorAll('.activity-drag-preview').length,
+          targetIsHighlighted: target.classList.contains('activity-drop-target'),
+          dropEffect: dragEvent.dataTransfer.dropEffect
+        });
+      };
+      document.addEventListener('dragover', onDragOver);
+    }, { once: true });
+  }));
+  await mercury.dragTo(firstOrbit);
+  expect(await dragFeedback).toEqual({
+    sourceCursor: 'grabbing',
+    sourceIsDragging: true,
+    pageIsDragging: true,
+    previewCount: 1,
+    targetIsHighlighted: true,
+    dropEffect: 'move'
+  });
+  await expect(page.locator('body')).not.toHaveClass(/activity-drag-active/);
+  await expect(page.locator('.activity-drag-preview')).toHaveCount(0);
 
-  await expect(page.locator('[data-solar-orbit-index="0"]')).toContainText('Mercury');
+  await expect(firstOrbit).toContainText('Mercury');
   await page.locator('[data-solar-planet-id="mercury"]').dragTo(page.locator('[data-solar-orbit-index="1"]'));
   await expect(page.locator('[data-solar-orbit-index="0"]')).toContainText('Empty');
   await expect(page.locator('[data-solar-orbit-index="1"]')).toContainText('Mercury');
