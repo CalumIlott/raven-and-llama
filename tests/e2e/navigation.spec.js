@@ -377,6 +377,10 @@ test('parent progress report and trophy room render their full states', async ({
   const skillCount = await page.evaluate(() => window.BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0));
   await expect(page.locator('#parent-stats-tbody tr')).toHaveCount(skillCount);
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('No completed Learning Centre activities yet.');
+  await expect(page.locator('#parent-analytics-subjects')).toContainText('No completed activity history in this date range.');
+  await expect(page.locator('#parent-analytics-trends')).toContainText('No daily trend data is available for this date range.');
+  await page.locator('#parent-analytics-range').selectOption('90');
+  await expect(page.locator('#parent-analytics-range')).toHaveValue('90');
   const reportLayout = await page.locator('.parent-report-table-wrap').evaluate(element => ({
     overflowX: getComputedStyle(element).overflowX,
     scrollWidth: element.scrollWidth,

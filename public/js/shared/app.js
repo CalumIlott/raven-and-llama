@@ -446,6 +446,13 @@ class App {
 
   handleChangeAction(event) {
     if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+    if (event.target.dataset.action === 'parent-analytics-range') {
+      const rangeDays = Number(event.target.value);
+      if ([7, 30, 90].includes(rangeDays)) {
+        this.parentAnalyticsRangeDays = rangeDays;
+        this.renderParentAnalytics(rangeDays);
+      }
+    }
     if (event.target.dataset.action === 'geography-country-picker') {
       this.selectGeographyCountry(event.target.value);
     }
@@ -1265,6 +1272,105 @@ class App {
   // =========================================================================
   // PARENT / TEACHER PROGRESS REPORT
   // =========================================================================
+  renderParentAnalytics(rangeDays = 30) {
+    const profile = ProfileManager.getActiveProfile();
+    const analytics = window.ProgressAnalytics.aggregateActivityHistory(
+      profile?.activityHistory,
+      rangeDays,
+      new Date(),
+      BELTS_DATA
+    );
+    const createCell = (value, className = 'py-2.5 px-3 text-slate-300') => {
+      const cell = document.createElement('td');
+      cell.className = className;
+      cell.textContent = String(value);
+      return cell;
+    };
+    const addEmptyRow = (tbody, message, columnCount) => {
+      if (!tbody) return;
+      const row = document.createElement('tr');
+      const cell = createCell(message, 'py-4 px-3 text-center text-slate-400');
+      cell.colSpan = columnCount;
+      row.append(cell);
+      tbody.replaceChildren(row);
+    };
+
+    const rangeSelect = document.getElementById('parent-analytics-range');
+    if (rangeSelect) rangeSelect.value = String(rangeDays);
+
+    const subjectsBody = document.getElementById('parent-analytics-subjects');
+    if (analytics.subjects.length === 0) {
+      addEmptyRow(subjectsBody, 'No completed activity history in this date range.', 4);
+    } else if (subjectsBody) {
+      subjectsBody.replaceChildren();
+      analytics.subjects.forEach(subject => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-800 text-xs sm:text-sm';
+        const accuracy = subject.accuracy === null
+          ? 'Not recorded'
+          : `${subject.correctAnswers} / ${subject.totalAnswers} (${subject.accuracy}%)`;
+        [
+          subject.subject,
+          subject.attempts,
+          subject.totalAnswers,
+          accuracy
+        ].forEach((value, index) => {
+          row.append(createCell(value, index === 0
+            ? 'py-2.5 px-3 text-slate-300 font-medium'
+            : 'py-2.5 px-3 text-center text-slate-400'));
+        });
+        subjectsBody.append(row);
+      });
+    }
+
+    const trendsBody = document.getElementById('parent-analytics-trends');
+    if (analytics.sampleCount === 0) {
+      addEmptyRow(trendsBody, 'No daily trend data is available for this date range.', 3);
+    } else if (trendsBody) {
+      trendsBody.replaceChildren();
+      analytics.days.forEach(day => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-800 text-xs sm:text-sm';
+        const dateLabel = new Intl.DateTimeFormat('en-AU', {
+          dateStyle: 'medium',
+          timeZone: 'UTC'
+        }).format(new Date(`${day.date}T00:00:00Z`));
+        const accuracy = day.accuracy === null
+          ? 'Not recorded'
+          : `${day.correctAnswers} / ${day.totalAnswers} (${day.accuracy}%)`;
+        [dateLabel, day.attempts, accuracy].forEach((value, index) => {
+          row.append(createCell(value, index === 0
+            ? 'py-2.5 px-3 text-slate-300 font-medium'
+            : 'py-2.5 px-3 text-center text-slate-400'));
+        });
+        trendsBody.append(row);
+      });
+    }
+
+    const mappingsBody = document.getElementById('parent-analytics-mappings');
+    if (analytics.activities.length === 0) {
+      addEmptyRow(mappingsBody, 'No activity-to-skill mappings are available for this date range.', 4);
+    } else if (mappingsBody) {
+      mappingsBody.replaceChildren();
+      analytics.activities.forEach(activity => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-800 text-xs sm:text-sm';
+        const skill = activity.skillName
+          ? `${activity.beltName} - ${activity.skillName}`
+          : activity.skillId
+            ? `Unresolved Learning Centre skill (${activity.skillId})`
+            : 'No Learning Centre skill mapping recorded';
+        [
+          activity.subject,
+          activity.title,
+          skill,
+          activity.australianCurriculum || 'Not mapped'
+        ].forEach(value => row.append(createCell(value)));
+        mappingsBody.append(row);
+      });
+    }
+  }
+
   showParentOverview() {
     const modal = document.getElementById('parent-modal');
     if (!modal) return;
@@ -1348,6 +1454,7 @@ class App {
     this.spellingListEditingId = null;
     this.setSpellingListStatus('');
     this.renderParentSpellingLists();
+    this.renderParentAnalytics(this.parentAnalyticsRangeDays || 30);
     this.openDialog(modal);
   }
 

@@ -166,7 +166,19 @@ test('local Worker enforces account boundaries, rate limits, and security header
             totalAnswers: 1,
             timesPlayed: 1
           }
-        }
+        },
+        activityHistory: [{
+          date: dailyChallengeDayKey,
+          activityId: 'science-virtual-lab',
+          title: 'Virtual Laboratory',
+          subject: 'Science Lab',
+          skillId: 'science_virtual_lab',
+          kind: 'quiz',
+          score: 2,
+          total: 2,
+          correctAnswers: 1,
+          totalAnswers: 1
+        }]
       }
     })
   });
@@ -183,6 +195,18 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].skillId, 'science_virtual_lab');
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 1);
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 1);
+  assert.deepEqual(savedProgress.activityHistory, [{
+    date: dailyChallengeDayKey,
+    activityId: 'science-virtual-lab',
+    title: 'Virtual Laboratory',
+    subject: 'Science Lab',
+    skillId: 'science_virtual_lab',
+    kind: 'quiz',
+    score: 2,
+    total: 2,
+    correctAnswers: 1,
+    totalAnswers: 1
+  }]);
   assert.deepEqual(savedProgress.questProgress, {
     'brain-power-trail': { completedStepIds: ['pattern-recognition'] }
   });
@@ -218,6 +242,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(otherProfile.spellingLists, []);
   assert.equal(otherProfile.activeSpellingListId, null);
   assert.deepEqual(otherProfile.activityProgress, {});
+  assert.deepEqual(otherProfile.activityHistory, []);
   assert.deepEqual(otherProfile.earnedBadges, []);
   assert.deepEqual(otherProfile.ownedCosmetics, []);
   assert.deepEqual(otherProfile.dailyChallenges, { days: {} });

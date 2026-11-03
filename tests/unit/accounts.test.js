@@ -13,6 +13,7 @@ function loadAccounts(fetchImplementation) {
   loadBrowserScripts(
     context,
     'public/js/mathmasters/curriculum.js',
+    'public/js/shared/progress-analytics.js',
     'public/js/shared/accounts.js',
     'public/js/shared/achievement-badges.js',
     'public/js/shared/cosmetic-shop.js',
@@ -333,6 +334,38 @@ test('activity scores preserve skill and answer metrics, award configured stars,
   });
   assert.equal(profile.stars, 14);
   assert.deepEqual({ ...profile.skillsProgress }, {});
+  assert.deepEqual(Array.from(profile.activityHistory, entry => ({
+    activityId: entry.activityId,
+    subject: entry.subject,
+    correctAnswers: entry.correctAnswers,
+    totalAnswers: entry.totalAnswers
+  })), [
+    { activityId: 'time-hours', subject: 'Life Skills', correctAnswers: 4, totalAnswers: 5 },
+    { activityId: 'time-hours', subject: 'Life Skills', correctAnswers: 3, totalAnswers: 5 }
+  ]);
+  assert.equal(profile.activityHistory.length, 2);
+});
+
+test('activity history is capped and remains memory-only for guests', async () => {
+  const { context, accounts } = loadAccounts(async () => response({}, 401));
+  await accounts.initialize();
+
+  const activity = {
+    id: 'memory-check',
+    title: 'Memory Check',
+    subject: 'Brain Power',
+    kind: 'game',
+    game: { scoreUnit: 'points' },
+    settings: { awardStars: false }
+  };
+  for (let index = 0; index < 370; index++) {
+    accounts.recordActivityScore(activity, index);
+  }
+
+  assert.equal(accounts.getActiveProfile().activityHistory.length, 365);
+  assert.equal(accounts.getActiveProfile().activityHistory.at(-1).activityId, 'memory-check');
+  await accounts.flush();
+  assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 
 test('endless high scores keep the best valid score for each belt and timetables', async () => {
