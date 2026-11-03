@@ -1,6 +1,6 @@
 # Raven & Llama Learning
 
-A family-friendly learning platform with Maths World and Number Builder, Maths Masters, Times Tables practice, arcade activities, printable certificates, and optional username/password accounts. Guests can play without registering; guest progress is temporary and is discarded when the visit ends. Signed-in progress is private to that account and syncs across devices through Cloudflare D1.
+A family-friendly learning platform with Maths World activities including Number Builder and Fraction Pizza, Maths Masters, Times Tables practice, arcade activities, printable certificates, and optional username/password accounts. Guests can play without registering; guest progress is temporary and is discarded when the visit ends. Signed-in progress is private to that account and syncs across devices through Cloudflare D1.
 
 ## Run Locally
 
@@ -28,7 +28,7 @@ npm test
 npm run audit
 ```
 
-The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation including Maths World and Number Builder, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, progress/trophy views, and keyboard/mobile accessibility. Browser tests use an isolated account store. Run `npm run test:css`, `npm run test:unit`, `npm run test:integration`, `npm run test:worker`, `npm run test:e2e`, or `npm run audit` to run one check. GitHub Actions verifies committed assets, runs unit/integration checks on Node.js 22, 24, and 26, validates the Worker bundle, runs desktop and mobile Chromium E2E, and audits dependencies for pull requests targeting `main`. See [tests/README.md](tests/README.md) for coverage details.
+The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation including Maths World, Number Builder, and Fraction Pizza, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, progress/trophy views, and keyboard/mobile accessibility. Browser tests use an isolated account store. Run `npm run test:css`, `npm run test:unit`, `npm run test:integration`, `npm run test:worker`, `npm run test:e2e`, or `npm run audit` to run one check. GitHub Actions verifies committed assets, runs unit/integration checks on Node.js 22, 24, and 26, validates the Worker bundle, runs desktop and mobile Chromium E2E, and audits dependencies for pull requests targeting `main`. See [tests/README.md](tests/README.md) for coverage details.
 
 ## Project Layout
 

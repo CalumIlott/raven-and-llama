@@ -29,7 +29,7 @@ module.exports = defineConfig({
     use: { ...devices['Desktop Chrome'] }
   }, {
     name: 'mobile-chromium',
-    testMatch: '**/accessibility.spec.js',
+    testMatch: ['**/accessibility.spec.js', '**/fraction-pizza.spec.js'],
     use: { ...devices['Pixel 7'] }
   }],
   webServer: {
