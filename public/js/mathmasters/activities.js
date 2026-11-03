@@ -97,6 +97,46 @@ function evaluateBodmasExpression(expression) {
   }
 }
 
+function createConversionPairs() {
+  return Array.from({ length: 101 }, (_, percent) => ({
+    fraction: percent === 0 ? '0/1' : percent === 100 ? '1/1' : QuestionGenerator.formatFraction(percent, 100),
+    decimal: String(Number((percent / 100).toFixed(2))),
+    percent: `${percent}%`
+  }));
+}
+
+function generateBodmasChallenge() {
+  const operators = ['+', '-', '*', '/', '^'];
+  const expressionForms = [
+    (numbers, ops) => `(${numbers[0]} ${ops[0]} ${numbers[1]}) ${ops[1]} ${numbers[2]}`,
+    (numbers, ops) => `${numbers[0]} ${ops[0]} (${numbers[1]} ${ops[1]} ${numbers[2]})`
+  ];
+
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const digits = QuestionGenerator.shuffle(['2', '0', '1', '8']);
+    const cuts = QuestionGenerator.shuffle([1, 2, 3]).slice(0, 2).sort((a, b) => a - b);
+    const boundaries = [0, ...cuts, digits.length];
+    const numbers = Array.from({ length: 3 }, (_, index) => {
+      const number = digits.slice(boundaries[index], boundaries[index + 1]).join('');
+      if (number.length < 2 || Math.random() > 0.5) return number;
+      const decimalPoint = QuestionGenerator.randomInt(1, number.length - 1);
+      return `${number.slice(0, decimalPoint)}.${number.slice(decimalPoint)}`;
+    });
+    const selectedOperators = Array.from({ length: 2 }, () =>
+      operators[QuestionGenerator.randomInt(0, operators.length - 1)]
+    );
+    const form = expressionForms[QuestionGenerator.randomInt(0, expressionForms.length - 1)];
+    const expression = form(numbers, selectedOperators);
+    const value = evaluateBodmasExpression(expression);
+    const target = Number(value.toFixed(3));
+    if (Number.isFinite(value) && target > 0 && target <= 10000 && Math.abs(value - target) < 1e-9) {
+      return { expression, target };
+    }
+  }
+
+  throw new Error('Unable to generate a valid BODMAS target.');
+}
+
 Object.assign(ArcadeEngine.prototype, {
   startMathsActivity(containerId, beltId, activityId) {
     this.stopGame();
@@ -416,14 +456,7 @@ Object.assign(ArcadeEngine.prototype, {
       activity.pairs = [1, 2, 3, 4, 5].map(number => ({ left: number, right: 10 - number }));
       activity.pairSides = ['left', 'right'];
     } else {
-      const pairs = [
-        { fraction: '1/2', decimal: '0.5', percent: '50%' },
-        { fraction: '1/4', decimal: '0.25', percent: '25%' },
-        { fraction: '3/4', decimal: '0.75', percent: '75%' },
-        { fraction: '1/5', decimal: '0.2', percent: '20%' },
-        { fraction: '3/5', decimal: '0.6', percent: '60%' }
-      ];
-      activity.pairs = QuestionGenerator.shuffle(pairs);
+      activity.pairs = QuestionGenerator.shuffle(createConversionPairs()).slice(0, 5);
       activity.pairSides = ['fraction', 'decimal', 'percent'];
     }
     activity.selectedPairItems = {};
@@ -592,8 +625,8 @@ Object.assign(ArcadeEngine.prototype, {
 
   startArrayRound() {
     const activity = this.mathsActivity;
-    activity.rows = QuestionGenerator.randomInt(2, 7);
-    activity.columns = QuestionGenerator.randomInt(2, 8);
+    activity.rows = QuestionGenerator.randomInt(2, 11);
+    activity.columns = QuestionGenerator.randomInt(2, 11);
     this.renderArrayRound();
   },
 
@@ -647,7 +680,8 @@ Object.assign(ArcadeEngine.prototype, {
 
   startBodmasRound() {
     const activity = this.mathsActivity;
-    activity.target = QuestionGenerator.randomInt(1, 20);
+    const challenge = generateBodmasChallenge();
+    activity.target = challenge.target;
     const body = document.getElementById('ma-body');
     if (!body) return;
     body.innerHTML = `
@@ -658,7 +692,7 @@ Object.assign(ArcadeEngine.prototype, {
         <input id="ma-expression" name="expression" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. 20 - 18" class="rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
         <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check expression</button>
       </form>
-      <p class="mt-3 text-center text-xs text-slate-400">Use +, −, ×, ÷, powers, and brackets. Standard operation order applies.</p>
+      <p class="mt-3 text-center text-xs text-slate-400">Use +, −, ×, ÷, powers, and brackets. You may join adjacent digits and use a decimal point.</p>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
     document.getElementById('ma-expression')?.focus?.({ preventScroll: true });
   },
@@ -709,4 +743,4 @@ Object.assign(ArcadeEngine.prototype, {
 });
 
 window.MATHS_ACTIVITY_CATALOG = MATHS_ACTIVITY_CATALOG;
-window.MathsActivityGames = { evaluateBodmasExpression };
+window.MathsActivityGames = { evaluateBodmasExpression, createConversionPairs, generateBodmasChallenge };

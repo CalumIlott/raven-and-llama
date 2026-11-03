@@ -8,7 +8,35 @@ function loadGenerator() {
     'public/js/mathmasters/curriculum.js',
     'public/js/mathmasters/generators.js'
   );
-  return { belts: context.BELTS_DATA, generator: context.QuestionGenerator };
+  return { context, belts: context.BELTS_DATA, generator: context.QuestionGenerator };
+}
+
+const BOUNDED_VARIANT_COUNTS = {
+  white_subitising: { count: 12, reason: 'six standard dot counts in two fixed layouts' },
+  white_recognition: { count: 22, reason: 'the eleven number words matched in both directions' },
+  white_partitioning: { count: 35, reason: 'all non-empty ordered splits of totals three to nine' },
+  yellow_subitising: { count: 18, reason: 'nine standard frame counts in two question forms' },
+  yellow_doubles: { count: 16, reason: 'the eight standard doubles in two question forms' },
+  yellow_writing_20: { count: 42, reason: 'the twenty-one numerals matched with words in both directions' },
+  yellow_tens_mate: { count: 18, reason: 'the nine number bonds to ten in two question forms' },
+  green_halving: { count: 20, reason: 'the ten even numbers through twenty in two question forms' },
+  brown_fraction: { count: 18, reason: 'all proper fractions with the taught denominators 2, 3, 4, 6, and 8' }
+};
+
+function seedRandom(context, seed) {
+  let state = seed >>> 0;
+  const deterministicMath = Object.create(Math);
+  deterministicMath.random = () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+  context.Math = deterministicMath;
+}
+
+function questionSignature(question) {
+  return JSON.stringify(question, (key, value) =>
+    ['options', 'timeLimitSeconds', 'beltName', 'skillName', 'testDifficulty'].includes(key) ? undefined : value
+  );
 }
 
 test('every curriculum skill generates valid standard and hard questions', () => {
@@ -112,29 +140,27 @@ test('endless belt questions are valid and vary skill categories', () => {
   assert.equal(generator.isValidQuestion({ type: 'standard_choice', answer: 4, options: [3], timeLimitSeconds: 10 }), false);
 });
 
-test('under-varied curriculum skills generate varied subject-specific questions', () => {
-  const { generator } = loadGenerator();
-  const skills = [
-    ['green_reading_writing', /reading & writing/i],
-    ['brown_counting', /counting/i],
-    ['brown_read_write', /read and write/i],
-    ['brown_renaming', /renaming/i],
-    ['black_counting', /counting/i],
-    ['black_multiplication', /multiplication/i],
-    ['black_fraction_order', /fraction order/i],
-    ['black_multiplicative', /ratio|rate|proportion/i],
-    ['platinum_fraction', /fraction/i],
-    ['platinum_decimal', /decimal/i],
-    ['platinum_challenge', /challenge/i]
-  ];
+test('every skill targets 100 unique questions unless its taught facts are finite', () => {
+  const { context, belts, generator } = loadGenerator();
+  let seed = 20261103;
 
-  for (const [skillId, titlePattern] of skills) {
-    const questions = Array.from({ length: 30 }, () => generator.getQuestionForSkill(skillId));
-    assert.ok(questions.every(question => generator.isValidQuestion(question)), `${skillId} should generate valid questions`);
-    assert.ok(questions.every(question => titlePattern.test(question.title)), `${skillId} should match its curriculum skill`);
-    const variants = questions.map(question =>
-      [question.prompt, question.answer, ...(question.options || []), ...(question.items || []), ...(question.correctOrder || [])].join('|'));
-    assert.ok(new Set(variants).size >= 5, `${skillId} should generate varied questions`);
+  for (const belt of belts) {
+    for (const skill of belt.skills) {
+      seedRandom(context, seed++);
+      const variants = new Set();
+      for (let attempt = 0; attempt < 5000 && variants.size < 100; attempt++) {
+        const question = generator.getQuestionForSkill(skill.id);
+        assert.ok(generator.isValidQuestion(question), `${skill.id} should generate valid questions`);
+        variants.add(questionSignature(question));
+      }
+
+      const bounded = BOUNDED_VARIANT_COUNTS[skill.id];
+      if (bounded) {
+        assert.equal(variants.size, bounded.count, `${skill.id}: ${bounded.reason}`);
+      } else {
+        assert.ok(variants.size >= 100, `${skill.id} should generate at least 100 distinct questions`);
+      }
+    }
   }
 });
 
@@ -168,8 +194,11 @@ test('Platinum generators include fraction equivalences and all decimal operatio
   const decimalQuestions = Array.from({ length: 180 }, () => generator.getQuestionForSkill('platinum_decimal'));
   const divisionQuestions = Array.from({ length: 180 }, () => generator.getQuestionForSkill('platinum_division'));
 
-  assert.ok(conversions.some(question => /%|fraction|decimal/i.test(question.prompt)));
-  assert.ok(conversions.some(question => question.answer === '1/4' || question.answer === '75%' || question.answer === '0.6'));
+  assert.ok(conversions.every(question => generator.isValidQuestion(question)));
+  assert.ok(conversions.some(question => /as a fraction/i.test(question.prompt)));
+  assert.ok(conversions.some(question => /as a percentage/i.test(question.prompt)));
+  assert.ok(conversions.some(question => /as a decimal/i.test(question.prompt)));
+  assert.ok(conversions.some(question => /into (metres|kilograms|litres|minutes)/i.test(question.prompt)));
   assert.deepEqual(
     new Set(decimalQuestions.map(question => question.prompt.match(/[+×÷-]/)?.[0])),
     new Set(['+', '-', '×', '÷'])

@@ -99,9 +99,9 @@ class QuestionGenerator {
 
   static genWhiteCounting(diff = 'standard') {
     const isVarB = Math.random() > 0.5;
-    const max = diff === 'hard' ? 10 : 8;
+    const max = 10;
     const target = QuestionGenerator.randomInt(1, max);
-    const emojis = ['🍎', '⭐', '🥋', '🐱', '🚀', '⚽', '🍕', '🎈'];
+    const emojis = ['🍎', '⭐', '🥋', '🐱', '🚀', '⚽', '🍕', '🎈', '🦊', '🐸', '🌼', '🧁', '🎁', '🐢', '🍓', '🚲'];
     const emoji = emojis[QuestionGenerator.randomInt(0, emojis.length - 1)];
     if (!isVarB) {
       return {
@@ -147,32 +147,24 @@ class QuestionGenerator {
   }
 
   static genWhiteWriting(diff = 'standard') {
-    const start = QuestionGenerator.randomInt(0, 6);
-    const isVarB = Math.random() > 0.5;
-    if (!isVarB) {
-      const seq = [start, start + 1, start + 2, start + 3];
-      const missing = seq[2];
-      const display = seq.map((n, i) => i === 2 ? '❓' : n);
-      return {
-        type: 'numeric_input',
-        title: 'Writing Master (0-10)',
-        prompt: `Fill in the blank: ${display.join(' , ')}`,
-        timeLimitSeconds: diff === 'hard' ? 20 : 28,
-        answer: missing
-      };
-    } else {
-      const s = start + 3;
-      const seq = [s, s - 1, s - 2, s - 3];
-      const missing = seq[1];
-      const display = seq.map((n, i) => i === 1 ? '❓' : n);
-      return {
-        type: 'numeric_input',
-        title: 'Writing Master (Countdown)',
-        prompt: `Count backwards: ${display.join(' , ')}`,
-        timeLimitSeconds: diff === 'hard' ? 20 : 28,
-        answer: missing
-      };
-    }
+    const length = QuestionGenerator.randomInt(3, 5);
+    const step = QuestionGenerator.randomInt(1, 2);
+    const isAscending = Math.random() > 0.5;
+    const span = step * (length - 1);
+    const start = isAscending
+      ? QuestionGenerator.randomInt(0, 10 - span)
+      : QuestionGenerator.randomInt(span, 10);
+    const sequence = Array.from({ length }, (_, index) => start + (isAscending ? 1 : -1) * step * index);
+    const missingIndex = QuestionGenerator.randomInt(1, length - 2);
+    const answer = sequence[missingIndex];
+    const display = sequence.map((number, index) => index === missingIndex ? '❓' : number);
+    return {
+      type: 'numeric_input',
+      title: 'Writing Master (0-10)',
+      prompt: `${isAscending ? 'Count forwards' : 'Count backwards'} by ${step}s: ${display.join(' , ')}`,
+      timeLimitSeconds: diff === 'hard' ? 20 : 28,
+      answer
+    };
   }
 
   static genWhitePartition(diff = 'standard') {
@@ -223,12 +215,28 @@ class QuestionGenerator {
   }
 
   static genYellowCounting20(diff = 'standard') {
-    const isBackward = Math.random() > 0.5;
-    if (!isBackward) {
-      const start = QuestionGenerator.randomInt(8, 16);
-      const seq = [start, start + 1, start + 2, start + 3];
-      const missing = seq[2];
-      const display = seq.map((n, i) => i === 2 ? '❓' : n);
+    const mode = QuestionGenerator.randomInt(0, 2);
+    if (mode === 0) {
+      const target = QuestionGenerator.randomInt(1, 20);
+      const icons = ['🍎', '⭐', '🥋', '🐱', '🚀', '⚽', '🍕', '🎈', '🦊', '🐸', '🌼', '🧁'];
+      const icon = icons[QuestionGenerator.randomInt(0, icons.length - 1)];
+      return {
+        type: 'count_objects',
+        title: 'Counting 0-20 Master',
+        subtitle: `How many ${icon} do you count?`,
+        count: target,
+        itemIcon: icon,
+        timeLimitSeconds: diff === 'hard' ? 20 : 28,
+        answer: target,
+        options: QuestionGenerator.generateChoices(target, 4, 3)
+      };
+    }
+    if (mode === 1) {
+      const start = QuestionGenerator.randomInt(0, 17);
+      const sequence = [start, start + 1, start + 2, start + 3];
+      const missingIndex = QuestionGenerator.randomInt(1, 2);
+      const missing = sequence[missingIndex];
+      const display = sequence.map((number, index) => index === missingIndex ? '❓' : number);
       return {
         type: 'standard_choice',
         title: 'Counting 0-20 Master',
@@ -237,20 +245,20 @@ class QuestionGenerator {
         answer: missing,
         options: QuestionGenerator.generateChoices(missing, 4, 3)
       };
-    } else {
-      const start = QuestionGenerator.randomInt(14, 20);
-      const seq = [start, start - 1, start - 2, start - 3];
-      const missing = seq[2];
-      const display = seq.map((n, i) => i === 2 ? '❓' : n);
-      return {
-        type: 'standard_choice',
-        title: 'Counting 0-20 (Countdown)',
-        prompt: `Count backwards: [ ${display.join(' , ')} ]`,
-        timeLimitSeconds: diff === 'hard' ? 20 : 28,
-        answer: missing,
-        options: QuestionGenerator.generateChoices(missing, 4, 3)
-      };
     }
+    const start = QuestionGenerator.randomInt(3, 20);
+    const sequence = [start, start - 1, start - 2, start - 3];
+    const missingIndex = QuestionGenerator.randomInt(1, 2);
+    const missing = sequence[missingIndex];
+    const display = sequence.map((number, index) => index === missingIndex ? '❓' : number);
+    return {
+      type: 'standard_choice',
+      title: 'Counting 0-20 (Countdown)',
+      prompt: `Count backwards: [ ${display.join(' , ')} ]`,
+      timeLimitSeconds: diff === 'hard' ? 20 : 28,
+      answer: missing,
+      options: QuestionGenerator.generateChoices(missing, 4, 3)
+    };
   }
 
   static genYellowWriting20(diff = 'standard') {
@@ -258,7 +266,7 @@ class QuestionGenerator {
       'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
       'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'
     ];
-    const num = QuestionGenerator.randomInt(10, 20);
+    const num = QuestionGenerator.randomInt(0, 20);
     const mode = Math.random() > 0.5 ? 'num_to_word' : 'word_to_num';
     return {
       type: mode === 'num_to_word' ? 'short_answer' : 'numeric_input',
@@ -284,9 +292,43 @@ class QuestionGenerator {
   }
 
   static genYellowMoreLess(diff = 'standard') {
-    const base = QuestionGenerator.randomInt(4, 18);
+    const mode = QuestionGenerator.randomInt(0, 2);
+    if (mode === 1) {
+      const first = QuestionGenerator.randomInt(0, 20);
+      let second = QuestionGenerator.randomInt(0, 20);
+      while (second === first) second = QuestionGenerator.randomInt(0, 20);
+      const answer = Math.max(first, second);
+      return {
+        type: 'standard_choice',
+        title: 'More or Less Master',
+        prompt: `Which number is greater: ${first} or ${second}?`,
+        timeLimitSeconds: diff === 'hard' ? 18 : 24,
+        answer,
+        options: QuestionGenerator.generateChoicesInRange(answer, 0, 20)
+      };
+    }
+    if (mode === 2) {
+      const step = QuestionGenerator.randomInt(1, 3);
+      const length = 4;
+      const start = QuestionGenerator.randomInt(0, 20 - step * (length - 1));
+      const sequence = Array.from({ length }, (_, index) => start + index * step);
+      const missingIndex = QuestionGenerator.randomInt(1, 2);
+      const answer = sequence[missingIndex];
+      const display = sequence.map((number, index) => index === missingIndex ? '❓' : number);
+      return {
+        type: 'standard_choice',
+        title: 'More or Less Master',
+        prompt: `Complete the number sequence: ${display.join(' , ')}`,
+        timeLimitSeconds: diff === 'hard' ? 18 : 24,
+        answer,
+        options: QuestionGenerator.generateChoices(answer, 4, 3)
+      };
+    }
     const isMore = Math.random() > 0.5;
     const delta = diff === 'hard' ? QuestionGenerator.randomInt(1, 3) : 1;
+    const base = isMore
+      ? QuestionGenerator.randomInt(0, 20 - delta)
+      : QuestionGenerator.randomInt(delta, 20);
     const ans = isMore ? base + delta : base - delta;
     return {
       type: 'standard_choice',
@@ -299,7 +341,7 @@ class QuestionGenerator {
   }
   // --- GREEN BELT ---
   static genGreenHalving(diff = 'standard') {
-    const half = QuestionGenerator.randomInt(2, diff === 'hard' ? 12 : 10);
+    const half = QuestionGenerator.randomInt(1, diff === 'hard' ? 12 : 10);
     const total = half * 2;
     const isVarB = Math.random() > 0.5;
     return {
@@ -331,7 +373,8 @@ class QuestionGenerator {
     const step = [2, 5, 10][QuestionGenerator.randomInt(0, 2)];
     const isBackward = Math.random() > 0.5 && diff === 'hard';
     if (!isBackward) {
-      const start = step * QuestionGenerator.randomInt(1, 4);
+      const maxMultiplier = Math.floor(100 / step) - 4;
+      const start = step * QuestionGenerator.randomInt(1, maxMultiplier);
       const seq = [start, start + step, start + step * 2, start + step * 3, start + step * 4];
       const missingIdx = QuestionGenerator.randomInt(1, 3);
       const missing = seq[missingIdx];
@@ -362,8 +405,8 @@ class QuestionGenerator {
   }
 
   static genGreenRenaming(diff = 'standard') {
-    const tens = QuestionGenerator.randomInt(2, diff === 'hard' ? 9 : 6);
-    const ones = QuestionGenerator.randomInt(1, 9);
+    const tens = QuestionGenerator.randomInt(1, 9);
+    const ones = QuestionGenerator.randomInt(0, 9);
     const total = tens * 10 + ones;
     const isVarB = Math.random() > 0.5;
     if (!isVarB) {
@@ -463,7 +506,7 @@ class QuestionGenerator {
   static genBlueDoubleHalfStrategy(diff = 'standard') {
     const isDouble = Math.random() > 0.5;
     if (isDouble) {
-      const n = QuestionGenerator.randomInt(14, diff === 'hard' ? 68 : 45);
+      const n = QuestionGenerator.randomInt(diff === 'hard' ? 10 : 14, 499);
       const ans = n * 2;
       return {
         type: 'standard_choice',
@@ -474,7 +517,7 @@ class QuestionGenerator {
         options: QuestionGenerator.generateChoices(ans, 4, 6)
       };
     } else {
-      const half = QuestionGenerator.randomInt(12, diff === 'hard' ? 50 : 35);
+      const half = QuestionGenerator.randomInt(12, 499);
       const total = half * 2;
       return {
         type: 'standard_choice',
@@ -504,7 +547,7 @@ class QuestionGenerator {
 
   static genBlueFactor(diff = 'standard') {
     const base = [2, 5, 10][QuestionGenerator.randomInt(0, 2)];
-    const groups = QuestionGenerator.randomInt(2, diff === 'hard' ? 15 : 10);
+    const groups = QuestionGenerator.randomInt(2, diff === 'hard' ? 50 : 30);
     const total = base * groups;
     const mode = QuestionGenerator.randomInt(0, 2);
     if (mode === 0) {
@@ -621,8 +664,8 @@ class QuestionGenerator {
   }
 
   static genBrownArrays(diff = 'standard') {
-    const rows = QuestionGenerator.randomInt(2, diff === 'hard' ? 8 : 6);
-    const cols = QuestionGenerator.randomInt(2, diff === 'hard' ? 8 : 7);
+    const rows = QuestionGenerator.randomInt(2, diff === 'hard' ? 12 : 11);
+    const cols = QuestionGenerator.randomInt(2, diff === 'hard' ? 12 : 11);
     const total = rows * cols;
     return {
       type: 'array_grid',
@@ -971,35 +1014,30 @@ class QuestionGenerator {
   }
 
   static genBlackEquivalence(diff = 'standard') {
-    const pairs = [
-      { frac: '1/2', dec: '0.5', pct: '50%' },
-      { frac: '1/4', dec: '0.25', pct: '25%' },
-      { frac: '3/4', dec: '0.75', pct: '75%' },
-      { frac: '1/10', dec: '0.1', pct: '10%' },
-      { frac: '1/5', dec: '0.2', pct: '20%' },
-      { frac: '2/5', dec: '0.4', pct: '40%' },
-      { frac: '3/5', dec: '0.6', pct: '60%' },
-      { frac: '4/5', dec: '0.8', pct: '80%' },
-      { frac: '7/10', dec: '0.7', pct: '70%' }
-    ];
-    const pair = pairs[QuestionGenerator.randomInt(0, pairs.length - 1)];
+    const makePair = percent => ({
+      frac: QuestionGenerator.formatFraction(percent, 100),
+      dec: String(Number((percent / 100).toFixed(2))),
+      pct: `${percent}%`
+    });
+    const percent = QuestionGenerator.randomInt(0, 100);
+    const pair = makePair(percent);
     const mode = QuestionGenerator.randomInt(0, 3);
     if (mode === 3) {
-      const placeValueRiddles = [
-        { prompt: '3 hundredths and 4 ones is ___', answer: 4.03 },
-        { prompt: '2 hundredths and 8 tenths is ___', answer: 0.82 },
-        { prompt: '6 tenths and 5 ones is ___', answer: 5.6 }
-      ];
-      const riddle = placeValueRiddles[QuestionGenerator.randomInt(0, placeValueRiddles.length - 1)];
+      const ones = QuestionGenerator.randomInt(0, 9);
+      const tenths = QuestionGenerator.randomInt(0, 9);
+      const hundredths = QuestionGenerator.randomInt(0, 9);
       return {
         type: 'numeric_input',
         title: 'Decimal Renaming Riddle',
-        prompt: riddle.prompt,
+        prompt: `${ones} ones, ${tenths} tenths and ${hundredths} hundredths is ___`,
         hint: 'Use each place value to write the decimal in the correct column.',
         timeLimitSeconds: diff === 'hard' ? 20 : 28,
-        answer: riddle.answer
+        answer: Number((ones + tenths / 10 + hundredths / 100).toFixed(2))
       };
     }
+    const distractors = new Set([percent]);
+    while (distractors.size < 4) distractors.add(QuestionGenerator.randomInt(0, 100));
+    const pairs = QuestionGenerator.shuffle(Array.from(distractors)).map(makePair);
     return {
       type: 'standard_choice',
       title: 'Renaming Master (Equivalence) ⚡',
@@ -1007,10 +1045,10 @@ class QuestionGenerator {
       timeLimitSeconds: diff === 'hard' ? 20 : 28,
       answer: mode === 0 ? pair.dec : mode === 1 ? pair.pct : pair.frac,
       options: mode === 0
-        ? QuestionGenerator.shuffle([pair.dec, ...QuestionGenerator.shuffle(pairs.filter(p => p.dec !== pair.dec).map(p => p.dec)).slice(0, 3)])
+        ? pairs.map(item => item.dec)
         : mode === 1
-        ? QuestionGenerator.shuffle([pair.pct, ...QuestionGenerator.shuffle(pairs.filter(p => p.pct !== pair.pct).map(p => p.pct)).slice(0, 3)])
-        : QuestionGenerator.shuffle([pair.frac, ...QuestionGenerator.shuffle(pairs.filter(p => p.frac !== pair.frac).map(p => p.frac)).slice(0, 3)])
+        ? pairs.map(item => item.pct)
+        : pairs.map(item => item.frac)
     };
   }
 
@@ -1103,25 +1141,91 @@ class QuestionGenerator {
   }
 
   static genPlatinumConversions(diff = 'standard') {
-    const conversions = [
-      { prompt: 'Write 25% as a fraction in simplest form:', answer: '1/4', options: ['1/4', '1/2', '1/5', '3/4'] },
-      { prompt: 'Write 0.75 as a percentage:', answer: '75%', options: ['7.5%', '25%', '75%', '750%'] },
-      { prompt: 'Write 3/5 as a decimal:', answer: '0.6', options: ['0.3', '0.5', '0.6', '0.8'] },
-      { prompt: 'Which values are equivalent to 0.2?', answer: '1/5', options: ['1/2', '1/4', '1/5', '2/5'] },
-      { prompt: 'Convert 3.5 km into metres:', answer: '3500 m', options: ['35 m', '350 m', '3500 m', '35000 m'] },
-      { prompt: 'Convert 450 cm into metres:', answer: '4.5 m', options: ['0.45 m', '4.5 m', '45 m', '4500 m'] },
-      { prompt: 'Convert 2.4 kg into grams:', answer: '2400 g', options: ['24 g', '240 g', '2400 g', '24000 g'] },
-      { prompt: 'Convert 1500 mL into litres:', answer: '1.5 L', options: ['0.15 L', '1.5 L', '15 L', '150 L'] },
-      { prompt: 'Convert 2.5 hours into minutes:', answer: '150 minutes', options: ['25 minutes', '120 minutes', '150 minutes', '250 minutes'] }
-    ];
-    const c = conversions[QuestionGenerator.randomInt(0, conversions.length - 1)];
+    const formatNumber = value => String(Number(value.toFixed(3)));
+    const mode = QuestionGenerator.randomInt(0, 3);
+    let prompt;
+    let answer;
+    let options;
+    if (mode < 3) {
+      const percent = QuestionGenerator.randomInt(0, 100);
+      const decimal = formatNumber(percent / 100);
+      const fraction = QuestionGenerator.formatFraction(percent, 100);
+      const values = new Set([percent]);
+      while (values.size < 4) values.add(QuestionGenerator.randomInt(0, 100));
+      const alternatives = QuestionGenerator.shuffle(Array.from(values));
+      if (mode === 0) {
+        prompt = `Write ${percent}% as a fraction in simplest form:`;
+        answer = fraction;
+        options = alternatives.map(value => QuestionGenerator.formatFraction(value, 100));
+      } else if (mode === 1) {
+        prompt = `Write ${decimal} as a percentage:`;
+        answer = `${percent}%`;
+        options = alternatives.map(value => `${value}%`);
+      } else {
+        prompt = `Write ${fraction} as a decimal:`;
+        answer = decimal;
+        options = alternatives.map(value => formatNumber(value / 100));
+      }
+    } else {
+      const conversion = QuestionGenerator.randomInt(0, 3);
+      let source;
+      let result;
+      let unit;
+      let step;
+      if (conversion === 0) {
+        const centimeters = QuestionGenerator.randomInt(1, 9999);
+        source = `${centimeters} cm`;
+        result = centimeters / 100;
+        unit = 'm';
+        prompt = `Convert ${source} into metres:`;
+        step = 1;
+      } else if (conversion === 1) {
+        const grams = QuestionGenerator.randomInt(1, 99999);
+        source = `${grams} g`;
+        result = grams / 1000;
+        unit = 'kg';
+        prompt = `Convert ${source} into kilograms:`;
+        step = 1;
+      } else if (conversion === 2) {
+        const millilitres = QuestionGenerator.randomInt(1, 99999);
+        source = `${millilitres} mL`;
+        result = millilitres / 1000;
+        unit = 'L';
+        prompt = `Convert ${source} into litres:`;
+        step = 1;
+      } else {
+        const hours = QuestionGenerator.randomInt(1, 48) / 2;
+        source = `${formatNumber(hours)} hours`;
+        result = hours * 60;
+        unit = 'minutes';
+        prompt = `Convert ${source} into minutes:`;
+        step = 30;
+      }
+      answer = `${formatNumber(result)} ${unit}`;
+      const values = new Set([result]);
+      for (const candidate of [
+        result * 10,
+        result / 10,
+        result + step,
+        Math.max(0, result - step),
+        result + step * 2
+      ]) {
+        if (values.size < 4) values.add(Number(candidate.toFixed(3)));
+      }
+      let offset = step * 3;
+      while (values.size < 4) {
+        values.add(Number((result + offset).toFixed(3)));
+        offset += step;
+      }
+      options = QuestionGenerator.shuffle(Array.from(values).map(value => `${formatNumber(value)} ${unit}`));
+    }
     return {
       type: 'standard_choice',
       title: 'Conversion Master',
-      prompt: c.prompt,
+      prompt,
       timeLimitSeconds: diff === 'hard' ? 22 : 32,
-      answer: c.answer,
-      options: QuestionGenerator.shuffle(c.options)
+      answer,
+      options
     };
   }
 
@@ -1257,32 +1361,47 @@ class QuestionGenerator {
   }
 
   static genPlatinumProblemSolving(diff = 'standard') {
-    const problems = [
-      {
-        q: "A ninja dojo has 8 training teams. Each team has 6 ninjas. If 15 ninjas graduate today, how many ninjas remain in training?",
-        ans: 8 * 6 - 15,
-        answerFormatHint: 'Enter the number of ninjas as digits only, without words.'
-      },
-      {
-        q: "Sensie has 48 shurikens to share equally among 6 student belts. If Kai receives his share and gives 3 to his brother, how many does Kai have left?",
-        ans: (48 / 6) - 3,
-        answerFormatHint: 'Enter the number of shurikens as digits only, without words.'
-      },
-      {
-        q: "A ninja scroll costs $4.50 and a belt patch costs $2.50. You buy 2 scrolls and 1 patch and pay with a $20 note. How much change do you receive?",
-        ans: 20 - (2 * 4.5 + 2.5),
-        answerFormatHint: 'Enter dollars and cents as a decimal, for example 8.50, without a dollar sign.'
-      }
-    ];
-    const p = problems[QuestionGenerator.randomInt(0, problems.length - 1)];
+    const mode = QuestionGenerator.randomInt(0, 2);
+    let prompt;
+    let answer;
+    let answerFormatHint;
+    if (mode === 0) {
+      const teams = QuestionGenerator.randomInt(2, 20);
+      const teamSize = QuestionGenerator.randomInt(2, 15);
+      const total = teams * teamSize;
+      const graduates = QuestionGenerator.randomInt(1, total - 1);
+      prompt = `A ninja dojo has ${teams} training teams with ${teamSize} ninjas in each team. If ${graduates} ninjas graduate today, how many ninjas remain in training?`;
+      answer = total - graduates;
+      answerFormatHint = 'Enter the number of ninjas as digits only, without words.';
+    } else if (mode === 1) {
+      const students = ['Kai', 'Nya', 'Zane', 'Lloyd', 'Jay', 'Cole'];
+      const student = students[QuestionGenerator.randomInt(0, students.length - 1)];
+      const studentCount = QuestionGenerator.randomInt(2, 12);
+      const perStudent = QuestionGenerator.randomInt(2, 30);
+      const givenAway = QuestionGenerator.randomInt(0, perStudent - 1);
+      prompt = `A coach shares ${studentCount * perStudent} shurikens equally among ${studentCount} students. ${student} receives a share and gives ${givenAway} to a teammate. How many shurikens does ${student} have left?`;
+      answer = perStudent - givenAway;
+      answerFormatHint = 'Enter the number of shurikens as digits only, without words.';
+    } else {
+      const scrollPrice = QuestionGenerator.randomInt(100, 3000);
+      const patchPrice = QuestionGenerator.randomInt(50, 1500);
+      const scrollCount = QuestionGenerator.randomInt(1, 4);
+      const patchCount = QuestionGenerator.randomInt(1, 4);
+      const totalCost = scrollPrice * scrollCount + patchPrice * patchCount;
+      const payment = Math.ceil(totalCost / 100) * 100 + QuestionGenerator.randomInt(1, 20) * 100;
+      const formatCurrency = cents => `$${(cents / 100).toFixed(2)}`;
+      prompt = `A ninja scroll costs ${formatCurrency(scrollPrice)} and a belt patch costs ${formatCurrency(patchPrice)}. You buy ${scrollCount} scrolls and ${patchCount} patches and pay with ${formatCurrency(payment)}. How much change do you receive?`;
+      answer = Number(((payment - totalCost) / 100).toFixed(2));
+      answerFormatHint = 'Enter dollars and cents as a decimal, for example 8.50, without a dollar sign.';
+    }
     return {
       type: 'numeric_input',
       title: 'Problem Solving Master',
-      prompt: p.q,
+      prompt,
       hint: 'Show the multiplication, division, and/or subtraction steps before entering the result.',
-      answerFormatHint: p.answerFormatHint,
+      answerFormatHint,
       timeLimitSeconds: diff === 'hard' ? 44 : 56,
-      answer: p.ans
+      answer
     };
   }
 

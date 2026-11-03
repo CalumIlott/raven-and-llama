@@ -74,6 +74,20 @@ test('BODMAS expression checker accepts valid 2018 expressions and rejects inval
   assert.ok(Number.isNaN(evaluate('2 / (1 - 1) + 8 + 0')));
 });
 
+test('BODMAS Builder targets are solvable with varied 2018 expressions', () => {
+  const { context } = loadMathsActivities();
+  const { evaluateBodmasExpression, generateBodmasChallenge } = context.MathsActivityGames;
+  const targets = new Set();
+
+  for (let attempt = 0; attempt < 1000; attempt++) {
+    const challenge = generateBodmasChallenge();
+    assert.ok(Math.abs(evaluateBodmasExpression(challenge.expression) - challenge.target) < 1e-9);
+    targets.add(challenge.target);
+  }
+
+  assert.ok(targets.size >= 100, 'the 2018-digit puzzle should expose at least 100 solvable targets');
+});
+
 test('Number Models reveals each numeral and uses a different value in every round', () => {
   const { context, elements } = loadMathsActivities();
   context.arcadeEngine.startMathsActivity('arena', 'white', 'number-models');
@@ -132,6 +146,35 @@ test('Conversion Match presents separate fraction, decimal, and percent cards', 
     assert.equal((html.match(new RegExp(`data-side="${side}"`, 'g')) || []).length, 5);
   }
   assert.doesNotMatch(html, /\d+\.\d+\s*=\s*\d+%/);
+});
+
+test('Conversion Match draws from more than 100 exact fraction-decimal-percent values', () => {
+  const { context } = loadMathsActivities();
+  const pairs = context.MathsActivityGames.createConversionPairs();
+  assert.equal(pairs.length, 101);
+  assert.equal(new Set(pairs.map(pair => pair.percent)).size, 101);
+
+  for (const pair of pairs) {
+    const percentage = Number(pair.percent.slice(0, -1)) / 100;
+    const fractionParts = pair.fraction.split('/').map(Number);
+    const fractionValue = fractionParts.length === 2 ? fractionParts[0] / fractionParts[1] : fractionParts[0];
+    assert.equal(Number(pair.decimal), percentage);
+    assert.equal(fractionValue, percentage);
+  }
+});
+
+test('Array Architect can generate 100 different array dimensions', () => {
+  const { context } = loadMathsActivities();
+  context.arcadeEngine.startMathsActivity('arena', 'brown', 'array-architect');
+  const dimensions = new Set();
+
+  for (let attempt = 0; attempt < 2500; attempt++) {
+    context.arcadeEngine.startArrayRound();
+    const { rows, columns } = context.arcadeEngine.mathsActivity;
+    dimensions.add(`${rows}x${columns}`);
+  }
+
+  assert.ok(dimensions.size >= 100, 'the expanded 2-to-11 row and column range should cover 100 arrays');
 });
 
 test('Maths activities autofocus text-entry fields', () => {
