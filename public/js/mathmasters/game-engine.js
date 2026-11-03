@@ -25,6 +25,7 @@ class GameEngine {
     this.sessionStorageKey = 'raven-llama-active-quiz';
     this.pendingAnswer = null;
     this.resumeTimeLeft = null;
+    this.activitySession = null;
   }
 
   clearSavedSession() {
@@ -39,6 +40,7 @@ class GameEngine {
     const beltId = this.currentBelt?.id;
     this.stopTimer();
     this.clearSavedSession();
+    this.activitySession = null;
     this.questions = [];
     this.currentIndex = 0;
     this.pendingAnswer = null;
@@ -104,6 +106,7 @@ class GameEngine {
     }
 
     this.stopTimer();
+    this.activitySession = null;
     this.mode = saved.mode;
     this.currentBelt = belt;
     this.currentSkill = isCustomQuiz ? { id: 'timetable_practice', name: saved.skillName || 'Practice' } : skill;
@@ -215,6 +218,9 @@ class GameEngine {
     this.maxStreak = 0;
     this.questions = QuestionGenerator.generateUniqueQuestions(() => QuestionGenerator.getQuestionForSkill(skillId, 'standard'), 10);
     this.totalQuestions = this.questions.length; // use actual count, not hardcoded 10
+    this.startActivitySession(`maths-${skillId}`, this.currentSkill.name, 'Maths', this.questions, {
+      trackProgress: false
+    }, skillId);
     this.renderCurrentQuestion();
   }
 
@@ -231,6 +237,9 @@ class GameEngine {
     const diff = stage === 1 ? 'standard' : 'hard';
     this.questions = QuestionGenerator.generateBeltTest(beltId, diff, stage === 3 ? 8 : 10);
     this.totalQuestions = this.questions.length;
+    this.startActivitySession(`maths-${beltId}-belt-test-${stage}`, `${this.currentBelt.name} Belt Test`, 'Maths', this.questions, {
+      trackProgress: false
+    });
     this.renderCurrentQuestion();
   }
 
@@ -241,7 +250,13 @@ class GameEngine {
     this.currentIndex = 0; this.score = 0; this.streak = 0; this.maxStreak = 0;
     this.questions = questions; this.totalQuestions = questions.length;
     this.customExit = onExit;
+    this.startActivitySession('timetables-practice', title, 'Maths', questions, { trackProgress: true });
     this.renderCurrentQuestion();
+  }
+
+  startActivitySession(id, title, subject, questions, settings, skillId) {
+    this.activitySession = new ActivityEngine();
+    this.activitySession.startQuiz({ id, title, subject, questions, settings, skillId });
   }
 
   startEndlessQuiz(title, questionFactory, scoreId, options = {}) {
@@ -265,6 +280,10 @@ class GameEngine {
     if (!question) return;
     this.questions = [question];
     this.totalQuestions = Infinity;
+    this.startActivitySession(`endless-${scoreId}`, title, 'Maths', this.questions, {
+      trackProgress: false,
+      unbounded: true
+    });
     this.renderCurrentQuestion();
   }
 
@@ -282,8 +301,10 @@ class GameEngine {
     if (this.mode === 'endless') {
       this.showEndlessResults();
     } else if (this.customExit) {
+      this.activitySession = null;
       window.app.showTimesTables();
     } else {
+      this.activitySession = null;
       window.app.showBeltDetails(this.currentBelt.id);
     }
   }
@@ -483,9 +504,10 @@ class GameEngine {
     const qCard = document.getElementById('question-card');
     const q = this.questions[this.currentIndex];
     const canRetry = !this.mode.startsWith('belt_test') && this.mode !== 'endless';
+    this.activitySession?.recordOutcome(isCorrect);
 
     if (isCorrect) {
-      this.score += 1;
+      this.score = this.activitySession ? this.activitySession.score : this.score + 1;
       this.streak += 1;
       if (this.streak > this.maxStreak) this.maxStreak = this.streak;
 
@@ -520,6 +542,7 @@ class GameEngine {
     }
 
     if (!isCorrect && canRetry) {
+      this.activitySession?.allowRetry();
       this.pendingAnswer = null;
       if (q.type === 'order_drag') {
         this.userOrder.forEach(({ btnId }) => {
@@ -546,6 +569,7 @@ class GameEngine {
   advanceAfterAnswer(isCorrect) {
     this.pendingAnswer = null;
     if (this.mode.startsWith('belt_test') && this.lives <= 0) {
+      this.activitySession?.complete();
       this.showTestResults(false);
     } else if (this.mode === 'endless' && !isCorrect) {
       this.showEndlessResults();
@@ -558,9 +582,13 @@ class GameEngine {
       }
       this.questions = [question];
       this.currentIndex = 0;
+      this.activitySession?.replaceCurrentQuestion(question);
       this.renderCurrentQuestion();
     } else {
-      this.currentIndex += 1;
+      const hasNextQuestion = this.activitySession?.nextQuestion();
+      this.currentIndex = hasNextQuestion
+        ? this.activitySession.currentIndex
+        : this.currentIndex + 1;
       if (this.currentIndex >= this.totalQuestions) {
         this.showFinishedScreen();
       } else {
@@ -571,6 +599,7 @@ class GameEngine {
 
   showEndlessResults() {
     this.stopTimer();
+    this.activitySession?.complete();
     this.clearSavedSession();
     ProfileManager.recordEndlessHighScore(this.endlessScoreId, this.score);
     const bestScore = ProfileManager.getActiveProfile().endlessHighScores?.[this.endlessScoreId] || 0;

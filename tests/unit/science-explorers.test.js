@@ -1,20 +1,23 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
+const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
 function createScienceContext() {
   const context = createBrowserContext();
   context.main = { innerHTML: '', dataset: {} };
   context.document = { getElementById: id => id === 'app-main' ? context.main : null };
   context.profile = { stars: 0 };
+  context.activityScores = [];
   context.brandWordmark = () => 'Raven &amp; Llama';
   context.ProfileManager = {
     getActiveProfile: () => context.profile,
-    updateProfile: profile => { context.profile = profile; }
+    updateProfile: profile => { context.profile = profile; },
+    recordActivityScore: (...score) => { context.activityScores.push(score); }
   };
   loadBrowserScripts(context, 'public/js/mathmasters/curriculum.js');
   context.eval = source => require('node:vm').runInContext(source, context);
   context.eval('class App { updateHeader() {} }; window.app = new App();');
+  loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/science/explorers.js');
   return context;
 }
@@ -56,6 +59,10 @@ test('science mission scores correct answers once and awards stars on completion
   }
 
   assert.equal(context.profile.stars, 5);
+  assert.equal(context.activityScores.length, 1);
+  assert.equal(context.activityScores[0][0].id, `science-${mission.id}`);
+  assert.equal(context.activityScores[0][1], 5);
+  assert.equal(context.activityScores[0][2], 5);
   assert.match(context.main.innerHTML, /Mission Complete!/);
   app.finishScienceMission();
   assert.equal(context.profile.stars, 5);

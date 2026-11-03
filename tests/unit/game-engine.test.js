@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
+const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
 function loadGameEngine(sessionValues = new Map(), account = null) {
   const elements = new Map();
@@ -45,9 +45,11 @@ function loadGameEngine(sessionValues = new Map(), account = null) {
       return delayedCallbacks.length;
     }
   });
+  loadActivityEngine(context);
   loadBrowserScripts(
     context,
     'public/js/mathmasters/curriculum.js',
+    'public/js/shared/renderers.js',
     'public/js/mathmasters/generators.js',
     'public/js/mathmasters/game-engine.js'
   );
@@ -64,6 +66,17 @@ test('endless timer gets shorter every five questions and stops at ten seconds',
   assert.equal(engine.getEndlessTimeLimit(100), 12);
 });
 
+test('Maths training uses the shared activity question lifecycle', () => {
+  const { engine } = loadGameEngine();
+
+  engine.startTraining('white', 'white_subitising');
+
+  assert.equal(engine.activitySession.definition.kind, 'quiz');
+  assert.equal(engine.activitySession.definition.skillId, 'white_subitising');
+  assert.equal(engine.activitySession.definition.questions.length, 10);
+  assert.equal(engine.activitySession.definition.settings.trackProgress, false);
+});
+
 test('endless sessions keep generating validated questions without a fixed question count', () => {
   const { engine, elements, delayedCallbacks } = loadGameEngine();
   const makeQuestion = () => ({
@@ -76,12 +89,15 @@ test('endless sessions keep generating validated questions without a fixed quest
 
   engine.startEndlessQuiz('White Belt Endless', makeQuestion, 'white', { beltId: 'white' });
   assert.equal(engine.totalQuestions, Infinity);
+  assert.equal(engine.activitySession.definition.settings.unbounded, true);
   assert.match(elements.get('game-arena').innerHTML, /Question 1 • Endless/);
 
   engine.evaluateAnswer(true, 4);
   delayedCallbacks.shift()();
   assert.equal(engine.endlessQuestionCount, 1);
   assert.equal(engine.score, 1);
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.status, 'active');
   assert.match(elements.get('game-arena').innerHTML, /Question 2 • Endless/);
 });
 

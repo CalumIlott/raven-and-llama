@@ -139,6 +139,14 @@ Object.assign(App.prototype, {
       score: 0,
       selected: null
     };
+    this.timeActivityEngine = new ActivityEngine();
+    this.timeActivityEngine.startQuiz({
+      id: `telling-time-${mode.id}`,
+      title: mode.title,
+      subject: 'Life Skills',
+      questions: this.timeActivity.questions,
+      settings: { trackProgress: true }
+    });
     this.renderTimeActivity();
   },
 
@@ -147,17 +155,18 @@ Object.assign(App.prototype, {
     const question = activity?.questions[activity.index];
     if (!question || activity.selected !== null || !question.options.includes(answer)) return;
     activity.selected = answer;
-    if (answer === question.answer) activity.score++;
+    this.timeActivityEngine.submitAnswer(answer);
+    activity.score = this.timeActivityEngine.score;
     this.renderTimeActivity();
   },
 
   advanceTimeActivity() {
     const activity = this.timeActivity;
     if (!activity || activity.selected === null) return;
-    if (activity.index === activity.questions.length - 1) {
+    if (!this.timeActivityEngine.nextQuestion()) {
       activity.complete = true;
     } else {
-      activity.index++;
+      activity.index = this.timeActivityEngine.currentIndex;
       activity.selected = null;
     }
     this.renderTimeActivity();

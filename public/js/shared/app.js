@@ -829,7 +829,26 @@ class App {
     });
 
     const tbody = document.getElementById('parent-stats-tbody');
-    if (tbody) tbody.innerHTML = tableRows;
+    if (tbody) {
+      tbody.innerHTML = tableRows;
+      Object.entries(profile?.activityProgress || {}).forEach(([, stat]) => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-slate-800 text-xs sm:text-sm';
+        const scoreLabel = stat.kind === 'quiz' && stat.bestTotal
+          ? `${stat.bestScore} / ${stat.bestTotal}`
+          : `${stat.bestScore} ${stat.scoreUnit}`;
+        const values = [stat.subject, stat.title, stat.timesPlayed, scoreLabel, 'Played'];
+        values.forEach((value, index) => {
+          const cell = document.createElement('td');
+          cell.className = index < 2
+            ? 'py-2.5 px-3 text-slate-300 font-medium'
+            : 'py-2.5 px-3 text-center text-slate-400';
+          cell.textContent = String(value);
+          row.append(cell);
+        });
+        tbody.append(row);
+      });
+    }
 
     const studentNameEl = document.getElementById('parent-student-name');
     if (studentNameEl) studentNameEl.textContent = profile ? profile.name : 'Learner';
