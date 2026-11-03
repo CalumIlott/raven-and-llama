@@ -29,6 +29,12 @@ test('home starts with program choices and keeps mastery stats accessible', asyn
   await expect(page.getByRole('button', { name: /Mastery Stats/ })).toBeVisible();
 });
 
+test('links show a pointer cursor when hovered', async ({ page }) => {
+  const learningLink = page.getByRole('link', { name: /Open Learning Academy/ });
+  await learningLink.hover();
+  await expect(learningLink).toHaveCSS('cursor', 'pointer');
+});
+
 test('header brand mark follows the active hub', async ({ page }) => {
   const logo = page.locator('#header-brand-logo');
   await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');
