@@ -139,8 +139,8 @@ test('local Worker enforces account boundaries, rate limits, and security header
         dailyChallenges: {
           days: {
             [dailyChallengeDayKey]: {
-              activityIds: ['science-virtual-lab', 'brain-power-pattern-recognition'],
-              completedActivityIds: ['science-virtual-lab'],
+              activityIds: ['science-solar-system-order', 'brain-power-pattern-recognition'],
+              completedActivityIds: ['science-solar-system-order'],
               bonusAwarded: false
             }
           }
@@ -177,7 +177,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].skillId, 'science_virtual_lab');
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 1);
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 1);
-  assert.equal(savedProgress.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'science-virtual-lab');
+  assert.equal(savedProgress.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'science-solar-system-order');
 
   const otherRegister = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',
