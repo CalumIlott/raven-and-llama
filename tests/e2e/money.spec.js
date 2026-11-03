@@ -75,3 +75,36 @@ test('Money Masters shows worked feedback, audio hints, and a retry for an incor
   await page.getByRole('button', { name: 'Next round' }).click();
   await expect(page.getByText('Round 2 of 6')).toBeVisible();
 });
+
+test('Money Masters uses Australian currency illustrations across its activities', async ({ page }) => {
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
+
+  await page.locator('[data-action="money-start"][data-activity-id="coin-recognition"][data-difficulty="hard"]').click();
+  await page.evaluate(() => {
+    const game = window.app.moneyGame;
+    const note = window.MoneyMasters.DENOMINATIONS.find(item => item.value === 500);
+    game.questions[game.index].denomination = note;
+    game.questions[game.index].answer = note.value;
+    game.questions[game.index].options = [note, ...window.MoneyMasters.DENOMINATIONS.slice(0, 3)];
+    window.app.renderMoneyQuestion();
+  });
+  await expect(page.locator('.money-recognition-currency .money-currency--pink')).toBeVisible();
+  await expect(page.locator('.money-currency--note .money-currency__window').first()).toBeVisible();
+
+  await page.locator('#money-arena [data-action="money-home"]').click();
+  await page.locator('[data-action="money-start"][data-activity-id="build-total"][data-difficulty="medium"]').click();
+  await expect(page.locator('[data-action="money-coin"][data-value="100"] .money-currency--gold')).toBeVisible();
+
+  await page.locator('#money-arena [data-action="money-home"]').click();
+  await page.locator('[data-action="money-start"][data-activity-id="give-change"][data-difficulty="hard"]').click();
+  await expect(page.locator('.money-transaction-visual .money-currency').first()).toBeVisible();
+  await expect(page.locator('[data-action="money-answer"] .money-amount-visual .money-currency').first()).toBeVisible();
+
+  await page.locator('#money-arena [data-action="money-home"]').click();
+  await page.locator('[data-action="money-start"][data-activity-id="shopkeeper"][data-difficulty="easy"]').click();
+  await expect(page.locator('[data-shopkeeper-basket] .money-currency').first()).toBeVisible();
+  await expect(page.locator('.money-transaction-amount .money-currency').first()).toBeVisible();
+  await expect(page.locator('.money-denomination-button .money-currency').first()).toBeVisible();
+});

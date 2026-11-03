@@ -47,6 +47,7 @@ class App {
       '/learning-centre/history': 'history-discovery',
       '/learning-centre/brain-power': 'brain-power-hub',
       '/learning-centre/life-skills/party-planner': 'life-skills-party',
+      '/learning-centre/geography': 'geography-world',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -72,6 +73,7 @@ class App {
       'history-discovery': () => this.showHistoryHub(),
       'brain-power-hub': () => this.showBrainPowerHub(),
       'life-skills-party': () => this.startPartyPlanner(),
+      'geography-world': () => this.showGeographyWorld(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -100,7 +102,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/life-skills/party-planner', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -220,6 +222,11 @@ class App {
       case 'history-timeline-submit': this.submitHistoryTimelineAnswer(); break;
       case 'history-timeline-retry': this.retryHistoryTimeline(); break;
       case 'history-timeline-reset': this.resetHistoryTimeline(); break;
+      case 'geography-world': this.showGeographyWorld(); break;
+      case 'geography-country-select': this.selectGeographyCountry(target.dataset.countryId); break;
+      case 'geography-map-zoom': this.zoomGeographyMap(Number(target.dataset.delta)); break;
+      case 'geography-map-reset': this.resetGeographyMapZoom(); break;
+      case 'geography-country-speak': this.speakGeographyCountry(); break;
       case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
       case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;
       case 'number-builder-pick': this.pickNumberBuilderTile(Number(target.dataset.value)); break;
@@ -227,6 +234,12 @@ class App {
       case 'number-builder-retry': this.retryNumberBuilderQuestion(); break;
       case 'number-builder-clear': this.clearNumberBuilderSequence(); break;
       case 'number-builder-next': this.nextNumberBuilderQuestion(); break;
+      case 'missing-number-start': this.startMissingNumber(target.dataset.difficulty); break;
+      case 'missing-number-select': this.selectMissingNumberAnswer(Number(target.dataset.value)); break;
+      case 'missing-number-check': this.submitMissingNumberAnswer(); break;
+      case 'missing-number-clear': this.clearMissingNumberSelection(); break;
+      case 'missing-number-retry': this.retryMissingNumberQuestion(); break;
+      case 'missing-number-next': this.nextMissingNumberQuestion(); break;
       case 'fraction-pizza-start': this.startFractionPizza(target.dataset.difficulty); break;
       case 'fraction-pizza-token': this.placeFractionPizzaToken(Number(target.dataset.token)); break;
       case 'fraction-pizza-slot': this.toggleFractionPizzaSlot(Number(target.dataset.slot)); break;
@@ -406,6 +419,9 @@ class App {
 
   handleChangeAction(event) {
     if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+    if (event.target.dataset.action === 'geography-country-picker') {
+      this.selectGeographyCountry(event.target.value);
+    }
     if (event.target.dataset.action === 'school-year-select') {
       const schoolYear = Number(event.target.value);
       if (ProfileManager.isValidSchoolYear(schoolYear)) {
@@ -554,6 +570,9 @@ class App {
       } else if (this.currentView === 'life-skills-party') {
         subBadge.textContent = 'Life Skills';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'geography-world') {
+        subBadge.textContent = 'Geography & The World';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
         subBadge.classList.remove('hidden');
@@ -640,6 +659,8 @@ class App {
       this.renderBrainPowerCodeBreaker();
     } else if (this.currentView === 'life-skills-party' && this.partyPlannerGame) {
       this.renderPartyPlanner();
+    } else if (this.currentView === 'geography-world') {
+      this.showGeographyWorld();
     } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {

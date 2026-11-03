@@ -439,10 +439,10 @@ test('Learning Centre groups its existing programs under the right subjects', as
     name: 'Plan a Party',
     exact: true
   })).toBeVisible();
-
-  for (const subjectId of ['geography-world']) {
-    await expect(subject(subjectId).getByText('Coming soon', { exact: true })).toBeVisible();
-  }
+  await expect(subject('geography-world').getByRole('button', {
+    name: 'Explore Geography & The World',
+    exact: true
+  })).toBeVisible();
 });
 
 test('Maths World route filters topics and completes Number Builder with retry and progress', async ({ page }) => {

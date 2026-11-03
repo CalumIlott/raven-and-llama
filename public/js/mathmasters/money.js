@@ -1,16 +1,16 @@
 class MoneyMasters {
   static DENOMINATIONS = [
-    { value: 5, label: '5c', type: 'coin' },
-    { value: 10, label: '10c', type: 'coin' },
-    { value: 20, label: '20c', type: 'coin' },
-    { value: 50, label: '50c', type: 'coin' },
-    { value: 100, label: '$1', type: 'coin' },
-    { value: 200, label: '$2', type: 'coin' },
-    { value: 500, label: '$5', type: 'note' },
-    { value: 1000, label: '$10', type: 'note' },
-    { value: 2000, label: '$20', type: 'note' },
-    { value: 5000, label: '$50', type: 'note' },
-    { value: 10000, label: '$100', type: 'note' }
+    { value: 5, label: '5c', type: 'coin', colour: 'silver', shape: 'round', size: 'small' },
+    { value: 10, label: '10c', type: 'coin', colour: 'silver', shape: 'round', size: 'medium' },
+    { value: 20, label: '20c', type: 'coin', colour: 'silver', shape: 'round', size: 'large' },
+    { value: 50, label: '50c', type: 'coin', colour: 'silver', shape: 'dodecagon', size: 'xlarge' },
+    { value: 100, label: '$1', type: 'coin', colour: 'gold', shape: 'round', size: 'large' },
+    { value: 200, label: '$2', type: 'coin', colour: 'gold', shape: 'round', size: 'small' },
+    { value: 500, label: '$5', type: 'note', colour: 'pink', shape: 'rectangle', size: 'small' },
+    { value: 1000, label: '$10', type: 'note', colour: 'blue', shape: 'rectangle', size: 'medium' },
+    { value: 2000, label: '$20', type: 'note', colour: 'red', shape: 'rectangle', size: 'large' },
+    { value: 5000, label: '$50', type: 'note', colour: 'yellow', shape: 'rectangle', size: 'xlarge' },
+    { value: 10000, label: '$100', type: 'note', colour: 'green', shape: 'rectangle', size: 'xxlarge' }
   ];
 
   static ACTIVITIES = [
@@ -80,6 +80,41 @@ class MoneyMasters {
 
   static formatMoney(value) {
     return value < 100 ? `${value}c` : `$${(value / 100).toFixed(2)}`;
+  }
+
+  static renderDenomination(denomination, compact = false) {
+    const classes = [
+      'money-currency',
+      `money-currency--${denomination.type}`,
+      `money-currency--${denomination.colour}`,
+      `money-currency--${denomination.shape}`,
+      `money-currency--${denomination.size}`,
+      compact ? 'money-currency--compact' : ''
+    ].filter(Boolean).join(' ');
+    return `<span class="${classes}" aria-hidden="true">
+      ${denomination.type === 'note' ? '<span class="money-currency__window"></span>' : ''}
+      <span class="money-currency__value">${denomination.label}</span>
+      <span class="money-currency__mark">AU</span>
+    </span>`;
+  }
+
+  static renderMoneyAmount(value, compact = false) {
+    if (!Number.isInteger(value) || value < 0 || value % 5 !== 0) {
+      throw new RangeError('Australian currency amounts must be non-negative whole cents in 5-cent increments.');
+    }
+
+    let remaining = value;
+    const pieces = [];
+    for (const denomination of [...this.DENOMINATIONS].reverse()) {
+      while (remaining >= denomination.value) {
+        pieces.push(denomination);
+        remaining -= denomination.value;
+      }
+    }
+
+    return `<span class="money-amount-visual${compact ? ' money-amount-visual--compact' : ''}" aria-hidden="true">
+      ${pieces.map(denomination => this.renderDenomination(denomination, compact)).join('')}
+    </span>`;
   }
 
   static randomAmount(min, max) {
@@ -391,12 +426,12 @@ Object.assign(App.prototype, {
           <section class="my-5 rounded-2xl bg-slate-950 border border-slate-700 p-4" aria-label="Customer transaction">
             <h3 class="font-bold text-white">Customer's basket</h3>
             <ul data-shopkeeper-basket class="mt-2 space-y-1 text-sm text-slate-300">
-              ${question.items.map(item => `<li class="flex justify-between gap-4"><span>${item.name}</span><span>${MoneyMasters.formatMoney(item.price)}</span></li>`).join('')}
+              ${question.items.map(item => `<li class="money-basket-item"><span>${item.name}</span><span class="money-basket-item__amount">${MoneyMasters.formatMoney(item.price)}${MoneyMasters.renderMoneyAmount(item.price, true)}</span></li>`).join('')}
             </ul>
             <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-700 pt-3 text-center text-xs">
-              <div><dt class="text-slate-400">Basket total</dt><dd class="mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.total)}</dd></div>
-              <div><dt class="text-slate-400">Paid</dt><dd class="mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.payment)}</dd></div>
-              <div><dt class="text-slate-400">Change due</dt><dd class="money-change-emphasis mt-1 font-bold">${MoneyMasters.formatMoney(question.change)}</dd></div>
+              <div><dt class="text-slate-400">Basket total</dt><dd class="money-transaction-amount mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.total)}${MoneyMasters.renderMoneyAmount(question.total, true)}</dd></div>
+              <div><dt class="text-slate-400">Paid</dt><dd class="money-transaction-amount mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.payment)}${MoneyMasters.renderMoneyAmount(question.payment, true)}</dd></div>
+              <div><dt class="text-slate-400">Change due</dt><dd class="money-transaction-amount money-change-emphasis mt-1 font-bold">${MoneyMasters.formatMoney(question.change)}${MoneyMasters.renderMoneyAmount(question.change, true)}</dd></div>
             </dl>
           </section>
         ` : ''}
@@ -405,7 +440,10 @@ Object.assign(App.prototype, {
           <p id="money-selected-total" class="font-ninja text-3xl font-bold text-amber-300">${MoneyMasters.formatMoney(selectedTotal)}</p>
           ${isShopkeeper ? `<p class="mt-1 text-sm text-slate-300">Drag a coin or note here, or select its button with a tap, Enter, or Space.</p>
             <ul aria-label="Selected coins and notes" aria-live="polite" class="mt-2 flex min-h-8 flex-wrap justify-center gap-2">
-              ${game.selectedCoins.map(value => `<li class="rounded-lg bg-slate-800 px-3 py-1 text-sm font-bold text-white">${MoneyMasters.DENOMINATIONS.find(item => item.value === value).label}</li>`).join('')}
+              ${game.selectedCoins.map(value => {
+                const denomination = MoneyMasters.DENOMINATIONS.find(item => item.value === value);
+                return `<li aria-label="${denomination.label} ${denomination.type}">${MoneyMasters.renderDenomination(denomination, true)}</li>`;
+              }).join('')}
             </ul>` : ''}
           <div class="flex justify-center gap-3 mt-3">
             <button type="button" data-action="money-undo" ${game.answered || !game.selectedCoins.length ? 'disabled' : ''}
@@ -417,9 +455,9 @@ Object.assign(App.prototype, {
         <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
           ${question.denominations.map(item => `
             <button type="button" data-action="money-coin" data-value="${item.value}" ${isShopkeeper ? 'draggable="true" data-money-draggable="true"' : ''} ${game.answered || selectedTotal + item.value > targetAmount ? 'disabled' : ''}
-                    aria-label="Add ${item.label}" class="money-denomination-button money-denomination-${item.type} rounded-xl border-2 ${item.type === 'note' ? 'border-emerald-500 bg-emerald-950' : 'border-amber-500 bg-amber-950'} px-2 py-3 font-bold disabled:opacity-40">
+                    aria-label="Add ${item.label}" class="money-denomination-button money-denomination-${item.type} rounded-xl border-2 px-2 py-3 font-bold disabled:opacity-40">
               <span class="block text-xs">${item.type === 'note' ? 'NOTE' : 'COIN'}</span>
-              <span class="block text-lg">${item.label}</span>
+              ${MoneyMasters.renderDenomination(item)}
             </button>
           `).join('')}
         </div>
@@ -431,6 +469,9 @@ Object.assign(App.prototype, {
           ${question.options.map(option => {
             const value = typeof option === 'number' ? option : option.value;
             const label = typeof option === 'number' ? MoneyMasters.formatMoney(option) : option.label;
+            const visual = typeof option === 'number'
+              ? MoneyMasters.renderMoneyAmount(option, true)
+              : MoneyMasters.renderDenomination(option, true);
             const isSelected = game.selectedAnswer === value;
             const stateClass = game.answered && isSelected
               ? game.lastAnswerCorrect ? 'border-emerald-400 bg-emerald-950' : 'border-rose-400 bg-rose-950'
@@ -438,14 +479,15 @@ Object.assign(App.prototype, {
             return `
               <button type="button" data-action="money-answer" data-answer="${value}" ${game.answered ? 'disabled' : ''}
                       aria-label="${label}" class="rounded-xl border-2 ${stateClass} p-4 font-ninja text-lg font-bold text-white disabled:opacity-70">
-                ${label}
+                ${visual}
+                <span class="money-answer-label">${label}</span>
               </button>
             `;
           }).join('')}
         </div>
       `;
     const coinImage = game.activity.id === 'coin-recognition'
-      ? `<div role="img" aria-label="${question.denomination.label} coin or note" class="mx-auto my-5 flex h-24 w-24 items-center justify-center border-4 ${question.denomination.type === 'note' ? 'rounded-xl border-emerald-400 bg-emerald-900' : 'rounded-full border-amber-400 bg-amber-900'} font-ninja text-2xl font-bold text-white">${question.denomination.label}</div>`
+      ? `<div role="img" aria-label="${question.denomination.label} Australian ${question.denomination.type}" class="money-recognition-currency mx-auto my-5">${MoneyMasters.renderDenomination(question.denomination)}</div>`
       : '';
     const feedback = game.answered
       ? EducationalFeedback.render({
@@ -463,6 +505,12 @@ Object.assign(App.prototype, {
     const prompt = game.activity.id === 'build-total'
       ? `${question.prompt} Target: ${MoneyMasters.formatMoney(question.target)}`
       : question.prompt;
+    const transactionVisual = game.activity.id === 'give-change'
+      ? `<dl class="money-transaction-visual" aria-label="Item price and amount paid">
+          <div><dt>Item price</dt><dd>${MoneyMasters.formatMoney(question.price)}${MoneyMasters.renderMoneyAmount(question.price, true)}</dd></div>
+          <div><dt>Amount paid</dt><dd>${MoneyMasters.formatMoney(question.payment)}${MoneyMasters.renderMoneyAmount(question.payment, true)}</dd></div>
+        </dl>`
+      : '';
 
     arena.innerHTML = `
       <div class="bg-slate-900 border-2 border-amber-600/70 rounded-3xl p-5 sm:p-7 shadow-2xl">
@@ -477,6 +525,7 @@ Object.assign(App.prototype, {
         </div>
         <p class="text-center font-ninja text-xl sm:text-2xl text-white font-bold">${prompt}</p>
         ${coinImage}
+        ${transactionVisual}
         ${choices}
         ${feedback}
       </div>

@@ -372,6 +372,8 @@ Object.assign(App.prototype, {
         name: 'Geography & The World',
         icon: '🌍',
         description: 'Discover places, people, and our planet.',
+        entryAction: 'geography-world',
+        entryLabel: 'Explore Geography & The World',
         actions: []
       },
       {
