@@ -128,6 +128,45 @@ test('signed-in learners save subject-specific year levels independently', async
   await expect(page.locator('#subject-year-english')).toHaveValue('');
 });
 
+test('subject years recommend tiered activity difficulty while explicit choices override it', async ({ page }) => {
+  await registerAccount(page);
+  await page.evaluate(async () => {
+    const profile = window.ProfileManager.getActiveProfile();
+    await window.ProfileManager.updateProfile({
+      ...profile,
+      schoolYear: 8,
+      subjectYears: { maths: 4, science: 2 }
+    });
+    await window.ProfileManager.flush();
+  });
+
+  await page.goto('/learning-centre');
+  await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
+  const moneyRecommended = page.locator('[data-action="money-start"][data-profile-recommended="true"]').first();
+  await expect(moneyRecommended).toHaveAttribute('data-difficulty', 'medium');
+  await moneyRecommended.click();
+  await expect.poll(() => page.evaluate(() => window.app.moneyGame.difficulty)).toBe('medium');
+
+  await page.locator('[data-action="learning-centre"]').click();
+  await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
+  await page.locator('[data-action="money-start"][data-activity-id="coin-recognition"][data-difficulty="hard"]').click();
+  await expect.poll(() => page.evaluate(() => window.app.moneyGame.difficulty)).toBe('hard');
+
+  await page.locator('[data-action="learning-centre"]').click();
+  await page.locator('#learning-modules-grid button[data-action="science-home"]').click();
+  const scienceRecommended = page.locator('[data-action="science-start"][data-profile-recommended="true"]').first();
+  await expect(scienceRecommended).toHaveAttribute('data-difficulty', 'easy');
+  await scienceRecommended.click();
+  await expect.poll(() => page.evaluate(() => window.app.scienceGame.difficulty)).toBe('easy');
+
+  await page.locator('[data-action="learning-centre"]').click();
+  await page.locator('#learning-modules-grid button[data-action="spelling-home"]').click();
+  const spellingRecommended = page.locator('[data-action="spelling-start"][data-profile-recommended="true"]').first();
+  await expect(spellingRecommended).toHaveAttribute('data-difficulty', 'hard');
+  await spellingRecommended.click();
+  await expect.poll(() => page.evaluate(() => window.app.spellingSafariGame.difficulty)).toBe('hard');
+});
+
 test('last module is restored on home load without overriding explicit routes or login context', async ({ page }) => {
   const account = await registerAccount(page);
 

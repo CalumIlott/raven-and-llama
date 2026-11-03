@@ -56,7 +56,15 @@ test('profile normalization validates subject-specific years and inherits the gl
   assert.equal(accounts.getSubjectYear('maths'), 3);
   assert.equal(accounts.getSubjectYear('science'), 0);
   assert.equal(accounts.getSubjectYear('english'), 4);
+  assert.equal(accounts.getSubjectDifficulty('maths'), 'medium');
+  assert.equal(accounts.getSubjectDifficulty('science'), 'easy');
+  assert.equal(accounts.getSubjectDifficulty('english'), 'medium');
   assert.equal(accounts.getSchoolYearLabel(0), 'Foundation');
+
+  for (const [year, difficulty] of [[2, 'easy'], [3, 'medium'], [6, 'medium'], [7, 'hard'], [12, 'hard']]) {
+    accounts.getActiveProfile().schoolYear = year;
+    assert.equal(accounts.getSubjectDifficulty('english'), difficulty);
+  }
 });
 
 test('account theme is restored, applied, and saved without local storage', async () => {

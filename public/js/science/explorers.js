@@ -4073,6 +4073,8 @@ Object.assign(App.prototype, {
   showScienceExplorers() {
     this.currentView = 'science';
     this.scienceGame = null;
+    const recommendedDifficulty = ProfileManager.getSubjectDifficulty('science');
+    const recommendedLabel = recommendedDifficulty[0].toUpperCase() + recommendedDifficulty.slice(1);
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'science';
@@ -4121,12 +4123,14 @@ Object.assign(App.prototype, {
                 <span class="text-slate-400">5 questions · Learn as you play</span>
                 <span class="science-mission-reward text-amber-300 font-bold">⭐ 5 stars to find</span>
               </div>
-              <p class="mt-4 text-xs font-bold text-sky-300">Choose your difficulty</p>
+              <p class="mt-4 text-xs font-bold text-sky-300">Choose your difficulty · Recommended: ${recommendedLabel}</p>
               <div class="grid grid-cols-3 gap-2 mt-2">
-                ${Object.keys(SCIENCE_DIFFICULTY_CHOICE_COUNTS).map(difficulty => `
+                ${[recommendedDifficulty, ...Object.keys(SCIENCE_DIFFICULTY_CHOICE_COUNTS).filter(level => level !== recommendedDifficulty)].map(difficulty => `
                   <button type="button" data-action="science-start" data-mission-id="${mission.id}" data-difficulty="${difficulty}"
-                          aria-label="${mission.title}, ${difficulty} difficulty"
-                          class="rounded-xl bg-sky-900 hover:bg-sky-800 px-2 py-2 text-sm font-bold text-white capitalize">${difficulty}</button>
+                          data-profile-recommended="${difficulty === recommendedDifficulty}"
+                          class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-sky-600 hover:bg-sky-500' : 'bg-sky-900 hover:bg-sky-800'} px-2 py-2 text-sm font-bold text-white capitalize">
+                    ${difficulty}
+                  </button>
                 `).join('')}
               </div>
             </div>
@@ -4136,10 +4140,12 @@ Object.assign(App.prototype, {
     `;
   },
 
-  startScienceMission(missionId, difficulty = 'medium') {
+  startScienceMission(missionId, difficulty = ProfileManager.getSubjectDifficulty('science')) {
     const mission = SCIENCE_MISSIONS.find(item => item.id === missionId);
     if (!mission) return this.showScienceExplorers();
-    if (!Object.hasOwn(SCIENCE_DIFFICULTY_CHOICE_COUNTS, difficulty)) difficulty = 'medium';
+    if (!Object.hasOwn(SCIENCE_DIFFICULTY_CHOICE_COUNTS, difficulty)) {
+      difficulty = ProfileManager.getSubjectDifficulty('science');
+    }
     const pool = [...mission.questions];
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

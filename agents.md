@@ -101,6 +101,7 @@ When working as an AI agent in this repository:
 6. **Tests first**: For any logic change, write or update the relevant unit test.
 7. **No secrets**: Never commit `.env` files, API keys, or profile data.
 8. **Describe intent**: Write a commit body explaining *why* the change was made when it isn't obvious from the title.
+9. **Worktree isolation**: Make task changes in a dedicated Git worktree rather than the primary checkout. Use separate worktrees for independent parallel tasks to keep branches and uncommitted changes isolated.
 
 ---
 

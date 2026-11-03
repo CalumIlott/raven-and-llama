@@ -119,6 +119,8 @@ window.MoneyMasters = MoneyMasters;
 Object.assign(App.prototype, {
   showMoneyActivity() {
     this.currentView = 'money';
+    const recommendedDifficulty = ProfileManager.getSubjectDifficulty('maths');
+    const recommendedLabel = recommendedDifficulty[0].toUpperCase() + recommendedDifficulty.slice(1);
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'money';
@@ -143,11 +145,14 @@ Object.assign(App.prototype, {
               <span class="text-3xl">${activity.emoji}</span>
               <h3 class="font-ninja text-xl font-bold text-white mt-2">${activity.title}</h3>
               <p class="text-sm text-slate-400 mt-1">${activity.description}</p>
-              <p class="mt-4 text-xs font-bold text-amber-300">Choose a difficulty · 6 rounds</p>
+              <p class="mt-4 text-xs font-bold text-amber-300">Choose a difficulty · 6 rounds · Recommended: ${recommendedLabel}</p>
               <div class="grid grid-cols-3 gap-2 mt-2">
-                ${['easy', 'medium', 'hard'].map(difficulty => `
+                ${[recommendedDifficulty, ...['easy', 'medium', 'hard'].filter(level => level !== recommendedDifficulty)].map(difficulty => `
                   <button type="button" data-action="money-start" data-activity-id="${activity.id}" data-difficulty="${difficulty}"
-                          class="rounded-xl bg-amber-900 hover:bg-amber-800 px-2 py-2 text-sm font-bold text-white capitalize">${difficulty}</button>
+                          data-profile-recommended="${difficulty === recommendedDifficulty}"
+                          class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-amber-600 hover:bg-amber-500' : 'bg-amber-900 hover:bg-amber-800'} px-2 py-2 text-sm font-bold text-white capitalize">
+                    ${difficulty}
+                  </button>
                 `).join('')}
               </div>
             </section>
@@ -160,7 +165,8 @@ Object.assign(App.prototype, {
   startMoneyGame(activityId, difficulty) {
     const activity = MoneyMasters.ACTIVITIES.find(item => item.id === activityId);
     if (!activity) return this.showMoneyActivity();
-    const level = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy';
+    const recommendedDifficulty = ProfileManager.getSubjectDifficulty('maths');
+    const level = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : recommendedDifficulty;
     const feedback = {
       'coin-recognition': {
         explanation: 'Compare the shape, colour, and printed value to identify the denomination.',

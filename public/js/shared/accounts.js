@@ -250,6 +250,13 @@ class ProfileManager {
     return profile.subjectYears[subjectId] ?? profile.schoolYear;
   }
 
+  static getSubjectDifficulty(subjectId) {
+    const year = ProfileManager.getSubjectYear(subjectId);
+    if (year <= 2) return 'easy';
+    if (year <= 6) return 'medium';
+    return 'hard';
+  }
+
   static setTheme(theme) {
     if (theme !== 'dark' && theme !== 'light') return Promise.resolve(false);
     const profile = ProfileManager.getActiveProfile();

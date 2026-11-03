@@ -5,6 +5,10 @@ const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require
 function loadSafari() {
   const context = createBrowserContext({ document: { getElementById: () => null } });
   context.App = class {};
+  context.ProfileManager = {
+    getSubjectDifficulty: () => 'hard',
+    recordActivityScore() {}
+  };
   loadActivityEngine(context);
   return loadBrowserScripts(context, 'public/js/spelling/safari.js');
 }
@@ -82,13 +86,26 @@ test('all Spelling Safari activities apply their selected difficulty', () => {
   }
 });
 
+test('Spelling Safari uses the profile tier by default and honors an explicit difficulty choice', () => {
+  const context = loadSafari();
+  const app = new context.App();
+
+  app.startSpellingSafari('phonics-trail');
+  assert.equal(app.spellingSafariGame.difficulty, 'hard');
+
+  app.startSpellingSafari('phonics-trail', 'easy');
+  assert.equal(app.spellingSafariGame.difficulty, 'easy');
+});
+
 test('Phonics Easy uses accessible picture clues and Medium keeps simple text clues', () => {
   const safari = loadSafari().SpellingSafari;
   const easyQuestions = safari.createQuestions('phonics-trail', 999, 'easy');
   assert.equal(easyQuestions.length, safari.getActivity('phonics-trail').questions.length);
   assert.ok(easyQuestions.every(question => question.pictureClue));
 
-  const context = createBrowserContext();
+  const context = createBrowserContext({
+    ProfileManager: { getSubjectDifficulty: () => 'medium', recordActivityScore() {} }
+  });
   context.brandWordmark = () => 'Raven &amp; Llama';
   context.main = { innerHTML: '', dataset: {} };
   context.arena = { innerHTML: '' };
@@ -135,7 +152,9 @@ test('unknown activities and invalid round counts return no questions', () => {
 });
 
 test('incorrect answer in Spelling Safari does not reveal the correct answer', () => {
-  const context = createBrowserContext();
+  const context = createBrowserContext({
+    ProfileManager: { getSubjectDifficulty: () => 'medium', recordActivityScore() {} }
+  });
   context.main = { innerHTML: '', dataset: {} };
   context.arena = { innerHTML: '' };
   context.document = {
@@ -172,7 +191,9 @@ test('incorrect answer in Spelling Safari does not reveal the correct answer', (
 });
 
 test('correct multiple-choice answer in Spelling Safari is highlighted green', () => {
-  const context = createBrowserContext();
+  const context = createBrowserContext({
+    ProfileManager: { getSubjectDifficulty: () => 'medium', recordActivityScore() {} }
+  });
   context.main = { innerHTML: '', dataset: {} };
   context.arena = { innerHTML: '' };
   context.document = {
