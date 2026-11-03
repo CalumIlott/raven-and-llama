@@ -434,6 +434,7 @@ class GameEngine {
       </div>
     `;
 
+    document.getElementById('game-answer-input')?.focus?.({ preventScroll: true });
     const timeLimit = q.timeLimitSeconds || 16;
     this.startTimer(timeLimit);
   }
