@@ -17,6 +17,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `unit/accounts.test.js` checks temporary guest state, session restoration, account-scoped skill and activity progress sync, accumulated quiz accuracy, configured star awards, memory-only guest spelling lists, profile list validation, training aggregation, final-exam prerequisites, and graduation/certificate recording.
 - `unit/account-api.test.mjs` checks input validation, password hashing, secure sessions, owner-scoped progress and spelling lists, bounded list validation, password changes, account deletion, same-origin protections, and auth throttling behavior.
 - `unit/plant-life-cycle.test.js` checks the canonical stage sequence, stage metadata, unique placement rules, relationship-based feedback, and shared activity scoring.
+- `unit/food-chains.test.js` validates sourced ecosystem records and producer-consumer links, unique organism placement, relationship feedback, and one-time ActivityEngine progress.
 - `unit/virtual-lab.test.js` checks curated simulation rules, safe unsupported combinations, workspace placement, reset behavior, and shared activity scoring.
 - `unit/worker-auth-rate-limit.test.mjs` checks Worker rate-limit keys and denied decisions without remote bindings.
 - `unit/local-account-store.test.js` checks SQLite persistence, legacy JSON import, session expiry, account deletion, and concurrent writes from separate Node processes.
@@ -30,6 +31,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `e2e/geography-world.spec.js` checks the refresh-safe Geography hub route, map and list selection, shared country facts, keyboard activation, speech fallback, and return navigation on desktop and mobile Chromium.
 - `unit/spelling-pronunciation.test.js` checks local voice selection/loading, playback cancellation, muted and unsupported-browser feedback, and default-voice fallback.
 - `e2e/plant-life-cycle.spec.js` checks stage labels and explanations, keyboard/touch/drag ordering with the shared drag cursor, next/previous-stage feedback, retry, completion, and return navigation on desktop and mobile Chromium.
+- `e2e/food-chains.spec.js` checks the Science Lab entry point, sourced chain facts, keyboard/touch/drag placement, relationship feedback and retry, three-chain completion, one-time progress recording, and return navigation on desktop and mobile Chromium.
 - `e2e/virtual-lab.spec.js` checks safe simulation notices, supported and unsupported combinations, reset behavior, keyboard/touch/drag input with shared drag feedback, deterministic explanations, and one-time activity and star recording on desktop and mobile Chromium.
 - `e2e/shopkeeper.spec.js` completes Shopkeeper transactions using desktop drag-and-drop with the shared copy cursor and drop target feedback, keyboard controls, and mobile touch selection.
 - `e2e/accounts.spec.js` checks guest notice, registration, session restore, password change, login, logout, account deletion, and progress sync across separate browser contexts with account isolation.
