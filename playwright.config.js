@@ -29,7 +29,7 @@ module.exports = defineConfig({
     use: { ...devices['Desktop Chrome'] }
   }, {
     name: 'mobile-chromium',
-    testMatch: ['**/accessibility.spec.js', '**/fraction-pizza.spec.js', '**/food-chains.spec.js', '**/missing-number.spec.js', '**/shopkeeper.spec.js', '**/solar-system.spec.js', '**/spelling-safari.spec.js', '**/plant-life-cycle.spec.js', '**/virtual-lab.spec.js', '**/geography-world.spec.js', '**/geography-country-activities.spec.js', '**/history-timeline.spec.js', '**/brain-power.spec.js', '**/plan-party.spec.js'],
+    testMatch: ['**/accessibility.spec.js', '**/fraction-pizza.spec.js', '**/food-chains.spec.js', '**/missing-number.spec.js', '**/shopkeeper.spec.js', '**/solar-system.spec.js', '**/spelling-safari.spec.js', '**/plant-life-cycle.spec.js', '**/virtual-lab.spec.js', '**/geography-world.spec.js', '**/geography-country-activities.spec.js', '**/history-timeline.spec.js', '**/brain-power.spec.js', '**/plan-party.spec.js', '**/mascot-companion.spec.js'],
     use: { ...devices['Pixel 7'] }
   }],
   webServer: {

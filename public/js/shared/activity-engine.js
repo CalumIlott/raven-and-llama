@@ -38,6 +38,7 @@ class ActivityEngine {
     this.hintsUsed = 0;
     this.timeLeft = 0;
     this.progressRecorded = false;
+    window.activeActivityEngine = this;
     return this;
   }
 
@@ -207,6 +208,16 @@ class ActivityEngine {
       );
       this.progressRecorded = true;
     }
+    if (window.activeActivityEngine === this) window.activeActivityEngine = null;
+    if (typeof window.dispatchEvent === 'function' && typeof window.CustomEvent === 'function') {
+      window.dispatchEvent(new window.CustomEvent('raven-llama:activity-completed', {
+        detail: {
+          id: this.definition.id,
+          title: this.definition.title,
+          score: this.score
+        }
+      }));
+    }
     return true;
   }
 
@@ -214,6 +225,7 @@ class ActivityEngine {
     if (this.status !== 'active') return false;
     this.stopTimer();
     this.status = 'cancelled';
+    if (window.activeActivityEngine === this) window.activeActivityEngine = null;
     return true;
   }
 }

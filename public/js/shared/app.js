@@ -201,6 +201,9 @@ class App {
           target.closest('.educational-feedback')?.querySelector('[data-feedback-audio-status]')
         );
         break;
+      case 'mascot-toggle': this.toggleMascotCompanion(); break;
+      case 'mascot-dismiss': this.dismissMascotCompanion(); break;
+      case 'mascot-hint': this.showMascotHint(); break;
       case 'home': this.showRavenAndLlamaHome(); break;
       case 'science-retry': this.retryScienceQuestion(); break;
       case 'spelling-retry': this.retrySpellingSafariQuestion(); break;
