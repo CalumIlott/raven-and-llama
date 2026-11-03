@@ -23,14 +23,16 @@ function contrastRatio(foreground, background) {
 async function findTextContrastFailures(page) {
   return page.locator('#app-main').evaluate(root => {
     const parseColor = value => {
-      if (value.startsWith('oklch(')) {
+      if (value.startsWith('oklch(') || value.startsWith('oklab(')) {
         const channels = value.match(/-?[\d.]+/g);
         if (!channels || channels.length < 3) return null;
         const lightness = Number(channels[0]);
-        const chroma = Number(channels[1]);
-        const angle = Number(channels[2]) * Math.PI / 180;
-        const a = chroma * Math.cos(angle);
-        const b = chroma * Math.sin(angle);
+        const a = value.startsWith('oklch(')
+          ? Number(channels[1]) * Math.cos(Number(channels[2]) * Math.PI / 180)
+          : Number(channels[1]);
+        const b = value.startsWith('oklch(')
+          ? Number(channels[1]) * Math.sin(Number(channels[2]) * Math.PI / 180)
+          : Number(channels[2]);
         const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
         const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
         const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
@@ -106,7 +108,7 @@ async function findTextContrastFailures(page) {
           backgrounds = backgrounds.map(background => composite(color, background));
         }
         if (currentStyle.backgroundImage !== 'none') {
-          const gradientColors = [...currentStyle.backgroundImage.matchAll(/(?:rgb|rgba|oklch)\([^)]+\)/g)]
+          const gradientColors = [...currentStyle.backgroundImage.matchAll(/(?:rgb|rgba|oklab|oklch)\([^)]+\)/g)]
             .map(match => parseColor(match[0]))
             .filter(Boolean);
           if (!gradientColors.length) {
@@ -470,4 +472,48 @@ test('Maths World and Number Builder text meet WCAG AA contrast in both themes',
 
   await expect(page.getByRole('heading', { name: 'Number Builder complete!' })).toBeVisible();
   await checkBothThemes('Number Builder results');
+});
+
+test('Fraction Pizza text meets WCAG AA contrast in both themes', async ({ page }) => {
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: 'Explore Maths World' }).click();
+  await page.locator('[data-action="maths-topic"][data-topic="fractions"]').click();
+
+  const checkBothThemes = async surface => {
+    for (const theme of ['dark', 'light']) {
+      await page.evaluate(value => window.ProfileManager.applyTheme(value), theme);
+      const failures = await findTextContrastFailures(page);
+      expect(failures, `${surface} (${theme} theme): ${JSON.stringify(failures)}`).toEqual([]);
+    }
+    await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
+  };
+
+  await checkBothThemes('Fraction Pizza card');
+  await page.evaluate(() => {
+    window.__fractionPizzaOriginalRandom = Math.random;
+    Math.random = () => 0.999999;
+  });
+  await page.locator('[data-action="fraction-pizza-start"][data-difficulty="easy"]').click();
+  await page.evaluate(() => {
+    Math.random = window.__fractionPizzaOriginalRandom;
+    delete window.__fractionPizzaOriginalRandom;
+  });
+  await checkBothThemes('Fraction Pizza activity');
+
+  for (let round = 0; round < 5; round++) {
+    const answer = await page.evaluate(() => window.app.fractionPizzaEngine.currentQuestion.answer);
+    for (let tokenId = 0; tokenId < answer; tokenId++) {
+      await page.locator(`[data-action="fraction-pizza-token"][data-token="${tokenId}"]`).click();
+    }
+    await page.getByRole('button', { name: 'Check fraction' }).click();
+    await expect(page.locator('#fraction-pizza-feedback .educational-feedback')).toHaveClass(/is-correct/);
+    await checkBothThemes(`Fraction Pizza feedback ${round + 1}`);
+    await page.getByRole('button', {
+      name: round === 4 ? 'Finish activity' : 'Next pizza'
+    }).click();
+  }
+
+  await expect(page.getByRole('heading', { name: 'Well done, pizza builder!' })).toBeVisible();
+  await checkBothThemes('Fraction Pizza results');
 });

@@ -49,6 +49,39 @@ html.theme-light #app-main[data-page="maths-world"] .number-builder-slot--filled
   color: #1e3a8a;
 }
 
+.fraction-pizza-eyebrow { color: #fcd34d; }
+html.theme-light .fraction-pizza-eyebrow { color: #92400e; }
+
+.fraction-pizza-level {
+  color: #f8fafc;
+  background-color: #1e293b;
+}
+.fraction-pizza-level:hover { background-color: #334155; }
+.fraction-pizza-level > span:last-child { color: #cbd5e1; }
+html.theme-light .fraction-pizza-level {
+  color: #0f172a;
+  background-color: #e2e8f0;
+}
+html.theme-light .fraction-pizza-level:hover { background-color: #cbd5e1; }
+html.theme-light .fraction-pizza-level > span:last-child { color: #334155; }
+
+.fraction-pizza__plate {
+  overflow: hidden;
+  border: 0.75rem solid #78350f;
+  border-radius: 50%;
+  background-color: #b45309;
+}
+
+.fraction-pizza__slice {
+  background-color: #fbbf24;
+  background-image: radial-gradient(circle at 50% 52%, #7c2d12 0 0.22rem, transparent 0.24rem);
+}
+
+.fraction-pizza__slice[aria-pressed="true"] {
+  background-color: #fb7185;
+  background-image: radial-gradient(circle at 50% 52%, #881337 0 0.22rem, transparent 0.24rem);
+}
+
 html.theme-light body {
   background-color: #f8fafc;
   color: #0f172a;

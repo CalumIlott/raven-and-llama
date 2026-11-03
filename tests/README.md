@@ -7,6 +7,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `unit/curriculum.test.js` checks belt ordering, unique identifiers, skill metadata, and arcade definitions.
 - `unit/generators.test.js` exercises standard and hard question generation for every curriculum skill, answer options, choice generation, shuffling, and belt exams; it requires 100 distinct standard questions per skill where the taught number range allows it and asserts the exact size of finite fact sets.
 - `unit/number-builder.test.js` checks ascending and descending integer sequences, difficulty bounds, question IDs, and input limits.
+- `unit/fraction-pizza.test.js` checks proper, equivalent, and mixed-number fraction models, quiz validation, stable IDs, and invalid input handling.
 - `unit/spelling-safari.test.js` checks activity definitions, unique answerable rounds, scrambled letters, and invalid activity handling.
 - `unit/accounts.test.js` checks temporary guest state, session restoration, account-scoped progress sync, training aggregation, final-exam prerequisites, and graduation/certificate recording.
 - `unit/account-api.test.mjs` checks input validation, password hashing, secure sessions, owner-scoped progress, password changes, account deletion, same-origin protections, and auth throttling behavior.
@@ -15,6 +16,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `integration/server.test.js` starts the HTTP server with a temporary data directory and verifies registration, login, owner-only progress, logout, malformed input, legacy endpoint rejection, and private-file protection.
 - `integration/worker.test.js` runs the Worker locally with Wrangler and temporary D1 persistence, then checks headers, registration, session restore, progress, origin protection, and rate limiting without remote resources.
 - `e2e/navigation.spec.js` checks home/module navigation, Maths World topic filters, Number Builder keyboard/retry/progress flows, curriculum counts, locked exam prerequisites, a failed exam, retry, the 80% pass threshold, and the Stage 2 unlock.
+- `e2e/fraction-pizza.spec.js` checks slice placement by touch/click, keyboard and drag-and-drop input, retry, quiz completion, and progress reporting on desktop and mobile Chromium.
 - `e2e/spelling-safari.spec.js` completes spelling, phonics, vocabulary, and word-scramble rounds through the Learning Centre.
 - `e2e/accounts.spec.js` checks guest notice, registration, session restore, password change, login, logout, account deletion, and progress sync across separate browser contexts with account isolation.
 - `e2e/workflows.spec.js` checks full skill training and progress, all three Times Tables quiz modes, Product Pair Match scoring, all seven belt arcade launch/exit paths, progress reporting, and the trophy room.
