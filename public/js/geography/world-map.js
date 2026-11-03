@@ -116,6 +116,28 @@ Object.assign(App.prototype, {
           </div>
         </section>
 
+        <section class="mt-8 rounded-3xl border border-cyan-500/30 bg-slate-900/80 p-5 sm:p-7" aria-labelledby="geography-activities-title">
+          <div class="mb-5">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">Try a challenge</p>
+            <h2 id="geography-activities-title" class="mt-1 font-ninja text-2xl font-bold text-white">Geography games</h2>
+            <p class="mt-2 max-w-2xl text-sm text-slate-300">Practise spotting flags and remembering capital cities with five quick questions.</p>
+          </div>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <article class="flex flex-col items-start gap-3 rounded-2xl border border-sky-400/30 bg-slate-950/70 p-5">
+              <span class="text-3xl" aria-hidden="true">🚩</span>
+              <h3 class="font-ninja text-xl font-bold text-white">Flag Detective</h3>
+              <p class="flex-1 text-sm text-slate-300">Look at a flag and choose the country it belongs to.</p>
+              <button type="button" data-action="geography-flag-start" class="rounded-xl border border-sky-300 bg-sky-400/20 px-4 py-2 font-bold text-sky-100 transition hover:bg-sky-400/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-200">Play Flag Detective</button>
+            </article>
+            <article class="flex flex-col items-start gap-3 rounded-2xl border border-emerald-400/30 bg-slate-950/70 p-5">
+              <span class="text-3xl" aria-hidden="true">🏙️</span>
+              <h3 class="font-ninja text-xl font-bold text-white">Capital Cities</h3>
+              <p class="flex-1 text-sm text-slate-300">Match each country with its capital city.</p>
+              <button type="button" data-action="geography-capital-start" class="rounded-xl border border-emerald-300 bg-emerald-400/20 px-4 py-2 font-bold text-emerald-100 transition hover:bg-emerald-400/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200">Play Capital Cities</button>
+            </article>
+          </div>
+        </section>
+
         <div class="geography-explorer">
           <section class="geography-map-panel" aria-labelledby="geography-map-title">
             <div class="geography-section-heading">
