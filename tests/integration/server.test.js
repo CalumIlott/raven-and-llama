@@ -127,7 +127,13 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal((await fetch(`${baseUrl}/data/accounts.sqlite`)).status, 404);
   assert.equal((await fetch(`${baseUrl}/data/accounts.json`)).status, 404);
 
-  const privateProgress = { ...first.body.profile, stars: 17, passedBelts: ['white'] };
+  const privateProgress = {
+    ...first.body.profile,
+    stars: 17,
+    passedBelts: ['white'],
+    schoolYear: 6,
+    subjectYears: { maths: 3, science: 2 }
+  };
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Origin: baseUrl, Cookie: first.cookie },
@@ -139,7 +145,10 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(second.response.status, 201);
   const firstRead = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: first.cookie } });
   const secondRead = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
-  assert.equal((await firstRead.json()).profile.stars, 17);
+  const firstProfile = (await firstRead.json()).profile;
+  assert.equal(firstProfile.stars, 17);
+  assert.equal(firstProfile.schoolYear, 6);
+  assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal((await secondRead.json()).profile.stars, 0);
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });

@@ -147,6 +147,8 @@ test('accounts can only read and update their own progress', async () => {
       ...firstData.profile,
       stars: 15,
       passedBelts: ['white'],
+      schoolYear: 4,
+      subjectYears: { maths: 3, science: 2, english: 0, invalid: 5 },
       endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' },
       activityProgress: {
         'science-water-cycle': {
@@ -171,6 +173,8 @@ test('accounts can only read and update their own progress', async () => {
   const firstProfile = (await firstRead.json()).profile;
   const secondProfile = (await secondRead.json()).profile;
   assert.equal(firstProfile.stars, 15);
+  assert.equal(firstProfile.schoolYear, 4);
+  assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2, english: 0 });
   assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
   assert.deepEqual(firstProfile.activityProgress, {
     'science-water-cycle': {
@@ -186,6 +190,8 @@ test('accounts can only read and update their own progress', async () => {
     }
   });
   assert.equal(secondProfile.stars, 0);
+  assert.equal(secondProfile.schoolYear, 3);
+  assert.deepEqual(secondProfile.subjectYears, {});
   assert.deepEqual(secondProfile.endlessHighScores, {});
   assert.deepEqual(secondProfile.activityProgress, {});
 
@@ -237,11 +243,19 @@ test('theme and last-module preferences persist independently on each account', 
   const firstProfile = (await first.json()).profile;
 
   const update = await request(store, '/api/progress', 'PUT', {
-    profile: { ...firstProfile, theme: 'light', lastModule: 'timetables' }
+    profile: {
+      ...firstProfile,
+      theme: 'light',
+      lastModule: 'timetables',
+      schoolYear: 5,
+      subjectYears: { maths: 3, science: 2 }
+    }
   }, firstCookie);
   const updatedProfile = (await update.json()).profile;
   assert.equal(updatedProfile.theme, 'light');
   assert.equal(updatedProfile.lastModule, 'timetables');
+  assert.equal(updatedProfile.schoolYear, 5);
+  assert.deepEqual(updatedProfile.subjectYears, { maths: 3, science: 2 });
 
   const firstSession = await request(store, '/api/auth/session', 'GET', undefined, firstCookie);
   const secondSession = await request(store, '/api/auth/session', 'GET', undefined, secondCookie);
@@ -249,15 +263,27 @@ test('theme and last-module preferences persist independently on each account', 
   const secondRestoredProfile = (await secondSession.json()).profile;
   assert.equal(firstRestoredProfile.theme, 'light');
   assert.equal(firstRestoredProfile.lastModule, 'timetables');
+  assert.equal(firstRestoredProfile.schoolYear, 5);
+  assert.deepEqual(firstRestoredProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(secondRestoredProfile.theme, 'light');
   assert.equal(secondRestoredProfile.lastModule, null);
+  assert.equal(secondRestoredProfile.schoolYear, 3);
+  assert.deepEqual(secondRestoredProfile.subjectYears, {});
 
   const invalidTheme = await request(store, '/api/progress', 'PUT', {
-    profile: { ...firstProfile, theme: 'system', lastModule: '/private/path' }
+    profile: {
+      ...firstProfile,
+      theme: 'system',
+      lastModule: '/private/path',
+      schoolYear: 99,
+      subjectYears: { maths: '2', unknown: 6 }
+    }
   }, firstCookie);
   const invalidPreferenceProfile = (await invalidTheme.json()).profile;
   assert.equal(invalidPreferenceProfile.theme, 'light');
   assert.equal(invalidPreferenceProfile.lastModule, 'timetables');
+  assert.equal(invalidPreferenceProfile.schoolYear, 5);
+  assert.deepEqual(invalidPreferenceProfile.subjectYears, {});
 });
 
 test('login uses a generic credential error and logout revokes the session', async () => {

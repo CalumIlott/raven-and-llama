@@ -168,6 +168,14 @@
               <option value="light">Light</option>
             </select>
           </div>
+          <section class="account-settings-section account-learning-levels mb-5" aria-labelledby="account-learning-levels-title">
+            <h4 id="account-learning-levels-title" class="text-sm font-bold text-white">Learning levels</h4>
+            <p class="mt-1 mb-3 text-xs text-zinc-400">Choose a default school year, then set a different year for any subject.</p>
+            <label for="profile-school-year" class="block text-xs text-zinc-300 mb-1">Default school year</label>
+            <select id="profile-school-year" data-action="school-year-select" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm"></select>
+            <div id="subject-year-selectors" class="mt-4 space-y-3"></div>
+            <p class="mt-3 text-[11px] text-zinc-500">Maths includes Times Tables, Telling Time, and Money Masters. English includes Spelling Safari.</p>
+          </section>
           <form id="account-password-form" data-submit-action="account-password" class="account-settings-section account-password-section space-y-3">
             <h4 class="text-sm font-bold text-white">Change password</h4>
             <div>

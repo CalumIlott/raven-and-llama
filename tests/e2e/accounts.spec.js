@@ -101,6 +101,33 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
   await expect(page.getByRole('button', { name: 'Save avatar' })).toBeDisabled();
 });
 
+test('signed-in learners save subject-specific year levels independently', async ({ page }) => {
+  const { username } = await registerAccount(page);
+  await openAccountModal(page);
+
+  await expect(page.locator('#profile-school-year')).toHaveValue('3');
+  await expect(page.locator('#subject-year-english')).toHaveValue('');
+  await page.locator('#subject-year-maths').selectOption('4');
+  await page.evaluate(() => window.ProfileManager.flush());
+  await page.locator('#subject-year-science').selectOption('2');
+  await page.evaluate(() => window.ProfileManager.flush());
+  await page.locator('#profile-school-year').selectOption('5');
+  await page.evaluate(() => window.ProfileManager.flush());
+
+  await expect(page.locator('#subject-year-maths')).toHaveValue('4');
+  await expect(page.locator('#subject-year-science')).toHaveValue('2');
+  await expect(page.locator('#subject-year-english')).toHaveValue('');
+  await expect(page.locator('#subject-year-english option:checked')).toHaveText('Use global default (Year 5)');
+
+  await page.reload();
+  await expect(page.locator('#header-profile-name')).toHaveText(username);
+  await openAccountModal(page);
+  await expect(page.locator('#profile-school-year')).toHaveValue('5');
+  await expect(page.locator('#subject-year-maths')).toHaveValue('4');
+  await expect(page.locator('#subject-year-science')).toHaveValue('2');
+  await expect(page.locator('#subject-year-english')).toHaveValue('');
+});
+
 test('last module is restored on home load without overriding explicit routes or login context', async ({ page }) => {
   const account = await registerAccount(page);
 

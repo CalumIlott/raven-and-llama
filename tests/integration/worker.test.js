@@ -127,11 +127,14 @@ test('local Worker enforces account boundaries, rate limits, and security header
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
     headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ profile: { stars: 9, certificates: [] } })
+    body: JSON.stringify({ profile: { stars: 9, certificates: [], schoolYear: 5, subjectYears: { science: 2 } } })
   });
   assert.equal(update.status, 200);
   const progress = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: cookie } });
-  assert.equal((await progress.json()).profile.stars, 9);
+  const savedProgress = (await progress.json()).profile;
+  assert.equal(savedProgress.stars, 9);
+  assert.equal(savedProgress.schoolYear, 5);
+  assert.deepEqual(savedProgress.subjectYears, { science: 2 });
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',

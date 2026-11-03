@@ -232,6 +232,25 @@ class App {
 
   handleChangeAction(event) {
     if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+    if (event.target.dataset.action === 'school-year-select') {
+      const schoolYear = Number(event.target.value);
+      if (ProfileManager.isValidSchoolYear(schoolYear)) {
+        void this.saveLearningPreferences({ ...ProfileManager.getActiveProfile(), schoolYear });
+      }
+    }
+    if (event.target.dataset.action === 'subject-year-select') {
+      const profile = ProfileManager.getActiveProfile();
+      const subject = event.target.dataset.subject;
+      if (!ProfileManager.SUBJECTS.some(item => item.id === subject)) return;
+      const subjectYears = { ...profile.subjectYears };
+      if (event.target.value === '') delete subjectYears[subject];
+      else {
+        const year = Number(event.target.value);
+        if (!ProfileManager.isValidSchoolYear(year)) return;
+        subjectYears[subject] = year;
+      }
+      void this.saveLearningPreferences({ ...profile, subjectYears });
+    }
     if (event.target.name === 'account_avatar') this.updateAvatarSaveButton();
   }
 
@@ -575,6 +594,7 @@ class App {
     if (username) username.textContent = ProfileManager.account?.username || '';
     if (themeSelect) themeSelect.value = profile.theme;
     if (guestThemeSelect) guestThemeSelect.value = profile.theme;
+    if (authenticated) this.renderLearningPreferences(profile);
     if (avatarPicker) avatarPicker.classList.add('hidden');
     if (settingsView) settingsView.classList.remove('hidden');
     if (serviceWarning) serviceWarning.classList.toggle('hidden', ProfileManager.accountServiceAvailable);
@@ -588,6 +608,44 @@ class App {
       document.getElementById('account-avatar-form')?.reset();
     }
     this.openDialog(modal);
+  }
+
+  renderLearningPreferences(profile) {
+    const schoolYearSelect = document.getElementById('profile-school-year');
+    const subjectSelectors = document.getElementById('subject-year-selectors');
+    if (!schoolYearSelect || !subjectSelectors) return;
+
+    const options = ProfileManager.SCHOOL_YEAR_LEVELS.map(level =>
+      `<option value="${level.value}">${escapeHtml(level.label)}</option>`
+    ).join('');
+    schoolYearSelect.innerHTML = options;
+    schoolYearSelect.value = String(profile.schoolYear);
+    const globalYearLabel = ProfileManager.getSchoolYearLabel(profile.schoolYear);
+    subjectSelectors.innerHTML = ProfileManager.SUBJECTS.map(subject => `
+      <div>
+        <label for="subject-year-${subject.id}" class="block text-xs text-zinc-300 mb-1">${escapeHtml(subject.label)}</label>
+        <select id="subject-year-${subject.id}" data-action="subject-year-select" data-subject="${subject.id}"
+                class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-400 text-sm">
+          <option value="">Use global default (${escapeHtml(globalYearLabel)})</option>
+          ${options}
+        </select>
+      </div>
+    `).join('');
+    for (const subject of ProfileManager.SUBJECTS) {
+      const select = document.getElementById(`subject-year-${subject.id}`);
+      if (select && Object.hasOwn(profile.subjectYears, subject.id)) {
+        select.value = String(profile.subjectYears[subject.id]);
+      }
+    }
+  }
+
+  async saveLearningPreferences(profile) {
+    const saved = await ProfileManager.updateProfile(profile);
+    const activeElementId = document.activeElement?.id;
+    this.renderLearningPreferences(ProfileManager.getActiveProfile());
+    document.getElementById(activeElementId)?.focus();
+    if (saved) this.setAccountMessage('Learning levels saved.', false);
+    else this.setAccountMessage(ProfileManager.lastSaveError || 'Unable to save learning levels.');
   }
 
   renderAvatarOptions() {

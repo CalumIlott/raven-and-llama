@@ -6,6 +6,15 @@ class ProfileManager {
   static saveQueue = Promise.resolve();
   static GUEST_THEME_KEY = 'raven_llama_guest_theme';
   static LAST_MODULES = new Set(['learning', 'dojo', 'timetables', 'spelling']);
+  static SCHOOL_YEAR_LEVELS = [
+    { value: 0, label: 'Foundation' },
+    ...Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Year ${index + 1}` }))
+  ];
+  static SUBJECTS = [
+    { id: 'maths', label: 'Maths' },
+    { id: 'science', label: 'Science' },
+    { id: 'english', label: 'English & Spelling' }
+  ];
 
   static AVATARS = [
     { id: 'raven', name: 'Raven', emoji: '🐦‍⬛', image: 'assets/Raven%26Llama_Profile_Raven.jpg', color: 'bg-black text-white border-2 border-zinc-700 shadow-md', icon: 'feather' },
@@ -37,6 +46,8 @@ class ProfileManager {
       name: 'Guest',
       avatar: ProfileManager.getAvatar('raven'),
       theme: 'light',
+      schoolYear: 3,
+      subjectYears: {},
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -67,6 +78,8 @@ class ProfileManager {
       name: account?.username || 'Guest',
       avatar: ProfileManager.getAvatar(avatarId),
       theme: source.theme === 'dark' ? 'dark' : 'light',
+      schoolYear: ProfileManager.isValidSchoolYear(source.schoolYear) ? source.schoolYear : 3,
+      subjectYears: ProfileManager.normalizeSubjectYears(source.subjectYears),
       lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
@@ -214,6 +227,27 @@ class ProfileManager {
 
   static isAuthenticated() {
     return Boolean(ProfileManager.account);
+  }
+
+  static isValidSchoolYear(value) {
+    return Number.isInteger(value) && value >= 0 && value <= 12;
+  }
+
+  static normalizeSubjectYears(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    const subjects = new Set(ProfileManager.SUBJECTS.map(subject => subject.id));
+    return Object.fromEntries(Object.entries(value).filter(([subject, year]) =>
+      subjects.has(subject) && ProfileManager.isValidSchoolYear(year)
+    ));
+  }
+
+  static getSchoolYearLabel(year) {
+    return ProfileManager.SCHOOL_YEAR_LEVELS.find(level => level.value === year)?.label || 'Year 3';
+  }
+
+  static getSubjectYear(subjectId) {
+    const profile = ProfileManager.getActiveProfile();
+    return profile.subjectYears[subjectId] ?? profile.schoolYear;
   }
 
   static setTheme(theme) {
