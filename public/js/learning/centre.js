@@ -388,6 +388,8 @@ Object.assign(App.prototype, {
         name: 'Brain Power',
         icon: '🧠',
         description: 'Stretch your thinking with puzzles and challenges.',
+        entryAction: 'brain-power-hub',
+        entryLabel: 'Explore Brain Power',
         actions: []
       },
       {

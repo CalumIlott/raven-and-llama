@@ -45,6 +45,7 @@ class App {
       '/learning-centre/maths': 'maths-world',
       '/learning-centre/science': 'science-lab',
       '/learning-centre/history': 'history-discovery',
+      '/learning-centre/brain-power': 'brain-power-hub',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -68,6 +69,7 @@ class App {
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
       'history-discovery': () => this.showHistoryHub(),
+      'brain-power-hub': () => this.showBrainPowerHub(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -96,7 +98,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -201,6 +203,15 @@ class App {
       case 'maths-world': this.showMathsWorld(); break;
       case 'history-hub': this.showHistoryHub(); break;
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
+      case 'brain-power-hub': this.showBrainPowerHub(); break;
+      case 'brain-power-home': this.showBrainPowerHub(); break;
+      case 'brain-pattern-start': this.startBrainPowerPattern(); break;
+      case 'brain-pattern-answer': this.submitBrainPowerPatternAnswer(target.dataset.answerValue); break;
+      case 'brain-pattern-retry': this.retryBrainPowerPattern(); break;
+      case 'brain-memory-start': this.startBrainPowerMemoryMatch(); break;
+      case 'brain-memory-card': this.selectBrainPowerMemoryCard(target.dataset.cardId); break;
+      case 'brain-code-start': this.startBrainPowerCodeBreaker(); break;
+      case 'brain-code-submit': this.submitBrainPowerCodeGuess(); break;
       case 'history-event-select': this.selectHistoryEvent(target.dataset.eventId); break;
       case 'history-timeline-place': this.placeSelectedHistoryEvent(Number(target.dataset.positionIndex)); break;
       case 'history-timeline-remove': this.removeHistoryEvent(Number(target.dataset.positionIndex)); break;
@@ -408,6 +419,9 @@ class App {
       }
       void this.saveLearningPreferences({ ...profile, subjectYears });
     }
+    if (event.target.dataset.action === 'brain-code-color') {
+      this.selectBrainPowerCodeColor(Number(event.target.dataset.positionIndex), event.target.value);
+    }
     if (event.target.name === 'account_avatar') this.updateAvatarSaveButton();
   }
 
@@ -528,6 +542,9 @@ class App {
       } else if (this.currentView === 'history-discovery' || this.currentView === 'history-timeline') {
         subBadge.textContent = 'History & Discovery';
         subBadge.classList.remove('hidden');
+      } else if (['brain-power', 'brain-power-pattern', 'brain-power-memory', 'brain-power-code'].includes(this.currentView)) {
+        subBadge.textContent = 'Brain Power';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
         subBadge.classList.remove('hidden');
@@ -604,6 +621,14 @@ class App {
       this.showHistoryHub();
     } else if (this.currentView === 'history-timeline' && this.historyTimelineGame) {
       this.renderHistoryTimelineActivity();
+    } else if (this.currentView === 'brain-power') {
+      this.showBrainPowerHub();
+    } else if (this.currentView === 'brain-power-pattern' && this.brainPowerPatternGame) {
+      this.renderBrainPowerPattern();
+    } else if (this.currentView === 'brain-power-memory' && this.brainPowerMemoryGame) {
+      this.renderBrainPowerMemory();
+    } else if (this.currentView === 'brain-power-code' && this.brainPowerCodeGame) {
+      this.renderBrainPowerCodeBreaker();
     } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {
