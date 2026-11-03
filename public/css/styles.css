@@ -54,6 +54,67 @@ html.theme-light .money-hero {
   background-color: #fff7ed;
   background-image: none;
 }
+.money-currency {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid;
+  font-weight: 800;
+  line-height: 1;
+}
+.money-currency--coin {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 45%);
+}
+.money-currency--note {
+  width: 5.5rem;
+  height: 2.75rem;
+  border-radius: 0.3rem;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 45%);
+}
+.money-currency--small.money-currency--coin { width: 2.5rem; height: 2.5rem; }
+.money-currency--medium.money-currency--coin { width: 3rem; height: 3rem; }
+.money-currency--large.money-currency--coin { width: 3.5rem; height: 3.5rem; }
+.money-currency--xlarge.money-currency--coin { width: 4rem; height: 4rem; }
+.money-currency--small.money-currency--note { width: 5rem; height: 2.5rem; }
+.money-currency--medium.money-currency--note { width: 5.75rem; height: 2.75rem; }
+.money-currency--large.money-currency--note { width: 6.5rem; height: 3rem; }
+.money-currency--xlarge.money-currency--note { width: 7.25rem; height: 3.25rem; }
+.money-currency--xxlarge.money-currency--note { width: 8rem; height: 3.5rem; }
+.money-currency--silver { color: #334155; background: linear-gradient(145deg, #f8fafc, #94a3b8); border-color: #64748b; }
+.money-currency--gold { color: #713f12; background: linear-gradient(145deg, #fef08a, #eab308); border-color: #a16207; }
+.money-currency--pink { color: #831843; background: linear-gradient(145deg, #fbcfe8, #f472b6); border-color: #be185d; }
+.money-currency--blue { color: #1e3a8a; background: linear-gradient(145deg, #bfdbfe, #60a5fa); border-color: #1d4ed8; }
+.money-currency--red { color: #7f1d1d; background: linear-gradient(145deg, #fecaca, #f87171); border-color: #b91c1c; }
+.money-currency--yellow { color: #713f12; background: linear-gradient(145deg, #fef3c7, #fbbf24); border-color: #b45309; }
+.money-currency--green { color: #14532d; background: linear-gradient(145deg, #bbf7d0, #4ade80); border-color: #15803d; }
+.money-currency__window {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  display: block;
+  width: 12%;
+  height: 60%;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+  background-color: rgb(255 255 255 / 35%);
+}
+.money-currency__value { position: relative; z-index: 1; }
+.money-currency__mark {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.3rem;
+  font-size: 0.55rem;
+}
+.money-currency--compact.money-currency--coin { width: 1.6rem; height: 1.6rem; font-size: 0.65rem; }
+.money-currency--compact.money-currency--note { width: 3rem; height: 1.6rem; font-size: 0.65rem; }
+.money-currency--compact .money-currency__mark { top: 0.08rem; right: 0.12rem; font-size: 0.4rem; }
+.money-currency--compact .money-currency__window { border-width: 1px; border-radius: 0.1rem; }
 html.theme-light .maths-world-hero__eyebrow { color: #075985; }
 html.theme-light .maths-world-hero__title { color: #0f172a; }
 html.theme-light #app-main[data-page="maths-world"] .number-builder-slot--filled {
