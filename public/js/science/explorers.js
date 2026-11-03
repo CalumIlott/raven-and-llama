@@ -4074,6 +4074,7 @@ Object.assign(App.prototype, {
     this.currentView = 'science';
     this.scienceGame = null;
     const recommendedDifficulty = ProfileManager.getSubjectDifficulty('science');
+    const recommendedLabel = recommendedDifficulty[0].toUpperCase() + recommendedDifficulty.slice(1);
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'science';
@@ -4122,14 +4123,13 @@ Object.assign(App.prototype, {
                 <span class="text-slate-400">5 questions · Learn as you play</span>
                 <span class="science-mission-reward text-amber-300 font-bold">⭐ 5 stars to find</span>
               </div>
-              <p class="mt-4 text-xs font-bold text-sky-300">Choose your difficulty</p>
+              <p class="mt-4 text-xs font-bold text-sky-300">Choose your difficulty · Recommended: ${recommendedLabel}</p>
               <div class="grid grid-cols-3 gap-2 mt-2">
                 ${[recommendedDifficulty, ...Object.keys(SCIENCE_DIFFICULTY_CHOICE_COUNTS).filter(level => level !== recommendedDifficulty)].map(difficulty => `
                   <button type="button" data-action="science-start" data-mission-id="${mission.id}" data-difficulty="${difficulty}"
                           data-profile-recommended="${difficulty === recommendedDifficulty}"
-                          aria-label="${mission.title}, ${difficulty} difficulty${difficulty === recommendedDifficulty ? ', recommended' : ''}"
                           class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-sky-600 hover:bg-sky-500' : 'bg-sky-900 hover:bg-sky-800'} px-2 py-2 text-sm font-bold text-white capitalize">
-                    ${difficulty === recommendedDifficulty ? 'Recommended: ' : ''}${difficulty}
+                    ${difficulty}
                   </button>
                 `).join('')}
               </div>

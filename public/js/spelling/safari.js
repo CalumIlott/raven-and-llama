@@ -3873,6 +3873,7 @@ Object.assign(App.prototype, {
     this.currentView = 'spelling';
     this.rememberModule('spelling');
     const recommendedDifficulty = ProfileManager.getSubjectDifficulty('english');
+    const recommendedLabel = recommendedDifficulty[0].toUpperCase() + recommendedDifficulty.slice(1);
     const main = document.getElementById('app-main');
     if (!main) return;
     main.dataset.page = 'spelling';
@@ -3903,14 +3904,13 @@ Object.assign(App.prototype, {
               <span class="text-3xl">${activity.emoji}</span>
               <h3 class="font-ninja text-xl font-bold text-white mt-2">${activity.title}</h3>
               <p class="text-sm text-slate-400 mt-1">${activity.description}</p>
-              <p class="spelling-activity-action mt-4 text-xs font-bold text-emerald-300">Choose your difficulty · 6 rounds</p>
+              <p class="spelling-activity-action mt-4 text-xs font-bold text-emerald-300">Choose your difficulty · 6 rounds · Recommended: ${recommendedLabel}</p>
               <div class="grid grid-cols-3 gap-2 mt-2">
                 ${[recommendedDifficulty, ...['easy', 'medium', 'hard'].filter(level => level !== recommendedDifficulty)].map(difficulty => `
                   <button data-action="spelling-start" data-activity-id="${activity.id}" data-difficulty="${difficulty}"
                           data-profile-recommended="${difficulty === recommendedDifficulty}"
-                          aria-label="${activity.title}, ${difficulty} difficulty${difficulty === recommendedDifficulty ? ', recommended' : ''}"
                           class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-900 hover:bg-emerald-800'} px-2 py-2 text-sm font-bold text-white capitalize">
-                    ${difficulty === recommendedDifficulty ? 'Recommended: ' : ''}${difficulty}
+                    ${difficulty[0].toUpperCase() + difficulty.slice(1)}
                   </button>
                 `).join('')}
               </div>
