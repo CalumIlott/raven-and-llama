@@ -138,6 +138,9 @@ test('accounts persist securely and progress stays private to the authenticated 
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
     activeSpellingListId: 'week-one',
+    questProgress: {
+      'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+    },
     dailyChallenges: {
       days: {
         [dailyChallengeDayKey]: {
@@ -187,11 +190,15 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.activityProgress['maths-number-builder'].skillId, 'green_order');
   assert.equal(firstProfile.activityProgress['maths-number-builder'].correctAnswers, 4);
   assert.equal(firstProfile.activityProgress['maths-number-builder'].totalAnswers, 5);
+  assert.deepEqual(firstProfile.questProgress, {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  });
   assert.deepEqual(firstProfile.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
   assert.equal(firstProfile.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'maths-number-builder');
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+  assert.deepEqual(secondProfile.questProgress, {});
   assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
 
@@ -208,6 +215,9 @@ test('accounts persist securely and progress stays private to the authenticated 
   const restoredCosmetics = (await cosmeticRestore.json()).profile;
   assert.equal(restoredCosmetics.stars, 12);
   assert.deepEqual(restoredCosmetics.ownedCosmetics, ['sunrise-frame']);
+  assert.deepEqual(restoredCosmetics.questProgress, {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  });
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);

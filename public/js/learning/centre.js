@@ -35,6 +35,9 @@ Object.assign(App.prototype, {
           </div>
 
           <div class="learning-intro__actions">
+            <button data-action="learning-quests" class="btn-ninja px-5 py-3 rounded-2xl bg-cyan-900/60 hover:bg-cyan-800 border-2 border-cyan-600 text-cyan-200 font-ninja font-bold flex items-center gap-2 shadow-lg text-sm">
+              🧭 Learning Quests
+            </button>
             <button data-action="trophy-room" class="btn-ninja px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border-2 border-amber-400 text-amber-300 font-ninja font-bold flex items-center gap-2 shadow-lg text-sm">
               🏆 Trophy Room
             </button>

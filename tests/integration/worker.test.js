@@ -139,6 +139,9 @@ test('local Worker enforces account boundaries, rate limits, and security header
         subjectYears: { science: 2 },
         spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
         activeSpellingListId: 'week-one',
+        questProgress: {
+          'brain-power-trail': { completedStepIds: ['pattern-recognition'] }
+        },
         dailyChallenges: {
           days: {
             [dailyChallengeDayKey]: {
@@ -180,6 +183,9 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].skillId, 'science_virtual_lab');
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 1);
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 1);
+  assert.deepEqual(savedProgress.questProgress, {
+    'brain-power-trail': { completedStepIds: ['pattern-recognition'] }
+  });
   assert.deepEqual(savedProgress.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
   assert.equal(savedProgress.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'science-solar-system-order');
 
@@ -196,6 +202,9 @@ test('local Worker enforces account boundaries, rate limits, and security header
   const restoredProfile = (await restoredCosmetics.json()).profile;
   assert.equal(restoredProfile.stars, 4);
   assert.deepEqual(restoredProfile.ownedCosmetics, ['sunrise-frame']);
+  assert.deepEqual(restoredProfile.questProgress, {
+    'brain-power-trail': { completedStepIds: ['pattern-recognition'] }
+  });
 
   const otherRegister = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',
@@ -212,6 +221,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(otherProfile.earnedBadges, []);
   assert.deepEqual(otherProfile.ownedCosmetics, []);
   assert.deepEqual(otherProfile.dailyChallenges, { days: {} });
+  assert.deepEqual(otherProfile.questProgress, {});
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',

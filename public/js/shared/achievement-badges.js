@@ -1,5 +1,5 @@
 (function () {
-  const RULE_TYPES = new Set(['activity-count', 'mastered-skill-count', 'belt-graduation-count']);
+  const RULE_TYPES = new Set(['activity-count', 'mastered-skill-count', 'belt-graduation-count', 'quest-completion']);
   const catalog = Object.freeze([
     {
       id: 'first-steps',
@@ -32,6 +32,22 @@
       icon: '🥋',
       criteria: 'Pass a Maths Masters belt.',
       rule: Object.freeze({ type: 'belt-graduation-count', threshold: 1 })
+    },
+    {
+      id: 'stellar-explorer',
+      name: 'Stellar Explorer',
+      description: 'You completed the Solar System Explorer quest.',
+      icon: '🚀',
+      criteria: 'Complete every step in the Solar System Explorer quest.',
+      rule: Object.freeze({ type: 'quest-completion', questId: 'stellar-expedition', threshold: 2 })
+    },
+    {
+      id: 'brain-trailblazer',
+      name: 'Brain Trailblazer',
+      description: 'You completed the Brain Power Trail quest.',
+      icon: '🧠',
+      criteria: 'Complete every step in the Brain Power Trail quest.',
+      rule: Object.freeze({ type: 'quest-completion', questId: 'brain-power-trail', threshold: 3 })
     }
   ].map(badge => Object.freeze(badge)));
 
@@ -49,7 +65,9 @@
         typeof badge.icon !== 'string' || badge.icon.trim().length === 0 ||
         typeof badge.criteria !== 'string' || badge.criteria.trim().length === 0 ||
         !badge.rule || !RULE_TYPES.has(badge.rule.type) ||
-        !Number.isSafeInteger(badge.rule.threshold) || badge.rule.threshold < 1) {
+        !Number.isSafeInteger(badge.rule.threshold) || badge.rule.threshold < 1 ||
+        (badge.rule.type === 'quest-completion' &&
+          (typeof badge.rule.questId !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(badge.rule.questId)))) {
         throw new TypeError('Badge catalog contains an invalid or duplicate entry.');
       }
       ids.add(badge.id);
@@ -91,6 +109,8 @@
         return countMasteredSkills(profile) >= rule.threshold;
       case 'belt-graduation-count':
         return countGraduatedBelts(profile) >= rule.threshold;
+      case 'quest-completion':
+        return (profile?.questProgress?.[rule.questId]?.completedStepIds?.length || 0) >= rule.threshold;
       default:
         throw new TypeError(`Unsupported badge rule: ${rule.type}`);
     }

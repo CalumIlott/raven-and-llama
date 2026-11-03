@@ -46,6 +46,7 @@ class App {
       '/learning-centre/science': 'science-lab',
       '/learning-centre/history': 'history-discovery',
       '/learning-centre/brain-power': 'brain-power-hub',
+      '/learning-centre/quests': 'learning-quests',
       '/learning-centre/life-skills/party-planner': 'life-skills-party',
       '/learning-centre/geography': 'geography-world',
       '/learning-centre/geography/flag-detective': 'geography-flag-detective',
@@ -70,6 +71,7 @@ class App {
     const views = {
       learning: () => this.showLearningCentre(),
       'learning-centre': () => this.showLearningCentre(),
+      'learning-quests': () => this.showLearningQuests(),
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
       'history-discovery': () => this.showHistoryHub(),
@@ -106,7 +108,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -211,6 +213,8 @@ class App {
       case 'money-retry': this.retryMoneyQuestion(); break;
       case 'learning': this.showLearningCentre(); break;
       case 'learning-centre': this.showLearningCentre(); break;
+      case 'learning-quests': this.showLearningQuests(); break;
+      case 'learning-quest-start': this.startLearningQuestStep(target.dataset.questId); break;
       case 'daily-challenge-start': this.startDailyChallenge(target.dataset.challengeId); break;
       case 'maths-world': this.showMathsWorld(); break;
       case 'history-hub': this.showHistoryHub(); break;

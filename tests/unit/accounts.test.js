@@ -7,12 +7,17 @@ function response(data, status = 200) {
 }
 
 function loadAccounts(fetchImplementation) {
-  const context = loadBrowserScripts(
-    createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) }),
+  const context = createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) });
+  context.App = function App() {};
+  context.app = { updateHeader() {}, refreshCurrentView() {} };
+  loadBrowserScripts(
+    context,
     'public/js/mathmasters/curriculum.js',
     'public/js/shared/accounts.js',
     'public/js/shared/achievement-badges.js',
-    'public/js/shared/cosmetic-shop.js'
+    'public/js/shared/cosmetic-shop.js',
+    'public/js/shared/daily-challenges.js',
+    'public/js/learning/quests.js'
   );
   return { context, accounts: context.ProfileManager };
 }
@@ -47,24 +52,29 @@ test('guest progress is available in memory but never saved locally or remotely'
       }
     }
   };
+  const questProgress = {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  };
   assert.equal(await accounts.updateProfile({
     ...guest,
     spellingLists: [guestList],
     activeSpellingListId: guestList.id,
-    dailyChallenges
+    dailyChallenges,
+    questProgress
   }), false);
   await accounts.flush();
 
   assert.equal(accounts.getActiveProfile().stars, 8);
   assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().spellingLists)), [guestList]);
   assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().dailyChallenges)), dailyChallenges);
+  assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().questProgress)), questProgress);
   assert.equal(accounts.getActiveProfile().activeSpellingListId, guestList.id);
   assert.equal(fetchCount, 1);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
   assert.equal(context.localStorage.getItem(accounts.GUEST_THEME_KEY), null);
 });
 
-test('guest achievement badges derive from progress and remain memory only', async () => {
+test('guest achievement badges and quest rewards derive from progress and remain memory only', async () => {
   const { context, accounts } = loadAccounts();
   await accounts.initialize();
 
@@ -86,10 +96,15 @@ test('guest achievement badges derive from progress and remain memory only', asy
         timesPlayed: 1
       }
     },
-    earnedBadges: ['activity-explorer', 'first-steps', 'unknown-badge']
+    questProgress: {
+      'stellar-expedition': {
+        completedStepIds: ['solar-system-order', 'plant-life-cycle-order']
+      }
+    },
+    earnedBadges: ['activity-explorer', 'first-steps', 'stellar-explorer', 'unknown-badge']
   });
 
-  assert.deepEqual(Array.from(accounts.getActiveProfile().earnedBadges), ['first-steps']);
+  assert.deepEqual(Array.from(accounts.getActiveProfile().earnedBadges), ['first-steps', 'stellar-explorer']);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 

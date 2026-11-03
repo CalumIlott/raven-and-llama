@@ -44,6 +44,18 @@ test('badges derive from historical activity, topic mastery, and curriculum prog
   ]);
 });
 
+test('quest completion derives its matching unique badge reward', () => {
+  const badges = loadBadges();
+  const questProgress = {
+    'stellar-expedition': { completedStepIds: ['solar-system-order', 'plant-life-cycle-order'] }
+  };
+
+  assert.deepEqual(Array.from(badges.deriveEarnedIds({ questProgress })), ['stellar-explorer']);
+  assert.deepEqual(Array.from(badges.deriveEarnedIds({
+    questProgress: { 'stellar-expedition': { completedStepIds: ['solar-system-order'] } }
+  })), []);
+});
+
 test('badge normalization rejects unknown, unsupported, and duplicate awards', () => {
   const badges = loadBadges();
   const profile = {
