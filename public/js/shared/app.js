@@ -48,6 +48,8 @@ class App {
       '/learning-centre/brain-power': 'brain-power-hub',
       '/learning-centre/life-skills/party-planner': 'life-skills-party',
       '/learning-centre/geography': 'geography-world',
+      '/learning-centre/geography/flag-detective': 'geography-flag-detective',
+      '/learning-centre/geography/capital-cities': 'geography-capital-cities',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -74,6 +76,8 @@ class App {
       'brain-power-hub': () => this.showBrainPowerHub(),
       'life-skills-party': () => this.startPartyPlanner(),
       'geography-world': () => this.showGeographyWorld(),
+      'geography-flag-detective': () => this.startGeographyFlagDetective(),
+      'geography-capital-cities': () => this.startGeographyCapitalCities(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -226,6 +230,11 @@ class App {
       case 'history-timeline-retry': this.retryHistoryTimeline(); break;
       case 'history-timeline-reset': this.resetHistoryTimeline(); break;
       case 'geography-world': this.showGeographyWorld(); break;
+      case 'geography-flag-start': this.startGeographyFlagDetective(); break;
+      case 'geography-capital-start': this.startGeographyCapitalCities(); break;
+      case 'geography-country-answer': this.answerGeographyCountryQuestion(Number(target.dataset.answerIndex)); break;
+      case 'geography-country-retry': this.retryGeographyCountryQuestion(); break;
+      case 'geography-country-next': this.advanceGeographyCountryQuestion(); break;
       case 'geography-country-select': this.selectGeographyCountry(target.dataset.countryId); break;
       case 'geography-map-zoom': this.zoomGeographyMap(Number(target.dataset.delta)); break;
       case 'geography-map-reset': this.resetGeographyMapZoom(); break;
