@@ -518,8 +518,14 @@ class GameEngine {
       }
 
       if (feedback) {
-        feedback.className = 'play-feedback mt-6 p-4 rounded-2xl text-center font-ninja text-xl font-bold bg-emerald-950/80 border-2 border-emerald-500 text-emerald-300 animate-pop block';
-        feedback.innerHTML = `✨ Outstanding Ninja Strike! Correct! ✨`;
+        feedback.className = 'play-feedback mt-6 animate-pop block';
+        feedback.innerHTML = EducationalFeedback.render({
+          correct: true,
+          message: '✨ Outstanding Ninja Strike! Correct! ✨',
+          explanation: q.feedback?.explanation || 'You matched the pattern correctly.',
+          workedExample: q.feedback?.workedExample,
+          audioHint: q.feedback?.audioHint
+        });
       }
     } else {
       this.streak = 0;
@@ -534,10 +540,16 @@ class GameEngine {
       }
 
       if (feedback) {
-        feedback.className = 'play-feedback mt-6 p-4 rounded-2xl text-center font-ninja text-base sm:text-lg font-bold bg-rose-950/80 border-2 border-rose-500 text-rose-300 animate-pop block';
-        feedback.innerHTML = canRetry
-          ? 'Not quite! Keep exploring!'
-          : `The correct answer was: <span class="text-yellow-400 font-bold ml-1">${expectedAnswer}</span>`;
+        feedback.className = 'play-feedback mt-6 animate-pop block';
+        feedback.innerHTML = EducationalFeedback.render({
+          correct: false,
+          message: canRetry ? 'Not quite! Keep exploring!' : 'Let’s review the correct answer.',
+          explanation: canRetry
+            ? q.feedback?.incorrect || 'Review the clue and try a different approach.'
+            : `The correct answer was: ${expectedAnswer}`,
+          workedExample: q.feedback?.workedExample,
+          audioHint: q.feedback?.audioHint
+        });
       }
     }
 

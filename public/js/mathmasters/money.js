@@ -161,10 +161,52 @@ Object.assign(App.prototype, {
     const activity = MoneyMasters.ACTIVITIES.find(item => item.id === activityId);
     if (!activity) return this.showMoneyActivity();
     const level = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy';
+    const feedback = {
+      'coin-recognition': {
+        explanation: 'Compare the shape, colour, and printed value to identify the denomination.',
+        audioHint: 'Look at the shape, colour, and printed value.',
+        workedExample: {
+          title: 'Identify a denomination',
+          steps: [
+            { label: 'Check the shape', detail: 'Coins are round and notes are rectangular.' },
+            { label: 'Read the value', detail: 'Use the printed denomination to confirm your choice.' }
+          ]
+        }
+      },
+      'build-total': {
+        explanation: 'Combine the values you chose and compare the running total with the target.',
+        audioHint: 'Add each coin or note to your running total and compare it with the target.',
+        workedExample: {
+          title: 'Build an amount',
+          steps: [
+            { label: 'Choose a denomination', detail: 'Start with a value that fits the target.' },
+            { label: 'Update the total', detail: 'Add each value before choosing the next one.' }
+          ]
+        }
+      },
+      'give-change': {
+        explanation: 'Count up from the price to the amount paid. The amount you add is the change.',
+        audioHint: 'Count up from the price until you reach the payment.',
+        workedExample: {
+          title: 'Work out change',
+          steps: [
+            { label: 'Start at the price', detail: 'Keep the price as your starting amount.' },
+            { label: 'Count up to payment', detail: 'The jumps you make add up to the change.' }
+          ]
+        }
+      }
+    }[activityId];
     this.moneyGame = {
       activity,
       difficulty: level,
-      questions: Array.from({ length: 6 }, () => MoneyMasters.generateQuestion(activityId, level)),
+      questions: Array.from({ length: 6 }, () => ({
+        ...MoneyMasters.generateQuestion(activityId, level),
+        feedback: {
+          correct: 'Correct! Great work! 🌟',
+          incorrect: 'Not quite — review the amounts and try again.',
+          ...feedback
+        }
+      })),
       index: 0,
       score: 0,
       selectedCoins: [],
@@ -255,10 +297,17 @@ Object.assign(App.prototype, {
       ? `<div role="img" aria-label="${question.denomination.label} coin or note" class="mx-auto my-5 flex h-24 w-24 items-center justify-center border-4 ${question.denomination.type === 'note' ? 'rounded-xl border-emerald-400 bg-emerald-900' : 'rounded-full border-amber-400 bg-amber-900'} font-ninja text-2xl font-bold text-white">${question.denomination.label}</div>`
       : '';
     const feedback = game.answered
-      ? `<div id="money-feedback" role="status" class="mt-5 rounded-xl p-3 ${game.lastAnswerCorrect ? 'bg-emerald-950 text-emerald-300' : 'bg-rose-950 text-rose-300'}">
-          ${game.lastAnswerCorrect ? 'Correct! Great work! 🌟' : `Not quite. The answer is ${MoneyMasters.formatMoney(question.answer ?? question.target)}.`}
-        </div>
-        <button type="button" data-action="money-next" class="mt-4 w-full rounded-xl bg-amber-600 hover:bg-amber-500 py-3 font-bold text-white">Next round →</button>`
+      ? EducationalFeedback.render({
+        id: 'money-feedback',
+        correct: game.lastAnswerCorrect,
+        message: game.lastAnswerCorrect ? question.feedback.correct : question.feedback.incorrect,
+        explanation: question.feedback.explanation,
+        workedExample: question.feedback.workedExample,
+        audioHint: question.feedback.audioHint,
+        retryAction: game.lastAnswerCorrect ? null : 'money-retry',
+        continueAction: 'money-next',
+        continueLabel: 'Next round →'
+      })
       : '';
     const prompt = game.activity.id === 'build-total'
       ? `${question.prompt} Target: ${MoneyMasters.formatMoney(question.target)}`
@@ -291,6 +340,16 @@ Object.assign(App.prototype, {
     game.selectedAnswer = Number(answer);
     game.lastAnswerCorrect = this.moneyActivityEngine.submitAnswer(game.selectedAnswer);
     game.score = this.moneyActivityEngine.score;
+    this.renderMoneyQuestion();
+  },
+
+  retryMoneyQuestion() {
+    const game = this.moneyGame;
+    if (!game?.answered || !this.moneyActivityEngine.allowRetry()) return;
+    game.answered = false;
+    game.lastAnswerCorrect = false;
+    game.selectedAnswer = null;
+    game.selectedCoins = [];
     this.renderMoneyQuestion();
   },
 

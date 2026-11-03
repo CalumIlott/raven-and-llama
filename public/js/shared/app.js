@@ -112,7 +112,17 @@ class App {
     if (target instanceof HTMLAnchorElement) event.preventDefault();
 
     switch (target.dataset.action) {
+      case 'feedback-speak':
+        window.EducationalFeedback.speak(
+          target.dataset.feedbackSpeak,
+          target.closest('.educational-feedback')?.querySelector('[data-feedback-audio-status]')
+        );
+        break;
       case 'home': this.showRavenAndLlamaHome(); break;
+      case 'science-retry': this.retryScienceQuestion(); break;
+      case 'spelling-retry': this.retrySpellingSafariQuestion(); break;
+      case 'time-retry-answer': this.retryTimeActivityAnswer(); break;
+      case 'money-retry': this.retryMoneyQuestion(); break;
       case 'learning': this.showLearningCentre(); break;
       case 'learning-centre': this.showLearningCentre(); break;
       case 'games-hub': this.showGamesHub(); break;

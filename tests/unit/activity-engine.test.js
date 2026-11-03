@@ -47,6 +47,34 @@ test('rejects invalid and ambiguous activity definitions', () => {
   assert.throws(() => engine.start({ ...quizDefinition, game: gameDefinition.game }), /Invalid activity definition/);
 });
 
+test('validates structured worked examples and audio feedback', () => {
+  const context = createEngineContext();
+  const engine = new context.ActivityEngine();
+  const definition = {
+    ...quizDefinition,
+    questions: [{
+      ...quizDefinition.questions[0],
+      feedback: {
+        explanation: 'Read the hour hand first.',
+        audioHint: 'Start with the shorter hand.',
+        workedExample: {
+          title: 'Read a clock',
+          steps: [{ label: 'Hour', detail: 'Find the shorter hand.' }]
+        }
+      }
+    }]
+  };
+
+  assert.equal(engine.start(definition).currentQuestion.feedback.workedExample.steps.length, 1);
+  assert.throws(() => engine.start({
+    ...definition,
+    questions: [{
+      ...definition.questions[0],
+      feedback: { workedExample: { steps: [{ label: '', detail: 'Missing a step label.' }] } }
+    }]
+  }), /Invalid activity definition/);
+});
+
 test('tracks quiz answers, hints, question state, and completion once', () => {
   const recorded = [];
   const context = createEngineContext({ ProfileManager: {

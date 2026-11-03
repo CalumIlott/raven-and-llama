@@ -2242,6 +2242,136 @@ html.theme-light .play-shell--spelling { --play-accent: #97512b; --play-accent-s
   border: 1px solid var(--play-edge);
 }
 
+.educational-feedback {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--play-edge, #475569);
+  border-radius: 1rem;
+  color: var(--play-ink, #f8fafc);
+  background: var(--play-surface-raised, #1e293b);
+  text-align: left;
+}
+
+.educational-feedback.is-correct {
+  border-color: #39815f;
+  background: #174a35;
+}
+
+.educational-feedback.is-incorrect {
+  border-color: #8a642a;
+  background: #4a351b;
+}
+
+.educational-feedback__message {
+  margin: 0;
+  font-weight: 700;
+}
+
+.educational-feedback__explanation,
+.educational-feedback__audio p {
+  margin: 0.4rem 0 0;
+}
+
+.educational-feedback__example {
+  margin-top: 0.85rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgb(15 23 42 / 45%);
+}
+
+.educational-feedback__example-title {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.educational-feedback__example ol {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.educational-feedback__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.educational-feedback__step > span:last-child {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.educational-feedback__step-number {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: #0f172a;
+  background: #fbbf24;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.educational-feedback__audio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.educational-feedback__audio p {
+  flex-basis: 100%;
+}
+
+.educational-feedback__audio button,
+.educational-feedback__actions button {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  color: #fff;
+  background: #334155;
+  font-weight: 700;
+}
+
+.educational-feedback__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.educational-feedback__actions .educational-feedback__retry {
+  background: #0369a1;
+}
+
+.educational-feedback__actions .educational-feedback__continue {
+  background: #334155;
+}
+
+html.theme-light .educational-feedback.is-correct {
+  color: #14583d;
+  background: #e1f3e8;
+  border-color: #438d66;
+}
+
+html.theme-light .educational-feedback.is-incorrect {
+  color: #68460e;
+  background: #fff3d4;
+  border-color: #c99b45;
+}
+
+html.theme-light .educational-feedback__audio button,
+html.theme-light .educational-feedback__actions button {
+  color: #fff;
+}
+
 .science-feedback.is-correct,
 .spelling-feedback.is-correct {
   color: #b7f2d1 !important;

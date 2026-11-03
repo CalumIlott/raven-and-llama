@@ -59,3 +59,25 @@ test('telling-time rounds use ActivityEngine state and finish with named progres
   assert.equal(app.timeActivityEngine.score, 10);
   assert.equal(app.timeActivity.index, 9);
 });
+
+test('telling-time feedback teaches clock reading and lets learners retry', () => {
+  const main = { innerHTML: '', dataset: {} };
+  const context = createBrowserContext({
+    App: class App {},
+    document: { getElementById: id => id === 'app-main' ? main : null }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/telling-time.js');
+  const app = new context.App();
+
+  app.startTimeActivity('hours');
+  const question = app.timeActivity.questions[0];
+  app.answerTimeActivity(question.options.find(option => option !== question.answer));
+
+  assert.match(main.innerHTML, /The short hand shows the hour/);
+  assert.match(main.innerHTML, /educational-feedback__step-number/);
+  assert.match(main.innerHTML, /data-action="time-retry-answer"/);
+  app.retryTimeActivityAnswer();
+  assert.equal(app.timeActivity.selected, null);
+  assert.equal(app.timeActivityEngine.answered, false);
+});

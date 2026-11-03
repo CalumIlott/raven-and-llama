@@ -52,3 +52,25 @@ test('Money Masters offers three games with difficulty levels and completes each
     await page.getByRole('button', { name: 'Choose another game' }).click();
   }
 });
+
+test('Money Masters shows worked feedback, audio hints, and a retry for an incorrect answer', async ({ page }) => {
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
+  await page.locator('[data-action="money-start"][data-activity-id="coin-recognition"][data-difficulty="easy"]').click();
+
+  const question = await page.evaluate(() => window.app.moneyGame.questions[0]);
+  const wrongAnswer = question.options.find(option => option.value !== question.answer).value;
+  await page.locator(`[data-action="money-answer"][data-answer="${wrongAnswer}"]`).click();
+
+  await expect(page.locator('#money-feedback')).toContainText('Compare the shape, colour, and printed value');
+  await expect(page.locator('#money-feedback .educational-feedback__example')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Listen to hint' })).toBeVisible();
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.locator('[data-action="money-answer"]').first()).toBeEnabled();
+
+  await page.locator(`[data-action="money-answer"][data-answer="${question.answer}"]`).click();
+  await expect(page.locator('#money-feedback')).toContainText('Correct!');
+  await page.getByRole('button', { name: 'Next round' }).click();
+  await expect(page.getByText('Round 2 of 6')).toBeVisible();
+});

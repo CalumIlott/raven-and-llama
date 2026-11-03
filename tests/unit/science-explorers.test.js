@@ -114,6 +114,13 @@ test('incorrect answer does not reveal the correct answer or fact in feedback', 
   assert.match(context.main.innerHTML, /Not quite! Keep exploring!/);
   assert.doesNotMatch(context.main.innerHTML, /The answer is/);
   assert.doesNotMatch(context.main.innerHTML, new RegExp(currentQuestion.fact));
+  assert.match(context.main.innerHTML, /data-action="science-retry"/);
+
+  app.retryScienceQuestion();
+  assert.equal(app.scienceGame.answered, false);
+  app.answerScienceQuestion(currentQuestion.answer);
+  assert.equal(app.scienceGame.lastAnswerCorrect, true);
+  assert.equal(app.scienceActivityEngine.score, 1);
 });
 
 test('science mission highlights the selected correct answer in green', () => {

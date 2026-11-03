@@ -99,7 +99,9 @@
           "properties": {
             "correct": { "type": "string" },
             "incorrect": { "type": "string" },
-            "explanation": { "type": "string" }
+            "explanation": { "type": "string" },
+            "audioHint": { "type": "string" },
+            "workedExample": { "$ref": "#/$defs/workedExample" }
           },
           "additionalProperties": false
         },
@@ -111,6 +113,27 @@
         { "properties": { "correctOrder": { "type": "array" } }, "required": ["correctOrder"] }
       ],
       "additionalProperties": true
+    },
+    "workedExample": {
+      "type": "object",
+      "required": ["steps"],
+      "properties": {
+        "title": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["label", "detail"],
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "detail": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "game": {
       "type": "object",
