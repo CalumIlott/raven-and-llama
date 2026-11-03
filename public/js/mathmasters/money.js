@@ -16,24 +16,28 @@ class MoneyMasters {
   static ACTIVITIES = [
     {
       id: 'coin-recognition',
+      skillId: 'money_coin_recognition',
       title: 'Coin & Note Match',
       emoji: '🪙',
       description: 'Learn to recognise Australian coins and notes and remember what each one is worth.'
     },
     {
       id: 'build-total',
+      skillId: 'money_build_total',
       title: 'Build the Amount',
       emoji: '🛍️',
       description: 'Choose coins and notes to make an exact amount. Try different combinations!'
     },
     {
       id: 'give-change',
+      skillId: 'money_give_change',
       title: 'Change Challenge',
       emoji: '🇦🇺',
       description: 'Work out how much change to give when someone pays for an item.'
     },
     {
       id: 'shopkeeper',
+      skillId: 'money_shopkeeper',
       title: 'Shopkeeper',
       emoji: '🧾',
       description: 'Serve a customer by adding up a basket and giving exact change.'
@@ -321,6 +325,7 @@ Object.assign(App.prototype, {
       id: `money-${activity.id}`,
       title: activity.title,
       subject: 'Life Skills',
+      skillId: activity.skillId,
       questions: this.moneyGame.questions,
       settings: { trackProgress: true }
     });

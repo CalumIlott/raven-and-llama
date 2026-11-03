@@ -4146,6 +4146,7 @@ Object.assign(App.prototype, {
       id: 'spelling-spell-it',
       title: 'Spell It',
       subject: 'Spelling & Words',
+      skillId: 'spelling_spell_it',
       questions,
       settings: { trackProgress: true }
     });
@@ -4544,6 +4545,7 @@ Object.assign(App.prototype, {
       id: `spelling-${activity.id}`,
       title: activity.title,
       subject: 'Spelling & Words',
+      skillId: `spelling_${activity.id.replace(/-/g, '_')}`,
       questions: this.spellingSafariGame.questions,
       settings: { trackProgress: true }
     });

@@ -134,7 +134,23 @@ test('accounts persist securely and progress stays private to the authenticated 
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
-    activeSpellingListId: 'week-one'
+    activeSpellingListId: 'week-one',
+    activityProgress: {
+      'maths-number-builder': {
+        title: 'Number Builder',
+        subject: 'Maths',
+        skillId: 'green_order',
+        kind: 'quiz',
+        scoreUnit: 'questions',
+        bestScore: 4,
+        bestTotal: 5,
+        correct: 4,
+        total: 5,
+        correctAnswers: 4,
+        totalAnswers: 5,
+        timesPlayed: 1
+      }
+    }
   };
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
@@ -156,8 +172,12 @@ test('accounts persist securely and progress stays private to the authenticated 
     { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }
   ]);
   assert.equal(firstProfile.activeSpellingListId, 'week-one');
+  assert.equal(firstProfile.activityProgress['maths-number-builder'].skillId, 'green_order');
+  assert.equal(firstProfile.activityProgress['maths-number-builder'].correctAnswers, 4);
+  assert.equal(firstProfile.activityProgress['maths-number-builder'].totalAnswers, 5);
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.spellingLists, []);
+  assert.deepEqual(secondProfile.activityProgress, {});
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);

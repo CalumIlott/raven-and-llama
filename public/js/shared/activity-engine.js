@@ -4,6 +4,7 @@ class ActivityEngine {
     this.status = 'idle';
     this.currentIndex = 0;
     this.score = 0;
+    this.questionOutcomes = [];
     this.answered = false;
     this.lastAnswerCorrect = null;
     this.hintsUsed = 0;
@@ -31,6 +32,7 @@ class ActivityEngine {
     this.status = 'active';
     this.currentIndex = 0;
     this.score = 0;
+    this.questionOutcomes = [];
     this.answered = false;
     this.lastAnswerCorrect = null;
     this.hintsUsed = 0;
@@ -68,6 +70,7 @@ class ActivityEngine {
       answer: question.answer ?? question.target
     }];
     this.currentIndex = 0;
+    this.questionOutcomes = [];
     this.answered = false;
     this.lastAnswerCorrect = null;
     this.hintsUsed = 0;
@@ -92,6 +95,7 @@ class ActivityEngine {
     if (this.status !== 'active' || this.definition.kind !== 'quiz' || this.answered) return null;
     this.lastAnswerCorrect = Boolean(isCorrect);
     this.answered = true;
+    this.questionOutcomes[this.currentIndex] = this.lastAnswerCorrect;
     if (this.lastAnswerCorrect) {
       this.score += this.definition.settings.pointsPerCorrect ?? 1;
     }
@@ -102,6 +106,7 @@ class ActivityEngine {
   allowRetry() {
     if (this.status !== 'active' || this.definition.kind !== 'quiz' ||
       !this.answered || this.lastAnswerCorrect !== false) return false;
+    delete this.questionOutcomes[this.currentIndex];
     this.answered = false;
     this.lastAnswerCorrect = null;
     return true;
@@ -173,19 +178,42 @@ class ActivityEngine {
 
   complete() {
     if (this.status !== 'active') return false;
+    const shouldTrackProgress = this.definition.settings.trackProgress !== false;
+    if (shouldTrackProgress && this.definition.kind === 'quiz' &&
+      this.definition.settings.unbounded !== true) {
+      const allQuestionsAnswered = Array.from(
+        { length: this.definition.questions.length },
+        (_, index) => typeof this.questionOutcomes[index] === 'boolean'
+      ).every(Boolean);
+      if (!allQuestionsAnswered) return false;
+    }
+
     this.stopTimer();
     this.status = 'complete';
-    if (!this.progressRecorded && this.definition.settings.trackProgress !== false &&
+    if (!this.progressRecorded && shouldTrackProgress &&
       typeof ProfileManager !== 'undefined') {
       ProfileManager.recordActivityScore(
         this.definition,
         this.score,
         this.definition.kind === 'quiz'
           ? this.definition.questions.length * (this.definition.settings.pointsPerCorrect ?? 1)
+          : null,
+        this.definition.kind === 'quiz' && this.definition.settings.unbounded !== true
+          ? {
+            correctAnswers: this.questionOutcomes.filter(Boolean).length,
+            totalAnswers: this.questionOutcomes.filter(result => typeof result === 'boolean').length
+          }
           : null
       );
       this.progressRecorded = true;
     }
+    return true;
+  }
+
+  cancel() {
+    if (this.status !== 'active') return false;
+    this.stopTimer();
+    this.status = 'cancelled';
     return true;
   }
 }

@@ -86,12 +86,14 @@ test('incorrect orders identify misplaced planets and can be corrected before co
   assert.equal(app.submitSolarSystemAnswer(), true);
   assert.equal(app.solarSystemActivityEngine.status, 'complete');
   assert.equal(app.solarSystemActivityEngine.score, 8);
-  assert.equal(context.profile.stars, 8);
+  assert.equal(app.solarSystemActivityEngine.definition.settings.awardStars, true);
+  assert.equal(context.profile.stars, 0);
   assert.equal(context.activityScores.length, 1);
+  assert.equal(context.activityScores[0][0].settings.awardStars, true);
   assert.equal(context.activityScores[0][1], 8);
   assert.equal(context.activityScores[0][2], 8);
   assert.equal(app.submitSolarSystemAnswer(), false);
-  assert.equal(context.profile.stars, 8);
+  assert.equal(context.profile.stars, 0);
 });
 
 test('selecting a planet exposes its fact in the accessible fact card', () => {

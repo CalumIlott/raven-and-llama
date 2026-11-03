@@ -137,6 +137,8 @@ test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden 
   await expect(page.locator('#spell-it-feedback')).toHaveText('Correct! Great spelling.');
   await page.getByRole('button', { name: 'Next word' }).click();
   await expect(page.getByRole('heading', { name: 'Spell It complete!' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.app.spellItActivityEngine.definition.skillId))
+    .toBe('spelling_spell_it');
 
   await page.getByRole('button', { name: 'Play this list again' }).click();
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -165,6 +167,11 @@ test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden 
   await page.getByRole('button', { name: 'Close', exact: true }).click();
   await expect(page.locator('#spell-it-list-status')).toContainText('No spelling lists yet');
   await expect(page.locator('#spell-it-list-options [data-action="spell-it-start"]')).toHaveCount(0);
+  await page.goto('/learning-centre');
+  await page.locator('[data-action="parent-report"]').click();
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('Spell It');
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('2 plays');
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('2 / 2 (100%)');
 });
 
 async function answerCurrentQuestion(page) {

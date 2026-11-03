@@ -218,7 +218,11 @@ Object.assign(App.prototype, {
         answer: correctOrder,
         correctOrder
       }],
-      settings: { trackProgress: true, pointsPerCorrect: SOLAR_SYSTEM_PLANETS.length }
+      settings: {
+        trackProgress: true,
+        awardStars: true,
+        pointsPerCorrect: SOLAR_SYSTEM_PLANETS.length
+      }
     });
     this.renderSolarSystemActivity();
   },
@@ -300,10 +304,6 @@ Object.assign(App.prototype, {
     this.solarSystemActivityEngine.complete();
     game.lastAnswerCorrect = true;
     game.complete = true;
-    const profile = ProfileManager.getActiveProfile();
-    profile.stars += SOLAR_SYSTEM_PLANETS.length;
-    ProfileManager.updateProfile(profile);
-    this.updateHeader();
     this.renderSolarSystemActivity();
     return true;
   },

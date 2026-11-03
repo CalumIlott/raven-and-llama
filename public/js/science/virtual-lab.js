@@ -111,7 +111,11 @@ Object.assign(App.prototype, {
         prompt: 'Run one authored virtual simulation.',
         answer: true
       }],
-      settings: { trackProgress: true, pointsPerCorrect: VIRTUAL_LAB_POINTS }
+      settings: {
+        trackProgress: true,
+        awardStars: true,
+        pointsPerCorrect: VIRTUAL_LAB_POINTS
+      }
     });
     this.renderVirtualLabActivity();
   },
@@ -202,9 +206,6 @@ Object.assign(App.prototype, {
       if (!this.virtualLabActivityEngine.complete()) {
         throw new Error('The virtual laboratory activity could not be completed.');
       }
-      const profile = ProfileManager.getActiveProfile();
-      profile.stars += VIRTUAL_LAB_POINTS;
-      ProfileManager.updateProfile(profile);
       game.completed = true;
     }
 

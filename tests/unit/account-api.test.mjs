@@ -156,12 +156,15 @@ test('accounts can only read and update their own progress', async () => {
         'science-water-cycle': {
           title: 'Water Cycle',
           subject: 'Science Lab',
+          skillId: 'science_water_cycle',
           kind: 'quiz',
           scoreUnit: 'questions',
           bestScore: 4,
           bestTotal: 5,
           correct: 4,
           total: 5,
+          correctAnswers: 4,
+          totalAnswers: 5,
           timesPlayed: 1
         },
         'invalid id': { title: '<script>', subject: 'Maths', kind: 'game', bestScore: 9, timesPlayed: 1 }
@@ -186,12 +189,15 @@ test('accounts can only read and update their own progress', async () => {
     'science-water-cycle': {
       title: 'Water Cycle',
       subject: 'Science Lab',
+      skillId: 'science_water_cycle',
       kind: 'quiz',
       scoreUnit: 'questions',
       bestScore: 4,
       bestTotal: 5,
       correct: 4,
       total: 5,
+      correctAnswers: 4,
+      totalAnswers: 5,
       timesPlayed: 1
     }
   });
