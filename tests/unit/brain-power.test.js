@@ -21,61 +21,124 @@ function createBrainPowerContext() {
   return context;
 }
 
-test('pattern rounds use one answer and follow their stated number rules', () => {
-  const context = createBrainPowerContext();
-  const valid = context.eval('validateBrainPowerPatternRounds()');
-  const rounds = Array.from(context.eval('BRAIN_POWER_PATTERN_ROUNDS'));
+function evaluateJson(context, expression) {
+  return JSON.parse(JSON.stringify(context.eval(expression)));
+}
 
-  assert.equal(valid, true);
-  assert.equal(context.eval(`validateBrainPowerMemoryPairs()`), true);
-  for (const round of rounds) {
-    const values = context.eval(`getBrainPowerPatternValues(BRAIN_POWER_PATTERN_ROUNDS.find(item => item.id === '${round.id}'))`);
-    const expected = round.start + round.step * round.missingIndex;
-    assert.equal(values.answer, expected);
-    assert.equal(values.sequence.filter(value => value === null).length, 1);
-    assert.equal(round.options.filter(value => value === expected).length, 1);
+test('Pattern Recognition provides 100 unique validated rounds per difficulty and samples them randomly', () => {
+  const context = createBrainPowerContext();
+  for (const difficulty of ['easy', 'medium', 'hard']) {
+    const rounds = evaluateJson(context, `createBrainPowerPatternRounds('${difficulty}')`);
+    assert.equal(rounds.length, 100);
+    assert.equal(context.eval(`validateBrainPowerPatternRounds(createBrainPowerPatternRounds('${difficulty}'))`), true);
+    assert.equal(new Set(rounds.map(round => JSON.stringify([round.sequence, round.missingIndex]))).size, 100);
+    for (const round of rounds) {
+      const answer = round.sequence[round.missingIndex];
+      const displayedSequence = evaluateJson(context, `getBrainPowerPatternValues(
+        ${JSON.stringify(round)}
+      )`).sequence;
+      assert.equal(displayedSequence.filter(value => value === null).length, 1);
+      assert.equal(round.options.filter(option => option === answer).length, 1);
+      assert.equal(new Set(round.options).size, 4);
+    }
   }
-  assert.equal(context.eval(`validateBrainPowerPatternRounds([{
-    ...BRAIN_POWER_PATTERN_ROUNDS[0],
-    options: [10, 10, 12]
-  }])`), false);
+
+  const firstSample = evaluateJson(context, "selectBrainPowerPatternRounds('easy', 10, createBrainPowerRandom(12))");
+  const repeatedSample = evaluateJson(context, "selectBrainPowerPatternRounds('easy', 10, createBrainPowerRandom(12))");
+  const alternateSample = evaluateJson(context, "selectBrainPowerPatternRounds('easy', 10, createBrainPowerRandom(13))");
+  assert.equal(firstSample.length, 10);
+  assert.deepEqual(firstSample.map(round => round.id), repeatedSample.map(round => round.id));
+  assert.notDeepEqual(firstSample.map(round => round.id), alternateSample.map(round => round.id));
+  assert.deepEqual(
+    new Set(evaluateJson(context, "createBrainPowerPatternRounds('hard').map(round => round.patternType)")),
+    new Set(['interleaved-sequences', 'alternating-operations', 'fibonacci-like'])
+  );
+});
+
+test('Memory Match randomizes 4, 6, or 8 pairs and prevents selecting matched cards again', () => {
+  const context = createBrainPowerContext();
+  assert.equal(context.eval('validateBrainPowerMemoryPairs()'), true);
   assert.equal(context.eval(`validateBrainPowerMemoryPairs([
     ...BRAIN_POWER_MEMORY_PAIRS,
     BRAIN_POWER_MEMORY_PAIRS[0]
   ])`), false);
-});
 
-test('Memory Match is deterministic and prevents selecting matched cards again', () => {
-  const context = createBrainPowerContext();
-  const cards = Array.from(context.eval('createBrainPowerMemoryCards(7)'), card => card.id);
-  const repeatedCards = Array.from(context.eval('createBrainPowerMemoryCards(7)'), card => card.id);
-  let state = context.eval('createBrainPowerMemoryState(7)');
+  for (const [difficulty, pairCount] of [['easy', 4], ['medium', 6], ['hard', 8]]) {
+    const cards = evaluateJson(context, `createBrainPowerMemoryCards(7, '${difficulty}')`);
+    const repeatedCards = evaluateJson(context, `createBrainPowerMemoryCards(7, '${difficulty}')`);
+    assert.deepEqual(cards.map(card => card.id), repeatedCards.map(card => card.id));
+    assert.notDeepEqual(
+      cards.map(card => card.pairId),
+      evaluateJson(context, `createBrainPowerMemoryCards(8, '${difficulty}')`).map(card => card.pairId)
+    );
+    assert.equal(cards.length, pairCount * 2);
 
-  assert.deepEqual(cards, repeatedCards);
-  for (const pair of Array.from(context.eval('BRAIN_POWER_MEMORY_PAIRS'))) {
-    state = context.eval(`selectBrainPowerMemoryCard(
+    let state = evaluateJson(context, `createBrainPowerMemoryState(7, '${difficulty}')`);
+    const pairIds = [...new Set(state.cards.map(card => card.pairId))];
+    assert.equal(pairIds.length, pairCount);
+    for (const pairId of pairIds) {
+      state = evaluateJson(context, `selectBrainPowerMemoryCard(
+        ${JSON.stringify(state)},
+        '${pairId}-symbol'
+      )`);
+      state = evaluateJson(context, `selectBrainPowerMemoryCard(
+        ${JSON.stringify(state)},
+        '${pairId}-word'
+      )`);
+    }
+    assert.equal(state.matchedPairIds.length, pairCount);
+    assert.equal(state.selectedCardIds.length, 0);
+
+    const afterMatchedSelection = evaluateJson(context, `selectBrainPowerMemoryCard(
       ${JSON.stringify(state)},
-      '${pair.id}-symbol'
+      '${pairIds[0]}-symbol'
     )`);
-    state = context.eval(`selectBrainPowerMemoryCard(
-      ${JSON.stringify(state)},
-      '${pair.id}-word'
-    )`);
+    assert.deepEqual(afterMatchedSelection.matchedPairIds, state.matchedPairIds);
+    assert.match(afterMatchedSelection.message, /already matched/);
   }
-  assert.equal(state.matchedPairIds.length, 4);
-  assert.equal(state.selectedCardIds.length, 0);
-
-  const afterMatchedSelection = context.eval(`selectBrainPowerMemoryCard(
-    ${JSON.stringify(state)},
-    'sun-symbol'
-  )`);
-  assert.deepEqual(Array.from(afterMatchedSelection.matchedPairIds), Array.from(state.matchedPairIds));
-  assert.match(afterMatchedSelection.message, /already matched/);
 });
 
-test('Code Breaker clues have one solution and duplicate colors are counted only once', () => {
+test('Code Breaker generator creates uniquely solvable puzzles with difficulty-specific colors', () => {
   const context = createBrainPowerContext();
   assert.equal(context.eval('validateBrainPowerCodePuzzle()'), true);
+
+  for (const [difficulty, colorCount, codeLength] of [
+    ['easy', 3, 3],
+    ['medium', 5, 4],
+    ['hard', 6, 4]
+  ]) {
+    const colors = evaluateJson(context, `getBrainPowerCodeColors('${difficulty}')`);
+    const puzzle = evaluateJson(context, `generateBrainPowerCodePuzzle(
+      '${difficulty}',
+      createBrainPowerRandom(27)
+    )`);
+    assert.equal(colors.length, colorCount);
+    assert.equal(puzzle.length, codeLength);
+    assert.equal(context.eval(`validateBrainPowerCodePuzzle(
+      ${JSON.stringify(puzzle)},
+      ${JSON.stringify(colors)}
+    )`), true);
+    assert.ok(puzzle.clues.every(clue =>
+      JSON.stringify(clue.guess) !== JSON.stringify(puzzle.solution)));
+  }
+  const easyPuzzles = Array.from({ length: 100 }, (_, seed) =>
+    evaluateJson(context, `generateBrainPowerCodePuzzle('easy', createBrainPowerRandom(${seed + 1}))`)
+  );
+  assert.equal(new Set(easyPuzzles.map(puzzle => JSON.stringify(puzzle.clues))).size, 100);
+  for (const [difficulty, seed] of [
+    ['medium', 4], ['medium', 18], ['medium', 39],
+    ['hard', 4], ['hard', 18], ['hard', 39]
+  ]) {
+    const puzzle = evaluateJson(context, `generateBrainPowerCodePuzzle(
+      '${difficulty}',
+      createBrainPowerRandom(${seed})
+    )`);
+    const colors = evaluateJson(context, `getBrainPowerCodeColors('${difficulty}')`);
+    assert.equal(context.eval(`validateBrainPowerCodePuzzle(
+      ${JSON.stringify(puzzle)},
+      ${JSON.stringify(colors)}
+    )`), true);
+  }
 
   const duplicateFeedback = context.eval(`getBrainPowerCodeFeedback(
     ['ruby', 'ruby', 'sapphire'],
@@ -90,24 +153,29 @@ test('all three Brain Power activities record completion through ActivityEngine 
 
   app.startBrainPowerPattern();
   assert.equal(app.brainPowerPatternEngine.definition.id, 'brain-power-pattern-recognition');
-  for (const round of Array.from(context.eval('BRAIN_POWER_PATTERN_ROUNDS'))) {
-    assert.equal(app.submitBrainPowerPatternAnswer(round.start + round.step * round.missingIndex), true);
+  const patternAnswers = evaluateJson(context, 'window.app.brainPowerPatternEngine.definition.questions.map(question => question.answer)');
+  assert.equal(patternAnswers.length, 10);
+  for (const answer of patternAnswers) {
+    assert.equal(app.submitBrainPowerPatternAnswer(answer), true);
   }
   assert.equal(app.brainPowerPatternEngine.status, 'complete');
   assert.equal(app.submitBrainPowerPatternAnswer(10), false);
   assert.equal(context.activityScores.length, 1);
 
-  app.startBrainPowerMemoryMatch();
-  for (const pair of Array.from(context.eval('BRAIN_POWER_MEMORY_PAIRS'))) {
-    app.selectBrainPowerMemoryCard(`${pair.id}-symbol`);
-    app.selectBrainPowerMemoryCard(`${pair.id}-word`);
+  app.startBrainPowerMemoryMatch('medium');
+  const memoryPairIds = evaluateJson(context, 'Array.from(new Set(window.app.brainPowerMemoryGame.cards.map(card => card.pairId)))');
+  for (const pairId of memoryPairIds) {
+    app.selectBrainPowerMemoryCard(`${pairId}-symbol`);
+    app.selectBrainPowerMemoryCard(`${pairId}-word`);
   }
   assert.equal(app.brainPowerMemoryEngine.definition.id, 'brain-power-memory-match');
   assert.equal(app.brainPowerMemoryEngine.status, 'complete');
+  assert.equal(app.brainPowerMemoryEngine.definition.game.configuration.pairCount, 6);
   assert.equal(context.activityScores.length, 2);
 
-  app.startBrainPowerCodeBreaker();
-  ['ruby', 'sapphire', 'emerald'].forEach((color, index) => {
+  app.startBrainPowerCodeBreaker('easy');
+  const solution = evaluateJson(context, 'window.app.brainPowerCodeGame.puzzle.solution');
+  solution.forEach((color, index) => {
     assert.equal(app.selectBrainPowerCodeColor(index, color), true);
   });
   assert.equal(app.submitBrainPowerCodeGuess(), true);
