@@ -1260,15 +1260,18 @@ class QuestionGenerator {
     const problems = [
       {
         q: "A ninja dojo has 8 training teams. Each team has 6 ninjas. If 15 ninjas graduate today, how many ninjas remain in training?",
-        ans: 8 * 6 - 15
+        ans: 8 * 6 - 15,
+        answerFormatHint: 'Enter the number of ninjas as digits only, without words.'
       },
       {
         q: "Sensie has 48 shurikens to share equally among 6 student belts. If Kai receives his share and gives 3 to his brother, how many does Kai have left?",
-        ans: (48 / 6) - 3
+        ans: (48 / 6) - 3,
+        answerFormatHint: 'Enter the number of shurikens as digits only, without words.'
       },
       {
         q: "A ninja scroll costs $4.50 and a belt patch costs $2.50. You buy 2 scrolls and 1 patch and pay with a $20 note. How much change do you receive?",
-        ans: 20 - (2 * 4.5 + 2.5)
+        ans: 20 - (2 * 4.5 + 2.5),
+        answerFormatHint: 'Enter dollars and cents as a decimal, for example 8.50, without a dollar sign.'
       }
     ];
     const p = problems[QuestionGenerator.randomInt(0, problems.length - 1)];
@@ -1277,6 +1280,7 @@ class QuestionGenerator {
       title: 'Problem Solving Master',
       prompt: p.q,
       hint: 'Show the multiplication, division, and/or subtraction steps before entering the result.',
+      answerFormatHint: p.answerFormatHint,
       timeLimitSeconds: diff === 'hard' ? 44 : 56,
       answer: p.ans
     };

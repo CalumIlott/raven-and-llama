@@ -47,6 +47,40 @@ test('belt activity shelf launches a non-quiz subitising game', async ({ page })
   await expect(page.getByRole('heading', { name: 'Interactive Dojo Activities' })).toBeVisible();
 });
 
+test('Number Models reveals each numeral and gives a new number each round', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Number Models/ }).click();
+
+  const targets = await page.evaluate(() => window.arcadeEngine.mathsActivity.targets);
+  expect(new Set(targets).size).toBe(5);
+  await expect(page.locator('#ma-body')).toContainText('Round 1 / 5');
+
+  const firstTarget = targets[0];
+  for (let stage = 0; stage < 2; stage++) {
+    await page.locator('#ma-stage-answer').fill(String(firstTarget));
+    await page.getByRole('button', { name: 'Check' }).click();
+  }
+  await expect(page.locator('#ma-number-model-value')).toHaveText(String(firstTarget));
+  await expect(page.locator('#ma-number-model-value')).toHaveAttribute('aria-label', 'Number model value');
+  await page.getByRole('button', { name: 'Next number' }).click();
+
+  await expect(page.locator('#ma-body')).toContainText('Round 2 / 5');
+  const secondTarget = await page.evaluate(() => window.arcadeEngine.mathsActivity.target);
+  expect(secondTarget).not.toBe(firstTarget);
+});
+
+test('Problem-Solving Steps shows how to enter the answer', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'Platinum Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Problem-Solving Steps/ }).click();
+
+  await expect(page.locator('#ma-answer-format')).toBeVisible();
+  await expect(page.locator('#ma-answer-format')).toContainText(
+    /Answer format: Enter (the number of ninjas|the number of shurikens|dollars and cents)/
+  );
+});
+
 test('multiplicative activity accepts a typed numeric answer', async ({ page }) => {
   await openMathsDojo(page);
   await page.getByRole('heading', { name: 'Brown Belt', exact: true }).click();

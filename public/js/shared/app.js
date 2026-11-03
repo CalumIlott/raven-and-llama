@@ -218,6 +218,7 @@ class App {
       case 'arcade-turret': window.arcadeEngine.fireTurret(Number(target.dataset.value)); break;
       case 'arcade-maths-answer': window.arcadeEngine.answerMathsActivity(decodeURIComponent(target.dataset.value)); break;
       case 'arcade-maths-order': window.arcadeEngine.pickMathsOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
+      case 'arcade-maths-model-next': window.arcadeEngine.advanceNumberModelRound(); break;
       case 'arcade-maths-cell': window.arcadeEngine.toggleMathsActivityCell(Number(target.dataset.index)); break;
       case 'arcade-maths-submit': window.arcadeEngine.submitMathsActivity(); break;
       case 'arcade-maths-clear': window.arcadeEngine.clearMathsActivitySelection(); break;

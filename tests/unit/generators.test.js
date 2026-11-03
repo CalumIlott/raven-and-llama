@@ -64,6 +64,25 @@ test('shuffle returns a permutation without mutating its input', () => {
   assert.notStrictEqual(shuffled, input);
 });
 
+test('Problem Solving Master specifies the required numeric answer format', () => {
+  const { generator } = loadGenerator();
+  const originalRandom = Math.random;
+  const formats = [];
+
+  try {
+    for (const randomValue of [0, 0.4, 0.9]) {
+      Math.random = () => randomValue;
+      formats.push(generator.genPlatinumProblemSolving().answerFormatHint);
+    }
+  } finally {
+    Math.random = originalRandom;
+  }
+
+  assert.match(formats[0], /number of ninjas as digits only/);
+  assert.match(formats[1], /number of shurikens as digits only/);
+  assert.match(formats[2], /dollars and cents as a decimal, for example 8\.50/);
+});
+
 test('belt tests return the requested question count with answerable questions', () => {
   const { belts, generator } = loadGenerator();
 

@@ -121,7 +121,8 @@ Object.assign(ArcadeEngine.prototype, {
       matchedPairs: new Set(),
       selectedLeft: null,
       stage: 0,
-      target: 0
+      target: 0,
+      targets: []
     };
 
     container.innerHTML = this.renderArcadeShell(
@@ -144,7 +145,10 @@ Object.assign(ArcadeEngine.prototype, {
     }
 
     if (activityId === 'number-models') {
-      this.mathsActivity.target = QuestionGenerator.randomInt(1, 10);
+      this.mathsActivity.targets = QuestionGenerator.shuffle(
+        Array.from({ length: 10 }, (_, index) => index + 1)
+      ).slice(0, this.mathsActivity.maxRounds);
+      this.mathsActivity.target = this.mathsActivity.targets[0];
       this.mathsActivity.stage = 0;
       this.renderNumberModelStage();
     } else if (activityId === 'tens-frame-fill') {
@@ -243,11 +247,12 @@ Object.assign(ArcadeEngine.prototype, {
     } else if (question.type === 'numeric_input' || question.type === 'short_answer') {
       const inputMode = question.type === 'numeric_input' ? 'decimal' : 'text';
       controls = `
-        <form data-submit-action="arcade-maths-answer" class="mx-auto mt-5 flex max-w-sm gap-3">
+        <form data-submit-action="arcade-maths-answer" class="mx-auto mt-5 flex max-w-sm gap-3" ${question.answerFormatHint ? 'aria-describedby="ma-answer-format"' : ''}>
           <label class="sr-only" for="ma-answer">Your answer</label>
           <input id="ma-answer" name="answer" type="text" inputmode="${inputMode}" autocomplete="off" class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
           <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check</button>
-        </form>`;
+        </form>
+        ${question.answerFormatHint ? `<p id="ma-answer-format" class="mx-auto mt-2 max-w-sm text-center text-sm text-slate-300">Answer format: ${question.answerFormatHint}</p>` : ''}`;
     } else {
       controls = `
         <div class="mx-auto mt-5 grid max-w-xl grid-cols-2 gap-3">
@@ -325,32 +330,46 @@ Object.assign(ArcadeEngine.prototype, {
       ? `<div class="my-6 flex flex-wrap justify-center gap-3 text-3xl" aria-label="${count} apples">${objects}</div>`
       : stage === 1
       ? `<div class="my-6">${VisualRenderers.renderSubitise(count, 'dots', '🔵')}</div>`
-      : `<p class="my-6 text-center text-5xl font-bold text-amber-300" aria-label="The numeral for the group">?</p>`;
+      : `<p id="ma-number-model-value" class="my-6 text-center text-5xl font-bold text-amber-300" aria-label="Number model value">${count}</p>`;
+    const controls = stage < 2
+      ? `<form data-submit-action="arcade-maths-stage" class="mx-auto flex max-w-sm gap-3">
+          <label class="sr-only" for="ma-stage-answer">Your answer</label>
+          <input id="ma-stage-answer" name="answer" type="text" inputmode="numeric" autocomplete="off" class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
+          <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">Check</button>
+        </form>`
+      : `<div class="text-center">
+          <p class="mb-4 text-slate-300">The objects and picture both represent ${count}.</p>
+          <button data-action="arcade-maths-model-next" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">${activity.round + 1 === activity.targets.length ? 'Finish activity' : 'Next number'}</button>
+        </div>`;
     body.innerHTML = `
-      <p class="text-center text-sm text-slate-300">Step ${stage + 1} of 3 · ${labels[stage]}</p>
-      <h3 class="mt-3 text-center text-xl font-bold text-white">${stage < 2 ? `How many objects are there?` : 'Type the numeral for this quantity.'}</h3>
+      <p class="text-center text-sm text-slate-300">Round ${activity.round + 1} / ${activity.targets.length} · Step ${stage + 1} of 3 · ${labels[stage]}</p>
+      <h3 class="mt-3 text-center text-xl font-bold text-white">${stage < 2 ? 'How many objects are there?' : 'Here is the numeral for this quantity.'}</h3>
       ${model}
-      <form data-submit-action="arcade-maths-stage" class="mx-auto flex max-w-sm gap-3">
-        <label class="sr-only" for="ma-stage-answer">Your answer</label>
-        <input id="ma-stage-answer" name="answer" type="text" inputmode="numeric" autocomplete="off" class="min-w-0 flex-1 rounded-xl border-2 border-slate-600 bg-slate-950 px-4 py-3 text-center text-xl text-white">
-        <button type="submit" class="btn-ninja rounded-xl bg-sky-600 px-5 py-3 font-bold text-white">${stage === 2 ? 'Finish' : 'Next'}</button>
-      </form>
+      ${controls}
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
   },
 
   submitNumberModelStage(answer) {
-    if (Number(answer) !== this.mathsActivity.target) {
+    const activity = this.mathsActivity;
+    if (!activity || activity.activityId !== 'number-models' || activity.stage >= 2) return;
+    if (Number(answer) !== activity.target) {
       const feedback = document.getElementById('ma-feedback');
       if (feedback) feedback.textContent = 'Look closely at the objects or picture, then try again.';
       return;
     }
-    this.mathsActivity.stage++;
-    if (this.mathsActivity.stage === 3) {
-      this.addScore(30, 'ma-score');
-      this.finishMathsActivity();
-    } else {
-      this.renderNumberModelStage();
-    }
+    this.addScore(10, 'ma-score');
+    activity.stage++;
+    this.renderNumberModelStage();
+  },
+
+  advanceNumberModelRound() {
+    const activity = this.mathsActivity;
+    if (!activity || activity.activityId !== 'number-models' || activity.stage !== 2) return;
+    activity.round++;
+    if (activity.round >= activity.targets.length) return this.finishMathsActivity();
+    activity.target = activity.targets[activity.round];
+    activity.stage = 0;
+    this.renderNumberModelStage();
   },
 
   renderTensFrame() {

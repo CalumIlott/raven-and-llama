@@ -72,6 +72,46 @@ test('BODMAS expression checker accepts valid 2018 expressions and rejects inval
   assert.ok(Number.isNaN(evaluate('2 / (1 - 1) + 8 + 0')));
 });
 
+test('Number Models reveals each numeral and uses a different value in every round', () => {
+  const { context, elements } = loadMathsActivities();
+  context.arcadeEngine.startMathsActivity('arena', 'white', 'number-models');
+
+  const activity = context.arcadeEngine.mathsActivity;
+  const body = elements.get('ma-body');
+  assert.equal(activity.targets.length, 5);
+  assert.equal(new Set(activity.targets).size, activity.targets.length);
+  assert.ok(activity.targets.every(target => target >= 1 && target <= 10));
+
+  const firstTarget = activity.target;
+  context.arcadeEngine.submitNumberModelStage(firstTarget);
+  context.arcadeEngine.submitNumberModelStage(firstTarget);
+  assert.match(body.innerHTML, new RegExp(`id="ma-number-model-value"[^>]*>${firstTarget}</p>`));
+  assert.doesNotMatch(body.innerHTML, /aria-label="The numeral for this quantity">\\?</);
+
+  context.arcadeEngine.advanceNumberModelRound();
+  assert.equal(activity.round, 1);
+  assert.notEqual(activity.target, firstTarget);
+  assert.ok(body.innerHTML.includes('Round 2 / 5'));
+});
+
+test('Problem-Solving Steps displays the expected answer format', () => {
+  const { context, elements } = loadMathsActivities();
+  context.arcadeEngine.startMathsActivity('arena', 'platinum', 'word-problems');
+
+  const originalRandom = Math.random;
+  let question;
+  try {
+    Math.random = () => 0.9;
+    question = context.QuestionGenerator.genPlatinumProblemSolving();
+  } finally {
+    Math.random = originalRandom;
+  }
+  context.arcadeEngine.renderMathsQuestion(question);
+
+  assert.match(elements.get('ma-body').innerHTML, /Answer format: Enter dollars and cents as a decimal, for example 8\.50/);
+  assert.match(elements.get('ma-body').innerHTML, /aria-describedby="ma-answer-format"/);
+});
+
 test('every catalogued activity can start a validated, playable game session', () => {
   const { context, elements } = loadMathsActivities();
   context.document.getElementById('arena');
