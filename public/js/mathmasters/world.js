@@ -87,17 +87,17 @@ Object.assign(App.prototype, {
         : `<section class="rounded-2xl border-2 border-amber-600/60 bg-slate-900 p-6">
             <h2 class="font-ninja text-xl font-bold text-white">Money Masters</h2>
             <p class="mt-2 text-sm text-slate-300">Practise Australian coins and notes, make totals, and give change.</p>
-            <button type="button" data-action="money-home" class="mt-4 rounded-xl bg-amber-600 px-5 py-3 font-bold text-white hover:bg-amber-500">Explore Money Masters</button>
+            <button type="button" data-action="money-home" class="mt-4 rounded-xl bg-amber-700 px-5 py-3 font-bold text-white hover:bg-amber-800">Explore Money Masters</button>
           </section>`;
 
     main.innerHTML = `
       <div class="mx-auto max-w-5xl px-4 py-6 sm:py-8">
-        <button type="button" data-action="learning-centre" class="mb-6 flex items-center gap-2 text-sm font-bold text-cyan-400 hover:text-cyan-300">
+        <button type="button" data-action="learning-centre" class="maths-world-back-link mb-6 flex items-center gap-2 text-sm font-bold">
           <span aria-hidden="true">←</span> Back to Learning Centre
         </button>
-        <section class="mb-8 rounded-3xl border-2 border-sky-600/40 bg-gradient-to-br from-sky-950 via-slate-900 to-indigo-950 p-6 shadow-xl sm:p-8">
-          <p class="text-xs font-bold uppercase tracking-widest text-sky-300">Maths World</p>
-          <h1 class="mt-2 font-ninja text-3xl font-bold text-white sm:text-4xl">Numbers, patterns, and problem-solving</h1>
+        <section class="maths-world-hero mb-8 rounded-3xl border-2 border-sky-600/40 bg-gradient-to-br from-sky-950 via-slate-900 to-indigo-950 p-6 shadow-xl sm:p-8">
+          <p class="maths-world-hero__eyebrow text-xs font-bold uppercase tracking-widest text-sky-300">Maths World</p>
+          <h1 class="maths-world-hero__title mt-2 font-ninja text-3xl font-bold text-white sm:text-4xl">Numbers, patterns, and problem-solving</h1>
           <p class="mt-3 max-w-2xl text-sm text-slate-300 sm:text-base">Choose a topic to find an activity, build confidence, and keep exploring.</p>
         </section>
         <div class="mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter Maths World topics">
@@ -105,7 +105,7 @@ Object.assign(App.prototype, {
             <button type="button" data-action="maths-topic" data-topic="${topic.id}"
                     aria-pressed="${this.mathsWorldTopic === topic.id}"
                     class="rounded-full border-2 px-5 py-2 text-sm font-bold ${this.mathsWorldTopic === topic.id
-                      ? 'border-sky-400 bg-sky-600 text-white'
+                      ? 'border-sky-400 bg-sky-700 text-white'
                       : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-sky-500'}">
               ${topic.label}
             </button>
@@ -115,8 +115,8 @@ Object.assign(App.prototype, {
         <section class="mt-8 rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
           <h2 class="font-ninja text-xl font-bold text-white">More ways to practise</h2>
           <div class="mt-4 flex flex-wrap gap-3">
-            <button type="button" data-action="dojo" class="rounded-xl bg-amber-600 px-5 py-3 font-bold text-white hover:bg-amber-500">Maths Masters Dojo</button>
-            <button type="button" data-action="times-tables" class="rounded-xl bg-emerald-700 px-5 py-3 font-bold text-white hover:bg-emerald-600">Times Tables Dojo</button>
+            <button type="button" data-action="dojo" class="rounded-xl bg-amber-700 px-5 py-3 font-bold text-white hover:bg-amber-800">Maths Masters Dojo</button>
+            <button type="button" data-action="times-tables" class="rounded-xl bg-emerald-700 px-5 py-3 font-bold text-white hover:bg-emerald-800">Times Tables Dojo</button>
           </div>
         </section>
       </div>
@@ -136,7 +136,7 @@ Object.assign(App.prototype, {
           ${Object.entries(NUMBER_BUILDER_LEVELS).map(([difficulty, level]) => `
             <button type="button" data-action="number-builder-start" data-difficulty="${difficulty}"
                     data-profile-recommended="${difficulty === recommendedDifficulty}"
-                    class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-sky-600 hover:bg-sky-500' : 'bg-slate-800 hover:bg-slate-700'} px-4 py-3 text-left font-bold text-white">
+                    class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-sky-700 hover:bg-sky-800' : 'bg-slate-800 hover:bg-slate-700'} px-4 py-3 text-left font-bold text-white">
               <span class="block capitalize">${difficulty}</span>
               <span class="mt-1 block text-xs font-medium text-slate-200">${level.length} numbers · ${level.label}</span>
             </button>
@@ -196,7 +196,7 @@ Object.assign(App.prototype, {
           <h1 tabindex="-1" class="mt-3 font-ninja text-2xl font-bold text-white">Number Builder complete!</h1>
           <p class="mt-2 text-slate-300">You ordered ${this.numberBuilderEngine.score} of ${game.questions.length} sequences correctly.</p>
           <div class="mt-6 flex flex-wrap justify-center gap-3">
-            <button type="button" data-action="number-builder-start" data-difficulty="${game.difficulty}" class="rounded-xl bg-sky-600 px-5 py-3 font-bold text-white hover:bg-sky-500">Play again</button>
+            <button type="button" data-action="number-builder-start" data-difficulty="${game.difficulty}" class="rounded-xl bg-sky-700 px-5 py-3 font-bold text-white hover:bg-sky-800">Play again</button>
             <button type="button" data-action="maths-world" class="rounded-xl bg-slate-700 px-5 py-3 font-bold text-white hover:bg-slate-600">Maths World topics</button>
           </div>
         </section>
@@ -220,7 +220,7 @@ Object.assign(App.prototype, {
       : '';
     const slots = question.correctOrder.map((_, index) => {
       const value = game.selected[index];
-      return `<li class="flex min-h-14 min-w-14 items-center justify-center rounded-xl border-2 ${value === undefined ? 'border-dashed border-slate-600 bg-slate-950 text-slate-500' : 'border-sky-500 bg-sky-950 text-xl font-bold text-white'}">
+      return `<li class="flex min-h-14 min-w-14 items-center justify-center rounded-xl border-2 ${value === undefined ? 'border-dashed border-slate-600 bg-slate-950 text-slate-400' : 'number-builder-slot--filled border-sky-500 bg-sky-950 text-xl font-bold text-white'}">
         ${value === undefined ? `<span class="sr-only">Position ${index + 1}, empty</span><span aria-hidden="true">?</span>` : `<span aria-label="Position ${index + 1}: ${value}">${value}</span>`}
       </li>`;
     }).join('');
@@ -248,7 +248,7 @@ Object.assign(App.prototype, {
         <div class="flex flex-wrap justify-center gap-2" role="group" aria-label="Choose number tiles">${tiles}</div>
         <div class="mt-5 flex flex-wrap justify-center gap-3">
           <button type="button" data-action="number-builder-check" ${game.selected.length !== question.correctOrder.length || answered ? 'disabled' : ''}
-                  class="rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50">Check order</button>
+                  class="rounded-xl bg-emerald-700 px-5 py-3 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50">Check order</button>
           ${game.selected.length && !answered ? '<button type="button" data-action="number-builder-clear" class="rounded-xl bg-slate-700 px-5 py-3 font-bold text-white hover:bg-slate-600">Clear sequence</button>' : ''}
         </div>
         ${feedback}
