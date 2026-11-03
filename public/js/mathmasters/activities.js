@@ -119,7 +119,7 @@ Object.assign(ArcadeEngine.prototype, {
       selectedCells: new Set(),
       assignments: [],
       matchedPairs: new Set(),
-      selectedLeft: null,
+      selectedPairItems: {},
       stage: 0,
       target: 0,
       targets: []
@@ -268,6 +268,7 @@ Object.assign(ArcadeEngine.prototype, {
       ${question.hint ? `<p class="mt-3 text-center text-sm text-sky-300">${question.hint}</p>` : ''}
       ${controls}
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+    document.getElementById('ma-answer')?.focus?.({ preventScroll: true });
   },
 
   answerMathsActivity(answer) {
@@ -347,6 +348,7 @@ Object.assign(ArcadeEngine.prototype, {
       ${model}
       ${controls}
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+    if (stage < 2) document.getElementById('ma-stage-answer')?.focus?.({ preventScroll: true });
   },
 
   submitNumberModelStage(answer) {
@@ -385,7 +387,6 @@ Object.assign(ArcadeEngine.prototype, {
           return `<button data-action="arcade-maths-cell" data-index="${index}" aria-pressed="${filled}" aria-label="Frame cell ${index + 1}${filled ? ', filled' : ', empty'}" class="h-12 rounded-lg border-2 ${filled ? 'border-amber-300 bg-amber-400 text-slate-950' : 'border-slate-600 bg-slate-950 text-slate-500'}">${filled ? '●' : '○'}</button>`;
         }).join('')}
       </div>
-      <p class="text-center text-slate-300"><span id="ma-filled-count">${activity.selectedCells.size}</span> of ${activity.target} filled</p>
       <div class="mt-4 flex justify-center gap-3">
         <button data-action="arcade-maths-submit" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check frame</button>
         <button data-action="arcade-maths-clear" class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white">Clear</button>
@@ -413,60 +414,113 @@ Object.assign(ArcadeEngine.prototype, {
     activity.matchKind = kind;
     if (kind === 'tens') {
       activity.pairs = [1, 2, 3, 4, 5].map(number => ({ left: number, right: 10 - number }));
+      activity.pairSides = ['left', 'right'];
     } else {
       const pairs = [
-        ['1/2', '0.5 = 50%'], ['1/4', '0.25 = 25%'], ['3/4', '0.75 = 75%'],
-        ['1/5', '0.2 = 20%'], ['3/5', '0.6 = 60%']
+        { fraction: '1/2', decimal: '0.5', percent: '50%' },
+        { fraction: '1/4', decimal: '0.25', percent: '25%' },
+        { fraction: '3/4', decimal: '0.75', percent: '75%' },
+        { fraction: '1/5', decimal: '0.2', percent: '20%' },
+        { fraction: '3/5', decimal: '0.6', percent: '60%' }
       ];
-      activity.pairs = QuestionGenerator.shuffle(pairs).map(([left, right]) => ({ left, right }));
+      activity.pairs = QuestionGenerator.shuffle(pairs);
+      activity.pairSides = ['fraction', 'decimal', 'percent'];
     }
-    const leftValues = QuestionGenerator.shuffle(activity.pairs.map((pair, index) => ({ value: pair.left, index })));
-    const rightValues = QuestionGenerator.shuffle(activity.pairs.map((pair, index) => ({ value: pair.right, index })));
-    activity.leftValues = leftValues;
-    activity.rightValues = rightValues;
+    activity.selectedPairItems = {};
+    const valuesBySide = Object.fromEntries(activity.pairSides.map(side => [
+      side,
+      QuestionGenerator.shuffle(activity.pairs.map((pair, index) => ({ value: pair[side], index })))
+    ]));
+    const labels = {
+      left: 'Numbers',
+      right: 'Tens mates',
+      fraction: 'Fractions',
+      decimal: 'Decimals',
+      percent: 'Percents'
+    };
     const body = document.getElementById('ma-body');
     if (!body) return;
-    const renderCards = (items, side) => items.map(item =>
-      `<button data-action="arcade-maths-pair" data-side="${side}" data-index="${item.index}" class="arcade-game__tile btn-ninja rounded-xl border-2 border-slate-600 bg-slate-800 p-3 text-lg font-bold text-white">${item.value}</button>`
-    ).join('');
+    const renderCards = (items, side) => items.map(item => {
+      const selected = activity.selectedPairItems[side] === item.index;
+      const completed = activity.matchedPairs.has(item.index);
+      const stateClasses = completed
+        ? 'border-slate-700 bg-slate-900 text-slate-500 opacity-50 grayscale cursor-not-allowed'
+        : selected
+          ? 'border-amber-300 bg-amber-400 text-slate-950 ring-4 ring-amber-300/70'
+          : 'border-slate-600 bg-slate-800 text-white';
+      return `<button data-action="arcade-maths-pair" data-side="${side}" data-index="${item.index}" aria-pressed="${selected}" ${completed ? 'disabled' : ''} class="arcade-game__tile btn-ninja rounded-xl border-2 ${stateClasses} p-3 text-lg font-bold">${item.value}</button>`;
+    }).join('');
     body.innerHTML = `
-      <p class="mb-4 text-center text-slate-300">${kind === 'tens' ? 'Match each left card with its friend to make 10.' : 'Match each fraction with an equivalent percentage.'}</p>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-2">${renderCards(leftValues, 'left')}</div>
-        <div class="grid gap-2">${renderCards(rightValues, 'right')}</div>
+      <p class="mb-4 text-center text-slate-300">${kind === 'tens' ? 'Match each number with its tens mate.' : 'Match a fraction, decimal, and percent that show the same value.'}</p>
+      <div class="${kind === 'tens' ? 'grid grid-cols-2 gap-4' : 'grid grid-cols-2 gap-3 sm:grid-cols-3'}">
+        ${activity.pairSides.map(side => `
+          <div role="group" aria-label="${labels[side]}">
+            <h4 class="mb-2 text-center font-bold text-slate-300">${labels[side]}</h4>
+            <div class="grid gap-2">${renderCards(valuesBySide[side], side)}</div>
+          </div>`).join('')}
       </div>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
   },
 
   selectMathsPair(side, index) {
     const activity = this.mathsActivity;
-    const selected = document.querySelector(`[data-action="arcade-maths-pair"][data-side="${side}"][data-index="${index}"]`);
+    if (!activity || !activity.pairSides.includes(side)) return;
+    const selector = `[data-action="arcade-maths-pair"][data-side="${side}"][data-index="${index}"]`;
+    const selected = document.querySelector(selector);
     if (!selected || selected.disabled || activity.matchedPairs.has(index)) return;
-    if (side === 'left') {
-      activity.selectedLeft = index;
-      selected.classList.add('is-selected');
-      return;
+
+    const previousIndex = activity.selectedPairItems[side];
+    if (previousIndex === index) {
+      delete activity.selectedPairItems[side];
+      selected.classList.remove('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+      selected.classList.add('border-slate-600', 'bg-slate-800', 'text-white');
+      selected.setAttribute('aria-pressed', 'false');
+    } else {
+      if (previousIndex !== undefined) {
+        const previous = document.querySelector(`[data-action="arcade-maths-pair"][data-side="${side}"][data-index="${previousIndex}"]`);
+        if (previous) {
+          previous.classList.remove('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+          previous.classList.add('border-slate-600', 'bg-slate-800', 'text-white');
+          previous.setAttribute('aria-pressed', 'false');
+        }
+      }
+      activity.selectedPairItems[side] = index;
+      selected.classList.remove('border-slate-600', 'bg-slate-800', 'text-white');
+      selected.classList.add('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+      selected.setAttribute('aria-pressed', 'true');
     }
-    if (activity.selectedLeft === null) return;
-    const left = activity.pairs[activity.selectedLeft];
-    const right = activity.pairs[index];
+
+    if (!activity.pairSides.every(pairSide => activity.selectedPairItems[pairSide] !== undefined)) return;
+
+    const selectedIndices = activity.pairSides.map(pairSide => activity.selectedPairItems[pairSide]);
     const isCorrect = activity.matchKind === 'tens'
-      ? left.left + right.right === 10
-      : activity.selectedLeft === index;
-    const leftButton = document.querySelector(`[data-action="arcade-maths-pair"][data-side="left"][data-index="${activity.selectedLeft}"]`);
+      ? activity.pairs[selectedIndices[0]].left + activity.pairs[selectedIndices[1]].right === 10
+      : selectedIndices.every(pairIndex => pairIndex === selectedIndices[0]);
+    const feedback = document.getElementById('ma-feedback');
+    for (const [position, pairSide] of activity.pairSides.entries()) {
+      const pairIndex = selectedIndices[position];
+      const card = document.querySelector(`[data-action="arcade-maths-pair"][data-side="${pairSide}"][data-index="${pairIndex}"]`);
+      if (!card) continue;
+      card.setAttribute('aria-pressed', 'false');
+      card.classList.remove('border-amber-300', 'bg-amber-400', 'text-slate-950', 'ring-4', 'ring-amber-300/70');
+      if (isCorrect) {
+        card.disabled = true;
+        card.classList.add('border-slate-700', 'bg-slate-900', 'text-slate-500', 'opacity-50', 'grayscale', 'cursor-not-allowed');
+      } else {
+        card.classList.add('border-slate-600', 'bg-slate-800', 'text-white');
+      }
+    }
+    activity.selectedPairItems = {};
+
     if (isCorrect) {
-      activity.matchedPairs.add(activity.selectedLeft);
-      if (leftButton) leftButton.disabled = true;
-      selected.disabled = true;
+      activity.matchedPairs.add(selectedIndices[0]);
       this.addScore(10, 'ma-score');
+      if (feedback) feedback.textContent = 'Correct match! Choose another set.';
       if (activity.matchedPairs.size === activity.pairs.length) this.finishMathsActivity();
     } else {
       this.deductScore(2, 'ma-score');
-      if (leftButton) leftButton.classList.remove('is-selected');
-      const feedback = document.getElementById('ma-feedback');
-      if (feedback) feedback.textContent = 'Those cards do not match. Try another pair.';
+      if (feedback) feedback.textContent = 'These cards do not match. Try another combination.';
     }
-    activity.selectedLeft = null;
   },
 
   startPartitionRound() {
@@ -562,6 +616,7 @@ Object.assign(ArcadeEngine.prototype, {
       </form>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
     activity.question = { type: 'numeric_input', answer: count };
+    document.getElementById('ma-answer')?.focus?.({ preventScroll: true });
   },
 
   startFractionRound() {
@@ -586,7 +641,7 @@ Object.assign(ArcadeEngine.prototype, {
         }).join('')}
       </div>
       <p class="text-center text-slate-300">${activity.selectedCells.size} of ${activity.denominator} parts coloured</p>
-      <div class="mt-4 text-center"><button data-action="arcade-maths-submit" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check fraction</button></div>
+      <div class="mt-4 text-center"><button data-action="arcade-maths-submit" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check fraction</button>      </div>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
   },
 
@@ -605,6 +660,7 @@ Object.assign(ArcadeEngine.prototype, {
       </form>
       <p class="mt-3 text-center text-xs text-slate-400">Use +, −, ×, ÷, powers, and brackets. Standard operation order applies.</p>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+    document.getElementById('ma-expression')?.focus?.({ preventScroll: true });
   },
 
   submitBodmasExpression(expression) {

@@ -17,6 +17,8 @@ function loadGameEngine(sessionValues = new Map(), account = null) {
             },
             classes,
             dataset: {},
+            focusCount: 0,
+            focus() { this.focusCount++; },
             style: {},
             innerHTML: '',
             textContent: ''
@@ -176,6 +178,7 @@ test('numeric-entry quiz questions accept equivalent number formats', () => {
   }]);
 
   assert.match(elements.get('game-arena').innerHTML, /game-answer-input/);
+  assert.equal(elements.get('game-answer-input').focusCount, 1);
   engine.submitAnswer('0190');
 
   assert.equal(engine.score, 1);

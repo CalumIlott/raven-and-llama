@@ -17,6 +17,8 @@ function loadMathsActivities() {
             classes,
             dataset: {},
             disabled: false,
+            focusCount: 0,
+            focus() { this.focusCount++; },
             innerHTML: '',
             textContent: ''
           });
@@ -110,6 +112,40 @@ test('Problem-Solving Steps displays the expected answer format', () => {
 
   assert.match(elements.get('ma-body').innerHTML, /Answer format: Enter dollars and cents as a decimal, for example 8\.50/);
   assert.match(elements.get('ma-body').innerHTML, /aria-describedby="ma-answer-format"/);
+});
+
+test('Tens Frame Fill hides the selected-cell count', () => {
+  const { context, elements } = loadMathsActivities();
+  context.arcadeEngine.startMathsActivity('arena', 'yellow', 'tens-frame-fill');
+
+  assert.doesNotMatch(elements.get('ma-body').innerHTML, /ma-filled-count|of \d+ filled/);
+});
+
+test('Conversion Match presents separate fraction, decimal, and percent cards', () => {
+  const { context, elements } = loadMathsActivities();
+  context.arcadeEngine.startMathsActivity('arena', 'platinum', 'conversion-match');
+
+  const html = elements.get('ma-body').innerHTML;
+  for (const [side, label] of [['fraction', 'Fractions'], ['decimal', 'Decimals'], ['percent', 'Percents']]) {
+    assert.match(html, new RegExp(`data-side="${side}"`));
+    assert.match(html, new RegExp(`aria-label="${label}"`));
+    assert.equal((html.match(new RegExp(`data-side="${side}"`, 'g')) || []).length, 5);
+  }
+  assert.doesNotMatch(html, /\d+\.\d+\s*=\s*\d+%/);
+});
+
+test('Maths activities autofocus text-entry fields', () => {
+  const { context, elements } = loadMathsActivities();
+  for (const [beltId, activityId, inputId] of [
+    ['white', 'number-models', 'ma-stage-answer'],
+    ['platinum', 'word-problems', 'ma-answer'],
+    ['brown', 'array-architect', 'ma-answer'],
+    ['platinum', 'bodmas-builder', 'ma-expression']
+  ]) {
+    const focusCount = elements.get(inputId)?.focusCount || 0;
+    context.arcadeEngine.startMathsActivity('arena', beltId, activityId);
+    assert.equal(elements.get(inputId).focusCount, focusCount + 1, `${activityId} should focus its input`);
+  }
 });
 
 test('every catalogued activity can start a validated, playable game session', () => {
