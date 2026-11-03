@@ -4,6 +4,7 @@ const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require
 
 function loadMoneyMasters() {
   const context = createBrowserContext({ App: class App {} });
+  context.ProfileManager = { getSubjectDifficulty: () => 'medium' };
   loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/mathmasters/money.js');
   return context.MoneyMasters;
@@ -81,7 +82,11 @@ test('money values are formatted in cents and Australian dollars', () => {
 test('money rounds delegate answers and completion to ActivityEngine', () => {
   const context = createBrowserContext({
     App: class App {},
-    document: { getElementById: () => null }
+    document: { getElementById: () => null },
+    ProfileManager: {
+      getSubjectDifficulty: () => 'medium',
+      recordActivityScore() {}
+    }
   });
   loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/mathmasters/money.js');
@@ -98,11 +103,29 @@ test('money rounds delegate answers and completion to ActivityEngine', () => {
   assert.equal(app.moneyGame.index, 6);
 });
 
+test('money games use the profile tier by default and honor an explicit difficulty choice', () => {
+  const context = createBrowserContext({
+    App: class App {},
+    ProfileManager: { getSubjectDifficulty: subject => subject === 'maths' ? 'hard' : 'easy' },
+    document: { getElementById: () => null }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/money.js');
+  const app = new context.App();
+
+  app.startMoneyGame('coin-recognition');
+  assert.equal(app.moneyGame.difficulty, 'hard');
+
+  app.startMoneyGame('coin-recognition', 'easy');
+  assert.equal(app.moneyGame.difficulty, 'easy');
+});
+
 test('money feedback explains the strategy and allows another attempt', () => {
   const main = { innerHTML: '', dataset: {} };
   const arena = { innerHTML: '' };
   const context = createBrowserContext({
     App: class App {},
+    ProfileManager: { getSubjectDifficulty: () => 'medium' },
     document: {
       getElementById: id => id === 'app-main' ? main : id === 'money-arena' ? arena : null
     }

@@ -11,6 +11,7 @@ function createScienceContext() {
   context.brandWordmark = () => 'Raven &amp; Llama';
   context.ProfileManager = {
     getActiveProfile: () => context.profile,
+    getSubjectDifficulty: () => 'medium',
     updateProfile: profile => { context.profile = profile; },
     recordActivityScore: (...score) => { context.activityScores.push(score); }
   };
@@ -85,6 +86,7 @@ test('science missions offer three difficulty levels with increasing answer choi
   const app = context.app;
   app.showScienceExplorers();
   assert.equal((context.main.innerHTML.match(/data-action="science-start"/g) || []).length, 12);
+  assert.match(context.main.innerHTML, /data-profile-recommended="true"/);
 
   for (const [difficulty, choiceCount] of Object.entries({ easy: 2, medium: 3, hard: 4 })) {
     app.startScienceMission(context.SCIENCE_MISSIONS[0].id, difficulty);
@@ -97,6 +99,18 @@ test('science missions offer three difficulty levels with increasing answer choi
         ]);
     }
   }
+});
+
+test('science missions use the profile tier by default and honor an explicit difficulty choice', () => {
+  const context = createScienceContext();
+  const app = context.app;
+  const missionId = context.SCIENCE_MISSIONS[0].id;
+
+  app.startScienceMission(missionId);
+  assert.equal(app.scienceGame.difficulty, 'medium');
+
+  app.startScienceMission(missionId, 'hard');
+  assert.equal(app.scienceGame.difficulty, 'hard');
 });
 
 test('incorrect answer does not reveal the correct answer or fact in feedback', () => {
