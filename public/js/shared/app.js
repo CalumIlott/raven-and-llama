@@ -140,6 +140,13 @@ class App {
       case 'number-builder-retry': this.retryNumberBuilderQuestion(); break;
       case 'number-builder-clear': this.clearNumberBuilderSequence(); break;
       case 'number-builder-next': this.nextNumberBuilderQuestion(); break;
+      case 'fraction-pizza-start': this.startFractionPizza(target.dataset.difficulty); break;
+      case 'fraction-pizza-token': this.placeFractionPizzaToken(Number(target.dataset.token)); break;
+      case 'fraction-pizza-slot': this.toggleFractionPizzaSlot(Number(target.dataset.slot)); break;
+      case 'fraction-pizza-check': this.submitFractionPizzaAnswer(); break;
+      case 'fraction-pizza-clear': this.clearFractionPizza(); break;
+      case 'fraction-pizza-retry': this.retryFractionPizzaQuestion(); break;
+      case 'fraction-pizza-next': this.nextFractionPizzaQuestion(); break;
       case 'games-hub': this.showGamesHub(); break;
       case 'critter-open': this.showCritterCatch(); break;
       case 'account-open': this.openProfileModal(); break;

@@ -80,10 +80,7 @@ Object.assign(App.prototype, {
     const topicContent = this.mathsWorldTopic === 'number'
       ? this.renderNumberBuilderCard()
       : this.mathsWorldTopic === 'fractions'
-        ? `<section class="rounded-2xl border-2 border-slate-700 bg-slate-900 p-6">
-            <h2 class="font-ninja text-xl font-bold text-white">Fraction activities are on the way</h2>
-            <p class="mt-2 text-sm text-slate-300">Fraction Pizza will bring visual fraction-building challenges to Maths World.</p>
-          </section>`
+        ? this.renderFractionPizzaCard()
         : `<section class="rounded-2xl border-2 border-amber-600/60 bg-slate-900 p-6">
             <h2 class="font-ninja text-xl font-bold text-white">Money Masters</h2>
             <p class="mt-2 text-sm text-slate-300">Practise Australian coins and notes, make totals, and serve customers.</p>

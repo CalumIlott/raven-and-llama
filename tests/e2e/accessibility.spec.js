@@ -109,7 +109,7 @@ async function findTextContrastFailures(page) {
           backgrounds = backgrounds.map(background => composite(color, background));
         }
         if (currentStyle.backgroundImage !== 'none') {
-          const gradientColors = [...currentStyle.backgroundImage.matchAll(/(?:rgb|rgba|oklch)\([^)]+\)/g)]
+          const gradientColors = [...currentStyle.backgroundImage.matchAll(/(?:rgb|rgba|oklab|oklch)\([^)]+\)/g)]
             .map(match => parseColor(match[0]))
             .filter(Boolean);
           if (!gradientColors.length) {
@@ -504,4 +504,48 @@ test('Shopkeeper text meets WCAG AA contrast in both themes', async ({ page }) =
   expect(remaining).toBe(0);
   await page.getByRole('button', { name: 'Check change' }).click();
   await checkBothThemes('Shopkeeper feedback');
+});
+
+test('Fraction Pizza text meets WCAG AA contrast in both themes', async ({ page }) => {
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: 'Explore Maths World' }).click();
+  await page.locator('[data-action="maths-topic"][data-topic="fractions"]').click();
+
+  const checkBothThemes = async surface => {
+    for (const theme of ['dark', 'light']) {
+      await page.evaluate(value => window.ProfileManager.applyTheme(value), theme);
+      const failures = await findTextContrastFailures(page);
+      expect(failures, `${surface} (${theme} theme): ${JSON.stringify(failures)}`).toEqual([]);
+    }
+    await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
+  };
+
+  await checkBothThemes('Fraction Pizza card');
+  await page.evaluate(() => {
+    window.__fractionPizzaOriginalRandom = Math.random;
+    Math.random = () => 0.999999;
+  });
+  await page.locator('[data-action="fraction-pizza-start"][data-difficulty="easy"]').click();
+  await page.evaluate(() => {
+    Math.random = window.__fractionPizzaOriginalRandom;
+    delete window.__fractionPizzaOriginalRandom;
+  });
+  await checkBothThemes('Fraction Pizza activity');
+
+  for (let round = 0; round < 5; round++) {
+    const answer = await page.evaluate(() => window.app.fractionPizzaEngine.currentQuestion.answer);
+    for (let tokenId = 0; tokenId < answer; tokenId++) {
+      await page.locator(`[data-action="fraction-pizza-token"][data-token="${tokenId}"]`).click();
+    }
+    await page.getByRole('button', { name: 'Check fraction' }).click();
+    await expect(page.locator('#fraction-pizza-feedback .educational-feedback')).toHaveClass(/is-correct/);
+    await checkBothThemes(`Fraction Pizza feedback ${round + 1}`);
+    await page.getByRole('button', {
+      name: round === 4 ? 'Finish activity' : 'Next pizza'
+    }).click();
+  }
+
+  await expect(page.getByRole('heading', { name: 'Well done, pizza builder!' })).toBeVisible();
+  await checkBothThemes('Fraction Pizza results');
 });
