@@ -112,6 +112,8 @@ Object.assign(App.prototype, {
     this.currentView = 'science-lab';
     this.scienceGame = null;
     this.solarSystemGame = null;
+    this.foodChainsGame = null;
+    this.foodChainsActivityEngine = null;
     this.virtualLabGame = null;
     this.navigateToPath('/learning-centre/science');
     const main = document.getElementById('app-main');
@@ -182,6 +184,20 @@ Object.assign(App.prototype, {
             <p class="text-slate-300 mb-5">Arrange the stages of a flowering plant's life and see how one cycle can begin another.</p>
             <button type="button" data-action="plant-life-cycle-start" class="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
               Explore Plant Life Cycle
+            </button>
+          </section>
+
+          <section class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 sm:p-6 shadow-xl">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="w-14 h-14 rounded-2xl bg-lime-950 border border-lime-700/70 flex items-center justify-center text-3xl" aria-hidden="true">🌿</span>
+              <div>
+                <p class="text-xs uppercase tracking-wider text-lime-300 font-bold">Food web sequencing mission</p>
+                <h2 class="font-ninja text-2xl text-white font-bold">Food Chains</h2>
+              </div>
+            </div>
+            <p class="text-slate-300 mb-5">Arrange producers and consumers to follow how energy moves through three simple ecosystems.</p>
+            <button type="button" data-action="food-chains-start" class="rounded-xl bg-lime-700 hover:bg-lime-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
+              Explore Food Chains
             </button>
           </section>
 

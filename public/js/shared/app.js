@@ -307,6 +307,13 @@ class App {
       case 'plant-life-cycle-place': this.placeSelectedPlantLifeCycleStage(Number(target.dataset.positionIndex)); break;
       case 'plant-life-cycle-submit': this.submitPlantLifeCycleAnswer(); break;
       case 'plant-life-cycle-restart': this.startPlantLifeCycleActivity(); break;
+      case 'food-chains-start': this.startFoodChainsActivity(); break;
+      case 'food-chains-select': this.selectFoodChainOrganism(target.dataset.organismId); break;
+      case 'food-chains-place': this.placeSelectedFoodChainOrganism(Number(target.dataset.positionIndex)); break;
+      case 'food-chains-submit': this.submitFoodChainAnswer(); break;
+      case 'food-chains-next': this.nextFoodChain(); break;
+      case 'food-chains-clear': this.clearFoodChain(); break;
+      case 'food-chains-restart': this.startFoodChainsActivity(); break;
       case 'virtual-lab-start': this.startVirtualLabActivity(); break;
       case 'virtual-lab-select': this.selectVirtualLabMaterial(target.dataset.materialId); break;
       case 'virtual-lab-place': this.placeSelectedVirtualLabMaterial(Number(target.dataset.slotIndex)); break;
@@ -591,6 +598,7 @@ class App {
       } else if (this.currentView === 'science-lab' ||
         this.currentView === 'science-solar-system' ||
         this.currentView === 'science-plant-life-cycle' ||
+        this.currentView === 'science-food-chains' ||
         this.currentView === 'science-virtual-lab') {
         subBadge.textContent = 'Science Lab';
         subBadge.classList.remove('hidden');
@@ -668,6 +676,8 @@ class App {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {
       this.renderPlantLifeCycleActivity();
+    } else if (this.currentView === 'science-food-chains' && this.foodChainsGame) {
+      this.renderFoodChainsActivity();
     } else if (this.currentView === 'science-virtual-lab' && this.virtualLabGame) {
       this.renderVirtualLabActivity();
     } else if (this.currentView === 'trophy') {
