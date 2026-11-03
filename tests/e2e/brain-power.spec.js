@@ -15,6 +15,8 @@ test('Brain Power hub is linked from Learning Centre and survives refresh', asyn
   await expect(page.locator('[data-action="brain-pattern-start"]')).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Brain Power', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Home', exact: true }).click();
+  await expect(page).toHaveURL('/');
 });
 
 test('Pattern Recognition supports keyboard retries and records a finite run', async ({ page }) => {
