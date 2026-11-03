@@ -61,6 +61,7 @@ class ProfileManager {
       stars: 0,
       skillsProgress: {},
       activityProgress: {},
+      questProgress: {},
       earnedBadges: [],
       ownedCosmetics: [],
       equippedCosmetic: null,
@@ -89,6 +90,9 @@ class ProfileManager {
       ? source.activeSpellingListId
       : null;
     const activityProgress = ProfileManager.normalizeActivityProgress(source.activityProgress);
+    const questProgress = window.LearningQuests
+      ? window.LearningQuests.normalizeProgress(source.questProgress)
+      : {};
     const skillsProgress = source.skillsProgress && typeof source.skillsProgress === 'object' && !Array.isArray(source.skillsProgress)
       ? source.skillsProgress
       : {};
@@ -97,7 +101,8 @@ class ProfileManager {
       ? window.AchievementBadges.normalizeEarnedIds(source.earnedBadges, {
         activityProgress,
         skillsProgress,
-        passedBelts
+        passedBelts,
+        questProgress
       })
       : [];
     const ownedCosmetics = window.CosmeticShop
@@ -122,6 +127,7 @@ class ProfileManager {
       stars: typeof source.stars === 'number' ? source.stars : 0,
       skillsProgress,
       activityProgress,
+      questProgress,
       earnedBadges,
       ownedCosmetics,
       equippedCosmetic,

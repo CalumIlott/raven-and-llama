@@ -224,6 +224,7 @@ Object.assign(App.prototype, {
 window.DailyChallenges = Object.freeze({
   bonusStars: DAILY_CHALLENGE_BONUS_STARS,
   getDayKey: getDailyChallengeDayKey,
+  getActivity: getDailyChallengeActivity,
   isValidDayKey: isDailyChallengeDayKey,
   selectForDate: selectDailyChallengeActivities
 });
