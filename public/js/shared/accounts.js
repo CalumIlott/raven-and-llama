@@ -4,6 +4,7 @@ class ProfileManager {
   static accountServiceAvailable = true;
   static lastSaveError = '';
   static saveQueue = Promise.resolve();
+  static cosmeticPurchaseQueue = Promise.resolve();
   static GUEST_THEME_KEY = 'raven_llama_guest_theme';
   static MAX_SPELLING_LISTS = 10;
   static MAX_SPELLING_WORDS_PER_LIST = 50;
@@ -60,6 +61,11 @@ class ProfileManager {
       stars: 0,
       skillsProgress: {},
       activityProgress: {},
+      questProgress: {},
+      earnedBadges: [],
+      ownedCosmetics: [],
+      equippedCosmetic: null,
+      dailyChallenges: { days: {} },
       endlessHighScores: {},
       spellingLists: [],
       activeSpellingListId: null,
@@ -83,6 +89,28 @@ class ProfileManager {
     const activeSpellingListId = spellingLists.some(list => list.id === source.activeSpellingListId)
       ? source.activeSpellingListId
       : null;
+    const activityProgress = ProfileManager.normalizeActivityProgress(source.activityProgress);
+    const questProgress = window.LearningQuests
+      ? window.LearningQuests.normalizeProgress(source.questProgress)
+      : {};
+    const skillsProgress = source.skillsProgress && typeof source.skillsProgress === 'object' && !Array.isArray(source.skillsProgress)
+      ? source.skillsProgress
+      : {};
+    const passedBelts = Array.isArray(source.passedBelts) ? source.passedBelts : [];
+    const earnedBadges = window.AchievementBadges
+      ? window.AchievementBadges.normalizeEarnedIds(source.earnedBadges, {
+        activityProgress,
+        skillsProgress,
+        passedBelts,
+        questProgress
+      })
+      : [];
+    const ownedCosmetics = window.CosmeticShop
+      ? window.CosmeticShop.normalizeOwned(source.ownedCosmetics)
+      : [];
+    const equippedCosmetic = ownedCosmetics.includes(source.equippedCosmetic)
+      ? source.equippedCosmetic
+      : null;
     return {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
@@ -95,10 +123,15 @@ class ProfileManager {
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
       stage2PassedBelts: Array.isArray(source.stage2PassedBelts) ? source.stage2PassedBelts : [],
       stage3PassedBelts: Array.isArray(source.stage3PassedBelts) ? source.stage3PassedBelts : [],
-      passedBelts: Array.isArray(source.passedBelts) ? source.passedBelts : [],
+      passedBelts,
       stars: typeof source.stars === 'number' ? source.stars : 0,
-      skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
-      activityProgress: ProfileManager.normalizeActivityProgress(source.activityProgress),
+      skillsProgress,
+      activityProgress,
+      questProgress,
+      earnedBadges,
+      ownedCosmetics,
+      equippedCosmetic,
+      dailyChallenges: ProfileManager.normalizeDailyChallenges(source.dailyChallenges),
       endlessHighScores,
       spellingLists,
       activeSpellingListId,
@@ -311,6 +344,51 @@ class ProfileManager {
     ));
   }
 
+  static isValidDailyChallengeDayKey(dayKey) {
+    if (typeof dayKey !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return false;
+    const [year, month, day] = dayKey.split('-').map(Number);
+    if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31) return false;
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day;
+  }
+
+  static normalizeDailyChallenges(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      !value.days || typeof value.days !== 'object' || Array.isArray(value.days)) {
+      return { days: {} };
+    }
+
+    const days = {};
+    for (const [dayKey, rawDay] of Object.entries(value.days)
+      .filter(([dayKey]) => ProfileManager.isValidDailyChallengeDayKey(dayKey))
+      .sort(([first], [second]) => first.localeCompare(second))
+      .slice(-31)) {
+      if (!rawDay || typeof rawDay !== 'object' || Array.isArray(rawDay) ||
+        !Array.isArray(rawDay.activityIds) || rawDay.activityIds.length > 4 ||
+        !Array.isArray(rawDay.completedActivityIds) || rawDay.completedActivityIds.length > 4 ||
+        typeof rawDay.bonusAwarded !== 'boolean') continue;
+
+      const activityIds = rawDay.activityIds;
+      const completedActivityIds = rawDay.completedActivityIds;
+      const completedAll = activityIds.length > 0 &&
+        completedActivityIds.length === activityIds.length;
+      if (activityIds.some(id => typeof id !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(id)) ||
+        new Set(activityIds).size !== activityIds.length ||
+        completedActivityIds.some(id => !activityIds.includes(id)) ||
+        new Set(completedActivityIds).size !== completedActivityIds.length ||
+        rawDay.bonusAwarded !== completedAll) continue;
+
+      days[dayKey] = {
+        activityIds: [...activityIds],
+        completedActivityIds: [...completedActivityIds],
+        bonusAwarded: rawDay.bonusAwarded
+      };
+    }
+    return { days };
+  }
+
   static getSchoolYearLabel(year) {
     return ProfileManager.SCHOOL_YEAR_LEVELS.find(level => level.value === year)?.label || 'Year 3';
   }
@@ -374,6 +452,58 @@ class ProfileManager {
     });
     window.app?.updateHeader();
     return ProfileManager.saveQueue;
+  }
+
+  static purchaseCosmetic(cosmeticId) {
+    const operation = ProfileManager.cosmeticPurchaseQueue.catch(() => false).then(async () => {
+      const cosmetic = window.CosmeticShop?.get(cosmeticId);
+      if (!cosmetic || !cosmetic.available) return { success: false, reason: 'unavailable' };
+      const profile = ProfileManager.getActiveProfile();
+      if (profile.ownedCosmetics.includes(cosmeticId)) return { success: false, reason: 'already-owned' };
+      if (profile.stars < cosmetic.price) return { success: false, reason: 'insufficient-stars' };
+
+      if (ProfileManager.account) {
+        const accountId = ProfileManager.account.id;
+        const data = await ProfileManager.requestApi('/api/cosmetics/purchase', 'POST', { cosmeticId });
+        if (ProfileManager.account?.id !== accountId) return { success: false, reason: 'account-changed' };
+        ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, ProfileManager.account);
+        ProfileManager.lastSaveError = '';
+        window.app?.updateHeader();
+        return {
+          success: data.purchased === true,
+          reason: data.reason || (data.purchased ? null : 'already-owned')
+        };
+      }
+
+      ProfileManager.currentProfile = ProfileManager.normalizeProfile({
+        ...profile,
+        stars: profile.stars - cosmetic.price,
+        ownedCosmetics: [...profile.ownedCosmetics, cosmeticId]
+      }, null);
+      window.app?.updateHeader();
+      return { success: true, reason: null };
+    });
+    ProfileManager.cosmeticPurchaseQueue = operation.catch(() => false);
+    return operation;
+  }
+
+  static async equipCosmetic(cosmeticId) {
+    const profile = ProfileManager.getActiveProfile();
+    if (cosmeticId !== null &&
+      (!window.CosmeticShop?.get(cosmeticId) || !profile.ownedCosmetics.includes(cosmeticId))) {
+      return { success: false, reason: 'not-owned' };
+    }
+    if (profile.equippedCosmetic === cosmeticId) return { success: false, reason: 'already-equipped' };
+
+    const updatedProfile = { ...profile, equippedCosmetic: cosmeticId };
+    if (!ProfileManager.account) {
+      ProfileManager.currentProfile = ProfileManager.normalizeProfile(updatedProfile, null);
+      window.app?.updateHeader();
+      return { success: true, reason: null };
+    }
+
+    const saved = await ProfileManager.updateProfile(updatedProfile);
+    return { success: saved, reason: saved ? null : 'save-failed' };
   }
 
   static flush() {

@@ -167,13 +167,17 @@ if (!isValidFoodChainData(FOOD_CHAIN_DATA)) {
   throw new TypeError('Food chain data is missing or invalid.');
 }
 
-function shuffleFoodChainOrganisms(chain, random = Math.random) {
-  const organisms = [...chain.organisms];
-  for (let index = organisms.length - 1; index > 0; index--) {
+function shuffleFoodChainItems(items, random = Math.random) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index--) {
     const swapIndex = Math.floor(random() * (index + 1));
-    [organisms[index], organisms[swapIndex]] = [organisms[swapIndex], organisms[index]];
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
   }
-  return organisms;
+  return shuffled;
+}
+
+function shuffleFoodChainOrganisms(chain, random = Math.random) {
+  return shuffleFoodChainItems(chain.organisms, random);
 }
 
 function isCompleteFoodChainPlacement(placements, chain) {
@@ -234,13 +238,16 @@ function escapeFoodChainHtml(value) {
 }
 
 Object.assign(App.prototype, {
-  startFoodChainsActivity() {
+  startFoodChainsActivity(random = Math.random) {
     this.currentView = 'science-food-chains';
-    const firstChain = FOOD_CHAIN_DATA[0];
+    const chains = shuffleFoodChainItems(FOOD_CHAIN_DATA, random);
+    const firstChain = chains[0];
     this.foodChainsGame = {
+      chains,
+      random,
       chainIndex: 0,
       placements: Array(firstChain.organisms.length).fill(null),
-      trayOrganisms: shuffleFoodChainOrganisms(firstChain),
+      trayOrganisms: shuffleFoodChainOrganisms(firstChain, random),
       selectedOrganismId: null,
       factOrganismId: null,
       message: 'Select an organism, then choose its position. You can also drag an organism into a position.',
@@ -254,7 +261,7 @@ Object.assign(App.prototype, {
       title: 'Food Chains',
       subject: 'Science Lab',
       skillId: FOOD_CHAINS_SKILL_ID,
-      questions: FOOD_CHAIN_DATA.map(chain => {
+      questions: chains.map(chain => {
         const correctOrder = chain.organisms.map(organism => organism.id);
         return {
           id: `${FOOD_CHAINS_ACTIVITY_ID}-${chain.id}`,
@@ -275,7 +282,7 @@ Object.assign(App.prototype, {
 
   selectFoodChainOrganism(organismId) {
     const game = this.foodChainsGame;
-    const chain = FOOD_CHAIN_DATA[game?.chainIndex];
+    const chain = game?.chains[game?.chainIndex];
     const organism = chain?.organisms.find(item => item.id === organismId);
     if (!game || game.complete || game.lastAnswerCorrect === true) return false;
     if (!organism) {
@@ -307,7 +314,7 @@ Object.assign(App.prototype, {
 
   placeFoodChainOrganism(organismId, positionIndex) {
     const game = this.foodChainsGame;
-    const chain = FOOD_CHAIN_DATA[game?.chainIndex];
+    const chain = game?.chains[game?.chainIndex];
     if (!game || !chain || game.complete || game.lastAnswerCorrect === true) return false;
     const placements = moveFoodChainOrganism(game.placements, chain, organismId, positionIndex);
     if (!placements) {
@@ -329,7 +336,7 @@ Object.assign(App.prototype, {
 
   clearFoodChain() {
     const game = this.foodChainsGame;
-    const chain = FOOD_CHAIN_DATA[game?.chainIndex];
+    const chain = game?.chains[game?.chainIndex];
     if (!game || !chain || game.complete || game.lastAnswerCorrect === true) return false;
     game.placements = Array(chain.organisms.length).fill(null);
     game.selectedOrganismId = null;
@@ -342,7 +349,7 @@ Object.assign(App.prototype, {
 
   submitFoodChainAnswer() {
     const game = this.foodChainsGame;
-    const chain = FOOD_CHAIN_DATA[game?.chainIndex];
+    const chain = game?.chains[game?.chainIndex];
     if (!game || !chain || game.complete || game.lastAnswerCorrect === true) return false;
     if (!isCompleteFoodChainPlacement(game.placements, chain)) {
       game.message = 'Place each organism once before checking the chain.';
@@ -381,9 +388,9 @@ Object.assign(App.prototype, {
     }
 
     game.chainIndex++;
-    const chain = FOOD_CHAIN_DATA[game.chainIndex];
+    const chain = game.chains[game.chainIndex];
     game.placements = Array(chain.organisms.length).fill(null);
-    game.trayOrganisms = shuffleFoodChainOrganisms(chain);
+    game.trayOrganisms = shuffleFoodChainOrganisms(chain, game.random);
     game.selectedOrganismId = null;
     game.factOrganismId = null;
     game.lastAnswerCorrect = null;
@@ -411,7 +418,7 @@ Object.assign(App.prototype, {
             <div class="text-6xl mb-4" aria-hidden="true">🌿</div>
             <p class="text-xs uppercase tracking-widest text-emerald-300 font-bold">Science Lab</p>
             <h1 class="font-ninja text-3xl text-white font-bold mt-1">Food Chains Complete!</h1>
-            <p class="text-slate-300 mt-3">You built all ${FOOD_CHAIN_DATA.length} food chains and earned ⭐ ${this.foodChainsActivityEngine.score} stars.</p>
+            <p class="text-slate-300 mt-3">You built all ${game.chains.length} food chains and earned ⭐ ${this.foodChainsActivityEngine.score} stars.</p>
             <p class="text-slate-300 mt-2">These are simplified examples. In nature, connected food chains form larger food webs.</p>
             <div class="flex flex-col sm:flex-row gap-3 mt-6">
               <button type="button" data-action="food-chains-restart" class="btn-ninja flex-1 py-3 rounded-xl bg-sky-700 hover:bg-sky-600 text-white font-bold transition-colors motion-reduce:transition-none">Build Again</button>
@@ -423,7 +430,7 @@ Object.assign(App.prototype, {
       return;
     }
 
-    const chain = FOOD_CHAIN_DATA[game.chainIndex];
+    const chain = game.chains[game.chainIndex];
     const positionGridClasses = chain.organisms.length === 3
       ? 'grid-cols-1 sm:grid-cols-3'
       : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
@@ -470,7 +477,7 @@ Object.assign(App.prototype, {
 
         <section class="play-question-card science-question-card bg-slate-900 border-2 border-emerald-800/70 rounded-3xl p-5 sm:p-8 shadow-2xl">
           <div class="text-center mb-5">
-            <p class="text-xs uppercase tracking-wider text-emerald-300 font-bold">Food chain ${game.chainIndex + 1} of ${FOOD_CHAIN_DATA.length}</p>
+            <p class="text-xs uppercase tracking-wider text-emerald-300 font-bold">Food chain ${game.chainIndex + 1} of ${game.chains.length}</p>
             <h1 class="play-prompt font-ninja text-2xl sm:text-3xl text-white font-bold mt-2">Build a Food Chain: ${escapeFoodChainHtml(chain.name)}</h1>
             <p class="text-slate-300 mt-2">${escapeFoodChainHtml(chain.description)}</p>
           </div>
@@ -513,7 +520,7 @@ Object.assign(App.prototype, {
             <button type="button" data-action="food-chains-clear" ${game.placements.some(Boolean) && game.lastAnswerCorrect !== true ? '' : 'disabled'}
                     class="flex-1 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 px-4 py-3 text-white font-bold">Clear chain</button>
             ${game.lastAnswerCorrect === true
-              ? `<button type="button" data-action="food-chains-next" class="flex-1 rounded-xl bg-emerald-700 hover:bg-emerald-600 px-4 py-3 text-white font-bold">${game.chainIndex === FOOD_CHAIN_DATA.length - 1 ? 'Finish Food Chains' : 'Next Food Chain'}</button>`
+              ? `<button type="button" data-action="food-chains-next" class="flex-1 rounded-xl bg-emerald-700 hover:bg-emerald-600 px-4 py-3 text-white font-bold">${game.chainIndex === game.chains.length - 1 ? 'Finish Food Chains' : 'Next Food Chain'}</button>`
               : `<button type="button" data-action="food-chains-submit" ${canSubmit ? '' : 'disabled'} class="flex-1 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:bg-slate-700 disabled:text-slate-300 disabled:cursor-not-allowed px-4 py-3 text-white font-bold">Check Food Chain</button>`}
           </div>
           <button type="button" data-action="food-chains-restart" class="mt-3 text-sm text-slate-300 underline hover:text-white">Start over</button>
@@ -547,6 +554,7 @@ Object.assign(App.prototype, {
 window.FoodChains = Object.freeze({
   chains: FOOD_CHAIN_DATA,
   isValidData: isValidFoodChainData,
+  shuffleChains: shuffleFoodChainItems,
   shuffleOrganisms: shuffleFoodChainOrganisms,
   isCompletePlacement: isCompleteFoodChainPlacement,
   moveOrganism: moveFoodChainOrganism,

@@ -127,14 +127,29 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal((await fetch(`${baseUrl}/data/accounts.sqlite`)).status, 404);
   assert.equal((await fetch(`${baseUrl}/data/accounts.json`)).status, 404);
 
+  const dailyChallengeDayKey = new Date().toISOString().slice(0, 10);
   const privateProgress = {
     ...first.body.profile,
     stars: 17,
     passedBelts: ['white'],
+    earnedBadges: ['activity-explorer', 'unknown-badge'],
+    skillsProgress: { green_order: { bestScore: 10, timesTrained: 1 } },
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
     activeSpellingListId: 'week-one',
+    questProgress: {
+      'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+    },
+    dailyChallenges: {
+      days: {
+        [dailyChallengeDayKey]: {
+          activityIds: ['maths-number-builder', 'science-solar-system-order'],
+          completedActivityIds: ['maths-number-builder'],
+          bonusAwarded: false
+        }
+      }
+    },
     activityProgress: {
       'maths-number-builder': {
         title: 'Number Builder',
@@ -175,9 +190,34 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.activityProgress['maths-number-builder'].skillId, 'green_order');
   assert.equal(firstProfile.activityProgress['maths-number-builder'].correctAnswers, 4);
   assert.equal(firstProfile.activityProgress['maths-number-builder'].totalAnswers, 5);
+  assert.deepEqual(firstProfile.questProgress, {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  });
+  assert.deepEqual(firstProfile.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
+  assert.equal(firstProfile.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'maths-number-builder');
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+  assert.deepEqual(secondProfile.questProgress, {});
+  assert.deepEqual(secondProfile.earnedBadges, []);
+  assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
+
+  const cosmeticPurchase = await fetch(`${baseUrl}/api/cosmetics/purchase`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: baseUrl, Cookie: first.cookie },
+    body: JSON.stringify({ cosmeticId: 'sunrise-frame' })
+  });
+  assert.equal(cosmeticPurchase.status, 200);
+  const cosmeticResult = await cosmeticPurchase.json();
+  assert.equal(cosmeticResult.profile.stars, 12);
+  assert.deepEqual(cosmeticResult.profile.ownedCosmetics, ['sunrise-frame']);
+  const cosmeticRestore = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: first.cookie } });
+  const restoredCosmetics = (await cosmeticRestore.json()).profile;
+  assert.equal(restoredCosmetics.stars, 12);
+  assert.deepEqual(restoredCosmetics.ownedCosmetics, ['sunrise-frame']);
+  assert.deepEqual(restoredCosmetics.questProgress, {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  });
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);

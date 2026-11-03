@@ -141,6 +141,16 @@ test('accounts can only read and update their own progress', async () => {
   const firstCookie = sessionCookie(first);
   const secondCookie = sessionCookie(second);
   const firstData = await first.json();
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const dailyChallenges = {
+    days: {
+      [dayKey]: {
+        activityIds: ['fraction-pizza', 'spelling-spelling-sprint'],
+        completedActivityIds: ['fraction-pizza'],
+        bonusAwarded: false
+      }
+    }
+  };
 
   const save = await request(store, '/api/progress', 'PUT', {
     profile: {
@@ -152,6 +162,16 @@ test('accounts can only read and update their own progress', async () => {
       spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
       activeSpellingListId: 'week-one',
       endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' },
+      earnedBadges: ['activity-explorer', 'unknown-badge'],
+      questProgress: {
+        'stellar-expedition': {
+          completedStepIds: ['solar-system-order', 'plant-life-cycle-order']
+        }
+      },
+      skillsProgress: {
+        white_addition: { bestScore: 10, timesTrained: 1 }
+      },
+      dailyChallenges,
       activityProgress: {
         'science-water-cycle': {
           title: 'Water Cycle',
@@ -185,6 +205,18 @@ test('accounts can only read and update their own progress', async () => {
   ]);
   assert.equal(firstProfile.activeSpellingListId, 'week-one');
   assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
+  assert.deepEqual(firstProfile.dailyChallenges, dailyChallenges);
+  assert.deepEqual(firstProfile.questProgress, {
+    'stellar-expedition': {
+      completedStepIds: ['solar-system-order', 'plant-life-cycle-order']
+    }
+  });
+  assert.deepEqual(firstProfile.earnedBadges, [
+    'first-steps',
+    'skill-master',
+    'curriculum-graduate',
+    'stellar-explorer'
+  ]);
   assert.deepEqual(firstProfile.activityProgress, {
     'science-water-cycle': {
       title: 'Water Cycle',
@@ -207,12 +239,93 @@ test('accounts can only read and update their own progress', async () => {
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.equal(secondProfile.activeSpellingListId, null);
   assert.deepEqual(secondProfile.endlessHighScores, {});
+  assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
+  assert.deepEqual(secondProfile.questProgress, {});
+  assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+
+  const reset = await request(store, '/api/progress', 'PUT', {
+    profile: {
+      ...firstProfile,
+      earnedBadges: ['activity-explorer'],
+      passedBelts: [],
+      skillsProgress: {},
+      activityProgress: {}
+    }
+  }, firstCookie);
+  assert.equal(reset.status, 200);
+  assert.deepEqual((await reset.json()).profile.earnedBadges, [
+    'first-steps',
+    'skill-master',
+    'curriculum-graduate',
+    'stellar-explorer'
+  ]);
 
   const anonymousRead = await request(store, '/api/progress');
   assert.equal(anonymousRead.status, 401);
   const oldList = await request(store, '/api/profiles');
   assert.equal(oldList.status, 404);
+});
+
+test('cosmetic purchases use server prices, preserve ownership, and are idempotent', async () => {
+  const store = new MemoryAccountStore();
+  const registration = await request(store, '/api/auth/register', 'POST', {
+    username: 'cosmetic_owner',
+    password: 'a secure password 123'
+  });
+  const account = await registration.json();
+  const cookie = sessionCookie(registration);
+
+  assert.equal((await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame'
+  })).status, 401);
+  assert.equal((await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'unknown-frame'
+  }, cookie)).status, 400);
+  assert.equal((await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame'
+  }, cookie)).status, 409);
+
+  await store.saveProgress(account.user.id, { ...account.profile, stars: 20 });
+  const purchase = await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame',
+    price: 0,
+    stars: 1000
+  }, cookie);
+  assert.equal(purchase.status, 200);
+  const purchased = await purchase.json();
+  assert.equal(purchased.purchased, true);
+  assert.equal(purchased.profile.stars, 15);
+  assert.deepEqual(purchased.profile.ownedCosmetics, ['sunrise-frame']);
+  assert.equal(purchased.profile.equippedCosmetic, null);
+
+  const retry = await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame'
+  }, cookie);
+  assert.equal(retry.status, 200);
+  const retried = await retry.json();
+  assert.equal(retried.purchased, false);
+  assert.equal(retried.reason, 'already-owned');
+  assert.equal(retried.profile.stars, 15);
+
+  const forgedOwnership = await request(store, '/api/progress', 'PUT', {
+    profile: {
+      ...retried.profile,
+      ownedCosmetics: ['galaxy-frame'],
+      equippedCosmetic: 'sunrise-frame'
+    }
+  }, cookie);
+  assert.equal(forgedOwnership.status, 200);
+  assert.deepEqual((await forgedOwnership.json()).profile.ownedCosmetics, ['sunrise-frame']);
+
+  const equipUnowned = await request(store, '/api/progress', 'PUT', {
+    profile: {
+      ...retried.profile,
+      ownedCosmetics: ['galaxy-frame'],
+      equippedCosmetic: 'galaxy-frame'
+    }
+  }, cookie);
+  assert.equal(equipUnowned.status, 400);
 });
 
 test('progress rejects invalid, duplicate, and oversized spelling-list data', async () => {
@@ -247,6 +360,75 @@ test('progress rejects invalid, duplicate, and oversized spelling-list data', as
     profile: { ...profile, spellingLists: [validList], activeSpellingListId: 'deleted-list' }
   }, cookie);
   assert.equal(staleSelection.status, 400);
+});
+
+test('progress rejects malformed daily challenge days and completion records', async () => {
+  const store = new MemoryAccountStore();
+  const registered = await request(store, '/api/auth/register', 'POST', {
+    username: 'daily_owner',
+    password: 'a secure password 123'
+  });
+  const cookie = sessionCookie(registered);
+  const profile = (await registered.json()).profile;
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const day = {
+    activityIds: ['fraction-pizza', 'brain-power-pattern-recognition'],
+    completedActivityIds: ['fraction-pizza'],
+    bonusAwarded: false
+  };
+  const invalidDailyChallenges = [
+    { days: { '2025-02-30': day } },
+    { days: { [dayKey]: { ...day, activityIds: ['fraction-pizza', 'fraction-pizza'] } } },
+    { days: { [dayKey]: { ...day, activityIds: ['unknown-activity'] } } },
+    { days: { [dayKey]: { ...day, completedActivityIds: ['unknown-activity'] } } },
+    { days: { [dayKey]: { ...day, bonusAwarded: true } } },
+    { days: { [dayKey]: { ...day, activityIds: Array.from({ length: 5 }, (_, index) => `activity-${index}`) } } },
+    {
+      days: Object.fromEntries(Array.from({ length: 32 }, (_, index) => {
+        const key = new Date(Date.UTC(2025, 0, index + 1)).toISOString().slice(0, 10);
+        return [key, day];
+      }))
+    }
+  ];
+
+  for (const dailyChallenges of invalidDailyChallenges) {
+    const response = await request(store, '/api/progress', 'PUT', {
+      profile: { ...profile, dailyChallenges }
+    }, cookie);
+    assert.equal(response.status, 400);
+  }
+});
+
+test('quest progress accepts ordered known steps and cannot be skipped or reset', async () => {
+  const store = new MemoryAccountStore();
+  const registered = await request(store, '/api/auth/register', 'POST', {
+    username: 'quest_owner',
+    password: 'a secure password 123'
+  });
+  const cookie = sessionCookie(registered);
+  const profile = (await registered.json()).profile;
+  const partialQuestProgress = {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  };
+  const saved = await request(store, '/api/progress', 'PUT', {
+    profile: { ...profile, questProgress: partialQuestProgress }
+  }, cookie);
+  assert.equal(saved.status, 200);
+  const savedProfile = (await saved.json()).profile;
+
+  const invalidQuestProgress = [
+    { 'unknown-quest': { completedStepIds: ['solar-system-order'] } },
+    { 'stellar-expedition': { completedStepIds: ['plant-life-cycle-order'] } },
+    { 'stellar-expedition': { completedStepIds: ['solar-system-order', 'solar-system-order'] } },
+    { 'brain-power-trail': { completedStepIds: ['pattern-recognition', 'code-breaker'] } },
+    {}
+  ];
+  for (const questProgress of invalidQuestProgress) {
+    const response = await request(store, '/api/progress', 'PUT', {
+      profile: { ...savedProfile, questProgress }
+    }, cookie);
+    assert.equal(response.status, 400);
+  }
 });
 
 test('leaderboards expose only the top ten usernames and scoped scores', async () => {

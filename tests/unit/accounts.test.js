@@ -7,10 +7,17 @@ function response(data, status = 200) {
 }
 
 function loadAccounts(fetchImplementation) {
-  const context = loadBrowserScripts(
-    createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) }),
+  const context = createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) });
+  context.App = function App() {};
+  context.app = { updateHeader() {}, refreshCurrentView() {} };
+  loadBrowserScripts(
+    context,
     'public/js/mathmasters/curriculum.js',
-    'public/js/shared/accounts.js'
+    'public/js/shared/accounts.js',
+    'public/js/shared/achievement-badges.js',
+    'public/js/shared/cosmetic-shop.js',
+    'public/js/shared/daily-challenges.js',
+    'public/js/learning/quests.js'
   );
   return { context, accounts: context.ProfileManager };
 }
@@ -35,15 +42,70 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(guest.currentBelt, 'white');
   accounts.recordTrainingScore('addition', 8, 10);
   const guestList = { id: 'guest-week', name: 'This Week', words: ['quokka'] };
-  assert.equal(await accounts.updateProfile({ ...guest, spellingLists: [guestList], activeSpellingListId: guestList.id }), false);
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const dailyChallenges = {
+    days: {
+      [dayKey]: {
+        activityIds: ['fraction-pizza'],
+        completedActivityIds: [],
+        bonusAwarded: false
+      }
+    }
+  };
+  const questProgress = {
+    'stellar-expedition': { completedStepIds: ['solar-system-order'] }
+  };
+  assert.equal(await accounts.updateProfile({
+    ...guest,
+    spellingLists: [guestList],
+    activeSpellingListId: guestList.id,
+    dailyChallenges,
+    questProgress
+  }), false);
   await accounts.flush();
 
   assert.equal(accounts.getActiveProfile().stars, 8);
   assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().spellingLists)), [guestList]);
+  assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().dailyChallenges)), dailyChallenges);
+  assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().questProgress)), questProgress);
   assert.equal(accounts.getActiveProfile().activeSpellingListId, guestList.id);
   assert.equal(fetchCount, 1);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
   assert.equal(context.localStorage.getItem(accounts.GUEST_THEME_KEY), null);
+});
+
+test('guest achievement badges and quest rewards derive from progress and remain memory only', async () => {
+  const { context, accounts } = loadAccounts();
+  await accounts.initialize();
+
+  const guest = accounts.getActiveProfile();
+  await accounts.updateProfile({
+    ...guest,
+    activityProgress: {
+      'science-water-cycle': {
+        title: 'Water Cycle',
+        subject: 'Science Lab',
+        kind: 'quiz',
+        scoreUnit: 'questions',
+        bestScore: 1,
+        bestTotal: 1,
+        correct: 1,
+        total: 1,
+        correctAnswers: 1,
+        totalAnswers: 1,
+        timesPlayed: 1
+      }
+    },
+    questProgress: {
+      'stellar-expedition': {
+        completedStepIds: ['solar-system-order', 'plant-life-cycle-order']
+      }
+    },
+    earnedBadges: ['activity-explorer', 'first-steps', 'stellar-explorer', 'unknown-badge']
+  });
+
+  assert.deepEqual(Array.from(accounts.getActiveProfile().earnedBadges), ['first-steps', 'stellar-explorer']);
+  assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
 });
 
 test('spelling lists are normalized and validated with bounded unique entries', () => {
@@ -62,6 +124,41 @@ test('spelling lists are normalized and validated with bounded unique entries', 
   assert.match(accounts.validateSpellingLists([{ ...list, words: ['quokka', ' QUOKKA '] }]), /unique/i);
   assert.match(accounts.validateSpellingLists([{ ...list, words: [''] }]), /blank/i);
   assert.match(accounts.validateSpellingLists([{ ...list, words: ['x'.repeat(101)] }]), /100 characters/i);
+});
+
+test('daily challenge profile normalization keeps only valid bounded UTC completion records', () => {
+  const { accounts } = loadAccounts();
+  const profile = accounts.normalizeProfile({
+    dailyChallenges: {
+      days: {
+        '2026-03-10': {
+          activityIds: ['fraction-pizza', 'brain-power-pattern-recognition'],
+          completedActivityIds: ['fraction-pizza'],
+          bonusAwarded: false
+        },
+        '2025-02-30': {
+          activityIds: ['maths-number-builder'],
+          completedActivityIds: [],
+          bonusAwarded: false
+        },
+        '2026-03-11': {
+          activityIds: ['science-solar-system-order'],
+          completedActivityIds: ['unknown-activity'],
+          bonusAwarded: false
+        }
+      }
+    }
+  });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(profile.dailyChallenges)), {
+    days: {
+      '2026-03-10': {
+        activityIds: ['fraction-pizza', 'brain-power-pattern-recognition'],
+        completedActivityIds: ['fraction-pizza'],
+        bonusAwarded: false
+      }
+    }
+  });
 });
 
 test('profile normalization validates subject-specific years and inherits the global year', async () => {

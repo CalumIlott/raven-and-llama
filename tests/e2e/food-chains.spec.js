@@ -5,7 +5,7 @@ async function openFoodChains(page) {
   await setupApp(page);
   await page.goto('/learning-centre/science');
   await page.getByRole('button', { name: 'Explore Food Chains', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Build a Food Chain: Grassland', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Build a Food Chain:/ })).toBeVisible();
 }
 
 async function placeWithKeyboard(page, organismId, positionIndex) {
@@ -36,10 +36,14 @@ test('Food Chains opens from the refresh-safe Science Lab route', async ({ page 
   await expect(page.getByRole('button', { name: 'Explore Food Chains', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Explore Food Chains', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Build a Food Chain: Grassland', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'National Geographic Education: Food Chain' })).toHaveAttribute(
+  await expect(page.getByRole('heading', { name: /^Build a Food Chain:/ })).toBeVisible();
+  const source = await page.evaluate(() => {
+    const { sourceTitle, sourceUrl } = window.app.foodChainsGame.chains[0];
+    return { sourceTitle, sourceUrl };
+  });
+  await expect(page.getByRole('link', { name: source.sourceTitle, exact: true })).toHaveAttribute(
     'href',
-    'https://education.nationalgeographic.org/resource/food-chain/'
+    source.sourceUrl
   );
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Science Lab', exact: true })).toBeVisible();
@@ -49,23 +53,28 @@ test('Food Chains opens from the refresh-safe Science Lab route', async ({ page 
 test('keyboard learners can correct a food chain, complete all examples, and record progress once', async ({ page }) => {
   await openFoodChains(page);
 
-  await placeWithKeyboard(page, 'rabbit', 0);
-  await placeWithKeyboard(page, 'grass', 1);
-  await placeWithKeyboard(page, 'fox', 2);
+  const incorrectOrder = await page.evaluate(() =>
+    window.app.foodChainsGame.chains[0].organisms
+      .map(organism => organism.id)
+      .reverse()
+  );
+  for (const [positionIndex, organismId] of incorrectOrder.entries()) {
+    await placeWithKeyboard(page, organismId, positionIndex);
+  }
   await page.getByRole('button', { name: 'Check Food Chain', exact: true }).click();
-  await expect(page.locator('#food-chains-feedback')).toContainText('Start with Grass, the producer');
-  await expect(page.locator('#food-chains-feedback')).toContainText('Rabbit comes next because it gets energy from Grass');
+  await expect(page.locator('#food-chains-feedback')).toContainText('Position');
 
-  for (let chainIndex = 0; chainIndex < 3; chainIndex++) {
+  const chainCount = await page.evaluate(() => window.app.foodChainsGame.chains.length);
+  for (let chainIndex = 0; chainIndex < chainCount; chainIndex++) {
     const organismIds = await page.evaluate(
-      index => window.FoodChains.chains[index].organisms.map(organism => organism.id),
+      index => window.app.foodChainsGame.chains[index].organisms.map(organism => organism.id),
       chainIndex
     );
     await arrangeWithKeyboard(page, organismIds);
     await page.getByRole('button', { name: 'Check Food Chain', exact: true }).click();
     await expect(page.getByText('Correct food chain!', { exact: true })).toBeVisible();
 
-    if (chainIndex < 2) {
+    if (chainIndex < chainCount - 1) {
       await page.getByRole('button', { name: 'Next Food Chain', exact: true }).click();
     } else {
       await page.getByRole('button', { name: 'Finish Food Chains', exact: true }).click();
@@ -87,10 +96,14 @@ test.describe('touch Food Chains controls', () => {
 
   test('learners can tap an organism and a position', async ({ page }) => {
     await openFoodChains(page);
-    await page.locator('[data-food-chain-organism-id="grass"]').tap();
+    const producerId = await page.evaluate(() =>
+      window.app.foodChainsGame.chains[0].organisms.find(organism => organism.role === 'producer').id
+    );
+    await page.locator(`[data-food-chain-organism-id="${producerId}"]`).tap();
     await page.locator('[data-food-chain-position-index="0"]').tap();
-    await expect(page.locator('[data-food-chain-position-index="0"]')).toContainText('Grass');
-    await expect(page.locator('#food-chains-fact')).toContainText('Grass produces its own food using energy from sunlight.');
+    const producer = await page.evaluate(() => window.app.foodChainsGame.chains[0].organisms[0]);
+    await expect(page.locator('[data-food-chain-position-index="0"]')).toContainText(producer.name);
+    await expect(page.locator('#food-chains-fact')).toContainText(producer.fact);
   });
 });
 
@@ -99,7 +112,13 @@ test('organisms can be dragged into positions with shared drag feedback', async 
   await page.setViewportSize({ width: 1280, height: 1200 });
   await openFoodChains(page);
 
-  const grass = page.locator('[data-food-chain-organism-id="grass"]');
+  const producerId = await page.evaluate(() =>
+    window.app.foodChainsGame.chains[0].organisms.find(organism => organism.role === 'producer').id
+  );
+  const producerName = await page.evaluate(() =>
+    window.app.foodChainsGame.chains[0].organisms.find(organism => organism.role === 'producer').name
+  );
+  const grass = page.locator(`[data-food-chain-organism-id="${producerId}"]`);
   const firstPosition = page.locator('[data-food-chain-position-index="0"]');
   const dragFeedback = page.evaluate(() => new Promise(resolve => {
     document.addEventListener('dragstart', event => {
@@ -124,5 +143,5 @@ test('organisms can be dragged into positions with shared drag feedback', async 
     targetIsHighlighted: true,
     dropEffect: 'move'
   });
-  await expect(firstPosition).toContainText('Grass');
+  await expect(firstPosition).toContainText(producerName);
 });
