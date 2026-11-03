@@ -17,6 +17,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `unit/plant-life-cycle.test.js` checks the canonical stage sequence, stage metadata, unique placement rules, relationship-based feedback, and shared activity scoring.
 - `unit/history-timeline.test.js` validates sourced event records and approximate chronology, event placement/movement, corrective feedback data, and one-time ActivityEngine progress recording.
 - `unit/brain-power.test.js` checks unique number-pattern solutions, deterministic Memory Match shuffles and matched-card transitions, unique Code Breaker clues, and one-time ActivityEngine completion for all three games.
+- `unit/party-planner.test.js` checks item validation, bounded quantities, integer-cent totals, required items, under/exact/over-budget evaluation, and one-time ActivityEngine completion.
 - `unit/virtual-lab.test.js` checks curated simulation rules, safe unsupported combinations, workspace placement, reset behavior, and shared activity scoring.
 - `unit/worker-auth-rate-limit.test.mjs` checks Worker rate-limit keys and denied decisions without remote bindings.
 - `unit/local-account-store.test.js` checks SQLite persistence, legacy JSON import, session expiry, account deletion, and concurrent writes from separate Node processes.
@@ -28,6 +29,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `e2e/solar-system.spec.js` checks the refresh-safe Science Lab route, shuffled planet tray, shared drag cursor/preview/drop feedback, existing Science Explorers navigation, accessible planet facts, keyboard/touch placement, retry feedback, completion, and return navigation on desktop and mobile Chromium.
 - `e2e/history-timeline.spec.js` checks the refresh-safe History hub route, browser navigation, keyboard event placement, sourced event details, corrective retry, chronological completion, and one-time progress/stars on desktop and mobile Chromium.
 - `e2e/brain-power.spec.js` checks direct hub navigation, keyboard pattern retries, Memory Match pair state, clue-based Code Breaker feedback and completion, and return navigation on desktop and mobile Chromium.
+- `e2e/plan-party.spec.js` checks the refresh-safe activity route, keyboard and touch quantity controls, live budget totals, over-budget retry, exact-budget completion, shared progress, and return to existing Life Skills programs on desktop and mobile Chromium.
 - `unit/spelling-pronunciation.test.js` checks local voice selection/loading, playback cancellation, muted and unsupported-browser feedback, and default-voice fallback.
 - `e2e/plant-life-cycle.spec.js` checks stage labels and explanations, keyboard/touch/drag ordering with the shared drag cursor, next/previous-stage feedback, retry, completion, and return navigation on desktop and mobile Chromium.
 - `e2e/virtual-lab.spec.js` checks safe simulation notices, supported and unsupported combinations, reset behavior, keyboard/touch/drag input with shared drag feedback, deterministic explanations, and one-time activity and star recording on desktop and mobile Chromium.
