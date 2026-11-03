@@ -211,6 +211,12 @@ class App {
       case 'number-builder-retry': this.retryNumberBuilderQuestion(); break;
       case 'number-builder-clear': this.clearNumberBuilderSequence(); break;
       case 'number-builder-next': this.nextNumberBuilderQuestion(); break;
+      case 'missing-number-start': this.startMissingNumber(target.dataset.difficulty); break;
+      case 'missing-number-select': this.selectMissingNumberAnswer(Number(target.dataset.value)); break;
+      case 'missing-number-check': this.submitMissingNumberAnswer(); break;
+      case 'missing-number-clear': this.clearMissingNumberSelection(); break;
+      case 'missing-number-retry': this.retryMissingNumberQuestion(); break;
+      case 'missing-number-next': this.nextMissingNumberQuestion(); break;
       case 'fraction-pizza-start': this.startFractionPizza(target.dataset.difficulty); break;
       case 'fraction-pizza-token': this.placeFractionPizzaToken(Number(target.dataset.token)); break;
       case 'fraction-pizza-slot': this.toggleFractionPizzaSlot(Number(target.dataset.slot)); break;
