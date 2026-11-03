@@ -427,14 +427,22 @@ test('Learning Centre groups its existing programs under the right subjects', as
     }
   }
 
+  await expect(subject('history-discovery').getByRole('button', {
+    name: 'Explore History & Discovery',
+    exact: true
+  })).toBeVisible();
+  await expect(subject('brain-power').getByRole('button', {
+    name: 'Explore Brain Power',
+    exact: true
+  })).toBeVisible();
+  await expect(subject('life-skills').getByRole('button', {
+    name: 'Plan a Party',
+    exact: true
+  })).toBeVisible();
   await expect(subject('geography-world').getByRole('button', {
     name: 'Explore Geography & The World',
     exact: true
   })).toBeVisible();
-
-  for (const subjectId of ['history-discovery', 'brain-power']) {
-    await expect(subject(subjectId).getByText('Coming soon', { exact: true })).toBeVisible();
-  }
 });
 
 test('Maths World route filters topics and completes Number Builder with retry and progress', async ({ page }) => {

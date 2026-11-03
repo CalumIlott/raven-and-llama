@@ -381,6 +381,8 @@ Object.assign(App.prototype, {
         name: 'History & Discovery',
         icon: '🏺',
         description: 'Travel through time and uncover the past.',
+        entryAction: 'history-hub',
+        entryLabel: 'Explore History & Discovery',
         actions: []
       },
       {
@@ -388,6 +390,8 @@ Object.assign(App.prototype, {
         name: 'Brain Power',
         icon: '🧠',
         description: 'Stretch your thinking with puzzles and challenges.',
+        entryAction: 'brain-power-hub',
+        entryLabel: 'Explore Brain Power',
         actions: []
       },
       {
@@ -395,6 +399,8 @@ Object.assign(App.prototype, {
         name: 'Life Skills',
         icon: '🌟',
         description: 'Learn practical skills for everyday life.',
+        entryAction: 'life-skills-party',
+        entryLabel: 'Plan a Party',
         actions: ['telling-time', 'money-home']
       }
     ];

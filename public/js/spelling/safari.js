@@ -3921,6 +3921,26 @@ const SpellingSafari = {
     return typeof value === 'string' ? value.trim().toLowerCase() : '';
   },
 
+  canScrambleAnswer(answer) {
+    if (typeof answer !== 'string') return false;
+    const characters = Array.from(answer);
+    return characters.length > 1 && new Set(characters).size > 1;
+  },
+
+  createScramble(answer) {
+    if (!this.canScrambleAnswer(answer)) return null;
+    const characters = Array.from(answer);
+    const shuffled = this.shuffle(characters);
+    if (shuffled.join('') !== answer) return shuffled;
+
+    for (let offset = 1; offset < characters.length; offset++) {
+      const rotated = characters.slice(offset).concat(characters.slice(0, offset));
+      if (rotated.join('') !== answer) return rotated;
+    }
+
+    return null;
+  },
+
   createSpellItQuestions(list) {
     if (!list || !Array.isArray(list.words)) return [];
     return this.shuffle(list.words).map(answer => ({ type: 'short_answer', answer }));
@@ -3946,9 +3966,12 @@ const SpellingSafari = {
     const matchesDifficulty = Object.hasOwn(JUNGLE_JUMBLE_DIFFICULTIES, difficulty)
       ? JUNGLE_JUMBLE_DIFFICULTIES[difficulty]
       : null;
-    const questionPool = activity.id === 'jungle-jumble' && matchesDifficulty
-      ? activity.questions.filter(question => matchesDifficulty(question.answer))
+    let questionPool = activity.type === 'scramble'
+      ? activity.questions.filter(question => this.canScrambleAnswer(question.answer))
       : activity.questions;
+    if (activity.id === 'jungle-jumble' && matchesDifficulty) {
+      questionPool = questionPool.filter(question => matchesDifficulty(question.answer));
+    }
     const questionCount = Math.min(Math.floor(count), questionPool.length);
     return this.shuffle(questionPool).slice(0, questionCount).map(question => {
       const result = { ...question };
@@ -3967,9 +3990,7 @@ const SpellingSafari = {
         result.pictureClue = PHONICS_PICTURE_CLUES[word];
       }
       if (activity.type === 'scramble') {
-        const letters = this.shuffle(Array.from(question.answer));
-        if (letters.join('') === question.answer) letters.push(letters.shift());
-        result.scramble = letters;
+        result.scramble = this.createScramble(question.answer);
       }
       result.activityId = activity.id;
       result.type = activity.type;
@@ -4530,10 +4551,27 @@ Object.assign(App.prototype, {
     const selectedDifficulty = Object.hasOwn(SPELLING_SAFARI_DIFFICULTY_OPTIONS, difficulty)
       ? difficulty
       : ProfileManager.getSubjectDifficulty('english');
+    const main = document.getElementById('app-main');
+    if (!main) throw new Error('Spelling activity container was not rendered');
+    const questions = SpellingSafari.createQuestions(activityId, 6, selectedDifficulty);
+    if (!questions.length) {
+      this.spellingSafariGame = null;
+      this.spellingActivityEngine = null;
+      this.currentView = 'spelling';
+      main.innerHTML = `
+        <div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6">
+          <section class="rounded-3xl border-2 border-amber-500 bg-slate-900 p-7 text-center shadow-2xl" role="alert">
+            <h1 class="font-ninja text-2xl font-bold text-white">No questions are ready for this adventure</h1>
+            <p class="mt-2 text-slate-300">Choose another adventure or difficulty with available questions.</p>
+            <button type="button" data-action="spelling-home" class="mt-6 rounded-xl bg-emerald-700 px-5 py-3 font-bold text-white hover:bg-emerald-600">Back to Spelling &amp; Words</button>
+          </section>
+        </div>`;
+      return;
+    }
     this.spellingSafariGame = {
       activity,
       difficulty: selectedDifficulty,
-      questions: SpellingSafari.createQuestions(activityId, 6, selectedDifficulty),
+      questions,
       index: 0,
       score: 0,
       selectedLetters: [],
@@ -4550,8 +4588,6 @@ Object.assign(App.prototype, {
       settings: { trackProgress: true }
     });
     this.currentView = 'spelling';
-    const main = document.getElementById('app-main');
-    if (!main) return;
     main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
     this.renderSpellingSafariQuestion();
   },
@@ -4592,11 +4628,12 @@ Object.assign(App.prototype, {
 
     const question = game.questions[game.index];
     const selected = game.selectedLetters.map(index => question.scramble[index]).join('');
+    const selectedCharacters = Array.from(selected);
     const selectedAnswerClass = game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect';
     const choices = question.type === 'scramble'
       ? `
         <div class="spelling-answer min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold" aria-label="Your word">
-          ${Array.from({ length: question.answer.length }, (_, index) => `<span class="spelling-letter-slot w-8 border-b-2">${selected[index] || '_'}</span>`).join('')}
+          ${Array.from({ length: question.scramble.length }, (_, index) => `<span class="spelling-letter-slot w-8 border-b-2">${selectedCharacters[index] || '_'}</span>`).join('')}
         </div>
         <div class="flex flex-wrap justify-center gap-2">
           ${question.scramble.map((letter, index) => `
@@ -4675,7 +4712,8 @@ Object.assign(App.prototype, {
     game.answered = true;
     game.selectedAnswer = answer;
     game.lastAnswerCorrect = this.spellingActivityEngine.recordOutcome(
-      String(answer).toLowerCase() === question.answer.toLowerCase()
+      SpellingSafari.normalizeSpellItAnswer(answer) ===
+        SpellingSafari.normalizeSpellItAnswer(question.answer)
     );
     game.score = this.spellingActivityEngine.score;
     this.renderSpellingSafariQuestion();

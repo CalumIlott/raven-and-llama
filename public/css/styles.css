@@ -54,6 +54,67 @@ html.theme-light .money-hero {
   background-color: #fff7ed;
   background-image: none;
 }
+.money-currency {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid;
+  font-weight: 800;
+  line-height: 1;
+}
+.money-currency--coin {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 45%);
+}
+.money-currency--note {
+  width: 5.5rem;
+  height: 2.75rem;
+  border-radius: 0.3rem;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 45%);
+}
+.money-currency--small.money-currency--coin { width: 2.5rem; height: 2.5rem; }
+.money-currency--medium.money-currency--coin { width: 3rem; height: 3rem; }
+.money-currency--large.money-currency--coin { width: 3.5rem; height: 3.5rem; }
+.money-currency--xlarge.money-currency--coin { width: 4rem; height: 4rem; }
+.money-currency--small.money-currency--note { width: 5rem; height: 2.5rem; }
+.money-currency--medium.money-currency--note { width: 5.75rem; height: 2.75rem; }
+.money-currency--large.money-currency--note { width: 6.5rem; height: 3rem; }
+.money-currency--xlarge.money-currency--note { width: 7.25rem; height: 3.25rem; }
+.money-currency--xxlarge.money-currency--note { width: 8rem; height: 3.5rem; }
+.money-currency--silver { color: #334155; background: linear-gradient(145deg, #f8fafc, #94a3b8); border-color: #64748b; }
+.money-currency--gold { color: #713f12; background: linear-gradient(145deg, #fef08a, #eab308); border-color: #a16207; }
+.money-currency--pink { color: #831843; background: linear-gradient(145deg, #fbcfe8, #f472b6); border-color: #be185d; }
+.money-currency--blue { color: #1e3a8a; background: linear-gradient(145deg, #bfdbfe, #60a5fa); border-color: #1d4ed8; }
+.money-currency--red { color: #7f1d1d; background: linear-gradient(145deg, #fecaca, #f87171); border-color: #b91c1c; }
+.money-currency--yellow { color: #713f12; background: linear-gradient(145deg, #fef3c7, #fbbf24); border-color: #b45309; }
+.money-currency--green { color: #14532d; background: linear-gradient(145deg, #bbf7d0, #4ade80); border-color: #15803d; }
+.money-currency__window {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  display: block;
+  width: 12%;
+  height: 60%;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+  background-color: rgb(255 255 255 / 35%);
+}
+.money-currency__value { position: relative; z-index: 1; }
+.money-currency__mark {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.3rem;
+  font-size: 0.55rem;
+}
+.money-currency--compact.money-currency--coin { width: 1.6rem; height: 1.6rem; font-size: 0.65rem; }
+.money-currency--compact.money-currency--note { width: 3rem; height: 1.6rem; font-size: 0.65rem; }
+.money-currency--compact .money-currency__mark { top: 0.08rem; right: 0.12rem; font-size: 0.4rem; }
+.money-currency--compact .money-currency__window { border-width: 1px; border-radius: 0.1rem; }
 html.theme-light .maths-world-hero__eyebrow { color: #075985; }
 html.theme-light .maths-world-hero__title { color: #0f172a; }
 html.theme-light #app-main[data-page="maths-world"] .number-builder-slot--filled {
@@ -87,215 +148,15 @@ html.theme-light .money-play-again-button {
 html.theme-light .money-submit-button:hover,
 html.theme-light .money-play-again-button:hover { background-color: #fde68a; }
 .money-denomination-button { color: #fff; }
-.money-denomination-button {
-  display: flex;
-  min-height: 7rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  border-color: #64748b;
-  background-color: #1e293b;
-}
-.money-denomination-button:hover:not(:disabled) {
-  border-color: #fbbf24;
-  background-color: #334155;
-}
 html.theme-light .money-denomination-coin {
-  color: #0f172a;
-  background-color: #e2e8f0;
-  border-color: #64748b;
+  color: #78350f;
+  background-color: #fef3c7;
+  border-color: #b45309;
 }
 html.theme-light .money-denomination-note {
-  color: #0f172a;
-  background-color: #e2e8f0;
-  border-color: #64748b;
-}
-.money-currency {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  color: #17212b;
-  font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 55%), 0 2px 3px rgb(0 0 0 / 35%);
-}
-.money-currency--coin {
-  aspect-ratio: 1;
-  border: 3px solid #53616b;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 28%, #fff 0, #e2e8ec 30%, #aeb8bf 75%, #78848d 100%);
-}
-.money-currency--coin::before {
-  position: absolute;
-  inset: 12%;
-  border: 1px solid currentColor;
-  border-radius: inherit;
-  content: "";
-  opacity: 0.35;
-}
-.money-currency--dodecagon {
-  border-radius: 0.15rem;
-  clip-path: polygon(25% 0, 50% 0, 75% 0, 100% 25%, 100% 50%, 100% 75%, 75% 100%, 50% 100%, 25% 100%, 0 75%, 0 50%, 0 25%);
-}
-.money-currency--gold {
-  border-color: #986c12;
-  background: radial-gradient(circle at 35% 28%, #fff3a6 0, #f3cf55 35%, #c99722 78%, #8d6414 100%);
-}
-.money-currency--silver {
-  color: #24313a;
-}
-.money-currency--note {
-  aspect-ratio: 2 / 1;
-  border: 3px solid var(--money-note-edge);
-  border-radius: 0.45rem;
-  background:
-    repeating-linear-gradient(135deg, transparent 0 0.35rem, rgb(255 255 255 / 12%) 0.35rem 0.42rem),
-    linear-gradient(120deg, var(--money-note-light), var(--money-note-base) 55%, var(--money-note-dark));
-}
-.money-currency--pink {
-  --money-note-light: #ffd2e7;
-  --money-note-base: #ed9ac2;
-  --money-note-dark: #b74e88;
-  --money-note-edge: #8d3c6b;
-}
-.money-currency--blue {
-  --money-note-light: #b9f1fb;
-  --money-note-base: #60c6dc;
-  --money-note-dark: #238aa8;
-  --money-note-edge: #176d87;
-}
-.money-currency--red {
-  --money-note-light: #ffd0b5;
-  --money-note-base: #ef8669;
-  --money-note-dark: #bc4e3e;
-  --money-note-edge: #89382f;
-}
-.money-currency--yellow {
-  --money-note-light: #fff5a8;
-  --money-note-base: #ecd45a;
-  --money-note-dark: #b99c2d;
-  --money-note-edge: #88701d;
-}
-.money-currency--green {
-  --money-note-light: #c6f4ce;
-  --money-note-base: #7cc891;
-  --money-note-dark: #398557;
-  --money-note-edge: #2b6744;
-}
-.money-currency--small.money-currency--coin { width: 2.85rem; }
-.money-currency--medium.money-currency--coin { width: 3.15rem; }
-.money-currency--large.money-currency--coin { width: 3.45rem; }
-.money-currency--xlarge.money-currency--coin { width: 3.75rem; }
-.money-currency--small.money-currency--note { width: 6.6rem; }
-.money-currency--medium.money-currency--note { width: 7rem; }
-.money-currency--large.money-currency--note { width: 7.4rem; }
-.money-currency--xlarge.money-currency--note { width: 7.8rem; }
-.money-currency--xxlarge.money-currency--note { width: 8.2rem; }
-.money-currency__value {
-  position: relative;
-  z-index: 1;
-  font-size: 1rem;
-  text-shadow: 0 1px rgb(255 255 255 / 45%);
-}
-.money-currency--note .money-currency__value { font-size: 1.2rem; }
-.money-currency__mark {
-  position: absolute;
-  top: 0.18rem;
-  right: 0.28rem;
-  z-index: 1;
-  font-family: var(--font-body);
-  font-size: 0.42rem;
-  letter-spacing: 0.04em;
-}
-.money-currency--coin .money-currency__mark {
-  top: auto;
-  right: auto;
-  bottom: 0.28rem;
-}
-.money-currency__window {
-  position: absolute;
-  top: 17%;
-  bottom: 17%;
-  left: 18%;
-  width: 16%;
-  border: 1px solid rgb(255 255 255 / 75%);
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 45%), rgb(255 255 255 / 8%));
-}
-.money-amount-visual {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.18rem;
-  min-height: 1.7rem;
-  margin-top: 0.3rem;
-}
-.money-currency--compact.money-currency--coin { width: 1.6rem; border-width: 2px; }
-.money-currency--compact.money-currency--note { width: 2.8rem; border-width: 2px; border-radius: 0.25rem; }
-.money-currency--compact .money-currency__value { font-size: 0.58rem; }
-.money-currency--compact.money-currency--note .money-currency__value { font-size: 0.68rem; }
-.money-currency--compact .money-currency__mark { top: 0.1rem; right: 0.15rem; font-size: 0.28rem; }
-.money-currency--compact.money-currency--coin .money-currency__mark { bottom: 0.12rem; }
-.money-amount-visual--compact {
-  gap: 0.1rem;
-  min-height: 1rem;
-  margin-top: 0.15rem;
-}
-.money-recognition-currency {
-  display: flex;
-  min-height: 6rem;
-  align-items: center;
-  justify-content: center;
-}
-.money-recognition-currency .money-currency--coin { width: 5.5rem; border-width: 5px; }
-.money-recognition-currency .money-currency--note { width: 11rem; border-width: 5px; }
-.money-recognition-currency .money-currency__value { font-size: 1.7rem; }
-.money-recognition-currency .money-currency--note .money-currency__value { font-size: 2rem; }
-.money-recognition-currency .money-currency__mark { top: 0.4rem; right: 0.55rem; font-size: 0.65rem; }
-.money-recognition-currency .money-currency--coin .money-currency__mark { bottom: 0.55rem; }
-.money-transaction-visual {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin: 1rem auto 0;
-  max-width: 30rem;
-}
-.money-transaction-visual > div,
-.money-transaction-amount {
-  text-align: center;
-}
-.money-transaction-visual dt {
-  color: #cbd5e1;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-.money-transaction-visual dd {
-  margin-top: 0.25rem;
-  color: #fff;
-  font-weight: 700;
-}
-.money-answer-label { display: block; margin-top: 0.25rem; }
-.money-basket-item,
-.money-basket-item__amount {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.money-basket-item__amount { justify-content: flex-end; white-space: nowrap; }
-.money-basket-item .money-amount-visual { margin: 0; }
-.money-transaction-amount .money-amount-visual { margin: 0.2rem 0 0; }
-html.theme-light .money-transaction-visual dt { color: #475569; }
-html.theme-light .money-transaction-visual dd { color: #0f172a; }
-@media (max-width: 400px) {
-  .money-recognition-currency .money-currency--note { width: min(11rem, 80vw); }
-  .money-transaction-visual { gap: 0.35rem; }
+  color: #14532d;
+  background-color: #dcfce7;
+  border-color: #15803d;
 }
 .money-change-emphasis { color: #fcd34d; }
 html.theme-light .money-change-emphasis { color: #92400e; }
@@ -1568,22 +1429,13 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   background: var(--page-panel-raised);
 }
 
-#app-main[data-page="geography-world"] .geography-intro {
+#app-main[data-page="history-discovery"] .history-intro {
   margin-bottom: 1.5rem;
 }
 
-#app-main[data-page="geography-world"] .geography-explorer {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
-  align-items: start;
-  gap: 1.25rem;
-}
-
-#app-main[data-page="geography-world"] .geography-map-panel,
-#app-main[data-page="geography-world"] .geography-country-list,
-#app-main[data-page="geography-world"] .geography-country-details {
-  min-width: 0;
-  padding: 1.25rem;
+#app-main[data-page="history-discovery"] .history-timeline-launch,
+#app-main[data-page="history-timeline"] .history-timeline-workspace {
+  padding: clamp(1rem, 3vw, 1.5rem);
   border: 1px solid var(--page-edge);
   border-radius: 1.5rem;
   background: var(--page-panel);
@@ -1591,26 +1443,49 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
 }
 
-#app-main[data-page="geography-world"] .geography-section-heading {
-  display: flex;
+#app-main[data-page="history-discovery"] .history-timeline-launch {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  border-top: 5px solid #d99249;
 }
 
-#app-main[data-page="geography-world"] .geography-section-heading h2 {
+#app-main[data-page="history-discovery"] .history-timeline-launch__icon {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 1px solid #d99249;
+  border-radius: 1.25rem;
+  background: var(--page-panel-raised);
+  font-size: 2rem;
+}
+
+#app-main[data-page="history-discovery"] .history-timeline-launch h2 {
   margin: 0;
   color: var(--page-ink);
   font-family: 'Unkempt', cursive;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   font-weight: 700;
-  line-height: 1.15;
 }
 
-#app-main[data-page="geography-world"] .geography-eyebrow,
-#app-main[data-page="geography-world"] .geography-country-details__continent {
-  margin: 0 0 0.2rem;
+#app-main[data-page="history-discovery"] .history-timeline-launch p,
+#app-main[data-page="history-discovery"] .history-content-note {
+  margin: 0.35rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.55;
+}
+
+#app-main[data-page="history-discovery"] .history-content-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+#app-main:is([data-page="history-discovery"], [data-page="history-timeline"]) .history-eyebrow,
+#app-main[data-page="history-timeline"] .history-event-fact__era,
+#app-main[data-page="history-timeline"] .history-event-card__era {
+  margin: 0 0 0.25rem;
   color: #6ee7c8;
   font-size: 0.72rem;
   font-weight: 800;
@@ -1618,307 +1493,986 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   text-transform: uppercase;
 }
 
-#app-main[data-page="geography-world"] .geography-country-count {
+#app-main[data-page="history-timeline"] .history-timeline-workspace {
+  display: grid;
+  gap: 1.25rem;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace__heading h1 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace__heading p:not(.history-eyebrow) {
+  max-width: 48rem;
+  margin: 0.5rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.55;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-count {
   flex: 0 0 auto;
-  padding: 0.35rem 0.65rem;
+  padding: 0.4rem 0.7rem;
   border: 1px solid var(--page-edge);
   border-radius: 999px;
   color: var(--page-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-#app-main[data-page="geography-world"] .geography-map-controls {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-#app-main[data-page="geography-world"] .geography-country-picker {
-  display: grid;
-  min-width: 0;
-  flex: 1 1 12rem;
-  gap: 0.3rem;
-  color: var(--page-muted);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 800;
 }
 
-#app-main[data-page="geography-world"] .geography-country-picker select {
-  width: 100%;
-  min-height: 2.75rem;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid var(--page-edge);
-  border-radius: 0.75rem;
-  background: var(--page-panel-raised);
-  color: var(--page-ink);
-  font: inherit;
-}
-
-#app-main[data-page="geography-world"] .geography-map-zoom-controls {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-#app-main[data-page="geography-world"] .geography-map-zoom-controls button {
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  padding: 0.45rem 0.65rem;
-  border: 1px solid var(--page-edge);
-  border-radius: 0.75rem;
-  background: var(--page-panel-raised);
-  color: var(--page-ink);
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-#app-main[data-page="geography-world"] .geography-map-zoom-controls button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-#app-main[data-page="geography-world"] .geography-map-zoom-controls output {
-  min-width: 5.5rem;
-  color: var(--page-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-align: center;
-}
-
-#app-main[data-page="geography-world"] .geography-map-controls select:focus-visible,
-#app-main[data-page="geography-world"] .geography-map-zoom-controls button:focus-visible {
-  outline: 3px solid #6ee7c8;
-  outline-offset: 2px;
-}
-
-#app-main[data-page="geography-world"] .geography-map-figure {
+#app-main[data-page="history-timeline"] .history-timeline-status {
   margin: 0;
+  color: var(--page-ink);
+  font-weight: 700;
 }
 
-#app-main[data-page="geography-world"] .geography-map {
-  display: block;
-  width: 100%;
-  height: auto;
+#app-main[data-page="history-timeline"] .history-event-fact {
+  min-height: 8rem;
+  padding: 1rem;
   border: 1px solid var(--page-edge);
   border-radius: 1rem;
-  background: #d7ecf3;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
 }
 
-#app-main[data-page="geography-world"] .geography-map__ocean {
-  fill: #d7ecf3;
+#app-main[data-page="history-timeline"] .history-event-fact h3 {
+  margin: 0;
+  color: var(--page-ink);
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
-#app-main[data-page="geography-world"] .geography-map__region {
-  cursor: pointer;
-  outline: none;
-}
-
-#app-main[data-page="geography-world"] .geography-map__region path {
-  fill: #b7d7ad;
-  stroke: #527b65;
-  stroke-width: 0.32;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-  transition: fill 120ms ease, stroke 120ms ease;
-}
-
-#app-main[data-page="geography-world"] .geography-map__region:hover path,
-#app-main[data-page="geography-world"] .geography-map__region:focus-visible path {
-  fill: #f0c967;
-  stroke: #173c36;
-  stroke-width: 1.6;
-}
-
-#app-main[data-page="geography-world"] .geography-map__region.is-selected path {
-  fill: #f0c967;
-  stroke: #173c36;
-  stroke-width: 1.1;
-}
-
-#app-main[data-page="geography-world"] .geography-map__marker {
-  fill: #176f65;
-  stroke: #fff;
-  stroke-width: 0.7;
-  vector-effect: non-scaling-stroke;
-  pointer-events: none;
-}
-
-#app-main[data-page="geography-world"] .geography-map__region.is-selected .geography-map__marker {
-  fill: #a63e2f;
-}
-
-#app-main[data-page="geography-world"] .geography-map-caption,
-#app-main[data-page="geography-world"] .geography-map-attribution {
+#app-main[data-page="history-timeline"] .history-event-fact p {
   margin: 0.55rem 0 0;
+  color: var(--page-ink);
+  line-height: 1.55;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact .history-event-fact__era {
+  margin-top: 0;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact .history-event-fact__source {
   color: var(--page-muted);
   font-size: 0.75rem;
-  line-height: 1.5;
 }
 
-#app-main[data-page="geography-world"] .geography-map-attribution a,
-#app-main[data-page="geography-world"] .geography-country-details__source a {
+#app-main[data-page="history-timeline"] .history-event-fact__source a {
   color: #6ee7c8;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
-#app-main[data-page="geography-world"] .geography-details-column {
-  display: grid;
-  gap: 1rem;
+#app-main[data-page="history-timeline"] .history-event-fact__empty {
+  color: var(--page-muted);
 }
 
-#app-main[data-page="geography-world"] .geography-country-details__heading {
+#app-main[data-page="history-timeline"] .history-subheading {
   display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
-#app-main[data-page="geography-world"] .geography-country-details__flag {
-  display: grid;
-  width: 3.5rem;
-  height: 3.5rem;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--page-edge);
-  border-radius: 1rem;
-  background: var(--page-panel-raised);
-  font-size: 2rem;
-}
-
-#app-main[data-page="geography-world"] .geography-country-details h2 {
+#app-main[data-page="history-timeline"] .history-subheading h2 {
   margin: 0;
   color: var(--page-ink);
   font-family: 'Unkempt', cursive;
-  font-size: 1.75rem;
+  font-size: 1.45rem;
   font-weight: 700;
-  line-height: 1.1;
 }
 
-#app-main[data-page="geography-world"] .geography-country-details__capital {
-  margin: 1.1rem 0 0;
-  color: var(--page-ink);
-}
-
-#app-main[data-page="geography-world"] .geography-country-details__fact {
-  margin: 0.75rem 0 0;
-  color: var(--page-ink);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-#app-main[data-page="geography-world"] .geography-country-details__source {
-  margin: 0.8rem 0 0;
+#app-main[data-page="history-timeline"] .history-subheading p {
+  margin: 0;
   color: var(--page-muted);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
-#app-main[data-page="geography-world"] .geography-speak-button {
-  margin-top: 1rem;
-  padding: 0.65rem 0.9rem;
-  border: 1px solid #0f9f80;
-  border-radius: 0.8rem;
+#app-main[data-page="history-timeline"] .history-event-tray__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card {
+  display: flex;
+  min-width: 0;
+  min-height: 5rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card:hover,
+#app-main[data-page="history-timeline"] .history-event-card:focus-visible,
+#app-main[data-page="history-timeline"] .history-event-card.is-selected {
+  border-color: #6ee7c8;
   background: #064e46;
   color: #fff;
-  font-weight: 700;
 }
 
-#app-main[data-page="geography-world"] .geography-speak-button:hover,
-#app-main[data-page="geography-world"] .geography-speak-button:focus-visible {
-  background: #087c68;
+#app-main[data-page="history-timeline"] .history-event-card:focus-visible,
+#app-main[data-page="history-timeline"] .history-timeline-slot__place:focus-visible,
+#app-main[data-page="history-timeline"] .history-timeline-slot__remove:focus-visible,
+#app-main[data-page="history-discovery"] .history-primary-button:focus-visible,
+#app-main[data-page="history-timeline"] .history-primary-button:focus-visible,
+#app-main[data-page="history-timeline"] .history-secondary-button:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 2px;
 }
 
-#app-main[data-page="geography-world"] .geography-speech-status {
-  min-height: 1.25rem;
-  margin: 0.4rem 0 0;
-  color: var(--page-muted);
-  font-size: 0.75rem;
+#app-main[data-page="history-timeline"] .history-event-card__icon {
+  flex: 0 0 auto;
+  font-size: 1.75rem;
 }
 
-#app-main[data-page="geography-world"] .geography-country-groups {
+#app-main[data-page="history-timeline"] .history-event-card__copy {
   display: grid;
-  gap: 1rem;
+  min-width: 0;
+  gap: 0.2rem;
 }
 
-#app-main[data-page="geography-world"] .geography-country-group h3 {
-  margin: 0 0 0.45rem;
-  color: var(--page-ink);
-  font-size: 0.8rem;
+#app-main[data-page="history-timeline"] .history-event-card__era {
+  color: var(--page-muted);
+  font-size: 0.62rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card.is-selected .history-event-card__era,
+#app-main[data-page="history-timeline"] .history-event-card:hover .history-event-card__era,
+#app-main[data-page="history-timeline"] .history-event-card:focus-visible .history-event-card__era {
+  color: #a7f3d0;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card__title {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
   font-weight: 800;
 }
 
-#app-main[data-page="geography-world"] .geography-country-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
-  gap: 0.4rem;
+#app-main[data-page="history-timeline"] .history-event-tray__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--page-muted);
 }
 
-#app-main[data-page="geography-world"] .geography-country-option {
+#app-main[data-page="history-timeline"] .history-timeline-slots {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__place {
   display: flex;
   min-width: 0;
-  min-height: 2.75rem;
+  min-height: 3.5rem;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.55rem;
-  border: 1px solid var(--page-edge);
-  border-radius: 0.75rem;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px dashed var(--page-edge);
+  border-radius: 0.9rem;
   background: var(--page-panel-raised);
   color: var(--page-ink);
-  font-size: 0.8rem;
-  font-weight: 700;
   text-align: left;
-  transition: border-color 120ms ease, background-color 120ms ease;
+  cursor: pointer;
 }
 
-#app-main[data-page="geography-world"] .geography-country-option:hover,
-#app-main[data-page="geography-world"] .geography-country-option:focus-visible,
-#app-main[data-page="geography-world"] .geography-country-option.is-selected {
-  border-color: #0f9f80;
+#app-main[data-page="history-timeline"] .history-timeline-slot__place.has-event {
+  border-style: solid;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__place.is-selected {
+  border-color: #6ee7c8;
   background: #064e46;
   color: #fff;
 }
 
-#app-main[data-page="geography-world"] .geography-country-option__flag {
+#app-main[data-page="history-timeline"] .history-timeline-slot__number {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
   flex: 0 0 auto;
-  font-size: 1.1rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #064e46;
+  color: #fff;
+  font-weight: 800;
 }
 
-@media (max-width: 900px) {
-  #app-main[data-page="geography-world"] .geography-explorer {
+#app-main[data-page="history-timeline"] .history-timeline-slot__event {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__event small {
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__empty {
+  color: var(--page-muted);
+  font-weight: 700;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__remove {
+  align-self: center;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.7rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+#app-main[data-page="history-discovery"] .history-primary-button,
+#app-main[data-page="history-timeline"] .history-primary-button,
+#app-main[data-page="history-timeline"] .history-secondary-button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #0f766e;
+  border-radius: 0.85rem;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page="history-discovery"] .history-primary-button:hover,
+#app-main[data-page="history-timeline"] .history-primary-button:hover {
+  background: #115e59;
+}
+
+#app-main[data-page="history-timeline"] .history-primary-button:disabled {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-muted);
+  cursor: not-allowed;
+}
+
+#app-main[data-page="history-timeline"] .history-secondary-button {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page="history-timeline"] .educational-feedback {
+  margin: 0;
+}
+
+html.theme-light #app-main:is([data-page="history-discovery"], [data-page="history-timeline"]) .history-eyebrow,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-fact__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-fact__source a {
+  color: #0f766e;
+}
+
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card:hover .history-event-card__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card:focus-visible .history-event-card__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card.is-selected .history-event-card__era {
+  color: #a7f3d0;
+}
+
+@media (max-width: 720px) {
+  #app-main[data-page="history-discovery"] .history-timeline-launch {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  #app-main[data-page="history-discovery"] .history-timeline-launch .history-primary-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  #app-main[data-page="history-timeline"] .history-event-tray__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  #app-main[data-page="history-timeline"] .history-timeline-workspace__heading {
+    flex-direction: column;
+  }
+
+  #app-main[data-page="history-timeline"] .history-event-tray__cards {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-@media (max-width: 600px) {
-  #app-main[data-page="geography-world"] .geography-map-panel {
-    padding: 0.9rem;
+@media (prefers-reduced-motion: reduce) {
+  #app-main[data-page="history-timeline"] .history-event-card {
+    transition: none;
+  }
+}
+
+#app-main[data-page="brain-power"] .brain-power-hub,
+#app-main[data-page^="brain-power-"] .brain-power-panel,
+#app-main[data-page="brain-power"] .brain-power-activity {
+  border: 1px solid var(--page-edge);
+  border-radius: 1.5rem;
+  background: var(--page-panel);
+  color: var(--page-ink);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="brain-power"] .brain-power-hub {
+  margin-bottom: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border-top: 5px solid #38bdf8;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-panel {
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+#app-main[data-page="brain-power"] .brain-power-hub h1,
+#app-main[data-page^="brain-power-"] .brain-power-panel h1 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="brain-power"] .brain-power-hub > p:last-child,
+#app-main[data-page^="brain-power-"] .brain-power-instructions,
+#app-main[data-page^="brain-power-"] .brain-power-result > p:not(.brain-power-kicker) {
+  max-width: 52rem;
+  margin: 0.6rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.6;
+}
+
+#app-main[data-page^="brain-power"] .brain-power-kicker,
+#app-main[data-page^="brain-power"] .brain-power-activity__eyebrow {
+  margin: 0 0 0.35rem;
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="brain-power"] .brain-power-activities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+#app-main[data-page="brain-power"] .brain-power-activity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.1rem;
+  border-top: 4px solid #38bdf8;
+}
+
+#app-main[data-page="brain-power"] .brain-power-activity__icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.75rem;
+  place-items: center;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  font-size: 1.8rem;
+}
+
+#app-main[data-page="brain-power"] .brain-power-activity h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="brain-power"] .brain-power-activity > p:not(.brain-power-activity__eyebrow) {
+  flex: 1;
+  margin: 0.45rem 0 1rem;
+  color: var(--page-muted);
+  line-height: 1.55;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-panel__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-progress {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-back {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border: 0;
+  background: transparent;
+  color: #7dd3fc;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #0369a1;
+  border-radius: 0.85rem;
+  background: #0369a1;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-button:hover {
+  background: #075985;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-button--secondary {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-button--secondary:hover {
+  background: var(--page-panel);
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-button:focus-visible,
+#app-main[data-page^="brain-power-"] .brain-power-back:focus-visible,
+#app-main[data-page^="brain-power-"] .brain-power-choice:focus-visible,
+#app-main[data-page^="brain-power-"] .brain-power-memory-card:focus-visible,
+#app-main[data-page^="brain-power-"] .brain-power-code-slot select:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 3px;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-status {
+  min-height: 1.5rem;
+  margin: 0.85rem 0;
+  color: var(--page-ink);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-pattern {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.4rem 0;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-pattern__number,
+#app-main[data-page^="brain-power-"] .brain-power-pattern__missing {
+  display: grid;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  padding: 0.5rem;
+  place-items: center;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-pattern__missing {
+  border-style: dashed;
+  color: #7dd3fc;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-choice {
+  min-height: 3rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.85rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-choice:hover {
+  border-color: #38bdf8;
+  background: #0c4a6e;
+  color: #fff;
+}
+
+#app-main[data-page="brain-power-memory"] .brain-power-memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1.2rem;
+}
+
+#app-main[data-page="brain-power-memory"] .brain-power-memory-card {
+  display: grid;
+  min-width: 0;
+  min-height: 7rem;
+  place-content: center;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  cursor: pointer;
+}
+
+#app-main[data-page="brain-power-memory"] .brain-power-memory-card.is-selected {
+  border-color: #38bdf8;
+  background: #0c4a6e;
+  color: #fff;
+}
+
+#app-main[data-page="brain-power-memory"] .brain-power-memory-card.is-matched {
+  border-style: solid;
+  border-color: #34d399;
+  background: #064e46;
+  color: #fff;
+  cursor: default;
+}
+
+#app-main[data-page="brain-power-memory"] .brain-power-memory-card__face {
+  overflow-wrap: anywhere;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: 800;
+}
+
+#app-main[data-page="brain-power-memory"] .brain-power-memory-card__state {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-clues,
+#app-main[data-page="brain-power-code"] .brain-power-code-attempts {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-clue,
+#app-main[data-page="brain-power-code"] .brain-power-code-attempts li {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.85rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-clue > span:first-child {
+  color: #7dd3fc;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-clue__colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-clue__colors span {
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-slot {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--page-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-slot select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-result {
+  text-align: center;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-result__icon {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 3rem;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-result > p:not(.brain-power-kicker) {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#app-main[data-page^="brain-power-"] .brain-power-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+html.theme-light #app-main[data-page^="brain-power"] .brain-power-kicker,
+html.theme-light #app-main[data-page^="brain-power"] .brain-power-activity__eyebrow,
+html.theme-light #app-main[data-page^="brain-power-"] .brain-power-back,
+html.theme-light #app-main[data-page^="brain-power-"] .brain-power-pattern__missing,
+html.theme-light #app-main[data-page="brain-power-code"] .brain-power-code-clue > span:first-child {
+  color: #075985;
+}
+
+@media (max-width: 760px) {
+  #app-main[data-page="brain-power"] .brain-power-activities {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  #app-main[data-page="geography-world"] .geography-map-controls {
-    align-items: stretch;
+  #app-main[data-page="brain-power-memory"] .brain-power-memory-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  #app-main[data-page="brain-power"] .brain-power-activities {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #app-main[data-page^="brain-power-"] .brain-power-panel__heading {
     flex-direction: column;
   }
 
-  #app-main[data-page="geography-world"] .geography-map-zoom-controls {
-    justify-content: space-between;
+  #app-main[data-page^="brain-power-"] .brain-power-choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #app-main[data-page="brain-power-memory"] .brain-power-memory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #app-main[data-page="brain-power-memory"] .brain-power-memory-card {
+    min-height: 6rem;
+  }
+
+  #app-main[data-page="brain-power-code"] .brain-power-code-slots {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-html.theme-light #app-main[data-page="geography-world"] .geography-eyebrow,
-html.theme-light #app-main[data-page="geography-world"] .geography-country-details__continent,
-html.theme-light #app-main[data-page="geography-world"] .geography-map-attribution a,
-html.theme-light #app-main[data-page="geography-world"] .geography-country-details__source a {
-  color: #0f766e;
+@media (prefers-reduced-motion: reduce) {
+  #app-main[data-page="brain-power"] .brain-power-activity,
+  #app-main[data-page^="brain-power-"] .brain-power-button {
+    transition: none;
+  }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  #app-main[data-page="geography-world"] .geography-map__region path,
-  #app-main[data-page="geography-world"] .geography-country-option {
-    transition: none;
+#app-main[data-page="life-skills-party"] .party-planner-panel {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--page-edge);
+  border-top: 5px solid #34d399;
+  border-radius: 1.5rem;
+  background: var(--page-panel);
+  color: var(--page-ink);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-panel h1 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-kicker {
+  margin: 0 0 0.3rem;
+  color: #6ee7b7;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-instructions,
+#app-main[data-page="life-skills-party"] .party-planner-result > p:not(.party-planner-kicker) {
+  max-width: 52rem;
+  margin: 0.6rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.6;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1.2rem 0;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget > div {
+  padding: 0.75rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.9rem;
+  background: var(--page-panel-raised);
+  text-align: center;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget dt {
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-budget dd {
+  margin: 0.25rem 0 0;
+  color: var(--page-ink);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item__copy {
+  min-width: 0;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item__copy p {
+  margin: 0.2rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__price,
+#app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__required {
+  color: #6ee7b7;
+  font-weight: 800;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity button {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: #065f46;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity button:disabled {
+  background: var(--page-panel);
+  color: var(--page-muted);
+  cursor: not-allowed;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity output {
+  min-width: 1.5rem;
+  color: var(--page-ink);
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-status {
+  min-height: 1.5rem;
+  margin: 0.9rem 0;
+  color: var(--page-ink);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #047857;
+  border-radius: 0.85rem;
+  background: #047857;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-button:hover {
+  background: #065f46;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-button--secondary {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-back {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border: 0;
+  background: transparent;
+  color: #6ee7b7;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-result {
+  text-align: center;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-result > p:not(.party-planner-kicker) {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-result__items {
+  display: inline-grid;
+  gap: 0.25rem;
+  margin: 1rem auto 0;
+  padding-left: 1.25rem;
+  color: var(--page-ink);
+  text-align: left;
+}
+
+#app-main[data-page="life-skills-party"] .party-planner-quantity button:focus-visible,
+#app-main[data-page="life-skills-party"] .party-planner-button:focus-visible,
+#app-main[data-page="life-skills-party"] .party-planner-back:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 3px;
+}
+
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-kicker,
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-back,
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__price,
+html.theme-light #app-main[data-page="life-skills-party"] .party-planner-item__copy .party-planner-item__required {
+  color: #065f46;
+}
+
+@media (max-width: 640px) {
+  #app-main[data-page="life-skills-party"] .party-planner-items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 460px) {
+  #app-main[data-page="life-skills-party"] .party-planner-budget {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #app-main[data-page="life-skills-party"] .party-planner-item {
+    align-items: flex-start;
   }
 }
 
@@ -3092,4 +3646,373 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
   .spelling-hud { align-items: center; }
   .spelling-question-card { padding: 1rem; }
   .spelling-letter-button { min-width: 2.6rem; min-height: 2.6rem; }
+}
+
+#app-main[data-page="geography-world"] .geography-intro {
+  margin-bottom: 1.5rem;
+}
+
+#app-main[data-page="geography-world"] .geography-explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+  align-items: start;
+  gap: 1.25rem;
+}
+
+#app-main[data-page="geography-world"] .geography-map-panel,
+#app-main[data-page="geography-world"] .geography-country-list,
+#app-main[data-page="geography-world"] .geography-country-details {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1.5rem;
+  background: var(--page-panel);
+  color: var(--page-ink);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="geography-world"] .geography-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+#app-main[data-page="geography-world"] .geography-section-heading h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+#app-main[data-page="geography-world"] .geography-eyebrow,
+#app-main[data-page="geography-world"] .geography-country-details__continent {
+  margin: 0 0 0.2rem;
+  color: #6ee7c8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="geography-world"] .geography-country-count {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="geography-world"] .geography-map-controls {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-picker {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 12rem;
+  gap: 0.3rem;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="geography-world"] .geography-country-picker select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font: inherit;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#app-main[data-page="geography-world"] .geography-map-zoom-controls output {
+  min-width: 5.5rem;
+  color: var(--page-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+#app-main[data-page="geography-world"] .geography-map-controls select:focus-visible,
+#app-main[data-page="geography-world"] .geography-map-zoom-controls button:focus-visible {
+  outline: 3px solid #6ee7c8;
+  outline-offset: 2px;
+}
+
+#app-main[data-page="geography-world"] .geography-map-figure {
+  margin: 0;
+}
+
+#app-main[data-page="geography-world"] .geography-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: #d7ecf3;
+  touch-action: none;
+  user-select: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map.is-draggable {
+  cursor: grab;
+}
+
+#app-main[data-page="geography-world"] .geography-map.is-draggable .geography-map__region {
+  cursor: grab;
+}
+
+#app-main[data-page="geography-world"] .geography-map.is-panning,
+#app-main[data-page="geography-world"] .geography-map.is-panning .geography-map__region {
+  cursor: grabbing;
+}
+
+#app-main[data-page="geography-world"] .geography-map__ocean {
+  fill: #d7ecf3;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region {
+  cursor: pointer;
+  outline: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region path {
+  fill: #b7d7ad;
+  stroke: #527b65;
+  stroke-width: 0.32;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: fill 120ms ease, stroke 120ms ease;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region:hover path,
+#app-main[data-page="geography-world"] .geography-map__region:focus-visible path {
+  fill: #f0c967;
+  stroke: #173c36;
+  stroke-width: 1.6;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region.is-selected path {
+  fill: #f0c967;
+  stroke: #173c36;
+  stroke-width: 1.1;
+}
+
+#app-main[data-page="geography-world"] .geography-map__marker {
+  fill: #176f65;
+  stroke: #fff;
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map__region.is-selected .geography-map__marker {
+  fill: #a63e2f;
+}
+
+#app-main[data-page="geography-world"] .geography-map-caption,
+#app-main[data-page="geography-world"] .geography-map-attribution {
+  margin: 0.55rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+#app-main[data-page="geography-world"] .geography-map-attribution a,
+#app-main[data-page="geography-world"] .geography-country-details__source a {
+  color: #6ee7c8;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+#app-main[data-page="geography-world"] .geography-details-column {
+  display: grid;
+  gap: 1rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__flag {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  font-size: 2rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__capital {
+  margin: 1.1rem 0 0;
+  color: var(--page-ink);
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__fact {
+  margin: 0.75rem 0 0;
+  color: var(--page-ink);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+#app-main[data-page="geography-world"] .geography-country-details__source {
+  margin: 0.8rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+}
+
+#app-main[data-page="geography-world"] .geography-speak-button {
+  margin-top: 1rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #0f9f80;
+  border-radius: 0.8rem;
+  background: #064e46;
+  color: #fff;
+  font-weight: 700;
+}
+
+#app-main[data-page="geography-world"] .geography-speak-button:hover,
+#app-main[data-page="geography-world"] .geography-speak-button:focus-visible {
+  background: #087c68;
+}
+
+#app-main[data-page="geography-world"] .geography-speech-status {
+  min-height: 1.25rem;
+  margin: 0.4rem 0 0;
+  color: var(--page-muted);
+  font-size: 0.75rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-groups {
+  display: grid;
+  gap: 1rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-group h3 {
+  margin: 0 0 0.45rem;
+  color: var(--page-ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="geography-world"] .geography-country-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  gap: 0.4rem;
+}
+
+#app-main[data-page="geography-world"] .geography-country-option {
+  display: flex;
+  min-width: 0;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.75rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: left;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+#app-main[data-page="geography-world"] .geography-country-option:hover,
+#app-main[data-page="geography-world"] .geography-country-option:focus-visible,
+#app-main[data-page="geography-world"] .geography-country-option.is-selected {
+  border-color: #0f9f80;
+  background: #064e46;
+  color: #fff;
+}
+
+#app-main[data-page="geography-world"] .geography-country-option__flag {
+  flex: 0 0 auto;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  #app-main[data-page="geography-world"] .geography-explorer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  #app-main[data-page="geography-world"] .geography-map-panel {
+    padding: 0.9rem;
+  }
+
+  #app-main[data-page="geography-world"] .geography-map-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #app-main[data-page="geography-world"] .geography-map-zoom-controls {
+    justify-content: space-between;
+  }
+}
+
+html.theme-light #app-main[data-page="geography-world"] .geography-eyebrow,
+html.theme-light #app-main[data-page="geography-world"] .geography-country-details__continent,
+html.theme-light #app-main[data-page="geography-world"] .geography-map-attribution a,
+html.theme-light #app-main[data-page="geography-world"] .geography-country-details__source a {
+  color: #0f766e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app-main[data-page="geography-world"] .geography-map__region path,
+  #app-main[data-page="geography-world"] .geography-country-option {
+    transition: none;
+  }
 }
