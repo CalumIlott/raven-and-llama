@@ -18,6 +18,19 @@ test('Science Lab route survives refresh and keeps Science Explorers available',
   await expect(page.locator('[data-mission-id="orbit-rescue"][data-difficulty="easy"]')).toBeVisible();
 });
 
+test('planet tray starts in a shuffled order', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.evaluate(() => { Math.random = () => 0; });
+  await page.locator('[data-action="solar-system-start"]').click();
+
+  const trayOrder = await page.locator('[data-solar-planet-id]').evaluateAll(
+    planets => planets.map(planet => planet.dataset.solarPlanetId)
+  );
+  expect(trayOrder).not.toEqual(['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
+  expect(new Set(trayOrder).size).toBe(8);
+});
+
 test('planet order can be completed with keyboard and incorrect planets are identified', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/science');
