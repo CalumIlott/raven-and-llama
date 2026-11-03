@@ -44,14 +44,14 @@ const BELTS_DATA = [
         name: 'Writing Master 0-10',
         icon: 'pen-tool',
         timeLimitSeconds: 28,
-        description: 'Identify and complete sequences for numbers 0 to 10.'
+        description: 'Read, recognise, and write numerals from 0 to 10, including number sequences and finger patterns.'
       },
       {
         id: 'white_partitioning',
         name: 'Partitioning Master 3-9',
         icon: 'split',
         timeLimitSeconds: 28,
-        description: 'Break numbers 3 to 9 into two parts (e.g. 5 is 2 and 3).'
+        description: 'Share objects to find every pair of parts for numbers 3 to 9 (e.g. 5 is 1 and 4, or 2 and 3).'
       }
     ]
   },
@@ -78,7 +78,7 @@ const BELTS_DATA = [
         name: 'Subitising Master',
         icon: 'layout-grid',
         timeLimitSeconds: 16,
-        description: 'Quickly recognise numbers shown in tens frames.'
+        description: 'Quickly recognise quantities up to 5 in dot patterns and tens frames without counting one by one.'
       },
       {
         id: 'yellow_doubles',
@@ -113,7 +113,7 @@ const BELTS_DATA = [
         name: 'More or Less Master',
         icon: 'arrow-up-down',
         timeLimitSeconds: 24,
-        description: 'Find 1 more, 1 less, or compare quantities up to 20.'
+        description: 'Find 1 more or 1 less, and compare or complete number sequences up to 20.'
       }
     ]
   },
@@ -154,14 +154,14 @@ const BELTS_DATA = [
         name: 'Counting Master',
         icon: 'fast-forward',
         timeLimitSeconds: 28,
-        description: 'Skip count fluently by 2s, 5s, and 10s.'
+        description: 'Skip count by 2s, 5s, and 10s through 100.'
       },
       {
         id: 'green_reading_writing',
         name: 'Reading & Writing Master',
         icon: 'book-open',
         timeLimitSeconds: 30,
-        description: 'Read, write and identify numbers up to 100.'
+        description: 'Read, write, and identify numerals and number words from 0 to 999.'
       },
       {
         id: 'green_renaming',
@@ -175,7 +175,7 @@ const BELTS_DATA = [
         name: 'Order Master',
         icon: 'arrow-down-narrow-wide',
         timeLimitSeconds: 36,
-        description: 'Order 2-digit numbers from smallest to largest.'
+        description: 'Order numbers from 0 to 999 from smallest to largest.'
       },
       {
         id: 'green_1_10',
@@ -209,28 +209,28 @@ const BELTS_DATA = [
         name: 'Doubling & halving Master',
         icon: 'scale',
         timeLimitSeconds: 28,
-        description: 'Double and halve 2-digit numbers using mental strategies.'
+        description: 'Double and halve 2- and 3-digit numbers using mental strategies.'
       },
       {
         id: 'blue_flexible_thinking',
         name: 'Flexible Thinking + Master',
         icon: 'brain',
         timeLimitSeconds: 30,
-        description: 'Use bridge-to-10 and split strategies for mental addition.'
+        description: 'Add numbers to 100 using bridge-to-10, doubles, near doubles, place value, and partitioning.'
       },
       {
         id: 'blue_factor',
         name: 'Factor Master',
         icon: 'key',
         timeLimitSeconds: 28,
-        description: 'Identify factors and multiples of numbers up to 50.'
+        description: 'Use 2, 5, and 10 times-table facts to find equal groups, factors, and related division facts.'
       },
       {
         id: 'blue_partitioning',
         name: 'Partitioning Master',
         icon: 'boxes',
         timeLimitSeconds: 30,
-        description: 'Partition numbers into Hundreds, Tens, and Ones.'
+        description: 'Partition 100 in different ways and split 2-digit numbers into tens and ones for mental addition.'
       },
       {
         id: 'blue_subtraction',
@@ -244,7 +244,7 @@ const BELTS_DATA = [
         name: 'Balanced Equation Master',
         icon: 'equal',
         timeLimitSeconds: 32,
-        description: 'Balance both sides of equations (e.g. 7 + 8 = ? + 5).'
+        description: 'Use inverse operations to balance equations with values up to 50 (e.g. 8 - ? = 2 + 4).'
       }
     ]
   },
@@ -271,7 +271,7 @@ const BELTS_DATA = [
         name: 'Order Master',
         icon: 'sort-asc',
         timeLimitSeconds: 36,
-        description: 'Order 4-digit numbers and simple decimals.'
+        description: 'Order 4-digit numbers and decimals to hundredths.'
       },
       {
         id: 'brown_multiplication',
@@ -292,35 +292,35 @@ const BELTS_DATA = [
         name: 'Counting Master',
         icon: 'step-forward',
         timeLimitSeconds: 28,
-        description: 'Skip count by 3s, 4s, 6s, 7s, 8s, 9s, and fraction counts.'
+        description: 'Skip count by 3s, 4s, 6s, 7s, 8s, and 9s, and count in simple fractional steps.'
       },
       {
         id: 'brown_multiplicative',
         name: 'Multiplicative Master',
         icon: 'sparkles',
         timeLimitSeconds: 32,
-        description: 'Solve "times as many" comparison and word problems.'
+        description: 'Solve "times as many" word problems using repeated addition or multiplication.'
       },
       {
         id: 'brown_fraction',
         name: 'Fraction Master',
         icon: 'pie-chart',
         timeLimitSeconds: 30,
-        description: 'Identify, model, and compare halves, thirds, quarters, and eighths.'
+        description: 'Identify, compare, and model halves, thirds, quarters, and eighths by folding and colouring equal parts.'
       },
       {
         id: 'brown_read_write',
         name: 'Read and Write Master',
         icon: 'file-text',
         timeLimitSeconds: 32,
-        description: 'Read, write, and expand numbers up to 10,000.'
+        description: 'Read, write, and expand numbers up to 999,999.'
       },
       {
         id: 'brown_renaming',
         name: 'Renaming Master',
         icon: 'repeat',
         timeLimitSeconds: 32,
-        description: 'Rename thousands, hundreds, tens, and ones in different ways.'
+        description: 'Rename thousands, hundreds, tens, and ones flexibly (e.g. 1 hundred and 9 tens is 19 tens).'
       }
     ]
   },
@@ -347,49 +347,49 @@ const BELTS_DATA = [
         name: 'Counting Master',
         icon: 'milestone',
         timeLimitSeconds: 30,
-        description: 'Count with decimals, mixed fractions, and into negative numbers.'
+        description: 'Skip count by 7s, 8s, and 9s, and count with decimals, mixed fractions, and negative numbers.'
       },
       {
         id: 'black_multiplication',
         name: 'Multiplication Master',
         icon: 'zap',
         timeLimitSeconds: 24,
-        description: 'Speed and fluency with multi-digit and mental multiplication.'
+        description: 'Recall the 7, 8, and 9 times tables and solve multi-digit multiplication mentally.'
       },
       {
         id: 'black_mental',
         name: 'Mental Master',
         icon: 'cpu',
         timeLimitSeconds: 28,
-        description: 'Rapid multi-step mental calculations (e.g. 15 x 4 - 18).'
+        description: 'Mentally solve multi-step addition, subtraction, multiplication, halving, and division problems.'
       },
       {
         id: 'black_decimal_order',
         name: 'Decimal Order Master',
         icon: 'arrow-down-0-1',
         timeLimitSeconds: 36,
-        description: 'Order decimals with tenths, hundredths, and thousandths.'
+        description: 'Order decimals with tenths, hundredths, and thousandths on a number line.'
       },
       {
         id: 'black_renaming',
         name: 'Renaming Master',
         icon: 'percent',
         timeLimitSeconds: 28,
-        description: 'Convert between fractions, decimals, and percentages.'
+        description: 'Rename decimal place values and convert between fractions, decimals, and percentages.'
       },
       {
         id: 'black_fraction_order',
         name: 'Fraction Order Master',
         icon: 'bar-chart-2',
         timeLimitSeconds: 36,
-        description: 'Compare and order fractions with unlike denominators.'
+        description: 'Compare and order fractions with unlike denominators on a number line from 0 to 1.'
       },
       {
         id: 'black_multiplicative',
         name: 'Multiplicative Master',
         icon: 'trending-up',
         timeLimitSeconds: 32,
-        description: 'Solve rates, ratios, scale factors, and proportions.'
+        description: 'Solve multi-step multiplicative problems involving rates, ratios, scale factors, and proportions.'
       }
     ]
   },
@@ -416,14 +416,14 @@ const BELTS_DATA = [
         name: 'Division Master',
         icon: 'divide',
         timeLimitSeconds: 32,
-        description: 'Division with remainders, decimal answers, and long division.'
+        description: 'Use written long division to divide numbers up to 4 digits by 1- or 2-digit divisors, including remainders and decimals.'
       },
       {
         id: 'platinum_bodmas',
         name: 'BODMAS Master',
         icon: 'calculator',
         timeLimitSeconds: 36,
-        description: 'Order of operations: Brackets, Orders, Division/Multiplication, Addition/Subtraction.'
+        description: 'Build expressions with the digits 2, 0, 1, and 8 to make target numbers using brackets and operation order.'
       },
       {
         id: 'platinum_problem_solving',
@@ -437,28 +437,28 @@ const BELTS_DATA = [
         name: 'Conversion Master',
         icon: 'ruler',
         timeLimitSeconds: 32,
-        description: 'Convert metric units (length, mass, capacity) and time.'
+        description: 'Match equivalent fractions, decimals, and percentages, and convert metric units and time.'
       },
       {
         id: 'platinum_fraction',
         name: 'Fraction Master',
         icon: 'pie-chart',
         timeLimitSeconds: 36,
-        description: 'Add, subtract, and multiply proper and mixed fractions.'
+        description: 'Add and subtract fractions with related denominators, and multiply proper and mixed fractions.'
       },
       {
         id: 'platinum_decimal',
         name: 'Decimal Master',
         icon: 'dollar-sign',
         timeLimitSeconds: 32,
-        description: 'Multiplication and division with decimal numbers.'
+        description: 'Add, subtract, multiply, and divide decimal numbers to three decimal places.'
       },
       {
         id: 'platinum_challenge',
         name: 'Challenge Master',
         icon: 'trophy',
         timeLimitSeconds: 30,
-        description: 'Fast-paced Ninja Grand Master endurance challenge covering all mathematics!'
+        description: 'Complete an accurate, fast-paced challenge across Year 7 patterns, algebra, decimals, and fractions.'
       }
     ]
   }

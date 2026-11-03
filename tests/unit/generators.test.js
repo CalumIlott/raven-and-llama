@@ -24,6 +24,8 @@ test('every curriculum skill generates valid standard and hard questions', () =>
         if (question.type === 'order_drag') {
           assert.ok(question.correctOrder.length > 1);
           assert.equal(question.items.length, question.correctOrder.length);
+        } else if (question.type === 'numeric_input' || question.type === 'short_answer') {
+          assert.notEqual(question.answer, undefined, `${skill.id} should have an answer`);
         } else {
           assert.notEqual(question.answer, undefined, `${skill.id} should have an answer`);
           assert.ok(Array.isArray(question.options) && question.options.length > 0);
@@ -112,9 +114,49 @@ test('under-varied curriculum skills generate varied subject-specific questions'
     assert.ok(questions.every(question => generator.isValidQuestion(question)), `${skillId} should generate valid questions`);
     assert.ok(questions.every(question => titlePattern.test(question.title)), `${skillId} should match its curriculum skill`);
     const variants = questions.map(question =>
-      [question.prompt, question.answer, ...question.options].join('|'));
+      [question.prompt, question.answer, ...(question.options || []), ...(question.items || []), ...(question.correctOrder || [])].join('|'));
     assert.ok(new Set(variants).size >= 5, `${skillId} should generate varied questions`);
   }
+});
+
+test('belt question ranges and formats cover the online resource skill descriptions', () => {
+  const { generator } = loadGenerator();
+  const greenReadings = Array.from({ length: 60 }, () => generator.getQuestionForSkill('green_reading_writing'));
+  const greenOrders = Array.from({ length: 30 }, () => generator.getQuestionForSkill('green_order'));
+  const brownReadings = Array.from({ length: 60 }, () => generator.getQuestionForSkill('brown_read_write'));
+  const brownOrders = Array.from({ length: 60 }, () => generator.getQuestionForSkill('brown_order'));
+  const brownRiddles = Array.from({ length: 60 }, () => generator.getQuestionForSkill('brown_renaming'));
+  const blackDecimals = Array.from({ length: 20 }, () => generator.getQuestionForSkill('black_decimal_order'));
+  const blackFractions = Array.from({ length: 20 }, () => generator.getQuestionForSkill('black_fraction_order'));
+  const parsedNumber = question => {
+    if (typeof question.answer === 'number') return question.answer;
+    return Number(question.prompt.match(/[\d,]+/)?.[0]?.replace(/,/g, ''));
+  };
+
+  assert.ok(greenReadings.every(question => parsedNumber(question) >= 0 && parsedNumber(question) <= 999));
+  assert.ok(greenOrders.every(question => question.items.every(value => value >= 0 && value <= 999)));
+  assert.ok(brownReadings.some(question => parsedNumber(question) > 10000));
+  assert.ok(brownReadings.every(question => parsedNumber(question) <= 999999));
+  assert.ok(brownOrders.some(question => question.items.some(value => !Number.isInteger(value))));
+  assert.ok(brownRiddles.some(question => question.type === 'numeric_input'));
+  assert.ok(blackDecimals.every(question => question.items.every(value => Number(value.toFixed(3)) === value)));
+  assert.ok(blackFractions.every(question => question.type === 'order_drag'));
+});
+
+test('Platinum generators include fraction equivalences and all decimal operations', () => {
+  const { generator } = loadGenerator();
+  const conversions = Array.from({ length: 180 }, () => generator.getQuestionForSkill('platinum_conversion'));
+  const decimalQuestions = Array.from({ length: 180 }, () => generator.getQuestionForSkill('platinum_decimal'));
+  const divisionQuestions = Array.from({ length: 180 }, () => generator.getQuestionForSkill('platinum_division'));
+
+  assert.ok(conversions.some(question => /%|fraction|decimal/i.test(question.prompt)));
+  assert.ok(conversions.some(question => question.answer === '1/4' || question.answer === '75%' || question.answer === '0.6'));
+  assert.deepEqual(
+    new Set(decimalQuestions.map(question => question.prompt.match(/[+×÷-]/)?.[0])),
+    new Set(['+', '-', '×', '÷'])
+  );
+  assert.ok(divisionQuestions.some(question => Number(question.prompt.match(/^\d+/)?.[0]) >= 1000));
+  assert.ok(divisionQuestions.some(question => String(question.answer).includes(' r ') || Number.isInteger(question.answer)));
 });
 
 test('unique question generation stops at the requested count and removes duplicates', () => {

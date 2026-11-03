@@ -129,6 +129,15 @@ Object.assign(App.prototype, {
     const belt = BELTS_DATA.find(b => b.id === beltId);
     if (!belt) return this.showDojoHub();
 
+    const activitiesHtml = (MATHS_ACTIVITY_CATALOG[belt.id] || []).map(activity => `
+      <button data-action="maths-activity-start" data-belt-id="${belt.id}" data-activity-id="${activity.id}"
+              class="app-card-link p-4 text-left transition hover:border-cyan-400">
+        <h3 class="font-ninja font-bold text-white">${activity.title}</h3>
+        <p class="mt-1 text-xs text-slate-400">${activity.description}</p>
+        <span class="mt-3 inline-block text-xs font-bold text-cyan-300">Play activity →</span>
+      </button>
+    `).join('');
+
     const profile = ProfileManager.getActiveProfile();
     const isStage1Passed = (profile?.stage1PassedBelts || []).includes(belt.id);
     const isStage2Passed = (profile?.stage2PassedBelts || []).includes(belt.id);
@@ -207,6 +216,16 @@ Object.assign(App.prototype, {
             </button>
           </div>
         </div>
+
+        <section class="mb-8">
+          <div class="mb-3">
+            <h2 class="font-ninja text-xl font-bold text-yellow-400">Interactive Dojo Activities</h2>
+            <p class="mt-1 text-sm text-slate-400">Choose a game to practise this belt’s skills in a different way.</p>
+          </div>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            ${activitiesHtml}
+          </div>
+        </section>
 
         <div class="mb-6">
           ${ProfileManager.renderLeaderboard(`belt:${belt.id}`, `${belt.name} Leaderboard`)}
@@ -335,6 +354,21 @@ Object.assign(App.prototype, {
       case 'platinum': window.arcadeEngine.startCyberDefense('game-arena'); break;
       default: window.arcadeEngine.startBalloonPop('game-arena');
     }
+  },
+
+  launchMathsActivity(beltId, activityId) {
+    const activity = MATHS_ACTIVITY_CATALOG[beltId]?.find(item => item.id === activityId);
+    if (!activity) throw new RangeError(`Unknown Maths Masters activity: ${activityId}`);
+    this.currentView = 'game';
+    const main = document.getElementById('app-main');
+    if (!main) return;
+    main.dataset.page = 'dojo-arcade';
+    main.innerHTML = `
+      <div class="play-shell play-shell--dojo-arcade max-w-xl mx-auto px-4 py-6">
+        <div id="game-arena"></div>
+      </div>
+    `;
+    window.arcadeEngine.startMathsActivity('game-arena', beltId, activityId);
   },
 
   startSkillGame(beltId, skillId) {

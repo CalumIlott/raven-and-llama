@@ -150,6 +150,7 @@ class App {
       case 'belt-detail': this.showBeltDetails(target.dataset.beltId); break;
       case 'skill-start': this.startSkillGame(target.dataset.beltId, target.dataset.skillId); break;
       case 'arcade-start': this.launchArcade(target.dataset.beltId); break;
+      case 'maths-activity-start': this.launchMathsActivity(target.dataset.beltId, target.dataset.activityId); break;
       case 'belt-test': this.startBeltTestGame(target.dataset.beltId, Number(target.dataset.stage)); break;
       case 'prerequisites': this.showPrerequisiteChecklist(target.dataset.beltId); break;
       case 'times-table-start': this.startTimesTable(Number(target.dataset.table)); break;
@@ -215,6 +216,13 @@ class App {
       case 'arcade-move-right': window.arcadeEngine.moveShipRight(); break;
       case 'arcade-gem': window.arcadeEngine.tapGem(Number(target.dataset.index)); break;
       case 'arcade-turret': window.arcadeEngine.fireTurret(Number(target.dataset.value)); break;
+      case 'arcade-maths-answer': window.arcadeEngine.answerMathsActivity(decodeURIComponent(target.dataset.value)); break;
+      case 'arcade-maths-order': window.arcadeEngine.pickMathsOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
+      case 'arcade-maths-cell': window.arcadeEngine.toggleMathsActivityCell(Number(target.dataset.index)); break;
+      case 'arcade-maths-submit': window.arcadeEngine.submitMathsActivity(); break;
+      case 'arcade-maths-clear': window.arcadeEngine.clearMathsActivitySelection(); break;
+      case 'arcade-maths-pair': window.arcadeEngine.selectMathsPair(target.dataset.side, Number(target.dataset.index)); break;
+      case 'arcade-maths-object': window.arcadeEngine.movePartitionObject(Number(target.dataset.index)); break;
       case 'arcade-retry': window.arcadeEngine[target.dataset.game](target.dataset.container); break;
       case 'arcade-return': this.showBeltDetails(target.dataset.beltId); break;
       case 'timetable-exit': this.showTimesTables(); break;
@@ -227,6 +235,22 @@ class App {
       case 'account-avatar': this.changeAvatarSubmit(event); break;
       case 'account-password': this.changePasswordSubmit(event); break;
       case 'account-delete': this.deleteAccount(event); break;
+      case 'game-answer':
+        event.preventDefault();
+        window.gameEngine.submitAnswer(event.target.elements.answer.value);
+        break;
+      case 'arcade-maths-answer':
+        event.preventDefault();
+        window.arcadeEngine.answerMathsActivity(event.target.elements.answer.value);
+        break;
+      case 'arcade-maths-stage':
+        event.preventDefault();
+        window.arcadeEngine.submitNumberModelStage(event.target.elements.answer.value);
+        break;
+      case 'arcade-maths-bodmas':
+        event.preventDefault();
+        window.arcadeEngine.submitBodmasExpression(event.target.elements.expression.value);
+        break;
     }
   }
 

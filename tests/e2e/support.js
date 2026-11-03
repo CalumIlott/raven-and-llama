@@ -53,10 +53,43 @@ async function openTimesTables(page) {
 }
 
 async function chooseQuestionAnswer(page, correct = true) {
-  const answer = await page.evaluate(() => {
+  const question = await page.evaluate(() => {
     const engine = window.gameEngine;
-    return engine.questions[engine.currentIndex].answer;
+    const currentQuestion = engine.questions[engine.currentIndex];
+    return {
+      answer: currentQuestion.answer,
+      correctOrder: currentQuestion.correctOrder,
+      items: currentQuestion.items,
+      type: currentQuestion.type
+    };
   });
+
+  if (question.type === 'numeric_input' || question.type === 'short_answer') {
+    const answer = correct
+      ? String(question.answer)
+      : question.type === 'numeric_input'
+        ? String(Number(question.answer) + 1)
+        : `not ${question.answer}`;
+    await page.locator('#game-answer-input').fill(answer);
+    await page.getByRole('button', { name: 'Check', exact: true }).click();
+    return;
+  }
+
+  if (question.type === 'order_drag') {
+    const order = question.correctOrder.map(String);
+    if (!correct) order.reverse();
+    const used = new Set();
+    for (const value of order) {
+      const index = question.items.findIndex((item, itemIndex) =>
+        String(item) === value && !used.has(itemIndex)
+      );
+      used.add(index);
+      await page.locator(`#order-btn-${index}`).click();
+    }
+    return;
+  }
+
+  const answer = question.answer;
   const options = await page.locator('#game-arena button[id^="opt-btn-"]').allTextContents();
   const answerText = String(answer);
   const choice = correct
