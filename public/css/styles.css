@@ -32,7 +32,8 @@ body {
   touch-action: manipulation;
 }
 
-a[href] {
+a[href],
+button:not(:disabled) {
   cursor: pointer;
 }
 
