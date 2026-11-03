@@ -44,6 +44,7 @@ class App {
       '/learning-centre': 'learning-centre',
       '/learning-centre/maths': 'maths-world',
       '/learning-centre/science': 'science-lab',
+      '/learning-centre/history': 'history-discovery',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -66,6 +67,7 @@ class App {
       'learning-centre': () => this.showLearningCentre(),
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
+      'history-discovery': () => this.showHistoryHub(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -94,7 +96,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -197,6 +199,14 @@ class App {
       case 'learning': this.showLearningCentre(); break;
       case 'learning-centre': this.showLearningCentre(); break;
       case 'maths-world': this.showMathsWorld(); break;
+      case 'history-hub': this.showHistoryHub(); break;
+      case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
+      case 'history-event-select': this.selectHistoryEvent(target.dataset.eventId); break;
+      case 'history-timeline-place': this.placeSelectedHistoryEvent(Number(target.dataset.positionIndex)); break;
+      case 'history-timeline-remove': this.removeHistoryEvent(Number(target.dataset.positionIndex)); break;
+      case 'history-timeline-submit': this.submitHistoryTimelineAnswer(); break;
+      case 'history-timeline-retry': this.retryHistoryTimeline(); break;
+      case 'history-timeline-reset': this.resetHistoryTimeline(); break;
       case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
       case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;
       case 'number-builder-pick': this.pickNumberBuilderTile(Number(target.dataset.value)); break;
@@ -515,6 +525,9 @@ class App {
       } else if (this.currentView === 'maths-world') {
         subBadge.textContent = 'Maths World';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'history-discovery' || this.currentView === 'history-timeline') {
+        subBadge.textContent = 'History & Discovery';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
         subBadge.classList.remove('hidden');
@@ -587,6 +600,10 @@ class App {
       this.showScienceExplorers();
     } else if (this.currentView === 'science-lab') {
       this.showScienceLab();
+    } else if (this.currentView === 'history-discovery') {
+      this.showHistoryHub();
+    } else if (this.currentView === 'history-timeline' && this.historyTimelineGame) {
+      this.renderHistoryTimelineActivity();
     } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {

@@ -1368,6 +1368,420 @@ html.theme-light #app-main[data-page="learning-centre"] #learning-modules-grid >
   background: var(--page-panel-raised);
 }
 
+#app-main[data-page="history-discovery"] .history-intro {
+  margin-bottom: 1.5rem;
+}
+
+#app-main[data-page="history-discovery"] .history-timeline-launch,
+#app-main[data-page="history-timeline"] .history-timeline-workspace {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--page-edge);
+  border-radius: 1.5rem;
+  background: var(--page-panel);
+  color: var(--page-ink);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 14%);
+}
+
+#app-main[data-page="history-discovery"] .history-timeline-launch {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  border-top: 5px solid #d99249;
+}
+
+#app-main[data-page="history-discovery"] .history-timeline-launch__icon {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 1px solid #d99249;
+  border-radius: 1.25rem;
+  background: var(--page-panel-raised);
+  font-size: 2rem;
+}
+
+#app-main[data-page="history-discovery"] .history-timeline-launch h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="history-discovery"] .history-timeline-launch p,
+#app-main[data-page="history-discovery"] .history-content-note {
+  margin: 0.35rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.55;
+}
+
+#app-main[data-page="history-discovery"] .history-content-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+#app-main:is([data-page="history-discovery"], [data-page="history-timeline"]) .history-eyebrow,
+#app-main[data-page="history-timeline"] .history-event-fact__era,
+#app-main[data-page="history-timeline"] .history-event-card__era {
+  margin: 0 0 0.25rem;
+  color: #6ee7c8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace {
+  display: grid;
+  gap: 1.25rem;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace__heading h1 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-workspace__heading p:not(.history-eyebrow) {
+  max-width: 48rem;
+  margin: 0.5rem 0 0;
+  color: var(--page-muted);
+  line-height: 1.55;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-count {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 999px;
+  color: var(--page-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-status {
+  margin: 0;
+  color: var(--page-ink);
+  font-weight: 700;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact {
+  min-height: 8rem;
+  padding: 1rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact h3 {
+  margin: 0;
+  color: var(--page-ink);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact p {
+  margin: 0.55rem 0 0;
+  color: var(--page-ink);
+  line-height: 1.55;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact .history-event-fact__era {
+  margin-top: 0;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact .history-event-fact__source {
+  color: var(--page-muted);
+  font-size: 0.75rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact__source a {
+  color: #6ee7c8;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+#app-main[data-page="history-timeline"] .history-event-fact__empty {
+  color: var(--page-muted);
+}
+
+#app-main[data-page="history-timeline"] .history-subheading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+#app-main[data-page="history-timeline"] .history-subheading h2 {
+  margin: 0;
+  color: var(--page-ink);
+  font-family: 'Unkempt', cursive;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="history-timeline"] .history-subheading p {
+  margin: 0;
+  color: var(--page-muted);
+  font-size: 0.8rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-tray__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card {
+  display: flex;
+  min-width: 0;
+  min-height: 5rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 1rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card:hover,
+#app-main[data-page="history-timeline"] .history-event-card:focus-visible,
+#app-main[data-page="history-timeline"] .history-event-card.is-selected {
+  border-color: #6ee7c8;
+  background: #064e46;
+  color: #fff;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card:focus-visible,
+#app-main[data-page="history-timeline"] .history-timeline-slot__place:focus-visible,
+#app-main[data-page="history-timeline"] .history-timeline-slot__remove:focus-visible,
+#app-main[data-page="history-discovery"] .history-primary-button:focus-visible,
+#app-main[data-page="history-timeline"] .history-primary-button:focus-visible,
+#app-main[data-page="history-timeline"] .history-secondary-button:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 2px;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card__icon {
+  flex: 0 0 auto;
+  font-size: 1.75rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card__era {
+  color: var(--page-muted);
+  font-size: 0.62rem;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card.is-selected .history-event-card__era,
+#app-main[data-page="history-timeline"] .history-event-card:hover .history-event-card__era,
+#app-main[data-page="history-timeline"] .history-event-card:focus-visible .history-event-card__era {
+  color: #a7f3d0;
+}
+
+#app-main[data-page="history-timeline"] .history-event-card__title {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+#app-main[data-page="history-timeline"] .history-event-tray__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--page-muted);
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slots {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__place {
+  display: flex;
+  min-width: 0;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px dashed var(--page-edge);
+  border-radius: 0.9rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__place.has-event {
+  border-style: solid;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__place.is-selected {
+  border-color: #6ee7c8;
+  background: #064e46;
+  color: #fff;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__number {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #064e46;
+  color: #fff;
+  font-weight: 800;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__event {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__event small {
+  color: var(--page-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__empty {
+  color: var(--page-muted);
+  font-weight: 700;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-slot__remove {
+  align-self: center;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--page-edge);
+  border-radius: 0.7rem;
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#app-main[data-page="history-timeline"] .history-timeline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+#app-main[data-page="history-discovery"] .history-primary-button,
+#app-main[data-page="history-timeline"] .history-primary-button,
+#app-main[data-page="history-timeline"] .history-secondary-button {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #0f766e;
+  border-radius: 0.85rem;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#app-main[data-page="history-discovery"] .history-primary-button:hover,
+#app-main[data-page="history-timeline"] .history-primary-button:hover {
+  background: #115e59;
+}
+
+#app-main[data-page="history-timeline"] .history-primary-button:disabled {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-muted);
+  cursor: not-allowed;
+}
+
+#app-main[data-page="history-timeline"] .history-secondary-button {
+  border-color: var(--page-edge);
+  background: var(--page-panel-raised);
+  color: var(--page-ink);
+}
+
+#app-main[data-page="history-timeline"] .educational-feedback {
+  margin: 0;
+}
+
+html.theme-light #app-main:is([data-page="history-discovery"], [data-page="history-timeline"]) .history-eyebrow,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-fact__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-fact__source a {
+  color: #0f766e;
+}
+
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card:hover .history-event-card__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card:focus-visible .history-event-card__era,
+html.theme-light #app-main[data-page="history-timeline"] .history-event-card.is-selected .history-event-card__era {
+  color: #a7f3d0;
+}
+
+@media (max-width: 720px) {
+  #app-main[data-page="history-discovery"] .history-timeline-launch {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  #app-main[data-page="history-discovery"] .history-timeline-launch .history-primary-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  #app-main[data-page="history-timeline"] .history-event-tray__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  #app-main[data-page="history-timeline"] .history-timeline-workspace__heading {
+    flex-direction: column;
+  }
+
+  #app-main[data-page="history-timeline"] .history-event-tray__cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app-main[data-page="history-timeline"] .history-event-card {
+    transition: none;
+  }
+}
+
 /* Games: a picker first, with the arcade in its own focused view */
 #app-main[data-page="games"] .games-hub-hero,
 #app-main[data-page="critter-catch"] > div:first-child > div:nth-child(2) {

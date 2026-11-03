@@ -427,7 +427,12 @@ test('Learning Centre groups its existing programs under the right subjects', as
     }
   }
 
-  for (const subjectId of ['geography-world', 'history-discovery', 'brain-power']) {
+  await expect(subject('history-discovery').getByRole('button', {
+    name: 'Explore History & Discovery',
+    exact: true
+  })).toBeVisible();
+
+  for (const subjectId of ['geography-world', 'brain-power']) {
     await expect(subject(subjectId).getByText('Coming soon', { exact: true })).toBeVisible();
   }
 });
