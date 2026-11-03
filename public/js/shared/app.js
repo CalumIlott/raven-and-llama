@@ -42,6 +42,7 @@ class App {
     return {
       '/learning': 'learning-centre',
       '/learning-centre': 'learning-centre',
+      '/learning-centre/maths': 'maths-world',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -60,6 +61,7 @@ class App {
     const views = {
       learning: () => this.showLearningCentre(),
       'learning-centre': () => this.showLearningCentre(),
+      'maths-world': () => this.showMathsWorld(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -86,7 +88,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -125,6 +127,14 @@ class App {
       case 'money-retry': this.retryMoneyQuestion(); break;
       case 'learning': this.showLearningCentre(); break;
       case 'learning-centre': this.showLearningCentre(); break;
+      case 'maths-world': this.showMathsWorld(); break;
+      case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
+      case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;
+      case 'number-builder-pick': this.pickNumberBuilderTile(Number(target.dataset.value)); break;
+      case 'number-builder-check': this.submitNumberBuilderAnswer(); break;
+      case 'number-builder-retry': this.retryNumberBuilderQuestion(); break;
+      case 'number-builder-clear': this.clearNumberBuilderSequence(); break;
+      case 'number-builder-next': this.nextNumberBuilderQuestion(); break;
       case 'games-hub': this.showGamesHub(); break;
       case 'critter-open': this.showCritterCatch(); break;
       case 'account-open': this.openProfileModal(); break;
@@ -388,6 +398,9 @@ class App {
         subBadge.classList.add('hidden');
       } else if (this.currentView === 'learning-centre') {
         subBadge.textContent = 'Learning';
+        subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'maths-world') {
+        subBadge.textContent = 'Maths World';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';

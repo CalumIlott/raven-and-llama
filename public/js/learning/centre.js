@@ -346,6 +346,7 @@ Object.assign(App.prototype, {
         name: 'Maths World',
         icon: '🔢',
         description: 'Build number confidence and multiplication fluency.',
+        entryAction: 'maths-world',
         actions: ['dojo', 'times-tables']
       },
       {
@@ -417,6 +418,15 @@ Object.assign(App.prototype, {
       copy.append(title, description);
       heading.append(icon, copy);
       subject.append(heading);
+
+      if (subjectDefinition.entryAction) {
+        const explore = document.createElement('button');
+        explore.type = 'button';
+        explore.dataset.action = subjectDefinition.entryAction;
+        explore.className = 'mt-4 rounded-xl border border-sky-500/60 bg-sky-950/60 px-4 py-2 text-sm font-bold text-sky-200 hover:bg-sky-900';
+        explore.textContent = 'Explore Maths World';
+        subject.append(explore);
+      }
 
       const programs = document.createElement('div');
       programs.className = 'learning-subject-programs';

@@ -175,7 +175,7 @@ const BELTS_DATA = [
         name: 'Order Master',
         icon: 'arrow-down-narrow-wide',
         timeLimitSeconds: 36,
-        description: 'Order numbers from 0 to 999 from smallest to largest.'
+        description: 'Order numbers from 0 to 999 from smallest to largest or largest to smallest.'
       },
       {
         id: 'green_1_10',
