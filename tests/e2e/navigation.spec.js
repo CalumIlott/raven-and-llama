@@ -54,7 +54,7 @@ test('header brand mark follows the active hub', async ({ page }) => {
   await expect(page.locator('.site-footer')).toBeVisible();
   await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
   await expect(logo).toHaveClass(/is-hub-mark/);
-  await page.locator('[data-action="science-home"]').first().click();
+  await page.locator('[data-action="science-lab"]').first().click();
   await expect(logo).toHaveAttribute('src', 'assets/Raven%26Llama_Learning%20Centre.jpg');
 
   await page.locator('#nav-btn-games').click();
@@ -130,7 +130,7 @@ test('hub introductions align their copy to the left', async ({ page }) => {
   await expect(learningIntro).toHaveCSS('background-image', 'none');
   await expect(learningIntro).toHaveCSS('border-width', '0px');
 
-  await page.locator('[data-action="science-home"]').first().click();
+  await page.locator('[data-action="science-lab"]').first().click();
   const scienceIntro = page.locator('.module-intro');
   await expect(scienceIntro).toHaveCSS('align-items', 'flex-start');
   await expect(scienceIntro).toHaveCSS('background-image', 'none');
@@ -241,7 +241,7 @@ test('homepage leaderboard preview centers its heading and shows sample scores',
 test('module brand kickers keep their descriptors visually separated on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openLearningCentre(page);
-  await page.locator('[data-action="science-home"]').first().click();
+  await page.locator('[data-action="science-lab"]').first().click();
 
   const getDescriptorGap = selector => page.locator(selector).evaluate(element => {
     const [brand, descriptor] = element.children;
@@ -257,7 +257,7 @@ test('module brand kickers keep their descriptors visually separated on mobile',
 test('active module badge never sits beneath the navigation', async ({ page }) => {
   await page.setViewportSize({ width: 761, height: 900 });
   await openLearningCentre(page);
-  await page.locator('[data-action="science-home"]').first().click();
+  await page.locator('[data-action="science-lab"]').first().click();
 
   for (const width of [761, 820, 900, 901, 1024]) {
     await page.setViewportSize({ width, height: 900 });
@@ -393,12 +393,12 @@ test('Learning Centre groups its existing programs under the right subjects', as
     'life-skills': 'Life Skills'
   };
   for (const [subjectId, name] of Object.entries(expectedSubjects)) {
-    await expect(subject(subjectId).getByRole('heading', { name, exact: true })).toBeVisible();
+    await expect(subject(subjectId).locator('.learning-subject-title')).toHaveText(name);
   }
 
   const expectedPrograms = {
     'maths-world': ['dojo', 'times-tables'],
-    'science-lab': ['science-home'],
+    'science-lab': ['science-lab'],
     'spelling-words': ['spelling-home'],
     'life-skills': ['telling-time', 'money-home']
   };

@@ -193,7 +193,7 @@ Object.assign(App.prototype, {
           </button>
 
           <!-- 3. SCIENCE EXPLORERS -->
-          <button type="button" data-action="science-home"
+          <button type="button" data-action="science-lab"
                   class="w-full text-left cursor-pointer group relative bg-slate-900/95 border-2 border-slate-700/80 hover:border-sky-400 rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400"></div>
             <div>
@@ -204,7 +204,7 @@ Object.assign(App.prototype, {
                   </div>
                   <div>
                     <span class="text-xs uppercase tracking-wider text-sky-400 font-bold">Discovery Program</span>
-                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-sky-300 transition">Science Explorers</h3>
+                    <h3 class="font-ninja text-2xl font-bold text-white group-hover:text-sky-300 transition">Science Lab</h3>
                   </div>
                 </div>
                 <span class="bg-sky-950 text-sky-300 border border-sky-600/60 text-xs font-bold px-3 py-1 rounded-full">
@@ -230,7 +230,7 @@ Object.assign(App.prototype, {
               </div>
             </div>
             <div class="flex items-center justify-between pt-4 border-t border-slate-800 text-sm font-ninja font-bold text-sky-400 group-hover:text-cyan-300">
-              <span>Explore Science Explorers</span>
+              <span>Explore Science Lab</span>
               <span class="group-hover:translate-x-2 transition-transform text-lg">→</span>
             </div>
           </button>
@@ -358,7 +358,7 @@ Object.assign(App.prototype, {
         name: 'Science Lab',
         icon: '🔬',
         description: 'Explore space, habitats, and the natural world.',
-        actions: ['science-home']
+        actions: ['science-lab']
       },
       {
         id: 'spelling-words',

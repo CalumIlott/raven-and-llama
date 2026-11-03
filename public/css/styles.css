@@ -729,7 +729,7 @@ html.theme-light #app-main[data-page="dojo"] { --page-accent: #916714; }
 #app-main[data-page="timetables"] { --page-accent: #54c4a0; }
 html.theme-light #app-main[data-page="timetables"] { --page-accent: #187c57; }
 #app-main[data-page="science"] { --page-accent: #65b8e4; }
-html.theme-light #app-main[data-page="science"] { --page-accent: #17688c; }
+html.theme-light #app-main:is([data-page="science"], [data-page="science-lab"], [data-page="science-solar-system"]) { --page-accent: #17688c; }
 #app-main[data-page="spelling"] { --page-accent: #e3a165; }
 html.theme-light #app-main[data-page="spelling"] { --page-accent: #97512b; }
 #app-main[data-page="trophy"] { --page-accent: #e4b844; }
@@ -785,16 +785,16 @@ html.theme-light #app-main[data-page="trophy"] { --page-accent: #916714; }
   gap: 0.75rem;
 }
 
-#app-main[data-page="science"] .module-intro--science {
+#app-main:is([data-page="science"], [data-page="science-lab"]) .module-intro--science {
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
 }
 
-#app-main[data-page="science"] .module-banner-aside { text-align: left; }
+#app-main:is([data-page="science"], [data-page="science-lab"]) .module-banner-aside { text-align: left; }
 
 @media (max-width: 600px) {
-  #app-main[data-page="science"] .module-intro--science { flex-direction: column; }
+  #app-main:is([data-page="science"], [data-page="science-lab"]) .module-intro--science { flex-direction: column; }
 }
 
 #app-main[data-page="trophy"] > div:first-child > div:nth-child(2) {

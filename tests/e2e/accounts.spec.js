@@ -153,7 +153,8 @@ test('subject years recommend tiered activity difficulty while explicit choices 
   await expect.poll(() => page.evaluate(() => window.app.moneyGame.difficulty)).toBe('hard');
 
   await page.locator('[data-action="learning-centre"]').click();
-  await page.locator('#learning-modules-grid button[data-action="science-home"]').click();
+  await page.locator('#learning-modules-grid button[data-action="science-lab"]').click();
+  await page.locator('[data-action="science-home"]').click();
   const scienceRecommended = page.locator('[data-action="science-start"][data-profile-recommended="true"]').first();
   await expect(scienceRecommended).toHaveAttribute('data-difficulty', 'easy');
   await scienceRecommended.click();
