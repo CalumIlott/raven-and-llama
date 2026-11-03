@@ -168,6 +168,7 @@ test('hub introductions align their copy to the left', async ({ page }) => {
 });
 
 test('home hub cards align and the guest banner follows the active theme', async ({ page }) => {
+  await page.goto('/?leaderboardPreview=1');
   const cards = await page.locator('#app-main[data-page="home"] .home-hub-card').evaluateAll(elements =>
     elements.map(element => {
       const { width, height } = element.getBoundingClientRect();
