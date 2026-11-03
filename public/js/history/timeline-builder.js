@@ -204,6 +204,7 @@ Object.assign(App.prototype, {
         id: `${HISTORY_TIMELINE_ACTIVITY_ID}-events`,
         type: 'ordering',
         prompt: 'Put these selected events in chronological order.',
+        hint: 'Use the approximate dates as clues and look for the earliest event first.',
         answer: correctOrder,
         correctOrder
       }],
@@ -242,7 +243,7 @@ Object.assign(App.prototype, {
             <div>
               <p class="history-eyebrow">History &amp; Discovery</p>
               <h1 id="history-timeline-title">${complete ? 'Timeline Complete!' : 'Timeline Builder'}</h1>
-              <p>Arrange the selected events from earliest to most recent. Their dates are approximate and appear after you finish.</p>
+              <p>Put these selected events in chronological order. Arrange them from earliest to most recent; their dates are approximate and appear after you finish.</p>
             </div>
             <span class="history-timeline-count">${game.placements.filter(Boolean).length} of ${HISTORY_EVENTS.length} placed</span>
           </div>

@@ -311,6 +311,26 @@
     </div>
   </div>
 
+  <aside id="mascot-companion-root" class="mascot-companion" aria-label="Raven &amp; Llama companion">
+    <section id="mascot-companion-panel" class="mascot-companion__panel" data-mascot-panel aria-labelledby="mascot-companion-title" hidden>
+      <div class="mascot-companion__heading">
+        <span class="mascot-companion__avatar" aria-hidden="true">🦙</span>
+        <div>
+          <h2 id="mascot-companion-title" data-mascot-title></h2>
+          <p data-mascot-message role="status" aria-live="polite"></p>
+        </div>
+        <button type="button" data-action="mascot-dismiss" class="mascot-companion__dismiss" aria-label="Hide companion">×</button>
+      </div>
+      <p class="mascot-companion__instructions" data-mascot-instructions></p>
+      <button type="button" data-action="mascot-hint" class="mascot-companion__hint" hidden>Get a hint</button>
+      <p class="mascot-companion__hint-text" data-mascot-hint role="status" aria-live="polite" hidden></p>
+    </section>
+    <p class="mascot-companion__announcement sr-only" data-mascot-announcement role="status" aria-live="polite"></p>
+    <button type="button" data-action="mascot-toggle" class="mascot-companion__toggle" aria-controls="mascot-companion-panel" aria-expanded="false" aria-label="Open Raven &amp; Llama helper">
+      <span aria-hidden="true">🦙</span><span>Need a hand?</span>
+    </button>
+  </aside>
+
   <!-- App Logic Scripts -->
   <script src="js/shared/audio.js"></script>
   <script src="js/mathmasters/curriculum.js"></script>
@@ -344,5 +364,6 @@
   <script src="js/science/solar-system.js"></script>
   <script src="js/science/plant-life-cycle.js"></script>
   <script src="js/science/virtual-lab.js"></script>
+  <script src="js/shared/mascot-companion.js"></script>
 </body>
 </html>
