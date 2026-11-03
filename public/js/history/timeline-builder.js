@@ -207,7 +207,8 @@ Object.assign(App.prototype, {
       questions: [{
         id: `${HISTORY_TIMELINE_ACTIVITY_ID}-events`,
         type: 'ordering',
-        prompt: 'Put these selected events in chronological order.',
+        prompt: 'Drag cards onto the timeline and drag placed events to reorder them, or select a card and position.',
+        hint: 'Use the approximate dates as clues and look for the earliest event first.',
         answer: correctOrder,
         correctOrder
       }],
@@ -246,7 +247,7 @@ Object.assign(App.prototype, {
             <div>
               <p class="history-eyebrow">History &amp; Discovery</p>
               <h1 id="history-timeline-title">${complete ? 'Timeline Complete!' : 'Timeline Builder'}</h1>
-              <p>Drag event cards onto the timeline, or select a card and position. Drag placed events to reorder them.</p>
+              <p>Arrange events from earliest to most recent. Drag cards onto the timeline and drag placed events to reorder them, or select a card and position. Dates are approximate and appear after you finish.</p>
             </div>
             <span class="history-timeline-count">${game.placements.filter(Boolean).length} of ${HISTORY_EVENTS.length} placed</span>
           </div>

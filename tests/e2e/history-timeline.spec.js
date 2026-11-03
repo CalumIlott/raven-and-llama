@@ -27,6 +27,17 @@ test('History & Discovery is linked from the subject card and survives route his
   await expect(page).toHaveURL(/\/learning-centre$/);
 });
 
+test('navigation buttons and source links show a pointer cursor', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/history');
+
+  const startButton = page.locator('[data-action="history-timeline-start"]');
+  await expect(startButton).toHaveCSS('cursor', 'pointer');
+  await startButton.click();
+  await page.locator('[data-action="history-event-select"]').first().click();
+  await expect(page.locator('.history-event-fact__source a[href]')).toHaveCSS('cursor', 'pointer');
+});
+
 test('Timeline Builder gives useful retry feedback and completes in chronological order', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/history');
