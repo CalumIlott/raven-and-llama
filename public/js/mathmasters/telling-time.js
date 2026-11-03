@@ -134,7 +134,22 @@ Object.assign(App.prototype, {
     if (!mode) return;
     this.timeActivity = {
       mode,
-      questions: Array.from({ length: 10 }, () => TimeTelling.generateQuestion(mode.id)),
+      questions: Array.from({ length: 10 }, () => ({
+        ...TimeTelling.generateQuestion(mode.id),
+        feedback: {
+          correct: 'Correct! Great time telling!',
+          incorrect: 'Not quite — try reading the clock another way.',
+          explanation: 'The short hand shows the hour. The long hand shows the minutes, counted around the clock in fives.',
+          audioHint: 'Read the short hand for the hour, then count the minutes from the long hand.',
+          workedExample: {
+            title: 'Read an analogue clock',
+            steps: [
+              { label: 'Find the hour', detail: 'Look at the short hand first.' },
+              { label: 'Count the minutes', detail: 'Each number the long hand passes counts five minutes.' }
+            ]
+          }
+        }
+      })),
       index: 0,
       score: 0,
       selected: null
@@ -157,6 +172,13 @@ Object.assign(App.prototype, {
     activity.selected = answer;
     this.timeActivityEngine.submitAnswer(answer);
     activity.score = this.timeActivityEngine.score;
+    this.renderTimeActivity();
+  },
+
+  retryTimeActivityAnswer() {
+    const activity = this.timeActivity;
+    if (!activity || activity.selected === null || !this.timeActivityEngine.allowRetry()) return;
+    activity.selected = null;
     this.renderTimeActivity();
   },
 
@@ -199,9 +221,9 @@ Object.assign(App.prototype, {
     const options = question.options.map(option => {
       const correct = option === question.answer;
       const selected = option === activity.selected;
-      const stateClass = answered && correct
+      const stateClass = answered && selected && correct
         ? 'border-emerald-400 bg-emerald-950 text-emerald-200'
-        : selected ? 'border-rose-400 bg-rose-950 text-rose-200' : 'border-slate-600 bg-slate-800 hover:border-amber-400 text-white';
+        : answered && selected ? 'border-rose-400 bg-rose-950 text-rose-200' : 'border-slate-600 bg-slate-800 hover:border-amber-400 text-white';
       const content = question.display === 'digital'
         ? TimeTelling.formatClockSvg(option, 128)
         : option;
@@ -217,9 +239,16 @@ Object.assign(App.prototype, {
       ? `<div class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 border-2 border-sky-500 px-6 py-3 font-mono text-4xl text-sky-300 shadow-lg" aria-label="Digital time ${question.answer}">${question.answer}</div>`
       : TimeTelling.formatClockSvg(question.answer);
     const feedback = answered
-      ? `<div class="text-center mt-5 text-lg font-bold ${activity.selected === question.answer ? 'text-emerald-300' : 'text-rose-300'}" role="status" aria-live="polite">
-          ${activity.selected === question.answer ? 'Correct! Great time telling!' : `Not quite — the time is ${question.answer}.`}
-        </div>`
+      ? EducationalFeedback.render({
+        correct: activity.selected === question.answer,
+        message: activity.selected === question.answer ? question.feedback.correct : question.feedback.incorrect,
+        explanation: question.feedback.explanation,
+        workedExample: question.feedback.workedExample,
+        audioHint: question.feedback.audioHint,
+        retryAction: activity.selected === question.answer ? null : 'time-retry-answer',
+        continueAction: 'time-next',
+        continueLabel: activity.index === activity.questions.length - 1 ? 'See results →' : 'Next question →'
+      })
       : '';
 
     main.innerHTML = `
@@ -241,7 +270,6 @@ Object.assign(App.prototype, {
           <div class="flex justify-center mb-6">${prompt}</div>
           <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">${options}</div>
           ${feedback}
-          ${answered ? `<button data-action="time-next" class="btn-ninja mt-6 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold">${activity.index === activity.questions.length - 1 ? 'See results' : 'Next question'} →</button>` : ''}
         </section>
       </div>
     `;

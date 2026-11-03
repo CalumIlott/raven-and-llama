@@ -3782,6 +3782,12 @@ const JUNGLE_JUMBLE_DIFFICULTIES = {
 };
 
 const SPELLING_SAFARI_DIFFICULTY_OPTIONS = { easy: 2, medium: 3, hard: 4 };
+
+function safeSpellingAudioHint(question) {
+  const hint = typeof question.hint === 'string' ? question.hint : question.hint?.text || question.hint?.audio;
+  if (typeof hint !== 'string' || hint.toLocaleLowerCase().includes(String(question.answer).toLocaleLowerCase())) return null;
+  return hint;
+}
 const PHONICS_PICTURE_CLUES = {
   ship: '🚢', frog: '🐸', clap: '👏', brush: '🪥', chick: '🐥', whale: '🐋',
   stone: '🪨', smile: '🙂', duck: '🦆', truck: '🚚', flag: '🚩', crab: '🦀',
@@ -4002,8 +4008,20 @@ Object.assign(App.prototype, {
       ? `<p class="spelling-hint text-sm text-slate-400 mt-2">${question.hint}</p>`
       : '';
     const feedback = game.answered
-      ? `<div id="safari-feedback" role="status" class="play-feedback spelling-feedback mt-5 p-3 rounded-xl ${game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect'}">${game.lastAnswerCorrect ? 'Great work! 🌟' : 'Not quite! Keep exploring!'}</div>
-        <button data-action="spelling-next" class="spelling-next-button mt-4 w-full py-3 rounded-xl font-bold">Next word →</button>`
+      ? EducationalFeedback.render({
+        id: 'safari-feedback',
+        correct: game.lastAnswerCorrect,
+        message: game.lastAnswerCorrect ? 'Great work! 🌟' : 'Not quite! Keep exploring!',
+        explanation: game.lastAnswerCorrect
+          ? question.feedback?.explanation
+          : question.feedback?.incorrect || 'Listen for each sound and check the letter pattern in the clue.',
+        workedExample: question.feedback?.workedExample,
+        audioHint: safeSpellingAudioHint(question),
+        retryAction: game.lastAnswerCorrect ? null : 'spelling-retry',
+        continueAction: 'spelling-next',
+        continueLabel: 'Next word →',
+        className: 'spelling-feedback'
+      })
       : '';
 
     arena.innerHTML = `
@@ -4038,7 +4056,16 @@ Object.assign(App.prototype, {
       String(answer).toLowerCase() === question.answer.toLowerCase()
     );
     game.score = this.spellingActivityEngine.score;
-    if (!game.lastAnswerCorrect) game.mistakes.push(question.answer);
+    this.renderSpellingSafariQuestion();
+  },
+
+  retrySpellingSafariQuestion() {
+    const game = this.spellingSafariGame;
+    if (!game?.answered || !this.spellingActivityEngine.allowRetry()) return;
+    game.answered = false;
+    game.lastAnswerCorrect = null;
+    game.selectedAnswer = null;
+    game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   },
 
@@ -4064,6 +4091,7 @@ Object.assign(App.prototype, {
   nextSpellingSafariQuestion() {
     const game = this.spellingSafariGame;
     if (!game?.answered) return;
+    if (!game.lastAnswerCorrect) game.mistakes.push(game.questions[game.index].answer);
     const hasNextQuestion = this.spellingActivityEngine.nextQuestion();
     game.index = hasNextQuestion ? this.spellingActivityEngine.currentIndex : game.questions.length;
     game.answered = false;

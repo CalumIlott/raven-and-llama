@@ -43,7 +43,12 @@ function loadBrowserScripts(context, ...scriptPaths) {
 }
 
 function loadActivityEngine(context) {
-  return loadBrowserScripts(context, 'public/js/vendor/activity-validator.js', 'public/js/shared/activity-engine.js');
+  return loadBrowserScripts(
+    context,
+    'public/js/vendor/activity-validator.js',
+    'public/js/shared/activity-engine.js',
+    'public/js/shared/educational-feedback.js'
+  );
 }
 
 module.exports = { createBrowserContext, loadBrowserScripts, loadActivityEngine };

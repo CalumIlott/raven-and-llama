@@ -97,3 +97,28 @@ test('money rounds delegate answers and completion to ActivityEngine', () => {
   assert.equal(app.moneyActivityEngine.score, 6);
   assert.equal(app.moneyGame.index, 6);
 });
+
+test('money feedback explains the strategy and allows another attempt', () => {
+  const main = { innerHTML: '', dataset: {} };
+  const arena = { innerHTML: '' };
+  const context = createBrowserContext({
+    App: class App {},
+    document: {
+      getElementById: id => id === 'app-main' ? main : id === 'money-arena' ? arena : null
+    }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/money.js');
+  const app = new context.App();
+
+  app.startMoneyGame('coin-recognition', 'easy');
+  const question = app.moneyGame.questions[0];
+  const wrongAnswer = question.options.find(option => option.value !== question.answer).value;
+  app.answerMoneyQuestion(wrongAnswer);
+
+  assert.match(arena.innerHTML, /Compare the shape, colour, and printed value/);
+  assert.match(arena.innerHTML, /data-action="money-retry"/);
+  app.retryMoneyQuestion();
+  assert.equal(app.moneyGame.answered, false);
+  assert.equal(app.moneyActivityEngine.answered, false);
+});

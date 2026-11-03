@@ -162,6 +162,13 @@ test('incorrect answer in Spelling Safari does not reveal the correct answer', (
   assert.match(context.arena.innerHTML, /spelling-choice[^"]*is-incorrect/);
   assert.match(context.arena.innerHTML, /Not quite! Keep exploring!/);
   assert.doesNotMatch(context.arena.innerHTML, /The answer was/);
+  assert.match(context.arena.innerHTML, /data-action="spelling-retry"/);
+
+  app.retrySpellingSafariQuestion();
+  assert.equal(app.spellingSafariGame.answered, false);
+  app.submitSpellingSafariAnswer(question.answer);
+  assert.equal(app.spellingSafariGame.score, 1);
+  assert.deepEqual(Array.from(app.spellingSafariGame.mistakes), []);
 });
 
 test('correct multiple-choice answer in Spelling Safari is highlighted green', () => {

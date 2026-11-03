@@ -4232,13 +4232,19 @@ Object.assign(App.prototype, {
             }).join('')}
           </div>
           ${game.answered ? `
-            <div class="play-feedback science-feedback mt-5 p-4 rounded-2xl ${game.lastAnswerCorrect ? 'is-correct bg-emerald-950/60 border border-emerald-700' : 'is-incorrect bg-amber-950/50 border border-amber-800'}" role="status" aria-live="polite">
-              <p class="font-bold">${game.lastAnswerCorrect ? 'Great discovery! +1 star ⭐' : 'Not quite! Keep exploring!'}</p>
-              ${game.lastAnswerCorrect && question.fact ? `<p class="text-sm text-slate-200 mt-1">${question.fact}</p>` : ''}
-            </div>
-            <button type="button" data-action="science-continue" class="btn-ninja w-full mt-4 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-ninja font-bold">
-              ${game.index + 1 === game.mission.questions.length ? 'Finish Mission 🏁' : 'Next Clue →'}
-            </button>
+            ${EducationalFeedback.render({
+              correct: game.lastAnswerCorrect,
+              message: game.lastAnswerCorrect ? 'Great discovery! +1 star ⭐' : 'Not quite! Keep exploring!',
+              explanation: game.lastAnswerCorrect
+                ? question.feedback?.explanation || question.fact
+                : question.feedback?.incorrect || 'Compare each choice with the clue, then try again.',
+              workedExample: question.feedback?.workedExample,
+              audioHint: question.feedback?.audioHint,
+              retryAction: game.lastAnswerCorrect ? null : 'science-retry',
+              continueAction: 'science-continue',
+              continueLabel: game.index + 1 === game.mission.questions.length ? 'Finish Mission 🏁' : 'Next Clue →',
+              className: 'science-feedback'
+            })}
           ` : ''}
         </div>
       </div>
@@ -4256,6 +4262,15 @@ Object.assign(App.prototype, {
     this.scienceActivityEngine.recordOutcome(game.lastAnswerCorrect);
     game.correct = this.scienceActivityEngine.score;
     window.soundFX?.[game.lastAnswerCorrect ? 'playCorrect' : 'playWrong']();
+    this.renderScienceQuestion();
+  },
+
+  retryScienceQuestion() {
+    const game = this.scienceGame;
+    if (!game?.answered || !this.scienceActivityEngine.allowRetry()) return;
+    game.answered = false;
+    game.lastAnswerCorrect = false;
+    game.selectedIndex = null;
     this.renderScienceQuestion();
   },
 
