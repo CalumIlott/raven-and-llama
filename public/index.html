@@ -149,6 +149,19 @@
         <p class="account-guest-note mt-4 text-xs text-zinc-400">Guest play is always available. Guest progress lasts only for this visit and is not saved.</p>
       </div>
 
+      <section id="cosmetic-shop" class="account-settings-section mb-5 rounded-xl border border-zinc-700 bg-zinc-950/60 p-4" aria-labelledby="cosmetic-shop-title">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h4 id="cosmetic-shop-title" class="text-sm font-bold text-white">Cosmetic Shop</h4>
+            <p class="mt-1 text-xs text-zinc-400">Spend stars on avatar frames. Your current avatars stay free.</p>
+          </div>
+          <p class="shrink-0 text-xs text-yellow-300">Stars: <strong id="cosmetic-star-balance">0</strong> ⭐</p>
+        </div>
+        <div id="cosmetic-shop-items" role="list" aria-label="Available avatar frames" class="mt-3 grid gap-2 sm:grid-cols-3"></div>
+        <p id="cosmetic-shop-session-note" class="mt-3 text-[11px] text-zinc-400"></p>
+        <p id="cosmetic-shop-status" class="mt-2 min-h-5 text-sm" role="status" aria-live="polite"></p>
+      </section>
+
       <div id="account-signed-in-panel" class="account-settings-panel hidden">
         <p class="account-signed-in-summary mb-5 text-sm text-zinc-300">Signed in as <strong id="account-username-display" class="text-white"></strong></p>
         <div id="account-settings-view">
@@ -338,6 +351,7 @@
   <script src="js/mathmasters/generators.js"></script>
   <script src="js/shared/accounts.js"></script>
   <script src="js/shared/achievement-badges.js"></script>
+  <script src="js/shared/cosmetic-shop.js"></script>
   <script src="js/vendor/activity-validator.js"></script>
   <script src="js/shared/activity-engine.js"></script>
   <script src="js/shared/educational-feedback.js"></script>

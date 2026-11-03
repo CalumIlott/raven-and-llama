@@ -246,6 +246,67 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(oldList.status, 404);
 });
 
+test('cosmetic purchases use server prices, preserve ownership, and are idempotent', async () => {
+  const store = new MemoryAccountStore();
+  const registration = await request(store, '/api/auth/register', 'POST', {
+    username: 'cosmetic_owner',
+    password: 'a secure password 123'
+  });
+  const account = await registration.json();
+  const cookie = sessionCookie(registration);
+
+  assert.equal((await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame'
+  })).status, 401);
+  assert.equal((await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'unknown-frame'
+  }, cookie)).status, 400);
+  assert.equal((await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame'
+  }, cookie)).status, 409);
+
+  await store.saveProgress(account.user.id, { ...account.profile, stars: 20 });
+  const purchase = await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame',
+    price: 0,
+    stars: 1000
+  }, cookie);
+  assert.equal(purchase.status, 200);
+  const purchased = await purchase.json();
+  assert.equal(purchased.purchased, true);
+  assert.equal(purchased.profile.stars, 15);
+  assert.deepEqual(purchased.profile.ownedCosmetics, ['sunrise-frame']);
+  assert.equal(purchased.profile.equippedCosmetic, null);
+
+  const retry = await request(store, '/api/cosmetics/purchase', 'POST', {
+    cosmeticId: 'sunrise-frame'
+  }, cookie);
+  assert.equal(retry.status, 200);
+  const retried = await retry.json();
+  assert.equal(retried.purchased, false);
+  assert.equal(retried.reason, 'already-owned');
+  assert.equal(retried.profile.stars, 15);
+
+  const forgedOwnership = await request(store, '/api/progress', 'PUT', {
+    profile: {
+      ...retried.profile,
+      ownedCosmetics: ['galaxy-frame'],
+      equippedCosmetic: 'sunrise-frame'
+    }
+  }, cookie);
+  assert.equal(forgedOwnership.status, 200);
+  assert.deepEqual((await forgedOwnership.json()).profile.ownedCosmetics, ['sunrise-frame']);
+
+  const equipUnowned = await request(store, '/api/progress', 'PUT', {
+    profile: {
+      ...retried.profile,
+      ownedCosmetics: ['galaxy-frame'],
+      equippedCosmetic: 'galaxy-frame'
+    }
+  }, cookie);
+  assert.equal(equipUnowned.status, 400);
+});
+
 test('progress rejects invalid, duplicate, and oversized spelling-list data', async () => {
   const store = new MemoryAccountStore();
   const registered = await request(store, '/api/auth/register', 'POST', {

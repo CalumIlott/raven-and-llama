@@ -4,6 +4,7 @@ class ProfileManager {
   static accountServiceAvailable = true;
   static lastSaveError = '';
   static saveQueue = Promise.resolve();
+  static cosmeticPurchaseQueue = Promise.resolve();
   static GUEST_THEME_KEY = 'raven_llama_guest_theme';
   static MAX_SPELLING_LISTS = 10;
   static MAX_SPELLING_WORDS_PER_LIST = 50;
@@ -61,6 +62,8 @@ class ProfileManager {
       skillsProgress: {},
       activityProgress: {},
       earnedBadges: [],
+      ownedCosmetics: [],
+      equippedCosmetic: null,
       dailyChallenges: { days: {} },
       endlessHighScores: {},
       spellingLists: [],
@@ -97,6 +100,12 @@ class ProfileManager {
         passedBelts
       })
       : [];
+    const ownedCosmetics = window.CosmeticShop
+      ? window.CosmeticShop.normalizeOwned(source.ownedCosmetics)
+      : [];
+    const equippedCosmetic = ownedCosmetics.includes(source.equippedCosmetic)
+      ? source.equippedCosmetic
+      : null;
     return {
       id: account?.id || 'guest',
       name: account?.username || 'Guest',
@@ -114,6 +123,8 @@ class ProfileManager {
       skillsProgress,
       activityProgress,
       earnedBadges,
+      ownedCosmetics,
+      equippedCosmetic,
       dailyChallenges: ProfileManager.normalizeDailyChallenges(source.dailyChallenges),
       endlessHighScores,
       spellingLists,
@@ -435,6 +446,58 @@ class ProfileManager {
     });
     window.app?.updateHeader();
     return ProfileManager.saveQueue;
+  }
+
+  static purchaseCosmetic(cosmeticId) {
+    const operation = ProfileManager.cosmeticPurchaseQueue.catch(() => false).then(async () => {
+      const cosmetic = window.CosmeticShop?.get(cosmeticId);
+      if (!cosmetic || !cosmetic.available) return { success: false, reason: 'unavailable' };
+      const profile = ProfileManager.getActiveProfile();
+      if (profile.ownedCosmetics.includes(cosmeticId)) return { success: false, reason: 'already-owned' };
+      if (profile.stars < cosmetic.price) return { success: false, reason: 'insufficient-stars' };
+
+      if (ProfileManager.account) {
+        const accountId = ProfileManager.account.id;
+        const data = await ProfileManager.requestApi('/api/cosmetics/purchase', 'POST', { cosmeticId });
+        if (ProfileManager.account?.id !== accountId) return { success: false, reason: 'account-changed' };
+        ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, ProfileManager.account);
+        ProfileManager.lastSaveError = '';
+        window.app?.updateHeader();
+        return {
+          success: data.purchased === true,
+          reason: data.reason || (data.purchased ? null : 'already-owned')
+        };
+      }
+
+      ProfileManager.currentProfile = ProfileManager.normalizeProfile({
+        ...profile,
+        stars: profile.stars - cosmetic.price,
+        ownedCosmetics: [...profile.ownedCosmetics, cosmeticId]
+      }, null);
+      window.app?.updateHeader();
+      return { success: true, reason: null };
+    });
+    ProfileManager.cosmeticPurchaseQueue = operation.catch(() => false);
+    return operation;
+  }
+
+  static async equipCosmetic(cosmeticId) {
+    const profile = ProfileManager.getActiveProfile();
+    if (cosmeticId !== null &&
+      (!window.CosmeticShop?.get(cosmeticId) || !profile.ownedCosmetics.includes(cosmeticId))) {
+      return { success: false, reason: 'not-owned' };
+    }
+    if (profile.equippedCosmetic === cosmeticId) return { success: false, reason: 'already-equipped' };
+
+    const updatedProfile = { ...profile, equippedCosmetic: cosmeticId };
+    if (!ProfileManager.account) {
+      ProfileManager.currentProfile = ProfileManager.normalizeProfile(updatedProfile, null);
+      window.app?.updateHeader();
+      return { success: true, reason: null };
+    }
+
+    const saved = await ProfileManager.updateProfile(updatedProfile);
+    return { success: saved, reason: saved ? null : 'save-failed' };
   }
 
   static flush() {

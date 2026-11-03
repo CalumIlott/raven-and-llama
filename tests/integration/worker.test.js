@@ -183,6 +183,20 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(savedProgress.earnedBadges, ['first-steps', 'skill-master', 'curriculum-graduate']);
   assert.equal(savedProgress.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'science-solar-system-order');
 
+  const cosmeticPurchase = await fetch(`${baseUrl}/api/cosmetics/purchase`, {
+    method: 'POST',
+    headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cosmeticId: 'sunrise-frame' })
+  });
+  assert.equal(cosmeticPurchase.status, 200);
+  const cosmeticResult = await cosmeticPurchase.json();
+  assert.equal(cosmeticResult.profile.stars, 4);
+  assert.deepEqual(cosmeticResult.profile.ownedCosmetics, ['sunrise-frame']);
+  const restoredCosmetics = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: cookie } });
+  const restoredProfile = (await restoredCosmetics.json()).profile;
+  assert.equal(restoredProfile.stars, 4);
+  assert.deepEqual(restoredProfile.ownedCosmetics, ['sunrise-frame']);
+
   const otherRegister = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',
     headers: { Origin: baseUrl, 'Content-Type': 'application/json' },
@@ -196,6 +210,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(otherProfile.activeSpellingListId, null);
   assert.deepEqual(otherProfile.activityProgress, {});
   assert.deepEqual(otherProfile.earnedBadges, []);
+  assert.deepEqual(otherProfile.ownedCosmetics, []);
   assert.deepEqual(otherProfile.dailyChallenges, { days: {} });
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
