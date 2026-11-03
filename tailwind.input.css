@@ -40,6 +40,6 @@ body.activity-drag-active * {
 @media (prefers-reduced-motion: reduce) {
   [draggable="true"],
   [data-drag-drop-target] {
-    transition: none;
+    transition: none !important;
   }
 }
