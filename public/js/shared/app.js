@@ -44,6 +44,7 @@ class App {
       '/learning-centre': 'learning-centre',
       '/learning-centre/maths': 'maths-world',
       '/learning-centre/science': 'science-lab',
+      '/learning-centre/geography': 'geography-world',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -66,6 +67,7 @@ class App {
       'learning-centre': () => this.showLearningCentre(),
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
+      'geography-world': () => this.showGeographyWorld(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -94,7 +96,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -197,6 +199,9 @@ class App {
       case 'learning': this.showLearningCentre(); break;
       case 'learning-centre': this.showLearningCentre(); break;
       case 'maths-world': this.showMathsWorld(); break;
+      case 'geography-world': this.showGeographyWorld(); break;
+      case 'geography-country-select': this.selectGeographyCountry(target.dataset.countryId); break;
+      case 'geography-country-speak': this.speakGeographyCountry(); break;
       case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
       case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;
       case 'number-builder-pick': this.pickNumberBuilderTile(Number(target.dataset.value)); break;
@@ -515,6 +520,9 @@ class App {
       } else if (this.currentView === 'maths-world') {
         subBadge.textContent = 'Maths World';
         subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'geography-world') {
+        subBadge.textContent = 'Geography & The World';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'games' || this.currentView === 'critter-catch') {
         subBadge.textContent = 'Games';
         subBadge.classList.remove('hidden');
@@ -587,6 +595,8 @@ class App {
       this.showScienceExplorers();
     } else if (this.currentView === 'science-lab') {
       this.showScienceLab();
+    } else if (this.currentView === 'geography-world') {
+      this.showGeographyWorld();
     } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
       this.renderSolarSystemActivity();
     } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {
