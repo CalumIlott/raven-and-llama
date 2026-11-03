@@ -14,7 +14,7 @@ module.exports = defineConfig({
   testDir: './tests/e2e',
   outputDir: outputDirectory,
   globalTeardown: './tests/e2e/global-teardown.js',
-  workers: 1,
+  workers: process.env.CI ? 2 : 1,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
