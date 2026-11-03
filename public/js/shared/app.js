@@ -204,6 +204,11 @@ class App {
       case 'solar-system-place': this.placeSelectedSolarSystemPlanet(Number(target.dataset.orbitIndex)); break;
       case 'solar-system-submit': this.submitSolarSystemAnswer(); break;
       case 'solar-system-restart': this.startSolarSystemActivity(); break;
+      case 'plant-life-cycle-start': this.startPlantLifeCycleActivity(); break;
+      case 'plant-life-cycle-select': this.selectPlantLifeCycleStage(target.dataset.stageId); break;
+      case 'plant-life-cycle-place': this.placeSelectedPlantLifeCycleStage(Number(target.dataset.positionIndex)); break;
+      case 'plant-life-cycle-submit': this.submitPlantLifeCycleAnswer(); break;
+      case 'plant-life-cycle-restart': this.startPlantLifeCycleActivity(); break;
       case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
@@ -458,7 +463,9 @@ class App {
       } else if (this.currentView === 'science') {
         subBadge.textContent = 'Science Explorers';
         subBadge.classList.remove('hidden');
-      } else if (this.currentView === 'science-lab' || this.currentView === 'science-solar-system') {
+      } else if (this.currentView === 'science-lab' ||
+        this.currentView === 'science-solar-system' ||
+        this.currentView === 'science-plant-life-cycle') {
         subBadge.textContent = 'Science Lab';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'spelling') {
@@ -517,6 +524,8 @@ class App {
       this.showScienceLab();
     } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
       this.renderSolarSystemActivity();
+    } else if (this.currentView === 'science-plant-life-cycle' && this.plantLifeCycleGame) {
+      this.renderPlantLifeCycleActivity();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
     } else if (this.currentView === 'spelling') {
