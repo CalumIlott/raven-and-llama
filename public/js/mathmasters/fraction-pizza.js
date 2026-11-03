@@ -134,9 +134,9 @@ Object.assign(App.prototype, {
   renderFractionPizzaCard() {
     const difficulties = Object.entries(FRACTION_PIZZA_LEVELS).map(([id, level]) => `
       <button type="button" data-action="fraction-pizza-start" data-difficulty="${id}"
-        class="rounded-xl border-2 border-amber-500 bg-amber-950 px-4 py-3 text-left font-bold text-amber-100 transition hover:bg-amber-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
+        class="fraction-pizza-level rounded-xl border-2 border-amber-500 px-4 py-3 text-left font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300">
         <span class="block">${level.label}</span>
-        <span class="mt-1 block text-sm font-normal text-amber-200">${level.description}</span>
+        <span class="mt-1 block text-sm font-normal text-slate-200">${level.description}</span>
       </button>
     `).join('');
 
