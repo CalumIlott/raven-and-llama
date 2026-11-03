@@ -243,6 +243,7 @@
       </div>
 
       <div class="parent-report-table-wrap overflow-auto flex-1 pr-1">
+        <h4 class="font-ninja text-lg text-white font-bold mb-2">Curriculum Skill Progress</h4>
         <table class="parent-report-table w-full text-left border-collapse">
           <caption class="sr-only">Learner mastery and training status by skill</caption>
           <thead>
@@ -258,6 +259,24 @@
             <!-- Dynamic rows -->
           </tbody>
         </table>
+        <section class="mt-8 border-t border-slate-700 pt-6" aria-labelledby="parent-activity-stats-title">
+          <h4 id="parent-activity-stats-title" class="font-ninja text-lg text-white font-bold">Learning Centre Activity Progress</h4>
+          <p class="mt-1 mb-3 text-sm text-slate-300">Results show completed activities. Accuracy is based on answered quiz questions; games do not report quiz accuracy.</p>
+          <table class="parent-report-table w-full text-left border-collapse">
+            <caption class="sr-only">Completed Learning Centre activities and results</caption>
+            <thead>
+              <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                <th scope="col" class="py-2.5 px-3">Subject</th>
+                <th scope="col" class="py-2.5 px-3">Activity</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Times Played</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Best Result</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Accuracy</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="parent-activity-stats-tbody"></tbody>
+          </table>
+        </section>
         <section id="parent-spelling-list-manager" class="mt-8 border-t border-slate-700 pt-6" aria-labelledby="parent-spelling-list-title">
           <h4 id="parent-spelling-list-title" class="font-ninja text-xl text-white font-bold">Parent / Teacher: Weekly Spelling Lists</h4>
           <p class="mt-1 mb-4 text-sm text-slate-300">Create and manage the words available in Spell It. Enter one word per line; each list can contain up to 50 words, with up to 100 characters per word.</p>

@@ -454,30 +454,48 @@ class ProfileManager {
   static normalizeActivityProgress(progress) {
     if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return {};
     return Object.fromEntries(Object.entries(progress).filter(([id, stat]) =>
-      /^[a-z0-9][a-z0-9_-]*$/.test(id) &&
+      /^[a-z0-9][a-z0-9_-]{0,63}$/.test(id) &&
       stat && typeof stat === 'object' && !Array.isArray(stat) &&
       typeof stat.title === 'string' && typeof stat.subject === 'string' &&
       ['quiz', 'game'].includes(stat.kind) &&
       Number.isFinite(stat.bestScore) && stat.bestScore >= 0 &&
       Number.isSafeInteger(stat.timesPlayed) && stat.timesPlayed >= 0
-    ).map(([id, stat]) => [id, {
-      title: stat.title.slice(0, 100),
-      subject: stat.subject.slice(0, 50),
-      kind: stat.kind,
-      scoreUnit: typeof stat.scoreUnit === 'string' ? stat.scoreUnit.slice(0, 20) : 'points',
-      bestScore: stat.bestScore,
-      bestTotal: Number.isFinite(stat.bestTotal) && stat.bestTotal > 0 ? stat.bestTotal : null,
-      correct: Number.isFinite(stat.correct) && stat.correct >= 0 ? stat.correct : 0,
-      total: Number.isFinite(stat.total) && stat.total >= 0 ? stat.total : 0,
-      timesPlayed: stat.timesPlayed
-    }]));
+    ).map(([id, stat]) => {
+      const totalAnswers = Number.isSafeInteger(stat.totalAnswers) && stat.totalAnswers >= 0
+        ? Math.min(stat.totalAnswers, 1000000000)
+        : 0;
+      return [id, {
+        title: stat.title.slice(0, 100),
+        subject: stat.subject.slice(0, 50),
+        skillId: typeof stat.skillId === 'string' && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(stat.skillId)
+          ? stat.skillId
+          : null,
+        kind: stat.kind,
+        scoreUnit: typeof stat.scoreUnit === 'string' ? stat.scoreUnit.slice(0, 20) : 'points',
+        bestScore: stat.bestScore,
+        bestTotal: Number.isFinite(stat.bestTotal) && stat.bestTotal > 0 ? stat.bestTotal : null,
+        correct: Number.isFinite(stat.correct) && stat.correct >= 0 ? stat.correct : 0,
+        total: Number.isFinite(stat.total) && stat.total >= 0 ? stat.total : 0,
+        correctAnswers: Number.isSafeInteger(stat.correctAnswers) && stat.correctAnswers >= 0
+          ? Math.min(stat.correctAnswers, totalAnswers)
+          : 0,
+        totalAnswers,
+        timesPlayed: stat.timesPlayed
+      }];
+    }));
   }
 
-  static recordActivityScore(activity, score, total = null) {
-    if (!activity || !/^[a-z0-9][a-z0-9_-]*$/.test(activity.id || '') ||
+  static recordActivityScore(activity, score, total = null, answerMetrics = null) {
+    if (!activity || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(activity.id || '') ||
       typeof activity.title !== 'string' || typeof activity.subject !== 'string' ||
       !['quiz', 'game'].includes(activity.kind) || !Number.isFinite(score) || score < 0 ||
-      (total !== null && (!Number.isFinite(total) || total <= 0 || score > total))) {
+      (total !== null && (!Number.isFinite(total) || total <= 0 || score > total)) ||
+      (activity.skillId !== undefined && activity.skillId !== null &&
+        (typeof activity.skillId !== 'string' || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(activity.skillId))) ||
+      (answerMetrics !== null && (activity.kind !== 'quiz' ||
+        !Number.isSafeInteger(answerMetrics.correctAnswers) || answerMetrics.correctAnswers < 0 ||
+        !Number.isSafeInteger(answerMetrics.totalAnswers) || answerMetrics.totalAnswers <= 0 ||
+        answerMetrics.correctAnswers > answerMetrics.totalAnswers))) {
       throw new TypeError('Invalid activity score.');
     }
 
@@ -486,18 +504,28 @@ class ProfileManager {
     const stat = progress[activity.id] || (progress[activity.id] = {
       title: activity.title.slice(0, 100),
       subject: activity.subject.slice(0, 50),
+      skillId: activity.skillId || null,
       kind: activity.kind,
-      scoreUnit: activity.kind === 'game' ? activity.game.scoreUnit || 'points' : 'questions',
+      scoreUnit: activity.kind === 'game'
+        ? activity.game.scoreUnit || 'points'
+        : (activity.settings.pointsPerCorrect ?? 1) === 1 ? 'questions' : 'points',
       bestScore: 0,
       bestTotal: null,
       correct: 0,
       total: 0,
+      correctAnswers: 0,
+      totalAnswers: 0,
       timesPlayed: 0
     });
+    if (!stat.skillId && activity.skillId) stat.skillId = activity.skillId;
     stat.timesPlayed++;
     if (total !== null) {
       stat.correct += score;
       stat.total += total;
+    }
+    if (answerMetrics) {
+      stat.correctAnswers += answerMetrics.correctAnswers;
+      stat.totalAnswers += answerMetrics.totalAnswers;
     }
     if (score > stat.bestScore) {
       stat.bestScore = score;

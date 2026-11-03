@@ -204,37 +204,37 @@ test('authenticated training updates serialize and save only the active account 
   assert.ok(saved.every(item => item.id === account.id && item.name === account.username));
 });
 
-test('activity scores are saved as named progress without changing skill progress', async () => {
+test('activity scores preserve skill and answer metrics, award configured stars, and leave skill progress alone', async () => {
   const { accounts } = loadAccounts(async () => response({}, 401));
   await accounts.initialize();
 
-  accounts.recordActivityScore({
+  const activity = {
     id: 'time-hours',
     title: 'O’Clock & Half Past',
     subject: 'Life Skills',
     kind: 'quiz',
-    settings: {}
-  }, 8, 10);
-  accounts.recordActivityScore({
-    id: 'time-hours',
-    title: 'O’Clock & Half Past',
-    subject: 'Life Skills',
-    kind: 'quiz',
-    settings: {}
-  }, 6, 10);
+    skillId: 'life_skills_time_reading',
+    settings: { awardStars: true }
+  };
+  accounts.recordActivityScore(activity, 8, 10, { correctAnswers: 4, totalAnswers: 5 });
+  accounts.recordActivityScore(activity, 6, 10, { correctAnswers: 3, totalAnswers: 5 });
 
   const profile = accounts.getActiveProfile();
   assert.deepEqual({ ...profile.activityProgress['time-hours'] }, {
     title: 'O’Clock & Half Past',
     subject: 'Life Skills',
+    skillId: 'life_skills_time_reading',
     kind: 'quiz',
     scoreUnit: 'questions',
     bestScore: 8,
     bestTotal: 10,
     correct: 14,
     total: 20,
+    correctAnswers: 7,
+    totalAnswers: 10,
     timesPlayed: 2
   });
+  assert.equal(profile.stars, 14);
   assert.deepEqual({ ...profile.skillsProgress }, {});
 });
 

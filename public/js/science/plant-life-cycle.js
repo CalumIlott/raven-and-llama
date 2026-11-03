@@ -125,7 +125,11 @@ Object.assign(App.prototype, {
         answer: correctOrder,
         correctOrder
       }],
-      settings: { trackProgress: true, pointsPerCorrect: PLANT_LIFE_CYCLE_STAGES.length }
+      settings: {
+        trackProgress: true,
+        awardStars: true,
+        pointsPerCorrect: PLANT_LIFE_CYCLE_STAGES.length
+      }
     });
     this.renderPlantLifeCycleActivity();
   },
@@ -207,9 +211,6 @@ Object.assign(App.prototype, {
     this.plantLifeCycleActivityEngine.complete();
     game.lastAnswerCorrect = true;
     game.complete = true;
-    const profile = ProfileManager.getActiveProfile();
-    profile.stars += PLANT_LIFE_CYCLE_STAGES.length;
-    ProfileManager.updateProfile(profile);
     this.updateHeader();
     this.renderPlantLifeCycleActivity();
     return true;

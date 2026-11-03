@@ -1004,25 +1004,56 @@ class App {
     });
 
     const tbody = document.getElementById('parent-stats-tbody');
-    if (tbody) {
-      tbody.innerHTML = tableRows;
-      Object.entries(profile?.activityProgress || {}).forEach(([, stat]) => {
+    if (tbody) tbody.innerHTML = tableRows;
+
+    const activityTbody = document.getElementById('parent-activity-stats-tbody');
+    if (activityTbody) {
+      const activities = Object.entries(ProfileManager.normalizeActivityProgress(profile?.activityProgress))
+        .sort(([, first], [, second]) =>
+          first.subject.localeCompare(second.subject) || first.title.localeCompare(second.title)
+        );
+      if (activities.length === 0) {
         const row = document.createElement('tr');
-        row.className = 'border-b border-slate-800 text-xs sm:text-sm';
-        const scoreLabel = stat.kind === 'quiz' && stat.bestTotal
-          ? `${stat.bestScore} / ${stat.bestTotal}`
-          : `${stat.bestScore} ${stat.scoreUnit}`;
-        const values = [stat.subject, stat.title, stat.timesPlayed, scoreLabel, 'Played'];
-        values.forEach((value, index) => {
-          const cell = document.createElement('td');
-          cell.className = index < 2
-            ? 'py-2.5 px-3 text-slate-300 font-medium'
-            : 'py-2.5 px-3 text-center text-slate-400';
-          cell.textContent = String(value);
-          row.append(cell);
+        const cell = document.createElement('td');
+        cell.colSpan = 6;
+        cell.className = 'py-4 px-3 text-center text-slate-400';
+        cell.textContent = 'No completed Learning Centre activities yet.';
+        row.append(cell);
+        activityTbody.replaceChildren(row);
+      } else {
+        activityTbody.replaceChildren();
+        activities.forEach(([, stat]) => {
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-800 text-xs sm:text-sm';
+          const scoreLabel = stat.kind === 'quiz' && stat.bestTotal
+            ? `${stat.bestScore} / ${stat.bestTotal} ${stat.scoreUnit}`
+            : `${stat.bestScore} ${stat.scoreUnit}`;
+          const accuracy = stat.kind !== 'quiz'
+            ? 'Not measured'
+            : stat.totalAnswers > 0
+              ? `${stat.correctAnswers} / ${stat.totalAnswers} (${Math.round(stat.correctAnswers / stat.totalAnswers * 100)}%)`
+              : 'Not recorded';
+          const mastered = stat.kind === 'quiz' && stat.bestTotal > 0 && stat.bestScore >= stat.bestTotal;
+          const status = stat.timesPlayed === 0 ? 'Not started' : mastered ? 'Mastered' : 'Completed';
+          const values = [
+            stat.subject,
+            stat.title,
+            `${stat.timesPlayed} ${stat.timesPlayed === 1 ? 'play' : 'plays'}`,
+            scoreLabel,
+            accuracy,
+            status
+          ];
+          values.forEach((value, index) => {
+            const cell = document.createElement('td');
+            cell.className = index < 2
+              ? 'py-2.5 px-3 text-slate-300 font-medium'
+              : 'py-2.5 px-3 text-center text-slate-400';
+            cell.textContent = String(value);
+            row.append(cell);
+          });
+          activityTbody.append(row);
         });
-        tbody.append(row);
-      });
+      }
     }
 
     const studentNameEl = document.getElementById('parent-student-name');

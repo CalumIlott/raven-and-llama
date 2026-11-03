@@ -12,7 +12,7 @@ class ArcadeEngine {
   }
 
   stopGame() {
-    if (this.activitySession?.status === 'active') this.activitySession.complete();
+    if (this.activitySession?.status === 'active') this.activitySession.cancel();
     if (this.gameInterval) { clearInterval(this.gameInterval); this.gameInterval = null; }
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);

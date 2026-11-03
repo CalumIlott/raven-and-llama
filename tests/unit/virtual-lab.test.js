@@ -76,8 +76,10 @@ test('unsupported combinations stay safe and supported simulations record progre
   assert.equal(app.runVirtualLabSimulation(), true);
   assert.equal(app.virtualLabActivityEngine.status, 'complete');
   assert.equal(app.virtualLabActivityEngine.score, 4);
-  assert.equal(context.profile.stars, 4);
+  assert.equal(app.virtualLabActivityEngine.definition.settings.awardStars, true);
+  assert.equal(context.profile.stars, 0);
   assert.equal(context.activityScores.length, 1);
+  assert.equal(context.activityScores[0][0].settings.awardStars, true);
   assert.equal(context.activityScores[0][1], 4);
   assert.equal(context.activityScores[0][2], 4);
   assert.match(context.main.innerHTML, /Sugar dissolves/);
@@ -87,7 +89,7 @@ test('unsupported combinations stay safe and supported simulations record progre
   app.placeVirtualLabMaterial('warmth', 1);
   assert.equal(app.runVirtualLabSimulation(), true);
   assert.equal(app.virtualLabActivityEngine.status, 'complete');
-  assert.equal(context.profile.stars, 4);
+  assert.equal(context.profile.stars, 0);
   assert.equal(context.activityScores.length, 1);
   assert.match(context.main.innerHTML, /Ice melts/);
 });

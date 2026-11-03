@@ -4185,6 +4185,7 @@ Object.assign(App.prototype, {
       id: `science-${mission.id}`,
       title: mission.title,
       subject: 'Science Lab',
+      skillId: `science_${mission.id.replace(/-/g, '_')}`,
       questions: selectedQuestions.map(question => ({
         ...question,
         choices: question.choices,

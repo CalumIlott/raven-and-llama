@@ -96,6 +96,36 @@ test('tracks quiz answers, hints, question state, and completion once', () => {
   assert.equal(recorded.length, 1);
   assert.equal(recorded[0][1], 1);
   assert.equal(recorded[0][2], 2);
+  assert.deepEqual(JSON.parse(JSON.stringify(recorded[0][3])), { correctAnswers: 1, totalAnswers: 2 });
+});
+
+test('records finalized quiz accuracy rather than weighted score and ignores incomplete runs', () => {
+  const recorded = [];
+  const context = createEngineContext({ ProfileManager: {
+    recordActivityScore: (...args) => recorded.push(args)
+  } });
+  const engine = new context.ActivityEngine().startQuiz({
+    id: 'science-solar-system-order',
+    title: 'Build a Solar System',
+    subject: 'Science Lab',
+    skillId: 'science_solar_system_order',
+    questions: [{ type: 'ordering', correctOrder: ['mercury', 'venus', 'earth'] }],
+    settings: { trackProgress: true, pointsPerCorrect: 8 }
+  });
+
+  assert.equal(engine.complete(), false);
+  assert.equal(recorded.length, 0);
+  assert.equal(engine.submitAnswer(['venus', 'mercury', 'earth']), false);
+  assert.equal(engine.allowRetry(), true);
+  assert.equal(engine.submitAnswer(['mercury', 'venus', 'earth']), true);
+  assert.equal(engine.complete(), true);
+  assert.equal(engine.complete(), false);
+  assert.equal(recorded.length, 1);
+  assert.deepEqual(JSON.parse(JSON.stringify(recorded[0].slice(1))), [
+    8,
+    8,
+    { correctAnswers: 1, totalAnswers: 1 }
+  ]);
 });
 
 test('tracks game points and safely completes without a question total', () => {
@@ -114,7 +144,7 @@ test('tracks game points and safely completes without a question total', () => {
   assert.equal(recorded[0][2], null);
 });
 
-test('arcade adapters send real-time score changes through ActivityEngine', () => {
+test('stopping an incomplete arcade activity cancels its progress record', () => {
   const recorded = [];
   const context = createEngineContext({
     document: { getElementById: () => null },
@@ -124,15 +154,14 @@ test('arcade adapters send real-time score changes through ActivityEngine', () =
   const arcade = context.arcadeEngine;
 
   arcade.startActivitySession('balloon-pop', 'Balloon Pop');
+  const session = arcade.activitySession;
   arcade.addScore(10, 'score');
   arcade.deductScore(3, 'score');
   arcade.stopGame();
 
   assert.equal(arcade.score, 7);
-  assert.equal(recorded.length, 1);
-  assert.equal(recorded[0][0].id, 'arcade-balloon-pop');
-  assert.equal(recorded[0][1], 7);
-  assert.equal(recorded[0][2], null);
+  assert.equal(session.status, 'cancelled');
+  assert.equal(recorded.length, 0);
 });
 
 test('runs an activity timer and invokes timeout once', () => {

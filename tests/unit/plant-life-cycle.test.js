@@ -103,11 +103,13 @@ test('incorrect sequences give stage-relationship feedback and correct retries e
   assert.equal(app.submitPlantLifeCycleAnswer(), true);
   assert.equal(app.plantLifeCycleActivityEngine.status, 'complete');
   assert.equal(app.plantLifeCycleActivityEngine.score, 6);
-  assert.equal(context.profile.stars, 6);
+  assert.equal(app.plantLifeCycleActivityEngine.definition.settings.awardStars, true);
+  assert.equal(context.profile.stars, 0);
   assert.equal(context.activityScores.length, 1);
+  assert.equal(context.activityScores[0][0].settings.awardStars, true);
   assert.equal(context.activityScores[0][1], 6);
   assert.equal(context.activityScores[0][2], 6);
   assert.match(context.main.innerHTML, /Plant Life Cycle Complete!/);
   assert.equal(app.submitPlantLifeCycleAnswer(), false);
-  assert.equal(context.profile.stars, 6);
+  assert.equal(context.profile.stars, 0);
 });

@@ -366,6 +366,7 @@ test('parent progress report and trophy room render their full states', async ({
   await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
   const skillCount = await page.evaluate(() => window.BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0));
   await expect(page.locator('#parent-stats-tbody tr')).toHaveCount(skillCount);
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('No completed Learning Centre activities yet.');
   const reportLayout = await page.locator('.parent-report-table-wrap').evaluate(element => ({
     overflowX: getComputedStyle(element).overflowX,
     scrollWidth: element.scrollWidth,
@@ -484,8 +485,9 @@ test('Maths World route filters topics and completes Number Builder with retry a
   await expect(page).toHaveURL(/\/learning-centre$/);
   await page.locator('[data-action="parent-report"]').click();
   await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
-  await expect(page.locator('#parent-stats-tbody')).toContainText('Number Builder');
-  await expect(page.locator('#parent-stats-tbody')).toContainText('5 / 5');
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('Number Builder');
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 questions');
+  await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 (100%)');
   await page.getByRole('button', { name: 'Close', exact: true }).click();
   await page.goBack();
   await expect(page).toHaveURL(/\/learning-centre\/maths$/);

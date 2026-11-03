@@ -57,6 +57,11 @@ test('virtual lab safely runs supported combinations and refuses unsupported one
   });
   await page.getByRole('button', { name: /Back to Science Lab/ }).click();
   await expect(page.getByRole('heading', { name: 'Science Lab', exact: true })).toBeVisible();
+  await page.evaluate(() => window.app.showParentOverview());
+  const activityRows = page.locator('#parent-activity-stats-tbody');
+  await expect(activityRows).toContainText('Virtual Laboratory');
+  await expect(activityRows).toContainText('1 / 1 (100%)');
+  await expect(activityRows).toContainText('Mastered');
 });
 
 test('virtual materials can be dragged into the workspace', async ({ page }, testInfo) => {
