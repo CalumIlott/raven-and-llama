@@ -35,11 +35,27 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(guest.currentBelt, 'white');
   accounts.recordTrainingScore('addition', 8, 10);
   const guestList = { id: 'guest-week', name: 'This Week', words: ['quokka'] };
-  assert.equal(await accounts.updateProfile({ ...guest, spellingLists: [guestList], activeSpellingListId: guestList.id }), false);
+  const dayKey = new Date().toISOString().slice(0, 10);
+  const dailyChallenges = {
+    days: {
+      [dayKey]: {
+        activityIds: ['fraction-pizza'],
+        completedActivityIds: [],
+        bonusAwarded: false
+      }
+    }
+  };
+  assert.equal(await accounts.updateProfile({
+    ...guest,
+    spellingLists: [guestList],
+    activeSpellingListId: guestList.id,
+    dailyChallenges
+  }), false);
   await accounts.flush();
 
   assert.equal(accounts.getActiveProfile().stars, 8);
   assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().spellingLists)), [guestList]);
+  assert.deepEqual(JSON.parse(JSON.stringify(accounts.getActiveProfile().dailyChallenges)), dailyChallenges);
   assert.equal(accounts.getActiveProfile().activeSpellingListId, guestList.id);
   assert.equal(fetchCount, 1);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
@@ -62,6 +78,41 @@ test('spelling lists are normalized and validated with bounded unique entries', 
   assert.match(accounts.validateSpellingLists([{ ...list, words: ['quokka', ' QUOKKA '] }]), /unique/i);
   assert.match(accounts.validateSpellingLists([{ ...list, words: [''] }]), /blank/i);
   assert.match(accounts.validateSpellingLists([{ ...list, words: ['x'.repeat(101)] }]), /100 characters/i);
+});
+
+test('daily challenge profile normalization keeps only valid bounded UTC completion records', () => {
+  const { accounts } = loadAccounts();
+  const profile = accounts.normalizeProfile({
+    dailyChallenges: {
+      days: {
+        '2026-03-10': {
+          activityIds: ['fraction-pizza', 'brain-power-pattern-recognition'],
+          completedActivityIds: ['fraction-pizza'],
+          bonusAwarded: false
+        },
+        '2025-02-30': {
+          activityIds: ['maths-number-builder'],
+          completedActivityIds: [],
+          bonusAwarded: false
+        },
+        '2026-03-11': {
+          activityIds: ['science-solar-system-order'],
+          completedActivityIds: ['unknown-activity'],
+          bonusAwarded: false
+        }
+      }
+    }
+  });
+
+  assert.deepEqual(JSON.parse(JSON.stringify(profile.dailyChallenges)), {
+    days: {
+      '2026-03-10': {
+        activityIds: ['fraction-pizza', 'brain-power-pattern-recognition'],
+        completedActivityIds: ['fraction-pizza'],
+        bonusAwarded: false
+      }
+    }
+  });
 });
 
 test('profile normalization validates subject-specific years and inherits the global year', async () => {

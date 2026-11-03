@@ -127,6 +127,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal((await fetch(`${baseUrl}/data/accounts.sqlite`)).status, 404);
   assert.equal((await fetch(`${baseUrl}/data/accounts.json`)).status, 404);
 
+  const dailyChallengeDayKey = new Date().toISOString().slice(0, 10);
   const privateProgress = {
     ...first.body.profile,
     stars: 17,
@@ -135,6 +136,15 @@ test('accounts persist securely and progress stays private to the authenticated 
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
     activeSpellingListId: 'week-one',
+    dailyChallenges: {
+      days: {
+        [dailyChallengeDayKey]: {
+          activityIds: ['maths-number-builder', 'science-solar-system-order'],
+          completedActivityIds: ['maths-number-builder'],
+          bonusAwarded: false
+        }
+      }
+    },
     activityProgress: {
       'maths-number-builder': {
         title: 'Number Builder',
@@ -175,9 +185,11 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.activityProgress['maths-number-builder'].skillId, 'green_order');
   assert.equal(firstProfile.activityProgress['maths-number-builder'].correctAnswers, 4);
   assert.equal(firstProfile.activityProgress['maths-number-builder'].totalAnswers, 5);
+  assert.equal(firstProfile.dailyChallenges.days[dailyChallengeDayKey].completedActivityIds[0], 'maths-number-builder');
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+  assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);
