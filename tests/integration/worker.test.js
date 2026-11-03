@@ -127,7 +127,16 @@ test('local Worker enforces account boundaries, rate limits, and security header
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
     headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ profile: { stars: 9, certificates: [], schoolYear: 5, subjectYears: { science: 2 } } })
+    body: JSON.stringify({
+      profile: {
+        stars: 9,
+        certificates: [],
+        schoolYear: 5,
+        subjectYears: { science: 2 },
+        spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
+        activeSpellingListId: 'week-one'
+      }
+    })
   });
   assert.equal(update.status, 200);
   const progress = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: cookie } });
@@ -135,6 +144,22 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.stars, 9);
   assert.equal(savedProgress.schoolYear, 5);
   assert.deepEqual(savedProgress.subjectYears, { science: 2 });
+  assert.deepEqual(savedProgress.spellingLists, [
+    { id: 'week-one', name: 'Week One', words: ['quokka'] }
+  ]);
+  assert.equal(savedProgress.activeSpellingListId, 'week-one');
+
+  const otherRegister = await fetch(`${baseUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: { Origin: baseUrl, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: `${username}_other`, password: 'a secure worker password 123' })
+  });
+  assert.equal(otherRegister.status, 201);
+  const otherCookie = otherRegister.headers.get('set-cookie').split(';', 1)[0];
+  const otherProgress = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: otherCookie } });
+  const otherProfile = (await otherProgress.json()).profile;
+  assert.deepEqual(otherProfile.spellingLists, []);
+  assert.equal(otherProfile.activeSpellingListId, null);
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',

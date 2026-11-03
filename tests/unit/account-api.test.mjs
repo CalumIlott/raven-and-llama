@@ -116,8 +116,8 @@ test('rejects oversized streamed bodies without a content length', async () => {
   const store = new MemoryAccountStore();
   const body = new ReadableStream({
     start(controller) {
-      controller.enqueue(new Uint8Array(40000));
-      controller.enqueue(new Uint8Array(25537));
+      controller.enqueue(new Uint8Array(65536));
+      controller.enqueue(new Uint8Array(65537));
       controller.close();
     }
   });
@@ -149,6 +149,8 @@ test('accounts can only read and update their own progress', async () => {
       passedBelts: ['white'],
       schoolYear: 4,
       subjectYears: { maths: 3, science: 2, english: 0, invalid: 5 },
+      spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
+      activeSpellingListId: 'week-one',
       endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' },
       activityProgress: {
         'science-water-cycle': {
@@ -175,6 +177,10 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(firstProfile.stars, 15);
   assert.equal(firstProfile.schoolYear, 4);
   assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2, english: 0 });
+  assert.deepEqual(firstProfile.spellingLists, [
+    { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }
+  ]);
+  assert.equal(firstProfile.activeSpellingListId, 'week-one');
   assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
   assert.deepEqual(firstProfile.activityProgress, {
     'science-water-cycle': {
@@ -192,6 +198,8 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(secondProfile.stars, 0);
   assert.equal(secondProfile.schoolYear, 3);
   assert.deepEqual(secondProfile.subjectYears, {});
+  assert.deepEqual(secondProfile.spellingLists, []);
+  assert.equal(secondProfile.activeSpellingListId, null);
   assert.deepEqual(secondProfile.endlessHighScores, {});
   assert.deepEqual(secondProfile.activityProgress, {});
 
@@ -199,6 +207,40 @@ test('accounts can only read and update their own progress', async () => {
   assert.equal(anonymousRead.status, 401);
   const oldList = await request(store, '/api/profiles');
   assert.equal(oldList.status, 404);
+});
+
+test('progress rejects invalid, duplicate, and oversized spelling-list data', async () => {
+  const store = new MemoryAccountStore();
+  const registered = await request(store, '/api/auth/register', 'POST', {
+    username: 'spelling_owner',
+    password: 'a secure password 123'
+  });
+  const cookie = sessionCookie(registered);
+  const profile = (await registered.json()).profile;
+  const validList = { id: 'week-one', name: 'Week One', words: ['quokka'] };
+  const invalidLists = [
+    [{ ...validList, name: '  ' }],
+    [{ ...validList, words: [''] }],
+    [{ ...validList, words: ['quokka', ' QUOKKA '] }],
+    [{ ...validList, words: ['a'.repeat(101)] }],
+    [{ ...validList, words: Array.from({ length: 51 }, (_, index) => `word-${index}`) }],
+    [{ ...validList, id: 'invalid id' }],
+    [{ ...validList }, { ...validList }],
+    [{ ...validList, name: 'Week One' }, { ...validList, id: 'week-two', name: ' week one ' }],
+    Array.from({ length: 11 }, (_, index) => ({ ...validList, id: `week-${index}`, name: `Week ${index}` }))
+  ];
+
+  for (const spellingLists of invalidLists) {
+    const response = await request(store, '/api/progress', 'PUT', {
+      profile: { ...profile, spellingLists, activeSpellingListId: spellingLists[0]?.id || null }
+    }, cookie);
+    assert.equal(response.status, 400);
+  }
+
+  const staleSelection = await request(store, '/api/progress', 'PUT', {
+    profile: { ...profile, spellingLists: [validList], activeSpellingListId: 'deleted-list' }
+  }, cookie);
+  assert.equal(staleSelection.status, 400);
 });
 
 test('leaderboards expose only the top ten usernames and scoped scores', async () => {

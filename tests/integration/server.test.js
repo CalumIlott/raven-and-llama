@@ -132,7 +132,9 @@ test('accounts persist securely and progress stays private to the authenticated 
     stars: 17,
     passedBelts: ['white'],
     schoolYear: 6,
-    subjectYears: { maths: 3, science: 2 }
+    subjectYears: { maths: 3, science: 2 },
+    spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
+    activeSpellingListId: 'week-one'
   };
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
@@ -146,10 +148,16 @@ test('accounts persist securely and progress stays private to the authenticated 
   const firstRead = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: first.cookie } });
   const secondRead = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
   const firstProfile = (await firstRead.json()).profile;
+  const secondProfile = (await secondRead.json()).profile;
   assert.equal(firstProfile.stars, 17);
   assert.equal(firstProfile.schoolYear, 6);
   assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2 });
-  assert.equal((await secondRead.json()).profile.stars, 0);
+  assert.deepEqual(firstProfile.spellingLists, [
+    { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }
+  ]);
+  assert.equal(firstProfile.activeSpellingListId, 'week-one');
+  assert.equal(secondProfile.stars, 0);
+  assert.deepEqual(secondProfile.spellingLists, []);
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);
