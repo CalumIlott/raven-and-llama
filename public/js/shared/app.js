@@ -276,6 +276,9 @@ class App {
       case 'account-close': this.closeProfileModal(); break;
       case 'account-avatar-open': this.showAvatarPicker(); break;
       case 'account-avatar-cancel': this.showAccountSettings(); break;
+      case 'cosmetic-purchase': void this.purchaseCosmetic(target.dataset.cosmeticId); break;
+      case 'cosmetic-equip': void this.equipCosmetic(target.dataset.cosmeticId); break;
+      case 'cosmetic-unequip': void this.equipCosmetic(null); break;
       case 'account-mode': this.setAccountMode(target.dataset.mode); break;
       case 'sound-toggle': this.toggleSound(); break;
       case 'account-logout': this.logoutAccount(); break;
@@ -552,8 +555,10 @@ class App {
     }
     if (avatarEl) {
       const avatar = profile?.avatar || ProfileManager.getAvatar('raven');
+      const cosmetic = window.CosmeticShop?.get(profile?.equippedCosmetic);
       avatarEl.innerHTML = renderAvatarArtwork(avatar);
-      avatarEl.className = `site-account-button__avatar w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${avatar.image ? '' : avatar.color}`;
+      avatarEl.dataset.cosmetic = cosmetic?.id || '';
+      avatarEl.className = `site-account-button__avatar w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm shadow ${avatar.image ? '' : avatar.color} ${cosmetic?.frameClass || ''}`;
     }
     if (starsEl) starsEl.textContent = profile?.stars || 0;
     if (statusBanner && statusMessage) {
@@ -874,6 +879,7 @@ class App {
     const profile = ProfileManager.getActiveProfile();
     const avatarPicker = document.getElementById('account-avatar-picker');
     const settingsView = document.getElementById('account-settings-view');
+    this.renderCosmeticShop(profile);
     if (guestPanel) guestPanel.classList.toggle('hidden', authenticated);
     if (signedInPanel) signedInPanel.classList.toggle('hidden', !authenticated);
     if (description) description.textContent = authenticated
@@ -938,7 +944,9 @@ class App {
 
   renderAvatarOptions() {
     const options = document.getElementById('account-avatar-options');
-    const activeAvatar = ProfileManager.getActiveProfile()?.avatar || ProfileManager.getAvatar('raven');
+    const profile = ProfileManager.getActiveProfile();
+    const activeAvatar = profile?.avatar || ProfileManager.getAvatar('raven');
+    const cosmeticFrame = window.CosmeticShop?.get(profile?.equippedCosmetic)?.frameClass || '';
     if (options) options.innerHTML = ProfileManager.AVATARS.map(avatar => `
       <label class="flex flex-col items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-950 p-2 text-center text-[11px] text-zinc-300 cursor-pointer hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-950/50">
         <input class="sr-only" type="radio" name="account_avatar" value="${avatar.id}" aria-label="${avatar.name}" ${avatar.id === activeAvatar.id ? 'checked' : ''}>
@@ -951,10 +959,99 @@ class App {
     const currentAvatarName = document.getElementById('account-avatar-current-name');
     if (currentAvatarIcon) {
       currentAvatarIcon.innerHTML = renderAvatarArtwork(activeAvatar);
-      currentAvatarIcon.className = `account-avatar-current__icon ${activeAvatar.image ? '' : activeAvatar.color}`;
+      currentAvatarIcon.className = `account-avatar-current__icon ${activeAvatar.image ? '' : activeAvatar.color} ${cosmeticFrame}`;
     }
-    if (pickerCurrentAvatarIcon) pickerCurrentAvatarIcon.innerHTML = renderAvatarArtwork(activeAvatar);
+    if (pickerCurrentAvatarIcon) {
+      pickerCurrentAvatarIcon.innerHTML = renderAvatarArtwork(activeAvatar);
+      pickerCurrentAvatarIcon.className = cosmeticFrame;
+    }
     if (currentAvatarName) currentAvatarName.textContent = activeAvatar.name;
+  }
+
+  renderCosmeticShop(profile = ProfileManager.getActiveProfile(), statusMessage = '') {
+    const items = document.getElementById('cosmetic-shop-items');
+    const balance = document.getElementById('cosmetic-star-balance');
+    const sessionNote = document.getElementById('cosmetic-shop-session-note');
+    const status = document.getElementById('cosmetic-shop-status');
+    if (!items || !window.CosmeticShop) return;
+
+    const owned = new Set(profile?.ownedCosmetics || []);
+    const equipped = profile?.equippedCosmetic || null;
+    const avatar = profile?.avatar || ProfileManager.getAvatar('raven');
+    if (balance) balance.textContent = String(profile?.stars || 0);
+    if (sessionNote) sessionNote.textContent = ProfileManager.isAuthenticated()
+      ? 'Purchased frames sync with this learner account.'
+      : 'Guest purchases remain available only for this visit.';
+    items.innerHTML = window.CosmeticShop.catalog.map(item => {
+      const isOwned = owned.has(item.id);
+      const isEquipped = equipped === item.id;
+      const action = !item.available
+        ? '<button type="button" disabled class="mt-3 w-full rounded-lg bg-zinc-800 px-3 py-2 text-sm font-bold text-zinc-500">Unavailable</button>'
+        : isOwned
+          ? isEquipped
+            ? `<button type="button" data-action="cosmetic-unequip" class="mt-3 w-full rounded-lg bg-zinc-700 px-3 py-2 text-sm font-bold text-white">Remove frame</button>`
+            : `<button type="button" data-action="cosmetic-equip" data-cosmetic-id="${escapeHtml(item.id)}" class="mt-3 w-full rounded-lg bg-cyan-700 px-3 py-2 text-sm font-bold text-white hover:bg-cyan-600">Equip frame</button>`
+          : `<button type="button" data-action="cosmetic-purchase" data-cosmetic-id="${escapeHtml(item.id)}" class="mt-3 w-full rounded-lg bg-amber-400 px-3 py-2 text-sm font-bold text-zinc-950 hover:bg-amber-300">Buy ${escapeHtml(item.name)} for ${item.price} stars</button>`;
+      return `
+        <article role="listitem" data-cosmetic-id="${escapeHtml(item.id)}" aria-label="${escapeHtml(item.name)}"
+          class="rounded-lg border border-zinc-700 bg-zinc-900 p-3">
+          <div class="flex items-center gap-3">
+            <span aria-hidden="true" class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 ${escapeHtml(item.frameClass)}">${renderAvatarArtwork(avatar)}</span>
+            <span class="text-xl" aria-hidden="true">${escapeHtml(item.previewIcon)}</span>
+          </div>
+          <h5 class="mt-3 text-sm font-bold text-white">${escapeHtml(item.name)}</h5>
+          <p class="mt-1 text-xs text-zinc-300">${escapeHtml(item.description)}</p>
+          <p class="mt-2 text-[11px] text-zinc-400">Eligibility: ${escapeHtml(item.eligibility)}</p>
+          <p class="mt-1 text-xs text-yellow-300">${item.price} stars</p>
+          ${isEquipped ? '<p class="mt-1 text-xs font-bold text-emerald-300">Equipped</p>' : ''}
+          ${action}
+        </article>
+      `;
+    }).join('');
+    if (status) status.textContent = statusMessage;
+  }
+
+  async purchaseCosmetic(cosmeticId) {
+    const cosmetic = window.CosmeticShop?.get(cosmeticId);
+    if (!cosmetic) {
+      this.renderCosmeticShop(ProfileManager.getActiveProfile(), 'This cosmetic is not available.');
+      return;
+    }
+    try {
+      const result = await ProfileManager.purchaseCosmetic(cosmeticId);
+      const messages = {
+        unavailable: 'This cosmetic is not available.',
+        'already-owned': `You already own the ${cosmetic.name}.`,
+        'insufficient-stars': `You need ${cosmetic.price} stars to buy the ${cosmetic.name}.`,
+        'account-changed': 'The active account changed before the purchase completed.'
+      };
+      const message = result.success
+        ? `${cosmetic.name} purchased. You can equip it now.`
+        : messages[result.reason] || 'Unable to purchase this cosmetic.';
+      this.renderCosmeticShop(ProfileManager.getActiveProfile(), message);
+      this.updateHeader();
+    } catch (error) {
+      const profile = ProfileManager.getActiveProfile();
+      this.renderCosmeticShop(profile, error.message || 'Unable to purchase this cosmetic.');
+    }
+  }
+
+  async equipCosmetic(cosmeticId) {
+    const cosmetic = cosmeticId === null ? null : window.CosmeticShop?.get(cosmeticId);
+    try {
+      const result = await ProfileManager.equipCosmetic(cosmeticId);
+      const message = result.success
+        ? cosmetic ? `${cosmetic.name} equipped.` : 'Avatar frame removed.'
+        : result.reason === 'not-owned'
+          ? 'You must own this frame before equipping it.'
+          : result.reason === 'already-equipped'
+            ? 'This frame is already equipped.'
+            : ProfileManager.lastSaveError || 'Unable to equip this frame.';
+      this.renderCosmeticShop(ProfileManager.getActiveProfile(), message);
+      this.updateHeader();
+    } catch (error) {
+      this.renderCosmeticShop(ProfileManager.getActiveProfile(), error.message || 'Unable to equip this frame.');
+    }
   }
 
   updateAvatarSaveButton() {
@@ -967,12 +1064,14 @@ class App {
   showAvatarPicker() {
     const settingsView = document.getElementById('account-settings-view');
     const avatarPicker = document.getElementById('account-avatar-picker');
+    const cosmeticShop = document.getElementById('cosmetic-shop');
     const title = document.getElementById('account-modal-title');
     const description = document.getElementById('account-modal-description');
     if (!settingsView || !avatarPicker) return;
     this.renderAvatarOptions();
     settingsView.classList.add('hidden');
     avatarPicker.classList.remove('hidden');
+    cosmeticShop?.classList.add('hidden');
     if (title) title.textContent = 'Choose an avatar';
     if (description) description.textContent = 'Select the avatar shown on your profile.';
     document.querySelector('#account-avatar-options input:checked')?.focus();
@@ -981,12 +1080,14 @@ class App {
   showAccountSettings() {
     const settingsView = document.getElementById('account-settings-view');
     const avatarPicker = document.getElementById('account-avatar-picker');
+    const cosmeticShop = document.getElementById('cosmetic-shop');
     const title = document.getElementById('account-modal-title');
     const description = document.getElementById('account-modal-description');
     if (!settingsView || !avatarPicker) return;
     this.renderAvatarOptions();
     avatarPicker.classList.add('hidden');
     settingsView.classList.remove('hidden');
+    cosmeticShop?.classList.remove('hidden');
     if (title) title.textContent = 'Account';
     if (description) description.textContent = 'Manage your password or sign out of this account.';
     document.getElementById('account-avatar-open')?.focus();

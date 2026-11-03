@@ -195,6 +195,20 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.dailyChallenges, { days: {} });
 
+  const cosmeticPurchase = await fetch(`${baseUrl}/api/cosmetics/purchase`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: baseUrl, Cookie: first.cookie },
+    body: JSON.stringify({ cosmeticId: 'sunrise-frame' })
+  });
+  assert.equal(cosmeticPurchase.status, 200);
+  const cosmeticResult = await cosmeticPurchase.json();
+  assert.equal(cosmeticResult.profile.stars, 12);
+  assert.deepEqual(cosmeticResult.profile.ownedCosmetics, ['sunrise-frame']);
+  const cosmeticRestore = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: first.cookie } });
+  const restoredCosmetics = (await cosmeticRestore.json()).profile;
+  assert.equal(restoredCosmetics.stars, 12);
+  assert.deepEqual(restoredCosmetics.ownedCosmetics, ['sunrise-frame']);
+
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);
   const login = await postJson('/api/auth/login', { username: 'AVERY_1', password: 'a secure password 123' });

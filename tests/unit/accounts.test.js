@@ -11,7 +11,8 @@ function loadAccounts(fetchImplementation) {
     createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) }),
     'public/js/mathmasters/curriculum.js',
     'public/js/shared/accounts.js',
-    'public/js/shared/achievement-badges.js'
+    'public/js/shared/achievement-badges.js',
+    'public/js/shared/cosmetic-shop.js'
   );
   return { context, accounts: context.ProfileManager };
 }
