@@ -32,6 +32,23 @@ body {
   touch-action: manipulation;
 }
 
+.maths-world-back-link { color: #22d3ee; }
+.maths-world-back-link:hover { color: #67e8f9; }
+html.theme-light .maths-world-back-link { color: #155e75; }
+html.theme-light .maths-world-back-link:hover { color: #0e7490; }
+html.theme-light .maths-world-hero {
+  border-color: #0284c7;
+  background-color: #e0f2fe;
+  background-image: none;
+}
+html.theme-light .maths-world-hero__eyebrow { color: #075985; }
+html.theme-light .maths-world-hero__title { color: #0f172a; }
+html.theme-light #app-main[data-page="maths-world"] .number-builder-slot--filled {
+  border-color: #2563eb;
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
+
 html.theme-light body {
   background-color: #f8fafc;
   color: #0f172a;
