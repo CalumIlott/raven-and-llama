@@ -89,6 +89,7 @@ class App {
     window.SpellingPronunciation?.cancel();
     if (replace || this.isInitializing) window.history.replaceState(null, '', path);
     else window.history.pushState(null, '', path);
+    window.scrollTo?.(0, 0);
   }
 
   showHomeRoute() {

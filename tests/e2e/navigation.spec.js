@@ -128,6 +128,16 @@ test('browser back and forward restore routed views', async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.app.currentView)).toBe('critter-catch');
 });
 
+test('new routed pages start at the top after navigation', async ({ page }) => {
+  await page.goto('/learning-centre');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+  await page.evaluate(() => document.querySelector('[data-action="science-lab"]').click());
+  await expect(page).toHaveURL(/\/learning-centre\/science$/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});
+
 test('hub introductions align their copy to the left', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await openLearningCentre(page);
