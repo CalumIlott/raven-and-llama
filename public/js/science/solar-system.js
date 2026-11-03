@@ -102,6 +102,7 @@ Object.assign(App.prototype, {
     this.currentView = 'science-lab';
     this.scienceGame = null;
     this.solarSystemGame = null;
+    this.virtualLabGame = null;
     this.navigateToPath('/learning-centre/science');
     const main = document.getElementById('app-main');
     if (!main) return;
@@ -124,7 +125,7 @@ Object.assign(App.prototype, {
               ${window.brandWordmark()} <span>Science Lab</span>
             </div>
             <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">Science Lab</h1>
-            <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">Explore familiar science missions, build a model Solar System, or follow a plant's life cycle.</p>
+            <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">Explore familiar science missions, build a model Solar System, follow a plant's life cycle, or run safe virtual simulations.</p>
           </div>
           <div class="module-banner-aside">
             <p>Every discovery starts with a question.</p>
@@ -171,6 +172,20 @@ Object.assign(App.prototype, {
             <p class="text-slate-300 mb-5">Arrange the stages of a flowering plant's life and see how one cycle can begin another.</p>
             <button type="button" data-action="plant-life-cycle-start" class="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
               Explore Plant Life Cycle
+            </button>
+          </section>
+
+          <section class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 sm:p-6 shadow-xl">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="w-14 h-14 rounded-2xl bg-cyan-950 border border-cyan-700/70 flex items-center justify-center text-3xl" aria-hidden="true">🧪</span>
+              <div>
+                <p class="text-xs uppercase tracking-wider text-cyan-300 font-bold">Curated computer simulations</p>
+                <h2 class="font-ninja text-2xl text-white font-bold">Virtual Laboratory</h2>
+              </div>
+            </div>
+            <p class="text-slate-300 mb-5">Explore a small set of safe, authored outcomes in a resettable virtual workspace.</p>
+            <button type="button" data-action="virtual-lab-start" class="rounded-xl bg-cyan-700 hover:bg-cyan-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
+              Open Virtual Laboratory
             </button>
           </section>
         </div>
