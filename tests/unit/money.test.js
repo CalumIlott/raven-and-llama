@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
+const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
 function loadMoneyMasters() {
   const context = createBrowserContext({ App: class App {} });
+  loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/mathmasters/money.js');
   return context.MoneyMasters;
 }
@@ -75,4 +76,24 @@ test('money values are formatted in cents and Australian dollars', () => {
   assert.equal(money.formatMoney(75), '75c');
   assert.equal(money.formatMoney(100), '$1.00');
   assert.equal(money.formatMoney(125), '$1.25');
+});
+
+test('money rounds delegate answers and completion to ActivityEngine', () => {
+  const context = createBrowserContext({
+    App: class App {},
+    document: { getElementById: () => null }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/money.js');
+  const app = new context.App();
+
+  app.startMoneyGame('coin-recognition', 'easy');
+  for (let index = 0; index < app.moneyGame.questions.length; index++) {
+    app.answerMoneyQuestion(app.moneyGame.questions[index].answer);
+    app.nextMoneyQuestion();
+  }
+
+  assert.equal(app.moneyActivityEngine.status, 'complete');
+  assert.equal(app.moneyActivityEngine.score, 6);
+  assert.equal(app.moneyGame.index, 6);
 });

@@ -44,6 +44,7 @@ class ProfileManager {
       passedBelts: [],
       stars: 0,
       skillsProgress: {},
+      activityProgress: {},
       endlessHighScores: {},
       certificates: [],
       createdAt: now,
@@ -74,6 +75,7 @@ class ProfileManager {
       passedBelts: Array.isArray(source.passedBelts) ? source.passedBelts : [],
       stars: typeof source.stars === 'number' ? source.stars : 0,
       skillsProgress: source.skillsProgress && typeof source.skillsProgress === 'object' ? source.skillsProgress : {},
+      activityProgress: ProfileManager.normalizeActivityProgress(source.activityProgress),
       endlessHighScores,
       certificates: Array.isArray(source.certificates) ? source.certificates : [],
       createdAt: source.createdAt || now,
@@ -334,6 +336,63 @@ class ProfileManager {
     else if (score >= 8) stat.stars = Math.max(stat.stars || 0, 2);
     else if (score >= 5) stat.stars = Math.max(stat.stars || 0, 1);
     profile.stars += score;
+    ProfileManager.updateProfile(profile);
+    return profile;
+  }
+
+  static normalizeActivityProgress(progress) {
+    if (!progress || typeof progress !== 'object' || Array.isArray(progress)) return {};
+    return Object.fromEntries(Object.entries(progress).filter(([id, stat]) =>
+      /^[a-z0-9][a-z0-9_-]*$/.test(id) &&
+      stat && typeof stat === 'object' && !Array.isArray(stat) &&
+      typeof stat.title === 'string' && typeof stat.subject === 'string' &&
+      ['quiz', 'game'].includes(stat.kind) &&
+      Number.isFinite(stat.bestScore) && stat.bestScore >= 0 &&
+      Number.isSafeInteger(stat.timesPlayed) && stat.timesPlayed >= 0
+    ).map(([id, stat]) => [id, {
+      title: stat.title.slice(0, 100),
+      subject: stat.subject.slice(0, 50),
+      kind: stat.kind,
+      scoreUnit: typeof stat.scoreUnit === 'string' ? stat.scoreUnit.slice(0, 20) : 'points',
+      bestScore: stat.bestScore,
+      bestTotal: Number.isFinite(stat.bestTotal) && stat.bestTotal > 0 ? stat.bestTotal : null,
+      correct: Number.isFinite(stat.correct) && stat.correct >= 0 ? stat.correct : 0,
+      total: Number.isFinite(stat.total) && stat.total >= 0 ? stat.total : 0,
+      timesPlayed: stat.timesPlayed
+    }]));
+  }
+
+  static recordActivityScore(activity, score, total = null) {
+    if (!activity || !/^[a-z0-9][a-z0-9_-]*$/.test(activity.id || '') ||
+      typeof activity.title !== 'string' || typeof activity.subject !== 'string' ||
+      !['quiz', 'game'].includes(activity.kind) || !Number.isFinite(score) || score < 0 ||
+      (total !== null && (!Number.isFinite(total) || total <= 0 || score > total))) {
+      throw new TypeError('Invalid activity score.');
+    }
+
+    const profile = ProfileManager.getActiveProfile();
+    const progress = profile.activityProgress || (profile.activityProgress = {});
+    const stat = progress[activity.id] || (progress[activity.id] = {
+      title: activity.title.slice(0, 100),
+      subject: activity.subject.slice(0, 50),
+      kind: activity.kind,
+      scoreUnit: activity.kind === 'game' ? activity.game.scoreUnit || 'points' : 'questions',
+      bestScore: 0,
+      bestTotal: null,
+      correct: 0,
+      total: 0,
+      timesPlayed: 0
+    });
+    stat.timesPlayed++;
+    if (total !== null) {
+      stat.correct += score;
+      stat.total += total;
+    }
+    if (score > stat.bestScore) {
+      stat.bestScore = score;
+      stat.bestTotal = total;
+    }
+    if (activity.settings.awardStars) profile.stars += Math.floor(score);
     ProfileManager.updateProfile(profile);
     return profile;
   }

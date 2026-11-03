@@ -8,9 +8,11 @@ class ArcadeEngine {
     this.ctx = null;
     this.eventListeners = [];
     this.gameInterval = null;
+    this.activitySession = null;
   }
 
   stopGame() {
+    if (this.activitySession?.status === 'active') this.activitySession.complete();
     if (this.gameInterval) { clearInterval(this.gameInterval); this.gameInterval = null; }
     if (this.animationFrame) {
       cancelAnimationFrame(this.animationFrame);
@@ -21,6 +23,20 @@ class ArcadeEngine {
     });
     this.eventListeners = [];
     this.activeGame = null;
+    this.activitySession = null;
+  }
+
+  startActivitySession(gameId, title) {
+    this.activeGame = gameId;
+    this.activitySession = new ActivityEngine().start({
+      version: 1,
+      kind: 'game',
+      id: `arcade-${gameId}`,
+      title,
+      subject: 'Maths',
+      settings: { trackProgress: true },
+      game: { adapter: 'arcade', gameId, scoreUnit: 'points' }
+    });
   }
 
   addListener(target, type, handler) {
@@ -49,7 +65,9 @@ class ArcadeEngine {
   }
 
   deductScore(points, elementId) {
-    this.score = Math.max(0, this.score - points);
+    this.score = this.activitySession
+      ? this.activitySession.deductScore(points)
+      : Math.max(0, this.score - points);
     window.soundFX?.playWrong();
     const el = document.getElementById(elementId);
     if (el) {
@@ -60,7 +78,9 @@ class ArcadeEngine {
   }
 
   addScore(points, elementId, confettiOrigin = null) {
-    this.score += points;
+    this.score = this.activitySession
+      ? this.activitySession.addScore(points)
+      : this.score + points;
     window.soundFX?.playCorrect();
     if (confettiOrigin && window.confetti) {
       window.confetti({ particleCount: 25, origin: confettiOrigin });
@@ -79,6 +99,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('balloon-pop', 'Balloon Pop');
     this.score = 0;
     let target = QuestionGenerator.randomInt(1, 6);
     let balloons = [];
@@ -250,6 +271,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('potion-match', 'Potion Match');
     this.score = 0;
     // Six guaranteed pairs of 1–9 mates: every tile is solvable and the board ends cleanly.
     let values = [];
@@ -322,6 +344,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('platform-runner', 'Platform Runner');
     this.score = 0;
     const step = 5;
     let player = { x: 60, y: 250, vy: 0, isJumping: false, radius: 18 };
@@ -447,6 +470,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('shuriken-gallery', 'Shuriken Gallery');
     this.score = 0;
     let targetSum = 15;
     let targets = [];
@@ -594,6 +618,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('asteroid-blaster', 'Asteroid Blaster');
     this.score = 0;
     const timesBase = 6;
     let ship = { x: 230, y: 330, speed: 6 };
@@ -732,6 +757,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('gem-sorter', 'Gem Sorter');
     this.score = 0;
     this.gemRound = 0;
     this.gemScoreId = 'gs-score';
@@ -794,6 +820,7 @@ class ArcadeEngine {
 
   finishGemSorter(won) {
     if (this.gameInterval) { clearInterval(this.gameInterval); this.gameInterval = null; }
+    this.activitySession?.complete();
     const arena = document.getElementById('game-arena');
     if (!arena) return;
     arena.innerHTML = `<div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 ${won ? 'border-emerald-500' : 'border-rose-700'} rounded-3xl"><div class="text-5xl mb-3">${won ? '💎' : '⏱️'}</div><h2 class="font-ninja text-2xl text-white font-bold">${won ? 'Gem Master!' : 'Time’s Up!'}</h2><p class="text-slate-300 my-3">Score: <b class="text-yellow-400">${this.score}</b> · Rounds cleared: ${Math.min(this.gemRound + (won ? 0 : 0), 5)} / 5</p><button data-action="arcade-retry" data-game="startGemSorter" data-container="game-arena" class="btn-ninja px-5 py-3 bg-purple-700 rounded-xl text-white font-bold">Play Again</button><button data-action="arcade-return" data-belt-id="black" class="btn-ninja px-5 py-3 ml-2 bg-slate-700 rounded-xl text-white">Dojo Skills</button></div>`;
@@ -805,6 +832,7 @@ class ArcadeEngine {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.startActivitySession('cyber-defense', 'Cyber Defense');
     this.score = 0;
     this.defenseRound = 0;
     this.defenseLives = 3;
@@ -864,6 +892,7 @@ class ArcadeEngine {
 
   finishCyberDefense(won) {
     if (this.gameInterval) { clearInterval(this.gameInterval); this.gameInterval = null; }
+    this.activitySession?.complete();
     const arena = document.getElementById('game-arena');
     if (!arena) return;
     arena.innerHTML = `<div class="max-w-md mx-auto text-center p-8 bg-slate-900 border-2 ${won ? 'border-emerald-500' : 'border-rose-700'} rounded-3xl"><div class="text-5xl mb-3">${won ? '🛡️' : '💥'}</div><h2 class="font-ninja text-2xl text-white font-bold">${won ? 'Dojo Defended!' : 'Defense Overrun'}</h2><p class="text-slate-300 my-3">Score: <b class="text-yellow-400">${this.score}</b> · Correct: ${this.defenseRound} / 8</p><button data-action="arcade-retry" data-game="startCyberDefense" data-container="game-arena" class="btn-ninja px-5 py-3 bg-sky-700 rounded-xl text-white font-bold">Play Again</button><button data-action="arcade-return" data-belt-id="platinum" class="btn-ninja px-5 py-3 ml-2 bg-slate-700 rounded-xl text-white">Dojo Skills</button></div>`;

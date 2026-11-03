@@ -4174,6 +4174,19 @@ Object.assign(App.prototype, {
       selectedIndex: null,
       awarded: false
     };
+    this.scienceActivityEngine = new ActivityEngine();
+    this.scienceActivityEngine.startQuiz({
+      id: `science-${mission.id}`,
+      title: mission.title,
+      subject: 'Science Lab',
+      questions: selectedQuestions.map(question => ({
+        ...question,
+        choices: question.choices,
+        options: question.choices,
+        type: 'choice'
+      })),
+      settings: { trackProgress: true }
+    });
     this.renderScienceQuestion();
   },
 
@@ -4240,7 +4253,8 @@ Object.assign(App.prototype, {
     game.answered = true;
     game.selectedIndex = choiceIndex;
     game.lastAnswerCorrect = choiceIndex === question.answer;
-    if (game.lastAnswerCorrect) game.correct++;
+    this.scienceActivityEngine.recordOutcome(game.lastAnswerCorrect);
+    game.correct = this.scienceActivityEngine.score;
     window.soundFX?.[game.lastAnswerCorrect ? 'playCorrect' : 'playWrong']();
     this.renderScienceQuestion();
   },
@@ -4248,7 +4262,8 @@ Object.assign(App.prototype, {
   continueScienceMission() {
     const game = this.scienceGame;
     if (!game?.answered) return;
-    game.index++;
+    const hasNextQuestion = this.scienceActivityEngine.nextQuestion();
+    game.index = hasNextQuestion ? this.scienceActivityEngine.currentIndex : game.mission.questions.length;
     game.answered = false;
     game.selectedIndex = null;
     this.renderScienceQuestion();
@@ -4258,6 +4273,7 @@ Object.assign(App.prototype, {
     const game = this.scienceGame;
     const main = document.getElementById('app-main');
     if (!game || !main) return;
+    this.scienceActivityEngine.complete();
     if (!game.awarded) {
       game.awarded = true;
       if (game.correct > 0) {

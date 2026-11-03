@@ -1,10 +1,11 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
+const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
 function loadSafari() {
-  const context = createBrowserContext();
+  const context = createBrowserContext({ document: { getElementById: () => null } });
   context.App = class {};
+  loadActivityEngine(context);
   return loadBrowserScripts(context, 'public/js/spelling/safari.js');
 }
 
@@ -102,6 +103,7 @@ test('Phonics Easy uses accessible picture clues and Medium keeps simple text cl
     rememberModule() {}
     updateHeader() {}
   };
+  loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/spelling/safari.js');
   const app = new context.App();
   app.showSpellingSafari();
@@ -147,6 +149,7 @@ test('incorrect answer in Spelling Safari does not reveal the correct answer', (
     rememberModule() {}
     updateHeader() {}
   };
+  loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/spelling/safari.js');
 
   const app = new context.App();
@@ -176,6 +179,7 @@ test('correct multiple-choice answer in Spelling Safari is highlighted green', (
     rememberModule() {}
     updateHeader() {}
   };
+  loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/spelling/safari.js');
 
   const app = new context.App();
@@ -183,4 +187,19 @@ test('correct multiple-choice answer in Spelling Safari is highlighted green', (
   app.submitSpellingSafariAnswer(app.spellingSafariGame.questions[0].answer);
 
   assert.match(context.arena.innerHTML, /spelling-choice[^"]*is-correct/);
+});
+
+test('Spelling Safari rounds are coordinated by ActivityEngine', () => {
+  const context = loadSafari();
+  const app = new context.App();
+  app.startSpellingSafari('spelling-sprint');
+
+  for (let index = 0; index < app.spellingSafariGame.questions.length; index++) {
+    app.submitSpellingSafariAnswer(app.spellingSafariGame.questions[index].answer);
+    app.nextSpellingSafariQuestion();
+  }
+
+  assert.equal(app.spellingActivityEngine.status, 'complete');
+  assert.equal(app.spellingActivityEngine.score, 6);
+  assert.equal(app.spellingSafariGame.index, 6);
 });

@@ -147,7 +147,21 @@ test('accounts can only read and update their own progress', async () => {
       ...firstData.profile,
       stars: 15,
       passedBelts: ['white'],
-      endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' }
+      endlessHighScores: { white: 8, timetables: 12, unknown: 99, yellow: '10' },
+      activityProgress: {
+        'science-water-cycle': {
+          title: 'Water Cycle',
+          subject: 'Science Lab',
+          kind: 'quiz',
+          scoreUnit: 'questions',
+          bestScore: 4,
+          bestTotal: 5,
+          correct: 4,
+          total: 5,
+          timesPlayed: 1
+        },
+        'invalid id': { title: '<script>', subject: 'Maths', kind: 'game', bestScore: 9, timesPlayed: 1 }
+      }
     }
   }, firstCookie);
   assert.equal(save.status, 200);
@@ -158,8 +172,22 @@ test('accounts can only read and update their own progress', async () => {
   const secondProfile = (await secondRead.json()).profile;
   assert.equal(firstProfile.stars, 15);
   assert.deepEqual(firstProfile.endlessHighScores, { white: 8, timetables: 12 });
+  assert.deepEqual(firstProfile.activityProgress, {
+    'science-water-cycle': {
+      title: 'Water Cycle',
+      subject: 'Science Lab',
+      kind: 'quiz',
+      scoreUnit: 'questions',
+      bestScore: 4,
+      bestTotal: 5,
+      correct: 4,
+      total: 5,
+      timesPlayed: 1
+    }
+  });
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.endlessHighScores, {});
+  assert.deepEqual(secondProfile.activityProgress, {});
 
   const anonymousRead = await request(store, '/api/progress');
   assert.equal(anonymousRead.status, 401);

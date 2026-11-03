@@ -3931,6 +3931,14 @@ Object.assign(App.prototype, {
       selectedAnswer: null,
       mistakes: []
     };
+    this.spellingActivityEngine = new ActivityEngine();
+    this.spellingActivityEngine.startQuiz({
+      id: `spelling-${activity.id}`,
+      title: activity.title,
+      subject: 'Spelling & Words',
+      questions: this.spellingSafariGame.questions,
+      settings: { trackProgress: true }
+    });
     this.currentView = 'spelling';
     const main = document.getElementById('app-main');
     if (!main) return;
@@ -4026,9 +4034,11 @@ Object.assign(App.prototype, {
     const question = game.questions[game.index];
     game.answered = true;
     game.selectedAnswer = answer;
-    game.lastAnswerCorrect = String(answer).toLowerCase() === question.answer.toLowerCase();
-    if (game.lastAnswerCorrect) game.score++;
-    else game.mistakes.push(question.answer);
+    game.lastAnswerCorrect = this.spellingActivityEngine.recordOutcome(
+      String(answer).toLowerCase() === question.answer.toLowerCase()
+    );
+    game.score = this.spellingActivityEngine.score;
+    if (!game.lastAnswerCorrect) game.mistakes.push(question.answer);
     this.renderSpellingSafariQuestion();
   },
 
@@ -4054,7 +4064,8 @@ Object.assign(App.prototype, {
   nextSpellingSafariQuestion() {
     const game = this.spellingSafariGame;
     if (!game?.answered) return;
-    game.index++;
+    const hasNextQuestion = this.spellingActivityEngine.nextQuestion();
+    game.index = hasNextQuestion ? this.spellingActivityEngine.currentIndex : game.questions.length;
     game.answered = false;
     game.selectedAnswer = null;
     game.selectedLetters = [];

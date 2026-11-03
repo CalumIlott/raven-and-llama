@@ -171,6 +171,14 @@ Object.assign(App.prototype, {
       answered: false,
       lastAnswerCorrect: false
     };
+    this.moneyActivityEngine = new ActivityEngine();
+    this.moneyActivityEngine.startQuiz({
+      id: `money-${activity.id}`,
+      title: activity.title,
+      subject: 'Life Skills',
+      questions: this.moneyGame.questions,
+      settings: { trackProgress: true }
+    });
     this.currentView = 'money';
     const main = document.getElementById('app-main');
     if (!main) return;
@@ -281,8 +289,8 @@ Object.assign(App.prototype, {
     const question = game.questions[game.index];
     game.answered = true;
     game.selectedAnswer = Number(answer);
-    game.lastAnswerCorrect = game.selectedAnswer === question.answer;
-    if (game.lastAnswerCorrect) game.score++;
+    game.lastAnswerCorrect = this.moneyActivityEngine.submitAnswer(game.selectedAnswer);
+    game.score = this.moneyActivityEngine.score;
     this.renderMoneyQuestion();
   },
 
@@ -318,19 +326,20 @@ Object.assign(App.prototype, {
     const total = game.selectedCoins.reduce((sum, value) => sum + value, 0);
     if (total !== question.target) {
       game.answered = true;
-      game.lastAnswerCorrect = false;
+      game.lastAnswerCorrect = this.moneyActivityEngine.recordOutcome(false);
     } else {
       game.answered = true;
-      game.lastAnswerCorrect = true;
-      game.score++;
+      game.lastAnswerCorrect = this.moneyActivityEngine.recordOutcome(true);
     }
+    game.score = this.moneyActivityEngine.score;
     this.renderMoneyQuestion();
   },
 
   nextMoneyQuestion() {
     const game = this.moneyGame;
     if (!game || !game.answered) return;
-    game.index++;
+    const hasNextQuestion = this.moneyActivityEngine.nextQuestion();
+    game.index = hasNextQuestion ? this.moneyActivityEngine.currentIndex : game.questions.length;
     game.selectedCoins = [];
     game.selectedAnswer = null;
     game.answered = false;

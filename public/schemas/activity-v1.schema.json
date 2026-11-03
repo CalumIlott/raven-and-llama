@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raven-and-llama/schemas/activity-v1.schema.json",
+  "title": "Raven & Llama activity definition",
+  "type": "object",
+  "required": ["version", "kind", "id", "title", "subject", "settings"],
+  "properties": {
+    "version": { "const": 1 },
+    "kind": { "enum": ["quiz", "game"] },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "subject": { "type": "string", "minLength": 1 },
+    "skillId": { "type": "string", "minLength": 1 },
+    "settings": { "$ref": "#/$defs/settings" },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/question" }
+    },
+    "game": { "$ref": "#/$defs/game" }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "kind": { "const": "quiz" },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/question" }
+        }
+      },
+      "required": ["questions"]
+    },
+    {
+      "properties": {
+        "kind": { "const": "game" },
+        "game": { "$ref": "#/$defs/game" }
+      },
+      "required": ["game"]
+    }
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "quiz" } } },
+      "then": { "properties": { "game": false } }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "game" } } },
+      "then": { "properties": { "questions": false } }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "settings": {
+      "type": "object",
+      "properties": {
+        "retryIncorrect": { "type": "boolean" },
+        "unbounded": { "type": "boolean" },
+        "timeLimitSeconds": { "type": "number", "exclusiveMinimum": 0 },
+        "timerMode": { "enum": ["question", "activity"] },
+        "maxHintsPerQuestion": { "type": "integer", "minimum": 0 },
+        "trackProgress": { "type": "boolean" },
+        "awardStars": { "type": "boolean" },
+        "pointsPerCorrect": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "question": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+        "prompt": { "type": "string" },
+        "answer": {},
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {}
+        },
+        "correctOrder": { "type": "array", "minItems": 1 },
+        "hint": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "text": { "type": "string" },
+                "audio": { "type": "string" },
+                "visual": { "type": "object" }
+              },
+              "minProperties": 1,
+              "additionalProperties": false
+            }
+          ]
+        },
+        "feedback": {
+          "type": "object",
+          "properties": {
+            "correct": { "type": "string" },
+            "incorrect": { "type": "string" },
+            "explanation": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "timeLimitSeconds": { "type": "number", "exclusiveMinimum": 0 },
+        "data": { "type": "object" }
+      },
+      "anyOf": [
+        { "properties": { "answer": {} }, "required": ["answer"] },
+        { "properties": { "correctOrder": { "type": "array" } }, "required": ["correctOrder"] }
+      ],
+      "additionalProperties": true
+    },
+    "game": {
+      "type": "object",
+      "required": ["adapter", "gameId"],
+      "properties": {
+        "adapter": { "type": "string", "minLength": 1 },
+        "gameId": { "type": "string", "minLength": 1 },
+        "durationSeconds": { "type": "number", "exclusiveMinimum": 0 },
+        "scoreUnit": { "enum": ["points", "rounds", "time"] },
+        "configuration": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

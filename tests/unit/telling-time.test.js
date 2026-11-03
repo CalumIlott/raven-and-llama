@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
+const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
 function loadTimeTelling() {
   const context = createBrowserContext({ App: class App {} });
+  loadActivityEngine(context);
   loadBrowserScripts(context, 'public/js/mathmasters/telling-time.js');
   return context;
 }
@@ -36,4 +37,25 @@ test('analogue clock renderer labels the time and displays all twelve hour numbe
   }
   assert.match(svg, /rotate\(112\.5 100 100\)/);
   assert.match(svg, /rotate\(270 100 100\)/);
+});
+
+test('telling-time rounds use ActivityEngine state and finish with named progress', () => {
+  const main = { innerHTML: '', dataset: {} };
+  const context = createBrowserContext({
+    App: class App {},
+    document: { getElementById: id => id === 'app-main' ? main : null }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/telling-time.js');
+  const app = new context.App();
+
+  app.startTimeActivity('hours');
+  for (let index = 0; index < app.timeActivity.questions.length; index++) {
+    app.answerTimeActivity(app.timeActivity.questions[index].answer);
+    app.advanceTimeActivity();
+  }
+
+  assert.equal(app.timeActivityEngine.status, 'complete');
+  assert.equal(app.timeActivityEngine.score, 10);
+  assert.equal(app.timeActivity.index, 9);
 });

@@ -149,6 +149,40 @@ test('authenticated training updates serialize and save only the active account 
   assert.ok(saved.every(item => item.id === account.id && item.name === account.username));
 });
 
+test('activity scores are saved as named progress without changing skill progress', async () => {
+  const { accounts } = loadAccounts(async () => response({}, 401));
+  await accounts.initialize();
+
+  accounts.recordActivityScore({
+    id: 'time-hours',
+    title: 'O’Clock & Half Past',
+    subject: 'Life Skills',
+    kind: 'quiz',
+    settings: {}
+  }, 8, 10);
+  accounts.recordActivityScore({
+    id: 'time-hours',
+    title: 'O’Clock & Half Past',
+    subject: 'Life Skills',
+    kind: 'quiz',
+    settings: {}
+  }, 6, 10);
+
+  const profile = accounts.getActiveProfile();
+  assert.deepEqual({ ...profile.activityProgress['time-hours'] }, {
+    title: 'O’Clock & Half Past',
+    subject: 'Life Skills',
+    kind: 'quiz',
+    scoreUnit: 'questions',
+    bestScore: 8,
+    bestTotal: 10,
+    correct: 14,
+    total: 20,
+    timesPlayed: 2
+  });
+  assert.deepEqual({ ...profile.skillsProgress }, {});
+});
+
 test('endless high scores keep the best valid score for each belt and timetables', async () => {
   const { accounts } = loadAccounts(async () => response({}, 401));
   await accounts.initialize();
