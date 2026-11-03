@@ -292,13 +292,13 @@ Object.assign(App.prototype, {
                   </div>
                 </div>
                 <span class="bg-amber-950 text-amber-300 border border-amber-600/60 text-xs font-bold px-3 py-1 rounded-full">
-                  3 Money Games 💰
+                  4 Money Games 💰
                 </span>
               </div>
               <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                Recognise Australian coins and notes, build exact totals, and practise giving change at easy, medium, or hard difficulty.
+                Recognise Australian coins and notes, build totals, give change, and serve customers at an everyday shop.
               </p>
-              <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
                 <div>
                   <div class="text-[10px] text-slate-400 uppercase">Recognise</div>
                   <div class="font-ninja font-bold text-white mt-0.5">Coins &amp; Notes</div>
@@ -310,6 +310,10 @@ Object.assign(App.prototype, {
                 <div>
                   <div class="text-[10px] text-slate-400 uppercase">Challenge</div>
                   <div class="font-ninja font-bold text-cyan-300 mt-0.5">Give Change</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400 uppercase">Serve</div>
+                  <div class="font-ninja font-bold text-amber-300 mt-0.5">Shopkeeper</div>
                 </div>
               </div>
             </div>

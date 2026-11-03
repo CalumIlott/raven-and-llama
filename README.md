@@ -1,6 +1,6 @@
 # Raven & Llama Learning
 
-A family-friendly learning platform with Maths World activities including Number Builder and Fraction Pizza, Maths Masters, Times Tables practice, arcade activities, printable certificates, and optional username/password accounts. Guests can play without registering; guest progress is temporary and is discarded when the visit ends. Signed-in progress is private to that account and syncs across devices through Cloudflare D1.
+A family-friendly learning platform with Maths World activities including Number Builder and Fraction Pizza, Maths Masters including Australian-currency shopkeeper practice, Times Tables practice, arcade activities, printable certificates, and optional username/password accounts. Guests can play without registering; guest progress is temporary and is discarded when the visit ends. Signed-in progress is private to that account and syncs across devices through Cloudflare D1.
 
 ## Run Locally
 

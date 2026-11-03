@@ -27,10 +27,11 @@ async function findTextContrastFailures(page) {
         const channels = value.match(/-?[\d.]+/g);
         if (!channels || channels.length < 3) return null;
         const lightness = Number(channels[0]);
-        const a = value.startsWith('oklch(')
+        const isOklch = value.startsWith('oklch(');
+        const a = isOklch
           ? Number(channels[1]) * Math.cos(Number(channels[2]) * Math.PI / 180)
           : Number(channels[1]);
-        const b = value.startsWith('oklch(')
+        const b = isOklch
           ? Number(channels[1]) * Math.sin(Number(channels[2]) * Math.PI / 180)
           : Number(channels[2]);
         const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
@@ -472,6 +473,37 @@ test('Maths World and Number Builder text meet WCAG AA contrast in both themes',
 
   await expect(page.getByRole('heading', { name: 'Number Builder complete!' })).toBeVisible();
   await checkBothThemes('Number Builder results');
+});
+
+test('Shopkeeper text meets WCAG AA contrast in both themes', async ({ page }) => {
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
+
+  const checkBothThemes = async surface => {
+    for (const theme of ['dark', 'light']) {
+      await page.evaluate(value => window.ProfileManager.applyTheme(value), theme);
+      const failures = await findTextContrastFailures(page);
+      expect(failures, `${surface} (${theme} theme): ${JSON.stringify(failures)}`).toEqual([]);
+    }
+    await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
+  };
+
+  await checkBothThemes('Shopkeeper game choice');
+  await page.locator('[data-action="money-start"][data-activity-id="shopkeeper"][data-difficulty="medium"]').click();
+  await checkBothThemes('Shopkeeper transaction');
+
+  const question = await page.evaluate(() => window.app.moneyGame.questions[0]);
+  let remaining = question.change;
+  for (const denomination of [...question.denominations].sort((first, second) => second.value - first.value)) {
+    while (remaining >= denomination.value) {
+      await page.locator(`[data-action="money-coin"][data-value="${denomination.value}"]`).click();
+      remaining -= denomination.value;
+    }
+  }
+  expect(remaining).toBe(0);
+  await page.getByRole('button', { name: 'Check change' }).click();
+  await checkBothThemes('Shopkeeper feedback');
 });
 
 test('Fraction Pizza text meets WCAG AA contrast in both themes', async ({ page }) => {

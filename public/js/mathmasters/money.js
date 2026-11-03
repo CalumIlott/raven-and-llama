@@ -31,8 +31,35 @@ class MoneyMasters {
       title: 'Change Challenge',
       emoji: '🇦🇺',
       description: 'Work out how much change to give when someone pays for an item.'
+    },
+    {
+      id: 'shopkeeper',
+      title: 'Shopkeeper',
+      emoji: '🧾',
+      description: 'Serve a customer by adding up a basket and giving exact change.'
     }
   ];
+
+  static SHOPKEEPER_PRODUCTS = {
+    easy: [
+      { name: 'Apple', price: 25 },
+      { name: 'Banana', price: 30 },
+      { name: 'Juice box', price: 45 },
+      { name: 'Pencil', price: 50 }
+    ],
+    medium: [
+      { name: 'Notebook', price: 125 },
+      { name: 'Storybook', price: 250 },
+      { name: 'Ball', price: 325 },
+      { name: 'Puzzle', price: 450 }
+    ],
+    hard: [
+      { name: 'Toy car', price: 625 },
+      { name: 'Sports ball', price: 750 },
+      { name: 'Board game', price: 950 },
+      { name: 'Backpack', price: 1250 }
+    ]
+  };
 
   static randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -58,6 +85,61 @@ class MoneyMasters {
   static getDenominations(difficulty) {
     const maxValue = difficulty === 'easy' ? 50 : difficulty === 'medium' ? 200 : 10000;
     return this.DENOMINATIONS.filter(denomination => denomination.value <= maxValue);
+  }
+
+  static createShopkeeperQuestion(items, payment, difficulty) {
+    if (!Array.isArray(items) || items.length < 1 || items.length > 3) {
+      throw new RangeError('A shopkeeper basket must contain between one and three items.');
+    }
+    if (!['easy', 'medium', 'hard'].includes(difficulty)) {
+      throw new TypeError('Shopkeeper difficulty must be easy, medium, or hard.');
+    }
+    if (items.some(item =>
+      !item || typeof item.name !== 'string' || !item.name.trim() ||
+      !Number.isInteger(item.price) || item.price <= 0 || item.price % 5 !== 0
+    )) {
+      throw new TypeError('Shopkeeper items need a name and a positive price in 5-cent increments.');
+    }
+    if (!Number.isInteger(payment) || payment <= 0 || payment % 5 !== 0) {
+      throw new TypeError('Shopkeeper tender must be a positive amount in 5-cent increments.');
+    }
+
+    const basket = items.map(({ name, price }) => ({ name: name.trim(), price }));
+    const total = basket.reduce((sum, item) => sum + item.price, 0);
+    if (payment < total) {
+      throw new RangeError('Shopkeeper tender must cover the basket total.');
+    }
+
+    const change = payment - total;
+    return {
+      prompt: 'Help the customer by giving the exact change.',
+      items: basket,
+      total,
+      payment,
+      change,
+      answer: change,
+      target: change,
+      denominations: this.getDenominations(difficulty)
+    };
+  }
+
+  static generateShopkeeperQuestion(difficulty) {
+    const products = this.SHOPKEEPER_PRODUCTS[difficulty];
+    const itemCount = this.randomInt(1, difficulty === 'easy' ? 2 : 3);
+    const items = this.shuffle(products).slice(0, itemCount);
+    const total = items.reduce((sum, item) => sum + item.price, 0);
+    const tenderOptions = difficulty === 'easy'
+      ? [100, 200]
+      : difficulty === 'medium'
+        ? [500, 1000, 2000]
+        : [2000, 5000, 10000];
+    const payment = this.randomInt(1, 5) === 1
+      ? total
+      : tenderOptions.find(amount => amount > total);
+    if (payment === undefined) {
+      throw new RangeError(`No tender amount covers a ${difficulty} shopkeeper basket.`);
+    }
+    return this.createShopkeeperQuestion(items, payment, difficulty);
   }
 
   static generateChoices(answer, min, max) {
@@ -96,6 +178,10 @@ class MoneyMasters {
       };
     }
 
+    if (activityId === 'shopkeeper') {
+      return this.generateShopkeeperQuestion(level);
+    }
+
     const paymentOptions = level === 'easy'
       ? [20, 50, 100]
       : level === 'medium'
@@ -128,13 +214,13 @@ Object.assign(App.prototype, {
     main.innerHTML = `
       <div class="max-w-4xl mx-auto px-4 py-8">
         <div class="flex items-center justify-between mb-6">
-          <button data-action="learning-centre" class="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition font-bold">
+          <button data-action="learning-centre" class="money-back-link flex items-center gap-2 text-sm font-bold">
             ← Back to Raven &amp; Llama Learning Centre
           </button>
           <button data-action="home" class="text-xs text-slate-400 hover:text-white">🏠 Home</button>
         </div>
-        <div class="bg-gradient-to-r from-amber-950 via-yellow-950 to-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8">
-          <span class="text-3xl">🇦🇺</span>
+        <div class="money-hero bg-gradient-to-r from-amber-950 via-yellow-950 to-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl mb-8">
+          <span class="text-3xl" aria-hidden="true">🇦🇺</span>
           <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold mt-2">Money Masters</h1>
           <p class="text-slate-300 text-sm sm:text-base mt-2">Explore Australian coins and notes, make totals, and practise giving change.</p>
         </div>
@@ -150,7 +236,7 @@ Object.assign(App.prototype, {
                 ${[recommendedDifficulty, ...['easy', 'medium', 'hard'].filter(level => level !== recommendedDifficulty)].map(difficulty => `
                   <button type="button" data-action="money-start" data-activity-id="${activity.id}" data-difficulty="${difficulty}"
                           data-profile-recommended="${difficulty === recommendedDifficulty}"
-                          class="rounded-xl ${difficulty === recommendedDifficulty ? 'bg-amber-600 hover:bg-amber-500' : 'bg-amber-900 hover:bg-amber-800'} px-2 py-2 text-sm font-bold text-white capitalize">
+                          class="money-difficulty-button rounded-xl border-2 ${difficulty === recommendedDifficulty ? 'border-amber-300' : 'border-slate-600'} px-2 py-2 text-sm font-bold capitalize">
                     ${difficulty}
                   </button>
                 `).join('')}
@@ -200,6 +286,17 @@ Object.assign(App.prototype, {
             { label: 'Count up to payment', detail: 'The jumps you make add up to the change.' }
           ]
         }
+      },
+      shopkeeper: {
+        explanation: 'Add the item prices to find the basket total, then subtract that total from the amount paid.',
+        audioHint: 'Add the basket prices, then count up from the total to the amount paid.',
+        workedExample: {
+          title: 'Serve a customer',
+          steps: [
+            { label: 'Add the basket', detail: 'Combine each item price to find the total cost.' },
+            { label: 'Count up to the payment', detail: 'The coins and notes you add make the exact change.' }
+          ]
+        }
       }
     }[activityId];
     this.moneyGame = {
@@ -230,8 +327,32 @@ Object.assign(App.prototype, {
     this.currentView = 'money';
     const main = document.getElementById('app-main');
     if (!main) return;
+    if (activityId === 'shopkeeper') this.bindShopkeeperDragAndDrop(main);
     main.innerHTML = '<div class="max-w-2xl mx-auto px-4 py-6"><div id="money-arena"></div></div>';
     this.renderMoneyQuestion();
+  },
+
+  bindShopkeeperDragAndDrop(main) {
+    if (main.dataset.moneyDragBound === 'true') return;
+    main.dataset.moneyDragBound = 'true';
+    main.addEventListener('dragstart', event => {
+      const button = event.target.closest?.('[data-money-draggable="true"]');
+      if (!button || !event.dataTransfer) return;
+      event.dataTransfer.setData('text/plain', button.dataset.value);
+      event.dataTransfer.effectAllowed = 'copy';
+    });
+    main.addEventListener('dragover', event => {
+      if (!event.target.closest?.('[data-money-change-drop-target]')) return;
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+    });
+    main.addEventListener('drop', event => {
+      if (!event.target.closest?.('[data-money-change-drop-target]')) return;
+      const value = event.dataTransfer?.getData('text/plain');
+      if (value === undefined || value === '') return;
+      event.preventDefault();
+      this.addMoneyCoin(Number(value));
+    });
   },
 
   renderMoneyQuestion() {
@@ -244,10 +365,10 @@ Object.assign(App.prototype, {
         <div class="text-center bg-slate-900 border-2 border-amber-500 rounded-3xl p-7 shadow-2xl">
           <div class="text-5xl mb-3">🏆</div>
           <h2 class="font-ninja text-2xl text-white font-bold">Money Game Complete!</h2>
-          <p class="text-slate-300 mt-2">You scored <strong class="text-yellow-300">${game.score} / ${game.questions.length}</strong> in ${game.activity.title}.</p>
+          <p class="text-slate-300 mt-2">You scored <strong class="money-change-emphasis">${game.score} / ${game.questions.length}</strong> in ${game.activity.title}.</p>
           <div class="flex flex-wrap justify-center gap-3 mt-6">
             <button type="button" data-action="money-start" data-activity-id="${game.activity.id}" data-difficulty="${game.difficulty}"
-                    class="px-5 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold">Play again</button>
+                    class="money-play-again-button px-5 py-3 rounded-xl font-bold">Play again</button>
             <button type="button" data-action="money-home" class="px-5 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold">Choose another game</button>
           </div>
         </div>
@@ -257,11 +378,30 @@ Object.assign(App.prototype, {
 
     const question = game.questions[game.index];
     const selectedTotal = game.selectedCoins.reduce((total, value) => total + value, 0);
-    const choices = game.activity.id === 'build-total'
+    const isShopkeeper = game.activity.id === 'shopkeeper';
+    const targetAmount = isShopkeeper ? question.change : question.target;
+    const choices = ['build-total', 'shopkeeper'].includes(game.activity.id)
       ? `
-        <div class="my-5 rounded-2xl bg-slate-950 border border-slate-700 p-4 text-center">
-          <p class="text-xs uppercase tracking-wider text-slate-400">Your amount</p>
+        ${isShopkeeper ? `
+          <section class="my-5 rounded-2xl bg-slate-950 border border-slate-700 p-4" aria-label="Customer transaction">
+            <h3 class="font-bold text-white">Customer's basket</h3>
+            <ul data-shopkeeper-basket class="mt-2 space-y-1 text-sm text-slate-300">
+              ${question.items.map(item => `<li class="flex justify-between gap-4"><span>${item.name}</span><span>${MoneyMasters.formatMoney(item.price)}</span></li>`).join('')}
+            </ul>
+            <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-700 pt-3 text-center text-xs">
+              <div><dt class="text-slate-400">Basket total</dt><dd class="mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.total)}</dd></div>
+              <div><dt class="text-slate-400">Paid</dt><dd class="mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.payment)}</dd></div>
+              <div><dt class="text-slate-400">Change due</dt><dd class="money-change-emphasis mt-1 font-bold">${MoneyMasters.formatMoney(question.change)}</dd></div>
+            </dl>
+          </section>
+        ` : ''}
+        <div ${isShopkeeper ? 'role="group" data-money-change-drop-target aria-label="Selected change; drop coins and notes here"' : ''} class="my-5 rounded-2xl ${isShopkeeper ? 'border-2 border-dashed border-amber-500' : 'border border-slate-700'} bg-slate-950 p-4 text-center">
+          <p class="text-xs uppercase tracking-wider text-slate-400">${isShopkeeper ? 'Your change' : 'Your amount'}</p>
           <p id="money-selected-total" class="font-ninja text-3xl font-bold text-amber-300">${MoneyMasters.formatMoney(selectedTotal)}</p>
+          ${isShopkeeper ? `<p class="mt-1 text-sm text-slate-300">Drag a coin or note here, or select its button with a tap, Enter, or Space.</p>
+            <ul aria-label="Selected coins and notes" aria-live="polite" class="mt-2 flex min-h-8 flex-wrap justify-center gap-2">
+              ${game.selectedCoins.map(value => `<li class="rounded-lg bg-slate-800 px-3 py-1 text-sm font-bold text-white">${MoneyMasters.DENOMINATIONS.find(item => item.value === value).label}</li>`).join('')}
+            </ul>` : ''}
           <div class="flex justify-center gap-3 mt-3">
             <button type="button" data-action="money-undo" ${game.answered || !game.selectedCoins.length ? 'disabled' : ''}
                     class="rounded-lg bg-slate-700 px-3 py-2 text-sm text-white disabled:opacity-40">Undo last</button>
@@ -271,15 +411,15 @@ Object.assign(App.prototype, {
         </div>
         <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
           ${question.denominations.map(item => `
-            <button type="button" data-action="money-coin" data-value="${item.value}" ${game.answered || selectedTotal + item.value > question.target ? 'disabled' : ''}
-                    aria-label="Add ${item.label}" class="rounded-xl border-2 ${item.type === 'note' ? 'border-emerald-500 bg-emerald-950' : 'border-amber-500 bg-amber-950'} px-2 py-3 text-white font-bold disabled:opacity-40">
+            <button type="button" data-action="money-coin" data-value="${item.value}" ${isShopkeeper ? 'draggable="true" data-money-draggable="true"' : ''} ${game.answered || selectedTotal + item.value > targetAmount ? 'disabled' : ''}
+                    aria-label="Add ${item.label}" class="money-denomination-button money-denomination-${item.type} rounded-xl border-2 ${item.type === 'note' ? 'border-emerald-500 bg-emerald-950' : 'border-amber-500 bg-amber-950'} px-2 py-3 font-bold disabled:opacity-40">
               <span class="block text-xs">${item.type === 'note' ? 'NOTE' : 'COIN'}</span>
               <span class="block text-lg">${item.label}</span>
             </button>
           `).join('')}
         </div>
         <button type="button" data-action="money-submit" ${game.answered ? 'disabled' : ''}
-                class="mt-4 w-full rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-3 font-bold text-white disabled:opacity-50">Check amount</button>
+                class="money-submit-button mt-4 w-full rounded-xl px-4 py-3 font-bold disabled:opacity-50">${isShopkeeper ? 'Check change' : 'Check amount'}</button>
       `
       : `
         <div class="grid grid-cols-2 gap-3 mt-6">
