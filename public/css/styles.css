@@ -1956,6 +1956,20 @@ html.theme-light #app-main[data-page="history-timeline"] .history-event-card.is-
   line-height: 1.55;
 }
 
+#app-main[data-page="brain-power"] .brain-power-difficulty-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.9rem;
+}
+
+#app-main[data-page="brain-power"] .brain-power-difficulty-options .brain-power-button {
+  flex: 1 1 4.5rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.85rem;
+}
+
 #app-main[data-page^="brain-power-"] .brain-power-panel__heading {
   display: flex;
   align-items: flex-start;
@@ -2119,11 +2133,6 @@ html.theme-light #app-main[data-page="history-timeline"] .history-event-card.is-
   font-weight: 800;
 }
 
-#app-main[data-page="brain-power-memory"] .brain-power-memory-card__state {
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
 #app-main[data-page="brain-power-code"] .brain-power-code-clues,
 #app-main[data-page="brain-power-code"] .brain-power-code-attempts {
   display: grid;
@@ -2166,9 +2175,13 @@ html.theme-light #app-main[data-page="history-timeline"] .history-event-card.is-
 
 #app-main[data-page="brain-power-code"] .brain-power-code-slots {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.6rem;
   margin: 1rem 0;
+}
+
+#app-main[data-page="brain-power-code"] .brain-power-code-slots[data-code-length="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 #app-main[data-page="brain-power-code"] .brain-power-code-slot {
@@ -2252,7 +2265,7 @@ html.theme-light #app-main[data-page="brain-power-code"] .brain-power-code-clue 
   }
 
   #app-main[data-page="brain-power-code"] .brain-power-code-slots {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
