@@ -28,6 +28,8 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(guest.id, 'guest');
   assert.equal(guest.name, 'Guest');
   assert.equal(guest.theme, 'light');
+  assert.equal(guest.schoolYear, 3);
+  assert.deepEqual({ ...guest.subjectYears }, {});
   assert.equal(guest.currentBelt, 'white');
   accounts.recordTrainingScore('addition', 8, 10);
   await accounts.flush();
@@ -35,6 +37,26 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(accounts.getActiveProfile().stars, 8);
   assert.equal(fetchCount, 1);
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
+});
+
+test('profile normalization validates subject-specific years and inherits the global year', async () => {
+  const account = { id: 'year-account', username: 'year_user' };
+  const { accounts } = loadAccounts(async () => response({
+    user: account,
+    profile: {
+      schoolYear: 4,
+      subjectYears: { maths: 3, science: 0, unknown: 2, english: '5' }
+    }
+  }));
+  await accounts.initialize();
+
+  const profile = accounts.getActiveProfile();
+  assert.equal(profile.schoolYear, 4);
+  assert.deepEqual({ ...profile.subjectYears }, { maths: 3, science: 0 });
+  assert.equal(accounts.getSubjectYear('maths'), 3);
+  assert.equal(accounts.getSubjectYear('science'), 0);
+  assert.equal(accounts.getSubjectYear('english'), 4);
+  assert.equal(accounts.getSchoolYearLabel(0), 'Foundation');
 });
 
 test('account theme is restored, applied, and saved without local storage', async () => {
