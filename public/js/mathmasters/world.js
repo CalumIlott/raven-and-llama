@@ -86,7 +86,7 @@ Object.assign(App.prototype, {
           </section>`
         : `<section class="rounded-2xl border-2 border-amber-600/60 bg-slate-900 p-6">
             <h2 class="font-ninja text-xl font-bold text-white">Money Masters</h2>
-            <p class="mt-2 text-sm text-slate-300">Practise Australian coins and notes, make totals, and give change.</p>
+            <p class="mt-2 text-sm text-slate-300">Practise Australian coins and notes, make totals, and serve customers.</p>
             <button type="button" data-action="money-home" class="mt-4 rounded-xl bg-amber-700 px-5 py-3 font-bold text-white hover:bg-amber-800">Explore Money Masters</button>
           </section>`;
 

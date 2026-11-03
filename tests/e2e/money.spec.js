@@ -32,9 +32,10 @@ async function answerCurrentMoneyQuestion(page, activityId) {
   await page.getByRole('button', { name: 'Next round' }).click();
 }
 
-test('Money Masters offers three games with difficulty levels and completes each game', async ({ page }) => {
+test('Money Masters completes its original games with difficulty levels', async ({ page }) => {
   await setupApp(page);
   await openLearningCentre(page);
+  await expect(page.getByText('4 Money Games')).toBeVisible();
   await page.locator('#learning-modules-grid button[data-action="money-home"]').click();
   await expect(page.getByRole('heading', { name: 'Money Masters' })).toBeVisible();
 

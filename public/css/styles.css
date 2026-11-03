@@ -36,9 +36,18 @@ body {
 .maths-world-back-link:hover { color: #67e8f9; }
 html.theme-light .maths-world-back-link { color: #155e75; }
 html.theme-light .maths-world-back-link:hover { color: #0e7490; }
+.money-back-link { color: #22d3ee; }
+.money-back-link:hover { color: #67e8f9; }
+html.theme-light .money-back-link { color: #155e75; }
+html.theme-light .money-back-link:hover { color: #0e7490; }
 html.theme-light .maths-world-hero {
   border-color: #0284c7;
   background-color: #e0f2fe;
+  background-image: none;
+}
+html.theme-light .money-hero {
+  border-color: #d97706;
+  background-color: #fff7ed;
   background-image: none;
 }
 html.theme-light .maths-world-hero__eyebrow { color: #075985; }
@@ -48,6 +57,44 @@ html.theme-light #app-main[data-page="maths-world"] .number-builder-slot--filled
   background-color: #dbeafe;
   color: #1e3a8a;
 }
+
+.money-difficulty-button {
+  color: #fff;
+  background-color: #92400e;
+}
+.money-difficulty-button:hover { background-color: #78350f; }
+html.theme-light .money-difficulty-button {
+  color: #78350f;
+  background-color: #fef3c7;
+}
+html.theme-light .money-difficulty-button:hover { background-color: #fde68a; }
+.money-submit-button,
+.money-play-again-button {
+  color: #fff;
+  background-color: #92400e;
+}
+.money-submit-button:hover,
+.money-play-again-button:hover { background-color: #78350f; }
+html.theme-light .money-submit-button,
+html.theme-light .money-play-again-button {
+  color: #78350f;
+  background-color: #fef3c7;
+}
+html.theme-light .money-submit-button:hover,
+html.theme-light .money-play-again-button:hover { background-color: #fde68a; }
+.money-denomination-button { color: #fff; }
+html.theme-light .money-denomination-coin {
+  color: #78350f;
+  background-color: #fef3c7;
+  border-color: #b45309;
+}
+html.theme-light .money-denomination-note {
+  color: #14532d;
+  background-color: #dcfce7;
+  border-color: #15803d;
+}
+.money-change-emphasis { color: #fcd34d; }
+html.theme-light .money-change-emphasis { color: #92400e; }
 
 html.theme-light body {
   background-color: #f8fafc;
@@ -2383,6 +2430,8 @@ html.theme-light .educational-feedback.is-incorrect {
   background: #fff3d4;
   border-color: #c99b45;
 }
+
+html.theme-light .educational-feedback__example { background: #f8fafc; }
 
 html.theme-light .educational-feedback__audio button,
 html.theme-light .educational-feedback__actions button {

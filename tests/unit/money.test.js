@@ -28,7 +28,7 @@ test('money games generate valid questions for every difficulty', () => {
           assert.equal(question.target % 5, 0);
           assert.ok(question.denominations.some(item => item.value === 5));
           assert.ok(question.denominations.every(item => money.getDenominations(difficulty).some(coin => coin.value === item.value)));
-        } else {
+        } else if (activity.id === 'give-change') {
           assert.equal(question.price + question.answer, question.payment);
           assert.equal(question.price % 5, 0);
           assert.equal(question.answer % 5, 0);
@@ -37,10 +37,36 @@ test('money games generate valid questions for every difficulty', () => {
           assert.ok(question.options.includes(question.answer));
           assert.ok(question.options.every(option => option >= 0));
           assert.ok(question.prompt.includes(money.formatMoney(question.price)));
+        } else {
+          assert.ok(question.items.length >= 1 && question.items.length <= 3);
+          assert.ok(question.items.every(item => Number.isInteger(item.price) && item.price > 0 && item.price % 5 === 0));
+          assert.equal(question.total, question.items.reduce((sum, item) => sum + item.price, 0));
+          assert.equal(question.payment - question.total, question.change);
+          assert.equal(question.change, question.answer);
+          assert.equal(question.change, question.target);
+          assert.ok(question.denominations.every(item => money.getDenominations(difficulty).some(allowed => allowed.value === item.value)));
         }
       }
     }
   }
+});
+
+test('Shopkeeper transactions support exact tender and validate integer-cent totals', () => {
+  const money = loadMoneyMasters();
+  const question = money.createShopkeeperQuestion([
+    { name: 'Apple', price: 125 },
+    { name: 'Pear', price: 75 }
+  ], 200, 'easy');
+
+  assert.equal(question.total, 200);
+  assert.equal(question.payment, 200);
+  assert.equal(question.change, 0);
+  assert.equal(question.answer, 0);
+  assert.equal(question.target, 0);
+  assert.ok(question.denominations.every(item => item.value <= 50));
+  assert.throws(() => money.createShopkeeperQuestion([{ name: 'Apple', price: 25 }], 24, 'easy'), /5-cent increments/);
+  assert.throws(() => money.createShopkeeperQuestion([{ name: 'Apple', price: 25 }], 20, 'easy'), /must cover the basket total/);
+  assert.throws(() => money.createShopkeeperQuestion([{ name: 'Apple', price: 27 }], 30, 'easy'), /5-cent increments/);
 });
 
 test('Australian denominations progress from coins to notes and larger amounts', () => {
@@ -144,4 +170,86 @@ test('money feedback explains the strategy and allows another attempt', () => {
   app.retryMoneyQuestion();
   assert.equal(app.moneyGame.answered, false);
   assert.equal(app.moneyActivityEngine.answered, false);
+});
+
+test('Shopkeeper checks exact change, rejects invalid and overpayment coins, and allows retry', () => {
+  const main = { innerHTML: '', dataset: {}, addEventListener() {} };
+  const arena = { innerHTML: '' };
+  const context = createBrowserContext({
+    App: class App {},
+    ProfileManager: {
+      getSubjectDifficulty: () => 'easy',
+      recordActivityScore() {}
+    },
+    document: {
+      getElementById: id => id === 'app-main' ? main : id === 'money-arena' ? arena : null
+    }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/money.js');
+  const app = new context.App();
+
+  app.startMoneyGame('shopkeeper', 'easy');
+  Object.assign(app.moneyGame.questions[0], context.MoneyMasters.createShopkeeperQuestion(
+    [{ name: 'Apple', price: 25 }],
+    100,
+    'easy'
+  ));
+  app.addMoneyCoin(100);
+  assert.deepEqual(Array.from(app.moneyGame.selectedCoins), []);
+  app.addMoneyCoin(50);
+  app.addMoneyCoin(50);
+  assert.deepEqual(Array.from(app.moneyGame.selectedCoins), [50]);
+
+  app.submitMoneyAmount();
+  assert.equal(app.moneyGame.lastAnswerCorrect, false);
+  app.retryMoneyQuestion();
+  assert.deepEqual(Array.from(app.moneyGame.selectedCoins), []);
+  app.addMoneyCoin(50);
+  app.addMoneyCoin(20);
+  app.addMoneyCoin(5);
+  app.submitMoneyAmount();
+  assert.equal(app.moneyGame.lastAnswerCorrect, true);
+  assert.equal(app.moneyActivityEngine.score, 1);
+});
+
+test('Shopkeeper scores and records named activity progress through ActivityEngine', () => {
+  const main = { innerHTML: '', dataset: {}, addEventListener() {} };
+  const arena = { innerHTML: '' };
+  const recordedScores = [];
+  const context = createBrowserContext({
+    App: class App {},
+    ProfileManager: {
+      getSubjectDifficulty: () => 'medium',
+      recordActivityScore: (...args) => recordedScores.push(args)
+    },
+    document: {
+      getElementById: id => id === 'app-main' ? main : id === 'money-arena' ? arena : null
+    }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/money.js');
+  const app = new context.App();
+
+  app.startMoneyGame('shopkeeper', 'easy');
+  assert.equal(app.moneyActivityEngine.definition.id, 'money-shopkeeper');
+  for (const question of app.moneyGame.questions) {
+    let remaining = question.change;
+    app.moneyGame.selectedCoins = [];
+    for (const denomination of [...question.denominations].sort((first, second) => second.value - first.value)) {
+      while (remaining >= denomination.value) {
+        app.moneyGame.selectedCoins.push(denomination.value);
+        remaining -= denomination.value;
+      }
+    }
+    assert.equal(remaining, 0);
+    app.submitMoneyAmount();
+    app.nextMoneyQuestion();
+  }
+
+  assert.equal(app.moneyActivityEngine.status, 'complete');
+  assert.equal(app.moneyActivityEngine.score, 6);
+  assert.equal(recordedScores.length, 1);
+  assert.equal(recordedScores[0][0].id, 'money-shopkeeper');
+  assert.equal(recordedScores[0][1], 6);
 });
