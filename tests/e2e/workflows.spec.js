@@ -360,7 +360,9 @@ test('all seven Maths Masters arcades launch and return to their belt dojo', asy
 test('Science Explorers missions teach concepts, award stars, and return to the mission map', async ({ page }) => {
   await openLearningCentre(page);
   await expect(page.getByRole('heading', { name: 'Explore by subject', exact: true })).toBeVisible();
-  await page.getByText('Explore Science Explorers', { exact: true }).click();
+  await page.getByText('Explore Science Lab', { exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Science Lab', exact: true })).toBeVisible();
+  await page.locator('[data-action="science-home"]').click();
   const scienceNavigation = await page.evaluate(() => ({
     currentView: window.app.currentView,
     method: typeof window.app.showScienceExplorers,

@@ -43,6 +43,7 @@ class App {
       '/learning': 'learning-centre',
       '/learning-centre': 'learning-centre',
       '/learning-centre/maths': 'maths-world',
+      '/learning-centre/science': 'science-lab',
       '/games': 'games',
       '/critter-catch': 'critter-catch',
       '/dojo': 'dojo',
@@ -64,6 +65,7 @@ class App {
       learning: () => this.showLearningCentre(),
       'learning-centre': () => this.showLearningCentre(),
       'maths-world': () => this.showMathsWorld(),
+      'science-lab': () => this.showScienceLab(),
       games: () => this.showGamesHub(),
       'critter-catch': () => this.showCritterCatch(),
       dojo: () => this.showDojoHub(),
@@ -91,7 +93,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -196,6 +198,12 @@ class App {
       case 'critter-start': this.startCritterCatch(); break;
       case 'critter-hole': this.selectCritterHole(Number(target.dataset.holeIndex)); break;
       case 'science-home': this.showScienceExplorers(); break;
+      case 'science-lab': this.showScienceLab(); break;
+      case 'solar-system-start': this.startSolarSystemActivity(); break;
+      case 'solar-system-select': this.selectSolarSystemPlanet(target.dataset.planetId); break;
+      case 'solar-system-place': this.placeSelectedSolarSystemPlanet(Number(target.dataset.orbitIndex)); break;
+      case 'solar-system-submit': this.submitSolarSystemAnswer(); break;
+      case 'solar-system-restart': this.startSolarSystemActivity(); break;
       case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
@@ -449,6 +457,10 @@ class App {
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'science') {
         subBadge.textContent = 'Science Explorers';
+        subBadge.classList.remove('hidden');
+      } else if (this.currentView === 'science-lab' || this.currentView === 'science-solar-system') {
+        subBadge.textContent = 'Science Lab';
+        subBadge.classList.remove('hidden');
       } else if (this.currentView === 'spelling') {
         subBadge.textContent = 'Spelling & Words';
         subBadge.classList.remove('hidden');
@@ -501,6 +513,10 @@ class App {
       this.showTimesTables();
     } else if (this.currentView === 'science') {
       this.showScienceExplorers();
+    } else if (this.currentView === 'science-lab') {
+      this.showScienceLab();
+    } else if (this.currentView === 'science-solar-system' && this.solarSystemGame) {
+      this.renderSolarSystemActivity();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
     } else if (this.currentView === 'spelling') {

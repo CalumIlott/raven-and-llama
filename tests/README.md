@@ -10,6 +10,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `unit/money.test.js` checks Australian denominations, integer-cent totals, exact Shopkeeper change, tender validation, and Money Masters scoring.
 - `unit/fraction-pizza.test.js` checks proper, equivalent, and mixed-number fraction models, quiz validation, stable IDs, and invalid input handling.
 - `unit/spelling-safari.test.js` checks activity definitions, unique answerable rounds, scrambled letters, and invalid activity handling.
+- `unit/solar-system.test.js` checks the stable planet order and skill mapping, unique placement rules, corrective feedback, and shared activity scoring.
 - `unit/accounts.test.js` checks temporary guest state, session restoration, account-scoped progress sync, memory-only guest spelling lists, profile list validation, training aggregation, final-exam prerequisites, and graduation/certificate recording.
 - `unit/account-api.test.mjs` checks input validation, password hashing, secure sessions, owner-scoped progress and spelling lists, bounded list validation, password changes, account deletion, same-origin protections, and auth throttling behavior.
 - `unit/worker-auth-rate-limit.test.mjs` checks Worker rate-limit keys and denied decisions without remote bindings.
@@ -19,6 +20,7 @@ Run all checks with `npm test` (Node.js 22.5 or newer). After `npm ci`, install 
 - `e2e/navigation.spec.js` checks home/module navigation, Maths World topic filters, Number Builder keyboard/retry/progress flows, curriculum counts, locked exam prerequisites, a failed exam, retry, the 80% pass threshold, and the Stage 2 unlock.
 - `e2e/fraction-pizza.spec.js` checks slice placement by touch/click, keyboard and drag-and-drop input, retry, quiz completion, and progress reporting on desktop and mobile Chromium.
 - `e2e/spelling-safari.spec.js` completes all four spelling adventures, checks the direct refresh-safe hub, verifies pronunciation replay without answer disclosure, and tests parent list CRUD flowing into typed-answer Spell It on desktop and mobile.
+- `e2e/solar-system.spec.js` checks the refresh-safe Science Lab route, existing Science Explorers navigation, accessible planet facts, keyboard/touch/drag placement, retry feedback, completion, and return navigation on desktop and mobile Chromium.
 - `unit/spelling-pronunciation.test.js` checks local voice selection/loading, playback cancellation, muted and unsupported-browser feedback, and default-voice fallback.
 - `e2e/shopkeeper.spec.js` completes Shopkeeper transactions using desktop drag-and-drop, keyboard controls, and mobile touch selection.
 - `e2e/accounts.spec.js` checks guest notice, registration, session restore, password change, login, logout, account deletion, and progress sync across separate browser contexts with account isolation.
