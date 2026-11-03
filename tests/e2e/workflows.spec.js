@@ -47,6 +47,115 @@ test('belt activity shelf launches a non-quiz subitising game', async ({ page })
   await expect(page.getByRole('heading', { name: 'Interactive Dojo Activities' })).toBeVisible();
 });
 
+test('Number Models reveals each numeral and gives a new number each round', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'White Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Number Models/ }).click();
+
+  await expect(page.locator('#ma-stage-answer')).toBeFocused();
+  const targets = await page.evaluate(() => window.arcadeEngine.mathsActivity.targets);
+  expect(new Set(targets).size).toBe(5);
+  await expect(page.locator('#ma-body')).toContainText('Round 1 / 5');
+
+  const firstTarget = targets[0];
+  for (let stage = 0; stage < 2; stage++) {
+    await page.locator('#ma-stage-answer').fill(String(firstTarget));
+    await page.getByRole('button', { name: 'Check' }).click();
+  }
+  await expect(page.locator('#ma-number-model-value')).toHaveText(String(firstTarget));
+  await expect(page.locator('#ma-number-model-value')).toHaveAttribute('aria-label', 'Number model value');
+  await page.getByRole('button', { name: 'Next number' }).click();
+
+  await expect(page.locator('#ma-body')).toContainText('Round 2 / 5');
+  const secondTarget = await page.evaluate(() => window.arcadeEngine.mathsActivity.target);
+  expect(secondTarget).not.toBe(firstTarget);
+});
+
+test('Problem-Solving Steps shows how to enter the answer', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'Platinum Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Problem-Solving Steps/ }).click();
+
+  await expect(page.locator('#ma-answer-format')).toBeVisible();
+  await expect(page.locator('#ma-answer')).toBeFocused();
+  await expect(page.locator('#ma-answer-format')).toContainText(
+    /Answer format: Enter (the number of ninjas|the number of shurikens|dollars and cents)/
+  );
+});
+
+test('Tens Frame Fill does not reveal the selected-cell count', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'Yellow Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Tens Frame Fill/ }).click();
+
+  await expect(page.locator('#ma-filled-count')).toHaveCount(0);
+  await expect(page.locator('#ma-body')).not.toContainText(/\d+ of \d+ filled/);
+});
+
+test('matching games highlight selections and grey out completed sets', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'Yellow Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Tens Mate Match/ }).click();
+
+  const tensLeft = page.locator('[data-action="arcade-maths-pair"][data-side="left"][data-index="0"]');
+  await tensLeft.click();
+  await expect(tensLeft).toHaveAttribute('aria-pressed', 'true');
+  await expect(tensLeft).toHaveClass(/ring-4/);
+  await page.locator('[data-action="arcade-maths-pair"][data-side="right"][data-index="1"]').click();
+  await expect(page.locator('#ma-feedback')).toHaveText('These cards do not match. Try another combination.');
+  await expect(tensLeft).toHaveAttribute('aria-pressed', 'false');
+
+  await tensLeft.click();
+  const tensRight = page.locator('[data-action="arcade-maths-pair"][data-side="right"][data-index="0"]');
+  await tensRight.click();
+  await expect(page.locator('#ma-feedback')).toHaveText('Correct match! Choose another set.');
+  await expect(tensLeft).toBeDisabled();
+  await expect(tensRight).toBeDisabled();
+  await expect(tensLeft).toHaveClass(/opacity-50.*grayscale/);
+});
+
+test('Conversion Match highlights and greys equivalent fraction, decimal, and percent cards', async ({ page }) => {
+  await openMathsDojo(page);
+  await page.getByRole('heading', { name: 'Platinum Belt', exact: true }).click();
+  await page.getByRole('button', { name: /Conversion Match/ }).click();
+  await expect(page.getByRole('group', { name: 'Fractions' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Decimals' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Percents' })).toBeVisible();
+
+  const fraction = page.locator('[data-action="arcade-maths-pair"][data-side="fraction"][data-index="0"]');
+  await fraction.click();
+  await expect(fraction).toHaveAttribute('aria-pressed', 'true');
+  await expect(fraction).toHaveClass(/ring-4/);
+  await page.locator('[data-action="arcade-maths-pair"][data-side="decimal"][data-index="1"]').click();
+  await page.locator('[data-action="arcade-maths-pair"][data-side="percent"][data-index="1"]').click();
+  await expect(page.locator('#ma-feedback')).toHaveText('These cards do not match. Try another combination.');
+
+  await fraction.click();
+  const decimal = page.locator('[data-action="arcade-maths-pair"][data-side="decimal"][data-index="0"]');
+  const percent = page.locator('[data-action="arcade-maths-pair"][data-side="percent"][data-index="0"]');
+  await decimal.click();
+  await percent.click();
+  await expect(page.locator('#ma-feedback')).toHaveText('Correct match! Choose another set.');
+  for (const card of [fraction, decimal, percent]) {
+    await expect(card).toBeDisabled();
+    await expect(card).toHaveClass(/opacity-50.*grayscale/);
+  }
+});
+
+test('page navigation returns the viewport to the top', async ({ page }) => {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+  await page.evaluate(() => document.getElementById('nav-btn-learning').click());
+  await expect(page.getByRole('heading', { name: 'Raven & Llama Learning Centre' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Programs & Spaces' })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});
+
 test('multiplicative activity accepts a typed numeric answer', async ({ page }) => {
   await openMathsDojo(page);
   await page.getByRole('heading', { name: 'Brown Belt', exact: true }).click();
