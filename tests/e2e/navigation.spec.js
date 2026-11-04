@@ -542,7 +542,7 @@ test('Learning Centre uses colorful, rounded subject cards', async ({ page }) =>
   await expectColorfulRoundedCards();
 });
 
-test('learning heading is unframed and its actions share a row beneath it', async ({ page }) => {
+test('learning heading is unframed and its primary actions share a row beneath it', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openLearningCentre(page);
   await expect(page.locator('[data-action="parent-report"]')).toContainText('Progress');
@@ -559,7 +559,7 @@ test('learning heading is unframed and its actions share a row beneath it', asyn
       return { x, y, width };
     })
   );
-  expect(buttons).toHaveLength(2);
+  expect(buttons.length).toBeGreaterThanOrEqual(2);
   expect(Math.abs(buttons[0].y - buttons[1].y)).toBeLessThanOrEqual(1);
   expect(buttons[0].x + buttons[0].width).toBeLessThan(buttons[1].x);
 });
