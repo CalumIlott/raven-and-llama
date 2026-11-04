@@ -193,8 +193,8 @@ Object.assign(App.prototype, {
     `;
   },
 
-  startDailyChallenge(activityId) {
-    const state = this.getDailyChallengeState();
+  startDailyChallenge(activityId, date = new Date()) {
+    const state = this.getDailyChallengeState(date);
     const activity = state.activities.find(candidate => candidate.id === activityId);
     if (!activity) return false;
     this[activity.startMethod](...activity.arguments);

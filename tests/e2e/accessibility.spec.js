@@ -201,11 +201,14 @@ test('navigation and account dialog support keyboard use on narrow screens', asy
   await page.keyboard.press('Enter');
   const accountDialog = page.getByRole('dialog', { name: 'Account' });
   const closeButton = page.getByRole('button', { name: 'Close account dialog' });
+  const lastFocusable = accountDialog.locator(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  ).filter({ visible: true }).last();
   await expect(accountDialog).toBeVisible();
   await expect(closeButton).toBeFocused();
 
   await page.keyboard.press('Shift+Tab');
-  await expect(page.locator('#guest-theme')).toBeFocused();
+  await expect(lastFocusable).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(closeButton).toBeFocused();
   await page.keyboard.press('Escape');

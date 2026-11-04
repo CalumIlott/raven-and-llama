@@ -95,10 +95,10 @@ test('daily progress records partial completion and grants its bonus only once',
   const activities = Array.from(context.app.getDailyChallengeState(date).activities);
   const [first, ...remaining] = activities;
 
-  assert.equal(context.app.startDailyChallenge(first.id), true);
+  assert.equal(context.app.startDailyChallenge(first.id, date), true);
   assert.equal(context.app.lastLaunch.method, first.startMethod);
   assert.deepEqual(Array.from(context.app.lastLaunch.args), Array.from(first.arguments));
-  assert.equal(context.app.startDailyChallenge('unknown-activity'), false);
+  assert.equal(context.app.startDailyChallenge('unknown-activity', date), false);
 
   assert.equal(context.app.recordDailyChallengeCompletion({ detail: { id: first.id } }, date), true);
   assert.equal(context.app.recordDailyChallengeCompletion({ detail: { id: first.id } }, date), false);
