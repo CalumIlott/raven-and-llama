@@ -221,12 +221,12 @@ class App {
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
       case 'brain-power-hub': this.showBrainPowerHub(); break;
       case 'brain-power-home': this.showBrainPowerHub(); break;
-      case 'brain-pattern-start': this.startBrainPowerPattern(); break;
+      case 'brain-pattern-start': this.startBrainPowerPattern(target.dataset.difficulty || 'easy'); break;
       case 'brain-pattern-answer': this.submitBrainPowerPatternAnswer(target.dataset.answerValue); break;
       case 'brain-pattern-retry': this.retryBrainPowerPattern(); break;
-      case 'brain-memory-start': this.startBrainPowerMemoryMatch(); break;
+      case 'brain-memory-start': this.startBrainPowerMemoryMatch(target.dataset.difficulty || 'easy'); break;
       case 'brain-memory-card': this.selectBrainPowerMemoryCard(target.dataset.cardId); break;
-      case 'brain-code-start': this.startBrainPowerCodeBreaker(); break;
+      case 'brain-code-start': this.startBrainPowerCodeBreaker(target.dataset.difficulty || 'easy'); break;
       case 'brain-code-submit': this.submitBrainPowerCodeGuess(); break;
       case 'history-event-select': this.selectHistoryEvent(target.dataset.eventId); break;
       case 'history-timeline-place': this.placeSelectedHistoryEvent(Number(target.dataset.positionIndex)); break;
