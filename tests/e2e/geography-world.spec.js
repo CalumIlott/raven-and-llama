@@ -50,6 +50,44 @@ test('country map and list selection share facts and support keyboard activation
   await expect(page.locator('.geography-map__region[data-country-id="australia"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
+test('world map shows full country context and keeps Pacific islands inside its border', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+
+  const contextCountries = page.locator('.geography-map__context-country');
+  await expect(contextCountries).toHaveCount(177);
+  for (const name of [
+    'Brazil',
+    'Canada',
+    'Russia',
+    'South Africa',
+    'Indonesia',
+    'Philippines',
+    'Papua New Guinea',
+    'Solomon Islands',
+    'Fiji',
+    'New Zealand'
+  ]) {
+    await expect(page.locator(`.geography-map__context-country[data-world-country="${name}"]`)).toHaveCount(1);
+  }
+
+  const map = page.locator('#geography-world-map');
+  await expect(map).toHaveAttribute('viewBox', '-8 -4 376 188');
+  const edgeCountries = await page.locator(
+    '.geography-map__region[data-country-id="fiji"], .geography-map__region[data-country-id="new-zealand"]'
+  ).evaluateAll(regions => regions.map(region => {
+    const { x, y, width, height } = region.getBBox();
+    return { x, y, right: x + width, bottom: y + height };
+  }));
+  expect(edgeCountries).toHaveLength(2);
+  for (const country of edgeCountries) {
+    expect(country.x).toBeGreaterThan(-8);
+    expect(country.y).toBeGreaterThan(-4);
+    expect(country.right).toBeLessThan(368);
+    expect(country.bottom).toBeLessThan(184);
+  }
+});
+
 test('country markers align to their map outlines and picker zoom controls work', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/geography');
@@ -70,13 +108,13 @@ test('country markers align to their map outlines and picker zoom controls work'
   await expect(page.locator('#geography-country-picker')).toHaveValue('fiji');
   await page.getByRole('button', { name: 'Zoom in' }).click();
   const mapViewBox = (await page.locator('#geography-world-map').getAttribute('viewBox')).split(' ').map(Number);
-  expect(mapViewBox[0]).toBeGreaterThanOrEqual(0);
-  expect(mapViewBox[1]).toBeGreaterThanOrEqual(0);
-  expect(mapViewBox[0] + mapViewBox[2]).toBeLessThanOrEqual(360);
-  expect(mapViewBox[1] + mapViewBox[3]).toBeLessThanOrEqual(180);
+  expect(mapViewBox[0]).toBeGreaterThanOrEqual(-8);
+  expect(mapViewBox[1]).toBeGreaterThanOrEqual(-4);
+  expect(mapViewBox[0] + mapViewBox[2]).toBeLessThanOrEqual(368);
+  expect(mapViewBox[1] + mapViewBox[3]).toBeLessThanOrEqual(184);
   await expect(page.locator('#geography-map-zoom-status')).toContainText('Fiji');
   await page.getByRole('button', { name: 'Reset map view' }).click();
-  await expect(page.locator('#geography-world-map')).toHaveAttribute('viewBox', '0 0 360 180');
+  await expect(page.locator('#geography-world-map')).toHaveAttribute('viewBox', '-8 -4 376 188');
 });
 
 test('zoomed map supports mouse panning without selecting a country', async ({ page }) => {
@@ -105,10 +143,10 @@ test('zoomed map supports mouse panning without selecting a country', async ({ p
   expect(duringPan[0]).toBeLessThan(before[0]);
   expect(duringPan[1]).toBeGreaterThan(before[1]);
   expect(after).toEqual(duringPan);
-  expect(after[0]).toBeGreaterThanOrEqual(0);
-  expect(after[1]).toBeGreaterThanOrEqual(0);
-  expect(after[0] + after[2]).toBeLessThanOrEqual(360);
-  expect(after[1] + after[3]).toBeLessThanOrEqual(180);
+  expect(after[0]).toBeGreaterThanOrEqual(-8);
+  expect(after[1]).toBeGreaterThanOrEqual(-4);
+  expect(after[0] + after[2]).toBeLessThanOrEqual(368);
+  expect(after[1] + after[3]).toBeLessThanOrEqual(184);
   await expect(page.getByRole('heading', { name: 'Germany', exact: true })).toBeVisible();
 });
 
