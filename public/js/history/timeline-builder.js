@@ -1,8 +1,10 @@
 const HISTORY_TIMELINE_ACTIVITY_ID = 'history-timeline-sequence';
 const HISTORY_TIMELINE_SKILL_ID = 'history_event_chronology';
+const HISTORY_TIMELINE_ROUND_SIZE = 6;
+const HISTORY_EVENT_MINIMUM_POOL_SIZE = 100;
 
 function isValidHistoryEventData(data) {
-  if (!data || !Array.isArray(data.events) || data.events.length < 4) return false;
+  if (!data || !Array.isArray(data.events) || data.events.length < HISTORY_EVENT_MINIMUM_POOL_SIZE) return false;
   const ids = new Set();
   const years = new Set();
   return data.events.every(event => {
@@ -27,38 +29,45 @@ if (!isValidHistoryEventData(window.HISTORY_EVENT_DATA)) {
 
 const HISTORY_EVENTS = window.HISTORY_EVENT_DATA.events;
 
-function historyEventById(eventId) {
-  return HISTORY_EVENTS.find(event => event.id === eventId) || null;
+function historyEventById(eventId, events = HISTORY_EVENTS) {
+  return events.find(event => event.id === eventId) || null;
 }
 
-function historyTimelineCanonicalOrder() {
-  return [...HISTORY_EVENTS].sort((left, right) => left.sortYear - right.sortYear);
+function historyTimelineCanonicalOrder(events = HISTORY_EVENTS) {
+  return [...events].sort((left, right) => left.sortYear - right.sortYear);
 }
 
-function shuffleHistoryEvents(random = Math.random) {
-  const events = [...HISTORY_EVENTS];
-  for (let index = events.length - 1; index > 0; index--) {
+function shuffleHistoryEvents(events = HISTORY_EVENTS, random = Math.random) {
+  const shuffled = [...events];
+  for (let index = shuffled.length - 1; index > 0; index--) {
     const swapIndex = Math.floor(random() * (index + 1));
-    [events[index], events[swapIndex]] = [events[swapIndex], events[index]];
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
   }
-  return events;
+  return shuffled;
 }
 
-function isCompleteHistoryTimelinePlacement(placements) {
-  const eventIds = new Set(HISTORY_EVENTS.map(event => event.id));
+function selectHistoryTimelineEvents(count = HISTORY_TIMELINE_ROUND_SIZE, random = Math.random) {
+  if (!Number.isInteger(count) || count < 1) {
+    throw new RangeError('Timeline event count must be a positive integer.');
+  }
+  return shuffleHistoryEvents(HISTORY_EVENTS, random).slice(0, Math.min(count, HISTORY_EVENTS.length));
+}
+
+function isCompleteHistoryTimelinePlacement(placements, events = HISTORY_EVENTS) {
+  const eventIds = new Set(events.map(event => event.id));
   return Array.isArray(placements) &&
-    placements.length === HISTORY_EVENTS.length &&
+    placements.length === events.length &&
     placements.every(eventId => eventIds.has(eventId)) &&
-    new Set(placements).size === HISTORY_EVENTS.length;
+    new Set(placements).size === events.length;
 }
 
-function placeHistoryEvent(placements, eventId, positionIndex) {
+function placeHistoryEvent(placements, eventId, positionIndex, events = HISTORY_EVENTS) {
   if (!Array.isArray(placements) ||
-    placements.length !== HISTORY_EVENTS.length ||
-    !historyEventById(eventId) ||
+    placements.length !== events.length ||
+    !historyEventById(eventId, events) ||
     !Number.isInteger(positionIndex) ||
     positionIndex < 0 ||
-    positionIndex >= HISTORY_EVENTS.length) {
+    positionIndex >= events.length) {
     return null;
   }
 
@@ -73,13 +82,13 @@ function placeHistoryEvent(placements, eventId, positionIndex) {
   return nextPlacements;
 }
 
-function getHistoryTimelineMismatches(placements) {
-  return historyTimelineCanonicalOrder().flatMap((expectedEvent, index) => {
+function getHistoryTimelineMismatches(placements, events = HISTORY_EVENTS) {
+  return historyTimelineCanonicalOrder(events).flatMap((expectedEvent, index) => {
     const eventId = placements[index];
     if (eventId === expectedEvent.id) return [];
     return [{
       position: index + 1,
-      current: historyEventById(eventId)?.title || 'An empty position',
+      current: historyEventById(eventId, events)?.title || 'An empty position',
       expected: expectedEvent.title,
       approximateDate: expectedEvent.approximateDate
     }];
@@ -163,7 +172,7 @@ Object.assign(App.prototype, {
               ${window.brandWordmark()} <span>History &amp; Discovery</span>
             </div>
             <h1 class="font-ninja text-3xl sm:text-4xl text-white font-bold tracking-wide">Travel Through Time</h1>
-            <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-2xl">Explore selected events from different places and times. This sample timeline is not a complete history of the world.</p>
+            <p class="text-slate-300 text-sm sm:text-base mt-2 max-w-2xl">Explore six randomly selected, sourced events from a wider bank. This activity is not a complete history of the world.</p>
           </div>
           <div class="module-banner-aside">
             <p>Ask what happened, where, and when.</p>
@@ -185,11 +194,13 @@ Object.assign(App.prototype, {
     `;
   },
 
-  startHistoryTimelineActivity() {
+  startHistoryTimelineActivity(random = Math.random) {
     this.currentView = 'history-timeline';
+    const events = selectHistoryTimelineEvents(HISTORY_TIMELINE_ROUND_SIZE, random);
     this.historyTimelineGame = {
-      eventTray: shuffleHistoryEvents(),
-      placements: Array(HISTORY_EVENTS.length).fill(null),
+      events,
+      eventTray: shuffleHistoryEvents(events, random),
+      placements: Array(events.length).fill(null),
       selectedEventId: null,
       inspectedEventId: null,
       submitted: false,
@@ -197,7 +208,7 @@ Object.assign(App.prototype, {
       mismatches: [],
       message: 'Select an event card, then choose a timeline position.'
     };
-    const correctOrder = historyTimelineCanonicalOrder().map(event => event.id);
+    const correctOrder = historyTimelineCanonicalOrder(events).map(event => event.id);
     this.historyTimelineActivityEngine = new ActivityEngine();
     this.historyTimelineActivityEngine.startQuiz({
       id: HISTORY_TIMELINE_ACTIVITY_ID,
@@ -215,7 +226,7 @@ Object.assign(App.prototype, {
       settings: {
         trackProgress: true,
         awardStars: true,
-        pointsPerCorrect: HISTORY_EVENTS.length
+        pointsPerCorrect: events.length
       }
     });
     this.renderHistoryTimelineActivity();
@@ -229,8 +240,8 @@ Object.assign(App.prototype, {
     this.updateHeader();
 
     const placedEventIds = new Set(game.placements.filter(Boolean));
-    const selectedEvent = historyEventById(game.selectedEventId);
-    const inspectedEvent = historyEventById(game.inspectedEventId);
+    const selectedEvent = historyEventById(game.selectedEventId, game.events);
+    const inspectedEvent = historyEventById(game.inspectedEventId, game.events);
     const complete = game.complete;
     main.innerHTML = `
       <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8">
@@ -249,7 +260,7 @@ Object.assign(App.prototype, {
               <h1 id="history-timeline-title">${complete ? 'Timeline Complete!' : 'Timeline Builder'}</h1>
               <p>Arrange events from earliest to most recent. Drag cards onto the timeline and drag placed events to reorder them, or select a card and position. Dates are approximate and appear after you finish.</p>
             </div>
-            <span class="history-timeline-count">${game.placements.filter(Boolean).length} of ${HISTORY_EVENTS.length} placed</span>
+            <span class="history-timeline-count">${game.placements.filter(Boolean).length} of ${game.events.length} placed</span>
           </div>
 
           <p id="history-timeline-status" class="history-timeline-status" role="status" aria-live="polite">${escapeHistoryHtml(game.message)}</p>
@@ -281,7 +292,7 @@ Object.assign(App.prototype, {
             </div>
             <ol class="history-timeline-slots">
               ${game.placements.map((eventId, index) => {
-                const event = historyEventById(eventId);
+                const event = historyEventById(eventId, game.events);
                 const label = event
                   ? `Position ${index + 1}: ${event.title}${complete ? `, ${event.approximateDate}` : ''}.`
                   : `Position ${index + 1}, empty.`;
@@ -306,7 +317,7 @@ Object.assign(App.prototype, {
           <div class="history-timeline-actions">
             ${complete
               ? `<button type="button" data-action="history-timeline-reset" class="history-secondary-button">Build another timeline</button>`
-              : `<button type="button" data-action="history-timeline-submit" class="history-primary-button" ${isCompleteHistoryTimelinePlacement(game.placements) && !game.submitted ? '' : 'disabled'}>Check the timeline</button>
+              : `<button type="button" data-action="history-timeline-submit" class="history-primary-button" ${isCompleteHistoryTimelinePlacement(game.placements, game.events) && !game.submitted ? '' : 'disabled'}>Check the timeline</button>
                  <button type="button" data-action="history-timeline-reset" class="history-secondary-button">Reset timeline</button>`}
           </div>
           ${getHistoryTimelineFeedback(game)}
@@ -342,7 +353,7 @@ Object.assign(App.prototype, {
 
   selectHistoryEvent(eventId) {
     const game = this.historyTimelineGame;
-    const event = historyEventById(eventId);
+    const event = game && historyEventById(eventId, game.events);
     if (!game || game.complete || game.submitted) return false;
     if (!event) throw new RangeError(`Unknown history event: ${eventId}`);
     game.selectedEventId = event.id;
@@ -362,7 +373,7 @@ Object.assign(App.prototype, {
       this.renderHistoryTimelineActivity();
       return false;
     }
-    const placements = placeHistoryEvent(game.placements, game.selectedEventId, positionIndex);
+    const placements = placeHistoryEvent(game.placements, game.selectedEventId, positionIndex, game.events);
     if (!placements) throw new RangeError(`Invalid timeline position: ${positionIndex}`);
     game.placements = placements;
     game.selectedEventId = null;
@@ -374,17 +385,18 @@ Object.assign(App.prototype, {
   dropHistoryEvent(eventId, positionIndex) {
     const game = this.historyTimelineGame;
     if (!game || game.complete || game.submitted) return false;
-    if (!historyEventById(eventId)) throw new RangeError(`Unknown history event: ${eventId}`);
+    const event = historyEventById(eventId, game.events);
+    if (!event) throw new RangeError(`Unknown history event: ${eventId}`);
     const previousPosition = game.placements.indexOf(eventId);
     const displacedEvent = game.placements[positionIndex];
-    const placements = placeHistoryEvent(game.placements, eventId, positionIndex);
+    const placements = placeHistoryEvent(game.placements, eventId, positionIndex, game.events);
     if (!placements) throw new RangeError(`Invalid timeline position: ${positionIndex}`);
     game.placements = placements;
     game.selectedEventId = null;
     game.inspectedEventId = eventId;
     game.message = previousPosition >= 0 && displacedEvent
-      ? `${historyEventById(eventId).title} moved to position ${positionIndex + 1}; the events were reordered.`
-      : `${historyEventById(eventId).title} moved to position ${positionIndex + 1}.`;
+      ? `${event.title} moved to position ${positionIndex + 1}; the events were reordered.`
+      : `${event.title} moved to position ${positionIndex + 1}.`;
     this.renderHistoryTimelineActivity();
     return true;
   },
@@ -407,7 +419,7 @@ Object.assign(App.prototype, {
     const game = this.historyTimelineGame;
     const engine = this.historyTimelineActivityEngine;
     if (!game || !engine || game.complete || game.submitted) return false;
-    if (!isCompleteHistoryTimelinePlacement(game.placements)) {
+    if (!isCompleteHistoryTimelinePlacement(game.placements, game.events)) {
       game.message = 'Place each event once before checking the timeline.';
       this.renderHistoryTimelineActivity();
       return false;
@@ -419,7 +431,7 @@ Object.assign(App.prototype, {
       game.message = 'Your timeline is in chronological order!';
       engine.complete();
     } else {
-      game.mismatches = getHistoryTimelineMismatches(game.placements);
+      game.mismatches = getHistoryTimelineMismatches(game.placements, game.events);
       game.message = 'Some events are out of order. Use the clues and try again.';
     }
     this.renderHistoryTimelineActivity();
@@ -454,5 +466,6 @@ window.HistoryTimeline = Object.freeze({
   isCompletePlacement: isCompleteHistoryTimelinePlacement,
   isValidEventData: isValidHistoryEventData,
   placeEvent: placeHistoryEvent,
-  shuffleEvents: shuffleHistoryEvents
+  selectEvents: selectHistoryTimelineEvents,
+  shuffleEvents: random => shuffleHistoryEvents(HISTORY_EVENTS, random)
 });

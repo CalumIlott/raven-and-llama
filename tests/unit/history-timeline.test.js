@@ -26,20 +26,35 @@ function createHistoryContext() {
   return context;
 }
 
-test('history event data is sourced and covers distinct periods with approximate dates', () => {
+test('history event data contains at least 100 sourced events with distinct IDs and dates', () => {
   const context = createHistoryContext();
   const events = Array.from(context.HistoryTimeline.events);
 
   assert.equal(context.HistoryTimeline.isValidEventData(context.HISTORY_EVENT_DATA), true);
-  assert.equal(events.length, 6);
-  assert.deepEqual(
-    Array.from(context.HistoryTimeline.canonicalOrder(), event => event.id),
-    ['early-farming', 'early-writing', 'great-pyramid', 'gutenberg-bible', 'powered-flight', 'apollo-11']
-  );
+  assert.ok(events.length >= 100);
+  assert.equal(new Set(events.map(event => event.id)).size, events.length);
+  assert.equal(new Set(events.map(event => event.sortYear)).size, events.length);
   assert.ok(events.every(event =>
-    event.title && event.approximateDate && event.clue && event.explanation &&
+    event.title && event.era && event.approximateDate && event.clue && event.explanation &&
     event.sourceName && event.sourceUrl.startsWith('https://')
   ));
+  const canonicalYears = Array.from(context.HistoryTimeline.canonicalOrder(), event => event.sortYear);
+  assert.deepEqual(canonicalYears, [...canonicalYears].sort((left, right) => left - right));
+});
+
+test('timeline rounds sample six unique events from the full pool and vary by random source', () => {
+  const context = createHistoryContext();
+  const events = Array.from(context.HistoryTimeline.events);
+  const firstRound = Array.from(context.HistoryTimeline.selectEvents(6, () => 0));
+  const secondRound = Array.from(context.HistoryTimeline.selectEvents(6, () => 0.99));
+
+  for (const round of [firstRound, secondRound]) {
+    assert.equal(round.length, 6);
+    assert.equal(new Set(round.map(event => event.id)).size, round.length);
+    assert.ok(round.every(event => events.some(candidate => candidate.id === event.id)));
+  }
+  assert.notDeepEqual(firstRound.map(event => event.id), secondRound.map(event => event.id));
+  assert.throws(() => context.HistoryTimeline.selectEvents(0), /positive integer/);
 });
 
 test('history event validation rejects duplicate IDs, dates, and insecure sources', () => {
@@ -47,6 +62,9 @@ test('history event validation rejects duplicate IDs, dates, and insecure source
   const data = context.eval('window.HISTORY_EVENT_DATA');
   const firstEvent = data.events[0];
 
+  assert.equal(context.HistoryTimeline.isValidEventData({
+    events: data.events.slice(0, 99)
+  }), false);
   assert.equal(context.HistoryTimeline.isValidEventData({
     events: [firstEvent, firstEvent, ...data.events.slice(2)]
   }), false);
@@ -64,26 +82,28 @@ test('history event validation rejects duplicate IDs, dates, and insecure source
 
 test('timeline placement supports moving, rejects duplicates, and reports incorrect positions', () => {
   const context = createHistoryContext();
-  const order = Array.from(context.HistoryTimeline.canonicalOrder(), event => event.id);
+  const events = Array.from(context.HistoryTimeline.selectEvents(6, () => 0));
+  const order = Array.from(context.HistoryTimeline.canonicalOrder(events), event => event.id);
   const empty = Array(order.length).fill(null);
-  const firstPlacement = context.HistoryTimeline.placeEvent(empty, order[0], 0);
-  const movedPlacement = context.HistoryTimeline.placeEvent(firstPlacement, order[0], 2);
+  const firstPlacement = context.HistoryTimeline.placeEvent(empty, order[0], 0, events);
+  const movedPlacement = context.HistoryTimeline.placeEvent(firstPlacement, order[0], 2, events);
   const incorrect = [...order].reverse();
 
   assert.deepEqual(Array.from(firstPlacement), [order[0], null, null, null, null, null]);
   assert.deepEqual(Array.from(movedPlacement), [null, null, order[0], null, null, null]);
   assert.deepEqual(empty, Array(order.length).fill(null));
-  assert.equal(context.HistoryTimeline.placeEvent(empty, 'unknown-event', 0), null);
-  assert.equal(context.HistoryTimeline.isCompletePlacement([order[0], order[0], ...order.slice(2)]), false);
-  assert.equal(context.HistoryTimeline.isCompletePlacement(incorrect), true);
-  assert.equal(context.HistoryTimeline.getMismatches(incorrect).length, order.length);
+  assert.equal(context.HistoryTimeline.placeEvent(empty, 'unknown-event', 0, events), null);
+  assert.equal(context.HistoryTimeline.isCompletePlacement([order[0], order[0], ...order.slice(2)], events), false);
+  assert.equal(context.HistoryTimeline.isCompletePlacement(incorrect, events), true);
+  assert.equal(context.HistoryTimeline.getMismatches(incorrect, events).length, order.length);
 });
 
 test('moving an event between filled timeline positions reorders by swapping', () => {
   const context = createHistoryContext();
-  const order = Array.from(context.HistoryTimeline.canonicalOrder(), event => event.id);
+  const events = Array.from(context.HistoryTimeline.selectEvents(6, () => 0));
+  const order = Array.from(context.HistoryTimeline.canonicalOrder(events), event => event.id);
   const placement = [...order];
-  const reordered = context.HistoryTimeline.placeEvent(placement, order[0], 1);
+  const reordered = context.HistoryTimeline.placeEvent(placement, order[0], 1, events);
 
   assert.deepEqual(Array.from(reordered), [order[1], order[0], ...order.slice(2)]);
   assert.deepEqual(placement, order);
@@ -93,9 +113,12 @@ test('moving an event between filled timeline positions reorders by swapping', (
 test('timeline completes through ActivityEngine and records progress only once', () => {
   const context = createHistoryContext();
   const app = context.app;
-  const order = Array.from(context.HistoryTimeline.canonicalOrder(), event => event.id);
 
-  app.startHistoryTimelineActivity();
+  app.startHistoryTimelineActivity(() => 0);
+  const order = Array.from(
+    context.HistoryTimeline.canonicalOrder(app.historyTimelineGame.events),
+    event => event.id
+  );
   assert.equal(app.historyTimelineActivityEngine.definition.id, 'history-timeline-sequence');
   assert.equal(app.historyTimelineActivityEngine.definition.skillId, 'history_event_chronology');
   for (const [positionIndex, eventId] of order.entries()) {
