@@ -188,7 +188,19 @@ test('accounts can only read and update their own progress', async () => {
           timesPlayed: 1
         },
         'invalid id': { title: '<script>', subject: 'Maths', kind: 'game', bestScore: 9, timesPlayed: 1 }
-      }
+      },
+      activityHistory: [{
+        date: dayKey,
+        activityId: 'science-water-cycle',
+        title: 'Water Cycle',
+        subject: 'Science Lab',
+        skillId: 'science_water_cycle',
+        kind: 'quiz',
+        score: 4,
+        total: 5,
+        correctAnswers: 4,
+        totalAnswers: 5
+      }]
     }
   }, firstCookie);
   assert.equal(save.status, 200);
@@ -233,6 +245,18 @@ test('accounts can only read and update their own progress', async () => {
       timesPlayed: 1
     }
   });
+  assert.deepEqual(firstProfile.activityHistory, [{
+    date: dayKey,
+    activityId: 'science-water-cycle',
+    title: 'Water Cycle',
+    subject: 'Science Lab',
+    skillId: 'science_water_cycle',
+    kind: 'quiz',
+    score: 4,
+    total: 5,
+    correctAnswers: 4,
+    totalAnswers: 5
+  }]);
   assert.equal(secondProfile.stars, 0);
   assert.equal(secondProfile.schoolYear, 3);
   assert.deepEqual(secondProfile.subjectYears, {});
@@ -243,6 +267,7 @@ test('accounts can only read and update their own progress', async () => {
   assert.deepEqual(secondProfile.questProgress, {});
   assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+  assert.deepEqual(secondProfile.activityHistory, []);
 
   const reset = await request(store, '/api/progress', 'PUT', {
     profile: {
@@ -397,6 +422,49 @@ test('progress rejects malformed daily challenge days and completion records', a
     }, cookie);
     assert.equal(response.status, 400);
   }
+});
+
+test('progress validates bounded activity history before account persistence', async () => {
+  const store = new MemoryAccountStore();
+  const registered = await request(store, '/api/auth/register', 'POST', {
+    username: 'analytics_owner',
+    password: 'a secure password 123'
+  });
+  const cookie = sessionCookie(registered);
+  const profile = (await registered.json()).profile;
+  const validEntry = {
+    date: new Date().toISOString().slice(0, 10),
+    activityId: 'science-water-cycle',
+    title: 'Water Cycle',
+    subject: 'Science Lab',
+    skillId: 'science_water_cycle',
+    kind: 'quiz',
+    score: 4,
+    total: 5,
+    correctAnswers: 4,
+    totalAnswers: 5
+  };
+  const invalidHistories = [
+    [{ ...validEntry, date: '2025-02-30' }],
+    [{ ...validEntry, activityId: 'invalid id' }],
+    [{ ...validEntry, correctAnswers: 6 }],
+    [{ ...validEntry, kind: 'game' }],
+    [{ ...validEntry, total: 0 }],
+    Array.from({ length: 366 }, () => validEntry)
+  ];
+
+  for (const activityHistory of invalidHistories) {
+    const response = await request(store, '/api/progress', 'PUT', {
+      profile: { ...profile, activityHistory }
+    }, cookie);
+    assert.equal(response.status, 400);
+  }
+
+  const saved = await request(store, '/api/progress', 'PUT', {
+    profile: { ...profile, activityHistory: [validEntry] }
+  }, cookie);
+  assert.equal(saved.status, 200);
+  assert.deepEqual((await saved.json()).profile.activityHistory, [validEntry]);
 });
 
 test('quest progress accepts ordered known steps and cannot be skipped or reset', async () => {
