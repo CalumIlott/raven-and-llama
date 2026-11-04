@@ -19,6 +19,7 @@ function createGeographyActivityContext() {
   loadBrowserScripts(
     context,
     'public/js/geography/country-data.js',
+    'public/js/geography/world-map-context.js',
     'public/js/geography/world-map.js',
     'public/js/geography/country-activities.js'
   );

@@ -7,6 +7,13 @@ const GEOGRAPHY_CONTINENTS = [
   'South America'
 ];
 const GEOGRAPHY_MAP_ZOOM_LEVELS = [1, 1.5, 2, 3];
+const GEOGRAPHY_MAP_WORLD_VIEW_BOX = '-8 -4 376 188';
+const GEOGRAPHY_MAP_WORLD_BOUNDS = Object.freeze({
+  x: -8,
+  y: -4,
+  width: 376,
+  height: 188
+});
 
 function isValidGeographyCountryData(data) {
   if (!data || !Array.isArray(data.countries) || data.countries.length === 0 ||
@@ -34,11 +41,34 @@ function isValidGeographyCountryData(data) {
   });
 }
 
+function isValidGeographyWorldContext(data) {
+  if (!data || !Array.isArray(data.countries) || data.countries.length < 100 ||
+    typeof data.mapSource !== 'string' || !data.mapSource.trim() ||
+    typeof data.mapSourceUrl !== 'string' || !data.mapSourceUrl.startsWith('https://')) {
+    return false;
+  }
+
+  const names = new Set();
+  return data.countries.every(country => {
+    if (!country || typeof country.name !== 'string' || !country.name.trim() ||
+      names.has(country.name) || typeof country.path !== 'string' ||
+      !/^M[-\d.\sMLZ]+$/i.test(country.path)) {
+      return false;
+    }
+    names.add(country.name);
+    return true;
+  });
+}
+
 if (!isValidGeographyCountryData(window.GEOGRAPHY_COUNTRY_DATA)) {
   throw new TypeError('Geography country data is missing or invalid.');
 }
+if (!isValidGeographyWorldContext(window.GEOGRAPHY_WORLD_MAP_CONTEXT)) {
+  throw new TypeError('Geography world map context is missing or invalid.');
+}
 
 const GEOGRAPHY_COUNTRIES = window.GEOGRAPHY_COUNTRY_DATA.countries;
+const GEOGRAPHY_WORLD_CONTEXT_COUNTRIES = window.GEOGRAPHY_WORLD_MAP_CONTEXT.countries;
 
 function escapeGeographyHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -164,8 +194,13 @@ Object.assign(App.prototype, {
               </div>
             </div>
             <figure class="geography-map-figure">
-              <svg id="geography-world-map" class="geography-map" viewBox="0 0 360 180" role="group" aria-label="Interactive world map. Select a highlighted country to see its capital and facts.">
-                <rect class="geography-map__ocean" x="0" y="0" width="360" height="180" rx="5"></rect>
+              <svg id="geography-world-map" class="geography-map" viewBox="${GEOGRAPHY_MAP_WORLD_VIEW_BOX}" role="group" aria-label="Interactive world map. Select a highlighted country to see its capital and facts.">
+                <rect class="geography-map__ocean" x="${GEOGRAPHY_MAP_WORLD_BOUNDS.x}" y="${GEOGRAPHY_MAP_WORLD_BOUNDS.y}" width="${GEOGRAPHY_MAP_WORLD_BOUNDS.width}" height="${GEOGRAPHY_MAP_WORLD_BOUNDS.height}" rx="5"></rect>
+                <g class="geography-map__context" aria-hidden="true">
+                  ${GEOGRAPHY_WORLD_CONTEXT_COUNTRIES.map(country => `
+                    <path class="geography-map__context-country" data-world-country="${escapeGeographyHtml(country.name)}" d="${country.path}" fill-rule="evenodd"></path>
+                  `).join('')}
+                </g>
                 <g class="geography-map__countries">
                   ${GEOGRAPHY_COUNTRIES.map(country => `
                     <g class="geography-map__region" data-action="geography-country-select" data-country-id="${country.id}" role="button" tabindex="0" aria-label="${escapeGeographyHtml(country.name)}, ${escapeGeographyHtml(country.continent)}. Select to view capital and facts." aria-pressed="${country.id === selectedCountry.id}">
@@ -176,7 +211,7 @@ Object.assign(App.prototype, {
                   `).join('')}
                 </g>
               </svg>
-              <figcaption class="geography-map-caption">Zoom in, then drag the map to pan. Country outlines are simplified and not to scale.</figcaption>
+              <figcaption class="geography-map-caption">The full world is shown; select one of the 18 highlighted countries. Zoom in, then drag to pan. Small islands are simplified.</figcaption>
             </figure>
             <p class="geography-map-attribution">
               Map outlines: <a href="${escapeGeographyHtml(window.GEOGRAPHY_COUNTRY_DATA.mapSourceUrl)}" target="_blank" rel="noopener noreferrer">Natural Earth (public domain)</a>.
@@ -261,13 +296,13 @@ Object.assign(App.prototype, {
     if (!zoom) throw new RangeError(`Unknown geography map zoom level: ${zoomIndex}`);
 
     if (zoom === 1) {
-      map.setAttribute('viewBox', '0 0 360 180');
+      map.setAttribute('viewBox', GEOGRAPHY_MAP_WORLD_VIEW_BOX);
     } else {
       const region = map.querySelector(`[data-country-id="${country.id}"]`);
       if (!region) throw new Error(`Geography country map was not rendered: ${country.id}`);
       const bounds = region.getBBox();
-      const width = 360 / zoom;
-      const height = 180 / zoom;
+      const width = GEOGRAPHY_MAP_WORLD_BOUNDS.width / zoom;
+      const height = GEOGRAPHY_MAP_WORLD_BOUNDS.height / zoom;
       this.setGeographyMapViewBox(
         bounds.x + bounds.width / 2 - width / 2,
         bounds.y + bounds.height / 2 - height / 2,
@@ -309,8 +344,14 @@ Object.assign(App.prototype, {
   setGeographyMapViewBox(x, y, width, height) {
     const map = document.getElementById('geography-world-map');
     if (!map) throw new Error('Geography map was not rendered');
-    const left = Math.max(0, Math.min(360 - width, x));
-    const top = Math.max(0, Math.min(180 - height, y));
+    const left = Math.max(
+      GEOGRAPHY_MAP_WORLD_BOUNDS.x,
+      Math.min(GEOGRAPHY_MAP_WORLD_BOUNDS.x + GEOGRAPHY_MAP_WORLD_BOUNDS.width - width, x)
+    );
+    const top = Math.max(
+      GEOGRAPHY_MAP_WORLD_BOUNDS.y,
+      Math.min(GEOGRAPHY_MAP_WORLD_BOUNDS.y + GEOGRAPHY_MAP_WORLD_BOUNDS.height - height, y)
+    );
     map.setAttribute('viewBox', [left, top, width, height]
       .map(value => Number(value.toFixed(2)))
       .join(' '));
@@ -397,5 +438,9 @@ window.GeographyWorld = Object.freeze({
   countries: GEOGRAPHY_COUNTRIES,
   countryById: geographyCountryById,
   countryPath: geographyCountryPath,
-  isValidCountryData: isValidGeographyCountryData
+  isValidCountryData: isValidGeographyCountryData,
+  isValidWorldContext: isValidGeographyWorldContext,
+  worldContextCountries: GEOGRAPHY_WORLD_CONTEXT_COUNTRIES,
+  worldBounds: GEOGRAPHY_MAP_WORLD_BOUNDS,
+  worldViewBox: GEOGRAPHY_MAP_WORLD_VIEW_BOX
 });

@@ -3842,6 +3842,18 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
   fill: #d7ecf3;
 }
 
+#app-main[data-page="geography-world"] .geography-map__context {
+  pointer-events: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map__context-country {
+  fill: #e4ece5;
+  stroke: #71877c;
+  stroke-width: 0.35;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
 #app-main[data-page="geography-world"] .geography-map__region {
   cursor: pointer;
   outline: none;
