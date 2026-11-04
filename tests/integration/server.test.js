@@ -165,7 +165,19 @@ test('accounts persist securely and progress stays private to the authenticated 
         totalAnswers: 5,
         timesPlayed: 1
       }
-    }
+    },
+    activityHistory: [{
+      date: dailyChallengeDayKey,
+      activityId: 'maths-number-builder',
+      title: 'Number Builder',
+      subject: 'Maths',
+      skillId: 'green_order',
+      kind: 'quiz',
+      score: 4,
+      total: 5,
+      correctAnswers: 4,
+      totalAnswers: 5
+    }]
   };
   const update = await fetch(`${baseUrl}/api/progress`, {
     method: 'PUT',
@@ -190,6 +202,18 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.activityProgress['maths-number-builder'].skillId, 'green_order');
   assert.equal(firstProfile.activityProgress['maths-number-builder'].correctAnswers, 4);
   assert.equal(firstProfile.activityProgress['maths-number-builder'].totalAnswers, 5);
+  assert.deepEqual(firstProfile.activityHistory, [{
+    date: dailyChallengeDayKey,
+    activityId: 'maths-number-builder',
+    title: 'Number Builder',
+    subject: 'Maths',
+    skillId: 'green_order',
+    kind: 'quiz',
+    score: 4,
+    total: 5,
+    correctAnswers: 4,
+    totalAnswers: 5
+  }]);
   assert.deepEqual(firstProfile.questProgress, {
     'stellar-expedition': { completedStepIds: ['solar-system-order'] }
   });
@@ -198,6 +222,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(secondProfile.stars, 0);
   assert.deepEqual(secondProfile.spellingLists, []);
   assert.deepEqual(secondProfile.activityProgress, {});
+  assert.deepEqual(secondProfile.activityHistory, []);
   assert.deepEqual(secondProfile.questProgress, {});
   assert.deepEqual(secondProfile.earnedBadges, []);
   assert.deepEqual(secondProfile.dailyChallenges, { days: {} });

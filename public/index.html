@@ -246,7 +246,7 @@
 
   <!-- Modal: Parent / Teacher Progress Stats -->
   <div id="parent-modal" class="parent-report-overlay hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div role="dialog" aria-modal="true" aria-labelledby="parent-modal-title" tabindex="-1" class="parent-report-dialog bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-2xl w-full shadow-2xl animate-pop max-h-[85vh] flex flex-col">
+    <div role="dialog" aria-modal="true" aria-labelledby="parent-modal-title" tabindex="-1" class="parent-report-dialog bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 max-w-5xl w-full shadow-2xl animate-pop max-h-[85vh] flex flex-col">
       <div class="parent-report-header flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
         <div>
           <h3 id="parent-modal-title" class="font-ninja text-2xl text-white font-bold">Mastery &amp; Progress Report</h3>
@@ -289,6 +289,61 @@
             </thead>
             <tbody id="parent-activity-stats-tbody"></tbody>
           </table>
+        </section>
+        <section id="parent-activity-analytics" class="mt-8 border-t border-slate-700 pt-6" aria-labelledby="parent-analytics-title">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h4 id="parent-analytics-title" class="font-ninja text-lg text-white font-bold">Subject Trends</h4>
+              <p class="mt-1 text-sm text-slate-300">Daily buckets use completed activity records. Quiz accuracy uses answered questions; games have no quiz accuracy.</p>
+            </div>
+            <div>
+              <label for="parent-analytics-range" class="mb-1 block text-sm font-bold text-white">Date range</label>
+              <select id="parent-analytics-range" data-action="parent-analytics-range" class="rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-white">
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+              </select>
+            </div>
+          </div>
+          <h5 class="mt-5 font-bold text-white">Subject summary</h5>
+          <div class="mt-2 overflow-x-auto">
+            <table class="parent-report-table w-full text-left border-collapse">
+              <caption class="sr-only">Activity attempts and quiz accuracy by subject for the selected range</caption>
+              <thead><tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                <th scope="col" class="py-2.5 px-3">Subject</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Completed activities</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Answered quiz questions</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Accuracy</th>
+              </tr></thead>
+              <tbody id="parent-analytics-subjects"></tbody>
+            </table>
+          </div>
+          <h5 class="mt-5 font-bold text-white">Daily trend</h5>
+          <div class="mt-2 overflow-x-auto">
+            <table class="parent-report-table w-full text-left border-collapse">
+              <caption class="sr-only">Completed activities and quiz accuracy by day</caption>
+              <thead><tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                <th scope="col" class="py-2.5 px-3">Date</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Completed activities</th>
+                <th scope="col" class="py-2.5 px-3 text-center">Quiz accuracy</th>
+              </tr></thead>
+              <tbody id="parent-analytics-trends"></tbody>
+            </table>
+          </div>
+          <h5 class="mt-5 font-bold text-white">Curriculum alignment</h5>
+          <p class="mt-1 text-sm text-slate-300">Configured Learning Centre skill links are shown when available. No Australian Curriculum code is inferred; activities without a verified mapping are marked as unmapped.</p>
+          <div class="mt-2 overflow-x-auto">
+            <table class="parent-report-table w-full text-left border-collapse">
+              <caption class="sr-only">Activity-to-skill links and verified Australian Curriculum mappings</caption>
+              <thead><tr class="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
+                <th scope="col" class="py-2.5 px-3">Subject</th>
+                <th scope="col" class="py-2.5 px-3">Activity</th>
+                <th scope="col" class="py-2.5 px-3">Learning Centre skill</th>
+                <th scope="col" class="py-2.5 px-3">Australian Curriculum</th>
+              </tr></thead>
+              <tbody id="parent-analytics-mappings"></tbody>
+            </table>
+          </div>
         </section>
         <section id="parent-spelling-list-manager" class="mt-8 border-t border-slate-700 pt-6" aria-labelledby="parent-spelling-list-title">
           <h4 id="parent-spelling-list-title" class="font-ninja text-xl text-white font-bold">Parent / Teacher: Weekly Spelling Lists</h4>
@@ -348,6 +403,7 @@
   <script src="js/shared/audio.js"></script>
   <script src="js/mathmasters/curriculum.js"></script>
   <script src="js/shared/renderers.js"></script>
+  <script src="js/shared/progress-analytics.js"></script>
   <script src="js/mathmasters/generators.js"></script>
   <script src="js/shared/accounts.js"></script>
   <script src="js/shared/achievement-badges.js"></script>

@@ -75,6 +75,13 @@ test('Fraction Pizza supports touch, keyboard, drag and drop, retry, and progres
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 questions');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 (100%)');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('Mastered');
+  await expect(page.locator('#parent-analytics-subjects')).toContainText('Maths');
+  await expect(page.locator('#parent-analytics-subjects')).toContainText('5 / 5 (100%)');
+  await expect(page.locator('#parent-analytics-trends')).toContainText('5');
+  await expect(page.locator('#parent-analytics-mappings')).toContainText('Fraction Master');
+  await expect(page.locator('#parent-analytics-mappings')).toContainText('Not mapped');
+  await page.locator('#parent-analytics-range').selectOption('7');
+  await expect(page.locator('#parent-analytics-range')).toHaveValue('7');
 });
 
 test('Fraction Pizza presents equivalent fractions and mixed-number models', async ({ page }) => {

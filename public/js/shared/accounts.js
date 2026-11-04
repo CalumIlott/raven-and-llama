@@ -61,6 +61,7 @@ class ProfileManager {
       stars: 0,
       skillsProgress: {},
       activityProgress: {},
+      activityHistory: [],
       questProgress: {},
       earnedBadges: [],
       ownedCosmetics: [],
@@ -90,6 +91,7 @@ class ProfileManager {
       ? source.activeSpellingListId
       : null;
     const activityProgress = ProfileManager.normalizeActivityProgress(source.activityProgress);
+    const activityHistory = ProfileManager.normalizeActivityHistory(source.activityHistory);
     const questProgress = window.LearningQuests
       ? window.LearningQuests.normalizeProgress(source.questProgress)
       : {};
@@ -127,6 +129,7 @@ class ProfileManager {
       stars: typeof source.stars === 'number' ? source.stars : 0,
       skillsProgress,
       activityProgress,
+      activityHistory,
       questProgress,
       earnedBadges,
       ownedCosmetics,
@@ -615,6 +618,12 @@ class ProfileManager {
     }));
   }
 
+  static normalizeActivityHistory(history) {
+    return window.ProgressAnalytics
+      ? window.ProgressAnalytics.normalizeActivityHistory(history)
+      : [];
+  }
+
   static recordActivityScore(activity, score, total = null, answerMetrics = null) {
     if (!activity || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(activity.id || '') ||
       typeof activity.title !== 'string' || typeof activity.subject !== 'string' ||
@@ -662,6 +671,20 @@ class ProfileManager {
       stat.bestTotal = total;
     }
     if (activity.settings.awardStars) profile.stars += Math.floor(score);
+    const activityHistory = ProfileManager.normalizeActivityHistory(profile.activityHistory);
+    activityHistory.push({
+      date: new Date().toISOString().slice(0, 10),
+      activityId: activity.id,
+      title: activity.title,
+      subject: activity.subject,
+      skillId: activity.skillId || null,
+      kind: activity.kind,
+      score,
+      total,
+      correctAnswers: answerMetrics?.correctAnswers ?? null,
+      totalAnswers: answerMetrics?.totalAnswers ?? null
+    });
+    profile.activityHistory = activityHistory.slice(-window.ProgressAnalytics.MAX_ACTIVITY_HISTORY_ENTRIES);
     ProfileManager.updateProfile(profile);
     return profile;
   }
