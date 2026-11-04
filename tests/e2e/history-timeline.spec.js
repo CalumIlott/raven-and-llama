@@ -47,12 +47,18 @@ test('Timeline Builder gives useful retry feedback and completes in chronologica
   await expect(page.locator('.history-timeline-slot')).toHaveCount(6);
 
   const orders = await page.evaluate(() => {
-    const sorted = [...window.HISTORY_EVENT_DATA.events].sort((left, right) => left.sortYear - right.sortYear);
-    return { correct: sorted.map(event => event.id), incorrect: sorted.reverse().map(event => event.id) };
+    const sorted = [...window.app.historyTimelineGame.events].sort((left, right) => left.sortYear - right.sortYear);
+    return {
+      correct: sorted.map(event => event.id),
+      incorrect: [...sorted].reverse().map(event => event.id),
+      earliest: sorted[0]
+    };
   });
-  await page.locator('[data-action="history-event-select"][data-event-id="early-writing"]').focus();
-  await page.locator('[data-action="history-event-select"][data-event-id="early-writing"]').press('Enter');
-  await expect(page.locator('#history-event-fact')).toContainText('Some of the earliest known writing');
+  const clueEvent = await page.evaluate(() => window.app.historyTimelineGame.events[0]);
+  const clueCard = page.locator(`[data-action="history-event-select"][data-event-id="${clueEvent.id}"]`);
+  await clueCard.focus();
+  await clueCard.press('Enter');
+  await expect(page.locator('#history-event-fact')).toContainText(clueEvent.clue);
 
   for (const [positionIndex, eventId] of orders.incorrect.entries()) {
     const card = page.locator(`[data-action="history-event-select"][data-event-id="${eventId}"]`);
@@ -64,7 +70,7 @@ test('Timeline Builder gives useful retry feedback and completes in chronologica
   }
   await page.locator('[data-action="history-timeline-submit"]').click();
   await expect(page.locator('#history-timeline-feedback')).toContainText('Some events are out of order');
-  await expect(page.locator('#history-timeline-feedback')).toContainText('Early farming communities');
+  await expect(page.locator('#history-timeline-feedback')).toContainText(orders.earliest.title);
   await page.getByRole('button', { name: 'Try again', exact: true }).click();
 
   while (await page.locator('[data-action="history-timeline-remove"]').count()) {
@@ -82,7 +88,7 @@ test('Timeline Builder gives useful retry feedback and completes in chronologica
   await page.locator('[data-action="history-timeline-submit"]').click();
   await expect(page.getByRole('heading', { name: 'Timeline Complete!', exact: true })).toBeVisible();
   await expect(page.locator('#history-timeline-feedback')).toContainText('The dates are approximate');
-  await expect(page.locator('[data-history-position-index="0"]')).toContainText('about 10,000 years ago');
+  await expect(page.locator('[data-history-position-index="0"]')).toContainText(orders.earliest.approximateDate);
   await expect(page.locator('#header-stars-count')).toHaveText('6');
   const activity = await page.evaluate(() => ({
     id: window.app.historyTimelineActivityEngine.definition.id,

@@ -38,7 +38,7 @@ test('provides contextual help and a safe hint, then celebrates activity complet
   await expect(panel).toBeHidden();
 
   const order = await page.evaluate(() =>
-    [...window.HISTORY_EVENT_DATA.events]
+    [...window.app.historyTimelineGame.events]
       .sort((left, right) => left.sortYear - right.sortYear)
       .map(event => event.id)
   );
