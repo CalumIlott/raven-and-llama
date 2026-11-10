@@ -118,10 +118,12 @@ stateDiagram-v2
   - Hashed password (PBKDF2 with salt).
   - Session token (hashed, stored in `HttpOnly`, `SameSite=Lax` cookie).
   - Profile JSON blob (school years, subject overrides, activity progress, badges, daily challenge records, owned cosmetics).
+  - Learning preferences include theme, school-year overrides, and the sound-effects setting; guest-only Parent Dashboard changes stay in memory.
 
 ### 4.2 Security Rules
 * **No Account Listing**: No API endpoint allows listing accounts or looking up other users.
 * **Session Scope Only**: All progress reads/mutations are derived strictly from the authenticated cookie session. Never accept a client-supplied account ID.
+* **Progress Reset**: `POST /api/progress/reset` requires the authenticated session and an explicit confirmation phrase. It clears learning records for that session's account while preserving account identity, preferences, and owned cosmetics.
 * **Rate Limiting**:
   - Registration: 30 attempts per IP per minute.
   - Login: 60 attempts per IP per minute, 10 attempts per IP + username pair.

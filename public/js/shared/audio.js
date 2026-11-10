@@ -2,7 +2,7 @@
 class SoundFX {
   constructor() {
     this.audioCtx = null;
-    this.muted = localStorage.getItem('math_masters_muted') === 'true';
+    this.muted = false;
   }
 
   init() {
@@ -19,8 +19,13 @@ class SoundFX {
 
   toggleMute() {
     this.muted = !this.muted;
-    localStorage.setItem('math_masters_muted', this.muted);
+    const profile = window.ProfileManager?.getActiveProfile();
+    if (profile) void window.ProfileManager.updateProfile({ ...profile, soundEnabled: !this.muted });
     return this.muted;
+  }
+
+  setMuted(muted) {
+    this.muted = muted === true;
   }
 
   isMuted() {

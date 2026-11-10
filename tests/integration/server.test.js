@@ -134,6 +134,9 @@ test('accounts persist securely and progress stays private to the authenticated 
     passedBelts: ['white'],
     earnedBadges: ['activity-explorer', 'unknown-badge'],
     skillsProgress: { green_order: { bestScore: 10, timesTrained: 1 } },
+    avatar: 'llama',
+    theme: 'dark',
+    soundEnabled: false,
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
@@ -195,6 +198,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.stars, 17);
   assert.equal(firstProfile.schoolYear, 6);
   assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2 });
+  assert.equal(firstProfile.soundEnabled, false);
   assert.deepEqual(firstProfile.spellingLists, [
     { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }
   ]);
@@ -243,6 +247,27 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.deepEqual(restoredCosmetics.questProgress, {
     'stellar-expedition': { completedStepIds: ['solar-system-order'] }
   });
+
+  assert.equal((await postJson('/api/progress/reset', { confirmation: 'RESET PROGRESS' })).status, 401);
+  const resetUnconfirmed = await postJson('/api/progress/reset', { confirmation: 'reset progress' }, first.cookie);
+  assert.equal(resetUnconfirmed.status, 400);
+  const resetResponse = await postJson('/api/progress/reset', { confirmation: 'RESET PROGRESS' }, first.cookie);
+  assert.equal(resetResponse.status, 200);
+  const resetProfile = (await resetResponse.json()).profile;
+  assert.equal(resetProfile.stars, 0);
+  assert.deepEqual(resetProfile.skillsProgress, {});
+  assert.deepEqual(resetProfile.activityProgress, {});
+  assert.deepEqual(resetProfile.activityHistory, []);
+  assert.deepEqual(resetProfile.spellingLists, []);
+  assert.equal(resetProfile.avatar, 'llama');
+  assert.equal(resetProfile.theme, 'dark');
+  assert.equal(resetProfile.schoolYear, 6);
+  assert.deepEqual(resetProfile.subjectYears, { maths: 3, science: 2 });
+  assert.equal(resetProfile.soundEnabled, false);
+  assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
+  const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
+  assert.equal((await otherAfterReset.json()).profile.stars, 0);
+  assert.equal((await fetch(`${baseUrl}/api/auth/session`, { headers: { Cookie: first.cookie } })).status, 200);
 
   const wrongLogin = await postJson('/api/auth/login', { username: 'avery_1', password: 'wrong password' });
   assert.equal(wrongLogin.status, 401);

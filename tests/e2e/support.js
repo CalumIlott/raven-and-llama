@@ -15,6 +15,24 @@ async function openAccountModal(page) {
   await expect(page.getByRole('dialog', { name: 'Account' })).toBeVisible();
 }
 
+async function openParentDashboard(page, password) {
+  const accountDialog = page.getByRole('dialog', { name: 'Account' });
+  if (await accountDialog.isVisible()) {
+    await accountDialog.getByRole('button', { name: /Parent Dashboard & settings/ }).click();
+  } else {
+    const reportActions = page.locator('[data-action="parent-report"]:visible');
+    if (await reportActions.count()) await reportActions.last().click();
+    else await page.locator('.home-stats-link').click();
+  }
+  await expect(page.getByRole('dialog', { name: 'Parent Dashboard' })).toBeVisible();
+  if (password !== undefined) {
+    await expect(page.locator('#parent-access-gate')).toBeVisible();
+    await page.locator('#parent-access-password').fill(password);
+    await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+    await expect(page.locator('#parent-dashboard-content')).toBeVisible();
+  }
+}
+
 async function registerAccount(page, username = uniqueUsername(), password = 'correct horse battery 42') {
   await openAccountModal(page);
   await page.locator('#account-register-tab').click();
@@ -104,6 +122,7 @@ module.exports = {
   chooseQuestionAnswer,
   loginAccount,
   openAccountModal,
+  openParentDashboard,
   openLearningCentre,
   openMathsDojo,
   openTimesTables,
