@@ -216,6 +216,7 @@ class App {
       case 'learning-quests': this.showLearningQuests(); break;
       case 'learning-quest-start': this.startLearningQuestStep(target.dataset.questId); break;
       case 'daily-challenge-start': this.startDailyChallenge(target.dataset.challengeId); break;
+      case 'recommendation-start': this.startRecommendedActivity(target.dataset.activityId); break;
       case 'maths-world': this.showMathsWorld(); break;
       case 'history-hub': this.showHistoryHub(); break;
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
