@@ -59,8 +59,9 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 ## Branching
 
 - `main` — stable, deployable at all times
-- Feature / fix branches: `feat/<short-slug>` or `fix/<short-slug>`
+- Feature / fix branches: `feat/<short-slug>`, `fix/<short-slug>`, or `docs/<short-slug>`
 - All new functionality must be developed on a feature branch and merged into `main` via a pull request.
+- Break logical sets of work into separate, focused PRs. Never bundle unrelated features, fixes, or large multi-part enhancements into a single monolithic pull request.
 - All changes arrive via pull request; do not push directly to `main`.
 - Pull requests must pass every required CI check before they can be merged.
 - GitHub branch protection for `main` must require `Node.js 22`, `Node.js 24`, `Node.js 26`, `Playwright E2E`, and `Dependency audit` status checks.
@@ -96,13 +97,14 @@ When working as an AI agent in this repository:
 
 1. **Scope**: Only modify files relevant to the current task. Do not "clean up" unrelated code.
 2. **Commit granularity**: Each distinct change (e.g. bug fix, feature, test) = separate commit.
-3. **Commit as you go**: After a unit passes its focused checks, commit that unit before beginning another; do not accumulate unrelated finished work.
+3. **Commit and push as you go**: After a unit passes its focused checks, commit that unit before beginning another; do not accumulate unrelated finished work. Push to the remote branch at sensible intervals so incremental progress is preserved.
 4. **Verify before committing**: Check for syntax errors (especially in `app.js` template literals) before staging.
 5. **Cache headers**: Preserve static response revalidation; do not add manual `?v=` tokens.
 6. **Tests first**: For any logic change, write or update the relevant unit test.
 7. **No secrets**: Never commit `.env` files, API keys, or profile data.
 8. **Describe intent**: Write a commit body explaining *why* the change was made when it isn't obvious from the title.
-9. **Worktree isolation**: Make task changes in a dedicated Git worktree rather than the primary checkout. Use separate worktrees for independent parallel tasks to keep branches and uncommitted changes isolated.
+9. **Worktree isolation and cleanup**: Make task changes in a dedicated Git worktree rather than the primary checkout (avoid placing worktrees in synced locations such as OneDrive). Use separate worktrees for independent parallel tasks to keep branches and uncommitted changes isolated. **Clean up worktrees as you go**: Once a task or pull request is completed or merged, remove the worktree with `git worktree remove <path>` and prune dead references (`git worktree prune`) to keep the repo clean.
+10. **Separate pull requests for logical units**: Keep PRs small and focused on a single logical theme (e.g. one activity, one bug fix, or one subsystem refactor). Avoid monolithic PRs that span multiple unrelated features.
 
 ---
 
