@@ -41,6 +41,10 @@ test('country map and list selection share facts and support keyboard activation
   await franceMapRegion.focus();
   await franceMapRegion.press('Enter');
   await expect(page.getByRole('heading', { name: 'France', exact: true })).toBeVisible();
+  await expect(page.locator('.geography-country-details__flag')).toHaveText('🇫🇷');
+  expect(await page.locator('.geography-country-details__flag').evaluate(
+    element => getComputedStyle(element).fontFamily
+  )).toContain('Segoe UI Emoji');
   await expect(page.locator('.geography-country-details')).toContainText('Capital: Paris');
   await expect(franceMapRegion).toHaveAttribute('aria-pressed', 'true');
 

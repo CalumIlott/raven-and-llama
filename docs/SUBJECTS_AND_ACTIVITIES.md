@@ -88,6 +88,7 @@ This document catalogues every subject hub, learning activity, question bank siz
   - **Capital Cities**: Randomly samples 5 countries per round and presents 4 distinct capital choices per question.
 * **Pool status**:
   - Both activities draw from the same 110-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
+  - Follow-up: audit the remaining map features for additional sovereign countries, and document why dependent or disputed map entities are excluded from the quiz pool.
 
 ---
 

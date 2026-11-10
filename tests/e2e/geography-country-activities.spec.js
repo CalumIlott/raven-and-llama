@@ -23,7 +23,14 @@ test('Flag Detective supports keyboard answers, completion, and return navigatio
 
   await expect(page).toHaveURL(/\/learning-centre\/geography\/flag-detective$/);
   await expect(page.getByRole('heading', { name: 'Flag Detective', exact: true })).toBeVisible();
-  await expect(page.getByRole('img', { name: /^Flag of / })).toBeVisible();
+  const flag = page.getByRole('img', { name: /^Flag of / });
+  await expect(flag).toBeVisible();
+  const currentFlag = await page.evaluate(() => {
+    const game = window.app.geographyCountryQuiz;
+    return window.GeographyWorld.countryById(game.countryIds[window.app.geographyCountryQuizEngine.currentIndex]).flag;
+  });
+  await expect(flag).toHaveText(currentFlag);
+  expect(await flag.evaluate(element => getComputedStyle(element).fontFamily)).toContain('Segoe UI Emoji');
   await chooseCurrentCorrectAnswer(page, testInfo, true);
   await expect(page.locator('#geography-country-quiz-feedback')).toContainText('Correct!');
 
