@@ -30,6 +30,7 @@ flowchart TD
 * **Problem**: `public/js/geography/country-data.js` contains only 18 countries, even though `world-map-context.js` contains SVG paths for 177 countries. Consequently, Flag Detective and Capital Cities quizzes only ever test 18 countries.
 * **Resolution**: Expand `country-data.js` to 100+ sovereign countries spanning Africa, Asia, Europe, North America, South America, and Oceania with verified flags, official capitals, continents, facts, and trusted source citations.
 * **Test**: Add unit test in `tests/unit/geography-country-activities.test.js` asserting `countries.length >= 100` and zero duplicate country/flag/capital combinations.
+* **Follow-up note**: The initial 100+ country target is now met, but the 177-feature map has additional geography records. Continue auditing it for eligible sovereign countries to add, and document any mapped dependencies or disputed entities that stay out of the country quiz pool.
 
 ### 1.3 Expand Life Skills "Plan a Party"
 * **Problem**: `public/js/life-skills/party-planner.js` features exactly one scenario ($100 budget) and 6 fixed items.

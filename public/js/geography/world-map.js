@@ -92,7 +92,7 @@ function renderGeographyCountryDetails(country) {
   return `
     <article class="geography-country-details" aria-labelledby="geography-country-name">
       <div class="geography-country-details__heading">
-        <span class="geography-country-details__flag" aria-hidden="true">${escapeGeographyHtml(country.flag)}</span>
+        <span class="country-flag-emoji geography-country-details__flag" aria-hidden="true">${escapeGeographyHtml(country.flag)}</span>
         <div>
           <p class="geography-country-details__continent">${escapeGeographyHtml(country.continent)}</p>
           <h2 id="geography-country-name">${escapeGeographyHtml(country.name)}</h2>
@@ -237,7 +237,7 @@ Object.assign(App.prototype, {
                       <div class="geography-country-options">
                         ${countries.map(country => `
                           <button type="button" class="geography-country-option" data-action="geography-country-select" data-country-id="${country.id}" aria-pressed="${country.id === selectedCountry.id}">
-                            <span class="geography-country-option__flag" aria-hidden="true">${escapeGeographyHtml(country.flag)}</span>
+                            <span class="country-flag-emoji geography-country-option__flag" aria-hidden="true">${escapeGeographyHtml(country.flag)}</span>
                             <span>${escapeGeographyHtml(country.name)}</span>
                           </button>
                         `).join('')}
