@@ -11,7 +11,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant (Except Brown Belt Fractions: 18) |
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble | **423** questions | ✅ Compliant |
-| **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ⚠️ Food Chains now has 10 sourced habitats (5 sampled per round); Virtual Lab still needs expansion |
+| **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
 | **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **110** countries | ✅ Compliant |
 | **History Hub** | `/learning-centre/history` | Timeline Builder | **104** events | ⚠️ Pool size compliant; event icons repaired; no remaining `??` placeholders |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
@@ -70,11 +70,11 @@ This document catalogues every subject hub, learning activity, question bank siz
     * 6 biological stages (Seed, Germination, Seedling, Adult Plant, Flowering, Seed Dispersal).
     * Legitimate finite canonical biological cycle with relationship validation.
   - **Food Chains** (`public/js/science/food-chains.js`):
-    * Currently only 3 habitats: Grassland, Kelp Forest, Desert (11 total organisms).
-    * Needs expansion to 10+ habitats (Rainforest, Coral Reef, Arctic Tundra, Pond, Deep Sea, Savanna).
+    * 10 sourced habitats, each with four organisms; five distinct habitats are sampled per run.
+    * Deep-sea hydrothermal vents use chemical energy rather than sunlight.
   - **Virtual Laboratory** (`public/js/science/virtual-lab.js`):
-    * Currently only 4 simulations: Ice melts, water freezes, sugar dissolves, sand forms mixture.
-    * Needs expansion to 15+ physical science simulations (density towers, vinegar/baking soda reaction, magnetic separation, filtration).
+    * 17 sourced outcomes cover state changes, dissolving, mixtures, reactions, filtration, magnetism, evaporation, and freezing point.
+    * Material filters group materials, prepared mixtures, conditions, and tools; each result links to its science source.
 
 ---
 
