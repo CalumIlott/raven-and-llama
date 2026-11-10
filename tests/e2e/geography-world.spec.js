@@ -12,8 +12,9 @@ test('Geography & The World route survives refresh and is linked from the subjec
   await expect(page).toHaveURL(/\/learning-centre\/geography$/);
   await expect(page.locator('#app-main')).toHaveAttribute('data-page', 'geography-world');
   await expect(page.getByRole('heading', { name: 'Our World', exact: true })).toBeVisible();
-  await expect(page.locator('.geography-map__region')).toHaveCount(18);
-  await expect(page.locator('.geography-country-option')).toHaveCount(18);
+  const countryCount = await page.evaluate(() => window.GEOGRAPHY_COUNTRY_DATA.countries.length);
+  await expect(page.locator('.geography-map__region')).toHaveCount(countryCount);
+  await expect(page.locator('.geography-country-option')).toHaveCount(countryCount);
   expect(await page.evaluate(() =>
     document.documentElement.scrollWidth <= document.documentElement.clientWidth
   )).toBe(true);

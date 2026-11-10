@@ -12,7 +12,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble | **423** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ⚠️ Missions compliant; Food Chains & Virtual Lab need expansion |
-| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **18** countries | ❌ **Non-compliant** (Needs expansion to 100+) |
+| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **110** countries | ✅ Compliant |
 | **History Hub** | `/learning-centre/history` | Timeline Builder | **104** events | ⚠️ Pool size compliant; 90 broken `??` icons need fix |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
 | **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 1 scenario (6 items) | ❌ **Non-compliant** (Needs expansion to 4+ scenarios, 20+ items) |
@@ -82,13 +82,12 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 * **Dataset** (`public/js/geography/country-data.js` vs `world-map-context.js`):
   - `world-map-context.js`: Contains SVG vector boundary paths for **177 countries** for the interactive map.
-  - `country-data.js`: Currently only has **18 countries** populated with flags, capitals, and facts.
+  - `country-data.js`: Contains **110 sovereign countries** with flags, capitals, continents, facts, and linked references. New records reuse the existing map paths instead of copying the SVG data.
 * **Activities** (`public/js/geography/country-activities.js`):
-  - **Flag Detective**: 5 questions per round guessing the country from its flag.
-  - **Capital Cities**: 5 questions per round guessing the capital of a country.
-* **Deficit**:
-  - Both activities are constrained to the 18 populated countries.
-  - **Priority action**: Expand `country-data.js` to 100+ countries with verified flags, capitals, continents, facts, and sources.
+  - **Flag Detective**: Randomly samples 5 countries per round and presents 4 distinct country choices per question.
+  - **Capital Cities**: Randomly samples 5 countries per round and presents 4 distinct capital choices per question.
+* **Pool status**:
+  - Both activities draw from the same 110-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
 
 ---
 

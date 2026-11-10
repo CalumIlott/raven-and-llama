@@ -358,3 +358,209 @@ window.GEOGRAPHY_COUNTRY_DATA = {
     }
   ]
 };
+
+const GEOGRAPHY_ADDITIONAL_COUNTRY_RECORDS = [
+  ['algeria', 'Algeria', 'DZ', 'Africa', 'Algiers', 'The Sahara Desert covers much of Algeria.'],
+  ['angola', 'Angola', 'AO', 'Africa', 'Luanda', 'Angola has a long coastline on the Atlantic Ocean.'],
+  ['benin', 'Benin', 'BJ', 'Africa', 'Porto-Novo', 'The historic Kingdom of Dahomey was based in present-day Benin.'],
+  ['botswana', 'Botswana', 'BW', 'Africa', 'Gaborone', 'The Okavango Delta spreads into northern Botswana.'],
+  ['burkina-faso', 'Burkina Faso', 'BF', 'Africa', 'Ouagadougou', 'Burkina Faso is a landlocked country in West Africa.'],
+  ['burundi', 'Burundi', 'BI', 'Africa', 'Gitega', 'Burundi has a shoreline on Lake Tanganyika.'],
+  ['cameroon', 'Cameroon', 'CM', 'Africa', 'Yaoundé', 'Mount Cameroon is an active volcano near the Atlantic coast.'],
+  ['chad', 'Chad', 'TD', 'Africa', "N'Djamena", 'Lake Chad lies near the borders of Chad, Niger, Nigeria, and Cameroon.'],
+  ['democratic-republic-of-the-congo', 'Democratic Republic of the Congo', 'CD', 'Africa', 'Kinshasa', 'The Congo River flows through the Democratic Republic of the Congo.'],
+  ['republic-of-the-congo', 'Republic of the Congo', 'CG', 'Africa', 'Brazzaville', 'Brazzaville sits across the Congo River from Kinshasa.'],
+  ['cote-divoire', "Côte d'Ivoire", 'CI', 'Africa', 'Yamoussoukro', 'Yamoussoukro is the political capital, while Abidjan is the largest city.'],
+  ['ethiopia', 'Ethiopia', 'ET', 'Africa', 'Addis Ababa', 'The Blue Nile begins at Lake Tana in Ethiopia.'],
+  ['gabon', 'Gabon', 'GA', 'Africa', 'Libreville', 'Gabon has extensive tropical rainforests along the equator.'],
+  ['gambia', 'The Gambia', 'GM', 'Africa', 'Banjul', 'The Gambia follows the Gambia River inland from the Atlantic coast.'],
+  ['ghana', 'Ghana', 'GH', 'Africa', 'Accra', 'Lake Volta in Ghana is one of the world’s largest artificial lakes by area.'],
+  ['guinea', 'Guinea', 'GN', 'Africa', 'Conakry', 'The Fouta Djallon highlands in Guinea feed several West African rivers.'],
+  ['guinea-bissau', 'Guinea-Bissau', 'GW', 'Africa', 'Bissau', 'The Bijagós Islands are an archipelago off Guinea-Bissau’s coast.'],
+  ['liberia', 'Liberia', 'LR', 'Africa', 'Monrovia', 'Liberia was founded in the 19th century by formerly enslaved people from the United States.'],
+  ['madagascar', 'Madagascar', 'MG', 'Africa', 'Antananarivo', 'Many of Madagascar’s lemur species live nowhere else in the wild.'],
+  ['malawi', 'Malawi', 'MW', 'Africa', 'Lilongwe', 'Lake Malawi stretches along much of the country’s eastern border.'],
+  ['mali', 'Mali', 'ML', 'Africa', 'Bamako', 'The historic city of Timbuktu is in Mali.'],
+  ['mauritania', 'Mauritania', 'MR', 'Africa', 'Nouakchott', 'The Sahara Desert covers most of Mauritania.'],
+  ['mozambique', 'Mozambique', 'MZ', 'Africa', 'Maputo', 'Mozambique has a long coastline on the Indian Ocean.'],
+  ['namibia', 'Namibia', 'NA', 'Africa', 'Windhoek', 'The Namib Desert runs along Namibia’s Atlantic coast.'],
+  ['nigeria', 'Nigeria', 'NG', 'Africa', 'Abuja', 'The Niger River reaches the Atlantic through Nigeria’s Niger Delta.'],
+  ['rwanda', 'Rwanda', 'RW', 'Africa', 'Kigali', 'Mountain gorillas live in Rwanda’s Volcanoes National Park.'],
+  ['senegal', 'Senegal', 'SN', 'Africa', 'Dakar', 'Dakar lies on the Cap-Vert Peninsula, near the westernmost point of mainland Africa.'],
+  ['zambia', 'Zambia', 'ZM', 'Africa', 'Lusaka', 'Victoria Falls lies on the border between Zambia and Zimbabwe.'],
+  ['afghanistan', 'Afghanistan', 'AF', 'Asia', 'Kabul', 'The Hindu Kush mountain range crosses Afghanistan.'],
+  ['armenia', 'Armenia', 'AM', 'Asia', 'Yerevan', 'Mount Ararat is visible from many parts of Armenia, including Yerevan.'],
+  ['azerbaijan', 'Azerbaijan', 'AZ', 'Asia', 'Baku', 'Azerbaijan borders the Caspian Sea.'],
+  ['bangladesh', 'Bangladesh', 'BD', 'Asia', 'Dhaka', 'Much of Bangladesh lies in the Ganges-Brahmaputra delta.'],
+  ['bhutan', 'Bhutan', 'BT', 'Asia', 'Thimphu', 'Bhutan is a Himalayan country with no coastline.'],
+  ['cambodia', 'Cambodia', 'KH', 'Asia', 'Phnom Penh', 'Angkor Wat is part of Cambodia’s Angkor World Heritage site.'],
+  ['georgia', 'Georgia', 'GE', 'Asia', 'Tbilisi', 'Georgia lies in the Caucasus region between Europe and Asia.'],
+  ['iran', 'Iran', 'IR', 'Asia', 'Tehran', 'The Zagros and Alborz mountain ranges border Iran’s central plateau.'],
+  ['iraq', 'Iraq', 'IQ', 'Asia', 'Baghdad', 'The Tigris and Euphrates rivers flow through Iraq.'],
+  ['jordan', 'Jordan', 'JO', 'Asia', 'Amman', 'The ancient city of Petra was carved into rock in present-day Jordan.'],
+  ['kazakhstan', 'Kazakhstan', 'KZ', 'Asia', 'Astana', 'Kazakhstan is the world’s largest landlocked country.'],
+  ['kuwait', 'Kuwait', 'KW', 'Asia', 'Kuwait City', 'Kuwait is a country on the Persian Gulf.'],
+  ['kyrgyzstan', 'Kyrgyzstan', 'KG', 'Asia', 'Bishkek', 'The Tian Shan mountains cover much of Kyrgyzstan.'],
+  ['laos', 'Laos', 'LA', 'Asia', 'Vientiane', 'Laos is the only landlocked country in Southeast Asia.'],
+  ['malaysia', 'Malaysia', 'MY', 'Asia', 'Kuala Lumpur', 'Malaysia has territory on both the Malay Peninsula and the island of Borneo.'],
+  ['mongolia', 'Mongolia', 'MN', 'Asia', 'Ulaanbaatar', 'The Gobi Desert stretches across southern Mongolia and northern China.'],
+  ['myanmar', 'Myanmar', 'MM', 'Asia', 'Naypyidaw', 'The Irrawaddy River is Myanmar’s longest river.'],
+  ['nepal', 'Nepal', 'NP', 'Asia', 'Kathmandu', 'Mount Everest lies on the border between Nepal and China.'],
+  ['north-korea', 'North Korea', 'KP', 'Asia', 'Pyongyang', 'North Korea occupies the northern part of the Korean Peninsula.'],
+  ['pakistan', 'Pakistan', 'PK', 'Asia', 'Islamabad', 'The Indus River flows through Pakistan to the Arabian Sea.'],
+  ['philippines', 'Philippines', 'PH', 'Asia', 'Manila', 'The Philippines is an archipelago of thousands of islands.'],
+  ['qatar', 'Qatar', 'QA', 'Asia', 'Doha', 'Qatar is a peninsula that projects into the Persian Gulf.'],
+  ['saudi-arabia', 'Saudi Arabia', 'SA', 'Asia', 'Riyadh', 'Most of Saudi Arabia is covered by desert or semi-desert.'],
+  ['south-korea', 'South Korea', 'KR', 'Asia', 'Seoul', 'South Korea occupies the southern part of the Korean Peninsula.'],
+  ['syria', 'Syria', 'SY', 'Asia', 'Damascus', 'Damascus is one of the world’s oldest continuously inhabited cities.'],
+  ['tajikistan', 'Tajikistan', 'TJ', 'Asia', 'Dushanbe', 'The Pamir Mountains rise in eastern Tajikistan.'],
+  ['thailand', 'Thailand', 'TH', 'Asia', 'Bangkok', 'The Chao Phraya River flows through Bangkok to the Gulf of Thailand.'],
+  ['turkmenistan', 'Turkmenistan', 'TM', 'Asia', 'Ashgabat', 'The Karakum Desert covers much of Turkmenistan.'],
+  ['united-arab-emirates', 'United Arab Emirates', 'AE', 'Asia', 'Abu Dhabi', 'The United Arab Emirates is a federation of seven emirates.'],
+  ['uzbekistan', 'Uzbekistan', 'UZ', 'Asia', 'Tashkent', 'Uzbekistan is one of only two doubly landlocked countries in the world.'],
+  ['vietnam', 'Vietnam', 'VN', 'Asia', 'Hanoi', 'The Mekong and Red rivers form large deltas in Vietnam.'],
+  ['albania', 'Albania', 'AL', 'Europe', 'Tirana', 'Albania has coastlines on both the Adriatic and Ionian seas.'],
+  ['austria', 'Austria', 'AT', 'Europe', 'Vienna', 'The Alps cover much of Austria.'],
+  ['belarus', 'Belarus', 'BY', 'Europe', 'Minsk', 'Belarus is a landlocked country in eastern Europe.'],
+  ['belgium', 'Belgium', 'BE', 'Europe', 'Brussels', 'Brussels hosts the headquarters of the European Union and NATO.'],
+  ['bosnia-and-herzegovina', 'Bosnia and Herzegovina', 'BA', 'Europe', 'Sarajevo', 'The Dinaric Alps extend across Bosnia and Herzegovina.'],
+  ['bulgaria', 'Bulgaria', 'BG', 'Europe', 'Sofia', 'The Balkan Mountains cross Bulgaria from west to east.'],
+  ['croatia', 'Croatia', 'HR', 'Europe', 'Zagreb', 'Croatia has a long Adriatic coastline with many islands.'],
+  ['czechia', 'Czechia', 'CZ', 'Europe', 'Prague', 'Czechia is a landlocked country in central Europe.'],
+  ['denmark', 'Denmark', 'DK', 'Europe', 'Copenhagen', 'Denmark includes the Jutland Peninsula and hundreds of islands.'],
+  ['estonia', 'Estonia', 'EE', 'Europe', 'Tallinn', 'Estonia has more than two thousand islands in the Baltic Sea.'],
+  ['finland', 'Finland', 'FI', 'Europe', 'Helsinki', 'Finland has tens of thousands of lakes.'],
+  ['greece', 'Greece', 'GR', 'Europe', 'Athens', 'Greece includes thousands of islands in the Aegean and Ionian seas.'],
+  ['hungary', 'Hungary', 'HU', 'Europe', 'Budapest', 'The Danube River divides Budapest into Buda and Pest.'],
+  ['iceland', 'Iceland', 'IS', 'Europe', 'Reykjavík', 'Iceland has many volcanoes and glaciers.'],
+  ['ireland', 'Ireland', 'IE', 'Europe', 'Dublin', 'The River Shannon is the longest river in Ireland.'],
+  ['latvia', 'Latvia', 'LV', 'Europe', 'Riga', 'Latvia has a coastline on the Baltic Sea.'],
+  ['lithuania', 'Lithuania', 'LT', 'Europe', 'Vilnius', 'Lithuania is the southernmost of the three Baltic states.'],
+  ['luxembourg', 'Luxembourg', 'LU', 'Europe', 'Luxembourg City', 'Luxembourg is one of the world’s few remaining grand duchies.'],
+  ['moldova', 'Moldova', 'MD', 'Europe', 'Chișinău', 'Moldova is a landlocked country between Romania and Ukraine.'],
+  ['netherlands', 'Netherlands', 'NL', 'Europe', 'Amsterdam', 'Parts of the Netherlands lie below sea level.'],
+  ['norway', 'Norway', 'NO', 'Europe', 'Oslo', 'Norway’s coastline is deeply indented by fjords.'],
+  ['poland', 'Poland', 'PL', 'Europe', 'Warsaw', 'The Vistula is the longest river in Poland.'],
+  ['romania', 'Romania', 'RO', 'Europe', 'Bucharest', 'The Carpathian Mountains form an arc through Romania.'],
+  ['sweden', 'Sweden', 'SE', 'Europe', 'Stockholm', 'Sweden has a long Baltic coastline and many lakes.'],
+  ['chile', 'Chile', 'CL', 'South America', 'Santiago', 'The Atacama Desert in northern Chile is one of the driest places on Earth.'],
+  ['ecuador', 'Ecuador', 'EC', 'South America', 'Quito', 'The equator crosses Ecuador, which is named after it.'],
+  ['haiti', 'Haiti', 'HT', 'North America', 'Port-au-Prince', 'Haiti and the Dominican Republic share the island of Hispaniola.'],
+  ['jamaica', 'Jamaica', 'JM', 'North America', 'Kingston', 'The Blue Mountains are in eastern Jamaica.'],
+  ['nicaragua', 'Nicaragua', 'NI', 'North America', 'Managua', 'Lake Nicaragua is the largest lake in Central America.'],
+  ['honduras', 'Honduras', 'HN', 'North America', 'Tegucigalpa', 'The Maya archaeological site of Copán is in western Honduras.'],
+  ['belize', 'Belize', 'BZ', 'North America', 'Belmopan', 'The Belize Barrier Reef is part of the Mesoamerican Reef system.'],
+  ['papua-new-guinea', 'Papua New Guinea', 'PG', 'Oceania', 'Port Moresby', 'Papua New Guinea includes the eastern half of New Guinea and nearby islands.'],
+  ['solomon-islands', 'Solomon Islands', 'SB', 'Oceania', 'Honiara', 'The Solomon Islands is an archipelago in the South Pacific.']
+];
+
+function geographyFlagFromIsoCode(code) {
+  return Array.from(code.toUpperCase(), character =>
+    String.fromCodePoint(127397 + character.charCodeAt(0))
+  ).join('');
+}
+
+function geographyMapPointFromPaths(paths) {
+  const polygons = paths.map(path => {
+    const values = (path.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+    const points = [];
+    for (let index = 0; index < values.length; index += 2) {
+      points.push([values[index], values[index + 1]]);
+    }
+    let areaTwice = 0;
+    let longitudeTotal = 0;
+    let latitudeTotal = 0;
+    for (let index = 0; index < points.length; index++) {
+      const [longitude, latitude] = points[index];
+      const [nextLongitude, nextLatitude] = points[(index + 1) % points.length];
+      const cross = longitude * nextLatitude - nextLongitude * latitude;
+      areaTwice += cross;
+      longitudeTotal += (longitude + nextLongitude) * cross;
+      latitudeTotal += (latitude + nextLatitude) * cross;
+    }
+    return {
+      area: Math.abs(areaTwice),
+      points,
+      point: areaTwice === 0
+        ? points[0]
+        : [longitudeTotal / (3 * areaTwice), latitudeTotal / (3 * areaTwice)]
+    };
+  });
+  polygons.sort((left, right) => right.area - left.area);
+  for (const polygon of polygons) {
+    if (geographyPointIsInsidePolygon(polygon.point, polygon.points)) return polygon.point;
+  }
+  return polygons.map(polygon => geographyInteriorPoint(polygon.points))
+    .filter(Boolean)
+    .sort((left, right) => right.width - left.width)[0]?.point || [0, 0];
+}
+
+function geographyPointIsInsidePolygon(point, points) {
+  const [x, y] = point;
+  let inside = false;
+  for (let index = 0, previous = points.length - 1; index < points.length; previous = index++) {
+    const [currentX, currentY] = points[index];
+    const [previousX, previousY] = points[previous];
+    const crossesLine = (currentY > y) !== (previousY > y);
+    if (crossesLine && x < ((previousX - currentX) * (y - currentY)) / (previousY - currentY) + currentX) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function geographyInteriorPoint(points) {
+  if (!points.length) return null;
+  const minLatitude = Math.min(...points.map(point => point[1]));
+  const maxLatitude = Math.max(...points.map(point => point[1]));
+  let best = null;
+  for (let latitude = Math.ceil(minLatitude); latitude < maxLatitude; latitude += 1) {
+    const intersections = [];
+    for (let index = 0, previous = points.length - 1; index < points.length; previous = index++) {
+      const [longitude, currentLatitude] = points[index];
+      const [previousLongitude, previousLatitude] = points[previous];
+      if ((currentLatitude > latitude) !== (previousLatitude > latitude)) {
+        intersections.push(longitude +
+          ((latitude - currentLatitude) * (previousLongitude - longitude)) /
+          (previousLatitude - currentLatitude));
+      }
+    }
+    intersections.sort((left, right) => left - right);
+    for (let index = 0; index + 1 < intersections.length; index += 2) {
+      const width = intersections[index + 1] - intersections[index];
+      if (!best || width > best.width) {
+        best = { width, point: [(intersections[index] + intersections[index + 1]) / 2, latitude] };
+      }
+    }
+  }
+  return best;
+}
+
+const geographyMapCountriesByName = new Map(
+  (window.GEOGRAPHY_WORLD_MAP_CONTEXT?.countries || []).map(country => [country.name, country])
+);
+const geographyMapNameOverrides = {
+  'Côte d\'Ivoire': 'Ivory Coast',
+  'The Gambia': 'Gambia'
+};
+
+for (const [id, name, isoCode, continent, capital, fact] of GEOGRAPHY_ADDITIONAL_COUNTRY_RECORDS) {
+  const mapName = geographyMapNameOverrides[name] || name;
+  const mapCountry = geographyMapCountriesByName.get(mapName);
+  if (!mapCountry) throw new TypeError(`Missing map geometry for country: ${name}`);
+  const mapPaths = mapCountry.path.match(/M[^M]+/g) || [];
+  const sourceSlug = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[’']/g, '').replace(/\s+/g, '-');
+  window.GEOGRAPHY_COUNTRY_DATA.countries.push({
+    id,
+    name,
+    continent,
+    flag: geographyFlagFromIsoCode(isoCode),
+    capital,
+    fact,
+    factSource: 'Encyclopaedia Britannica',
+    factSourceUrl: `https://www.britannica.com/place/${sourceSlug}`,
+    mapPoint: geographyMapPointFromPaths(mapPaths),
+    mapPaths
+  });
+}
