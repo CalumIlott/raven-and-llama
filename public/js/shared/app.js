@@ -267,7 +267,7 @@ class App {
       case 'games-hub': this.showGamesHub(); break;
       case 'critter-open': this.showCritterCatch(); break;
       case 'account-open': this.openProfileModal(); break;
-      case 'parent-report': this.showParentOverview(); break;
+      case 'parent-report': void this.showParentOverview(); break;
       case 'dojo': this.showDojoHub(); break;
       case 'times-tables': this.showTimesTables(); break;
       case 'telling-time': this.showTellingTime(); break;
@@ -289,6 +289,9 @@ class App {
       case 'account-delete-show': this.showDeleteAccountConfirmation(); break;
       case 'account-delete-cancel': this.cancelDeleteAccount(); break;
       case 'parent-close': this.closeParentModal(); break;
+      case 'parent-tab': this.selectParentDashboardTab(target.dataset.tab); break;
+      case 'progress-reset-open': this.showProgressResetConfirmation(); break;
+      case 'progress-reset-cancel': this.cancelProgressReset(); break;
       case 'belt-detail': this.showBeltDetails(target.dataset.beltId); break;
       case 'skill-start': this.startSkillGame(target.dataset.beltId, target.dataset.skillId); break;
       case 'arcade-start': this.launchArcade(target.dataset.beltId); break;
@@ -417,6 +420,8 @@ class App {
       case 'account-avatar': this.changeAvatarSubmit(event); break;
       case 'account-password': this.changePasswordSubmit(event); break;
       case 'account-delete': this.deleteAccount(event); break;
+      case 'parent-access': void this.submitParentAccess(event); break;
+      case 'progress-reset': void this.resetLearningProgress(event); break;
       case 'spelling-list-save':
         event.preventDefault();
         void this.saveSpellingList(event);
@@ -445,7 +450,10 @@ class App {
   }
 
   handleChangeAction(event) {
-    if (event.target.dataset.action === 'theme-select') this.setTheme(event.target.value);
+    if (event.target.dataset.action === 'theme-select') {
+      this.setTheme(event.target.value, { persistGuest: event.target.id !== 'account-theme' });
+    }
+    if (event.target.dataset.action === 'audio-preference') void this.saveAudioPreference(event.target.checked);
     if (event.target.dataset.action === 'parent-analytics-range') {
       const rangeDays = Number(event.target.value);
       if ([7, 30, 90].includes(rangeDays)) {
@@ -507,6 +515,24 @@ class App {
       .filter(dialog => !dialog.closest('.hidden'));
     const dialog = dialogs[dialogs.length - 1];
     if (!dialog) return;
+
+    if (event.target?.getAttribute('role') === 'tab' &&
+      event.target.closest('[aria-label="Parent dashboard sections"]')) {
+      const tabs = Array.from(dialog.querySelectorAll('[role="tab"]'));
+      const currentIndex = tabs.indexOf(event.target);
+      const nextIndex = event.key === 'ArrowRight' ? (currentIndex + 1) % tabs.length
+        : event.key === 'ArrowLeft' ? (currentIndex - 1 + tabs.length) % tabs.length
+          : event.key === 'Home' ? 0
+            : event.key === 'End' ? tabs.length - 1
+              : -1;
+      if (nextIndex >= 0) {
+        event.preventDefault();
+        const nextTab = tabs[nextIndex];
+        this.selectParentDashboardTab(nextTab.dataset.tab);
+        nextTab.focus();
+        return;
+      }
+    }
 
     const modal = dialog.closest('#profile-modal, #parent-modal');
     if (event.key === 'Escape') {
@@ -658,8 +684,8 @@ class App {
     if (soundBtn) soundBtn.innerHTML = isMuted ? '🔇' : '🔊';
   }
 
-  setTheme(theme) {
-    return ProfileManager.setTheme(theme);
+  setTheme(theme, options) {
+    return ProfileManager.setTheme(theme, options);
   }
 
   refreshCurrentView() {
@@ -949,8 +975,97 @@ class App {
     const activeElementId = document.activeElement?.id;
     this.renderLearningPreferences(ProfileManager.getActiveProfile());
     document.getElementById(activeElementId)?.focus();
-    if (saved) this.setAccountMessage('Learning levels saved.', false);
-    else this.setAccountMessage(ProfileManager.lastSaveError || 'Unable to save learning levels.');
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved
+      ? 'Learning preferences saved to this account.'
+      : ProfileManager.isAuthenticated()
+        ? ProfileManager.lastSaveError || 'Unable to save learning preferences.'
+        : 'Learning preferences apply for this guest visit only.';
+  }
+
+  async saveAudioPreference(enabled) {
+    const profile = { ...ProfileManager.getActiveProfile(), soundEnabled: enabled };
+    window.soundFX?.setMuted(!enabled);
+    const saved = await ProfileManager.updateProfile(profile);
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved
+      ? 'Sound preference saved to this account.'
+      : ProfileManager.isAuthenticated()
+        ? ProfileManager.lastSaveError || 'Unable to save the sound preference.'
+        : 'Sound preference applies for this guest visit only.';
+    const checkbox = document.getElementById('parent-sound-enabled');
+    if (checkbox) checkbox.checked = ProfileManager.getActiveProfile().soundEnabled;
+  }
+
+  selectParentDashboardTab(tab) {
+    if (!['progress', 'settings'].includes(tab)) return false;
+    const isSettings = tab === 'settings';
+    const progressTab = document.getElementById('parent-tab-progress');
+    const settingsTab = document.getElementById('parent-tab-settings');
+    const progressPanel = document.getElementById('parent-dashboard-report-panel');
+    const settingsPanel = document.getElementById('parent-dashboard-settings-panel');
+    if (!progressTab || !settingsTab || !progressPanel || !settingsPanel) return false;
+    progressTab.setAttribute('aria-selected', String(!isSettings));
+    settingsTab.setAttribute('aria-selected', String(isSettings));
+    progressTab.tabIndex = isSettings ? -1 : 0;
+    settingsTab.tabIndex = isSettings ? 0 : -1;
+    progressTab.classList.toggle('bg-cyan-800', !isSettings);
+    progressTab.classList.toggle('text-white', !isSettings);
+    progressTab.classList.toggle('bg-slate-800', isSettings);
+    progressTab.classList.toggle('text-slate-200', isSettings);
+    settingsTab.classList.toggle('bg-cyan-800', isSettings);
+    settingsTab.classList.toggle('text-white', isSettings);
+    settingsTab.classList.toggle('bg-slate-800', !isSettings);
+    settingsTab.classList.toggle('text-slate-200', !isSettings);
+    progressPanel.classList.toggle('hidden', isSettings);
+    settingsPanel.classList.toggle('hidden', !isSettings);
+    return true;
+  }
+
+  showProgressResetConfirmation() {
+    const form = document.getElementById('progress-reset-confirmation');
+    if (!form || !ProfileManager.isAuthenticated()) return false;
+    form.classList.remove('hidden');
+    form.reset();
+    document.getElementById('progress-reset-status').textContent = '';
+    document.getElementById('progress-reset-phrase')?.focus();
+    return true;
+  }
+
+  cancelProgressReset() {
+    const form = document.getElementById('progress-reset-confirmation');
+    if (!form) return false;
+    form.reset();
+    form.classList.add('hidden');
+    document.querySelector('[data-action="progress-reset-open"]')?.focus();
+    return true;
+  }
+
+  async resetLearningProgress(event) {
+    event.preventDefault();
+    const form = event.target;
+    const status = document.getElementById('progress-reset-status');
+    const phrase = form.elements.confirmation.value;
+    if (phrase !== 'RESET PROGRESS') {
+      status.textContent = 'Type RESET PROGRESS exactly to confirm.';
+      return false;
+    }
+    const submit = form.querySelector('[type="submit"]');
+    if (submit) submit.disabled = true;
+    status.textContent = 'Resetting this learner’s progress…';
+    try {
+      await ProfileManager.resetLearningProgress();
+      this.renderParentDashboardContent(false);
+      status.textContent = 'Learning progress was reset. Your account and settings are still active.';
+      form.reset();
+      form.classList.add('hidden');
+      this.selectParentDashboardTab('settings');
+    } catch (error) {
+      status.textContent = error.message || 'Progress could not be reset. Try again.';
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+    return true;
   }
 
   renderAvatarOptions() {
@@ -1373,8 +1488,72 @@ class App {
 
   showParentOverview() {
     const modal = document.getElementById('parent-modal');
-    if (!modal) return;
+    const gate = document.getElementById('parent-access-gate');
+    const content = document.getElementById('parent-dashboard-content');
+    if (!modal || !gate || !content) return false;
 
+    const profileModal = document.getElementById('profile-modal');
+    const accountModalIsOpen = profileModal && !profileModal.classList.contains('hidden');
+    const focusReturn = document.querySelector('[data-action="account-open"]');
+    if (accountModalIsOpen) this.closeDialog(profileModal);
+
+    if (ProfileManager.isAuthenticated()) {
+      gate.classList.remove('hidden');
+      content.classList.add('hidden');
+      const accessForm = gate.querySelector('form');
+      accessForm?.reset();
+      document.getElementById('parent-access-status').textContent = '';
+      this.openDialog(modal);
+      if (accountModalIsOpen) this.dialogFocusReturn.set(modal, focusReturn);
+      document.getElementById('parent-access-password')?.focus();
+      return true;
+    }
+
+    this.renderParentDashboardContent(true);
+    this.openDialog(modal);
+    if (accountModalIsOpen) this.dialogFocusReturn.set(modal, focusReturn);
+    return true;
+  }
+
+  async submitParentAccess(event) {
+    event.preventDefault();
+    const status = document.getElementById('parent-access-status');
+    const passwordInput = document.getElementById('parent-access-password');
+    const account = ProfileManager.account;
+    if (!account || !passwordInput?.value) return false;
+    status.textContent = 'Checking account password…';
+    try {
+      await ProfileManager.login(account.username, passwordInput.value);
+      if (ProfileManager.account?.id !== account.id) throw new Error('The active account changed. Sign in again.');
+      passwordInput.value = '';
+      document.getElementById('parent-access-gate')?.classList.add('hidden');
+      this.renderParentDashboardContent(false);
+      status.textContent = '';
+      document.getElementById('parent-tab-progress')?.focus();
+      return true;
+    } catch (error) {
+      passwordInput.value = '';
+      status.textContent = error.status === 429
+        ? 'Too many attempts. Wait before trying again.'
+        : error.status === 503
+          ? 'Parent access is temporarily unavailable. Try again later.'
+          : 'We couldn’t confirm parent access. Check the password and try again.';
+      passwordInput.focus();
+      return false;
+    }
+  }
+
+  renderParentDashboardContent(isGuest = false) {
+    const content = document.getElementById('parent-dashboard-content');
+    if (!content) return false;
+    content.classList.remove('hidden');
+    const notice = document.getElementById('parent-session-notice');
+    if (notice) {
+      notice.classList.toggle('hidden', !isGuest);
+      notice.textContent = isGuest
+        ? 'Guest view: this dashboard is not protected by parent sign-in. Changes to guest preferences last only for this visit.'
+        : '';
+    }
     const profile = ProfileManager.getActiveProfile();
     const progress = profile?.skillsProgress || {};
 
@@ -1455,7 +1634,17 @@ class App {
     this.setSpellingListStatus('');
     this.renderParentSpellingLists();
     this.renderParentAnalytics(this.parentAnalyticsRangeDays || 30);
-    this.openDialog(modal);
+    this.renderLearningPreferences(profile);
+    const themeSelect = document.getElementById('account-theme');
+    if (themeSelect) themeSelect.value = profile.theme;
+    const soundToggle = document.getElementById('parent-sound-enabled');
+    if (soundToggle) soundToggle.checked = profile.soundEnabled;
+    const settingsStatus = document.getElementById('parent-settings-status');
+    if (settingsStatus) settingsStatus.textContent = '';
+    document.getElementById('progress-reset-confirmation')?.classList.add('hidden');
+    document.getElementById('parent-reset-section')?.classList.toggle('hidden', isGuest);
+    this.selectParentDashboardTab('progress');
+    return true;
   }
 
   closeParentModal() {

@@ -112,6 +112,65 @@ test('registration validates input, creates a private account, and issues a secu
   assert.equal(duplicate.status, 409);
 });
 
+test('progress reset requires the authenticated session and preserves only account settings', async () => {
+  const store = new MemoryAccountStore();
+  const first = await request(store, '/api/auth/register', 'POST', {
+    username: 'reset_owner',
+    password: 'a secure password 123'
+  });
+  const firstData = await first.json();
+  const firstCookie = sessionCookie(first);
+  const second = await request(store, '/api/auth/register', 'POST', {
+    username: 'reset_other',
+    password: 'another secure password 123'
+  });
+  const secondCookie = sessionCookie(second);
+  const saved = {
+    ...firstData.profile,
+    avatar: 'llama',
+    theme: 'dark',
+    schoolYear: 8,
+    subjectYears: { maths: 4, science: 2 },
+    soundEnabled: false,
+    ownedCosmetics: ['sunrise-frame'],
+    equippedCosmetic: 'sunrise-frame',
+    stars: 45,
+    skillsProgress: { green_order: { correct: 4, total: 5, bestScore: 8, timesTrained: 2, stars: 3 } },
+    activityProgress: { 'science-virtual-lab': { title: 'Virtual Laboratory', subject: 'Science Lab', skillId: 'science_virtual_lab', kind: 'quiz', scoreUnit: 'questions', bestScore: 4, bestTotal: 4, correct: 4, total: 4, correctAnswers: 4, totalAnswers: 4, timesPlayed: 1 } },
+    spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
+    activityHistory: [{ date: '2026-11-10', activityId: 'science-virtual-lab', title: 'Virtual Laboratory', subject: 'Science Lab', skillId: 'science_virtual_lab', kind: 'quiz', score: 4, total: 4, correctAnswers: 4, totalAnswers: 4 }]
+  };
+  await store.saveProgress(firstData.user.id, saved);
+  const otherData = await second.json();
+  await store.saveProgress(otherData.user.id, { ...otherData.profile, stars: 9 });
+
+  assert.equal((await request(store, '/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' })).status, 401);
+  const missingConfirmation = await request(store, '/api/progress/reset', 'POST', { confirmation: 'reset progress' }, firstCookie);
+  assert.equal(missingConfirmation.status, 400);
+
+  const reset = await request(store, '/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' }, firstCookie);
+  assert.equal(reset.status, 200);
+  const resetProfile = (await reset.json()).profile;
+  assert.equal(resetProfile.name, 'reset_owner');
+  assert.equal(resetProfile.stars, 0);
+  assert.deepEqual(resetProfile.skillsProgress, {});
+  assert.deepEqual(resetProfile.activityProgress, {});
+  assert.deepEqual(resetProfile.activityHistory, []);
+  assert.deepEqual(resetProfile.spellingLists, []);
+  assert.equal(resetProfile.avatar, 'llama');
+  assert.equal(resetProfile.theme, 'dark');
+  assert.equal(resetProfile.schoolYear, 8);
+  assert.deepEqual(resetProfile.subjectYears, { maths: 4, science: 2 });
+  assert.equal(resetProfile.soundEnabled, false);
+  assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
+  assert.equal(resetProfile.equippedCosmetic, 'sunrise-frame');
+  const firstRead = await request(store, '/api/progress', 'GET', undefined, firstCookie);
+  const secondRead = await request(store, '/api/progress', 'GET', undefined, secondCookie);
+  assert.equal((await firstRead.json()).profile.stars, 0);
+  assert.equal((await secondRead.json()).profile.stars, 9);
+  assert.equal((await request(store, '/api/auth/session', 'GET', undefined, firstCookie)).status, 200);
+});
+
 test('rejects oversized streamed bodies without a content length', async () => {
   const store = new MemoryAccountStore();
   const body = new ReadableStream({

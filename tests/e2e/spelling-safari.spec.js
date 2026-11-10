@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { openLearningCentre, registerAccount, setupApp } = require('./support');
+const { openLearningCentre, openParentDashboard, registerAccount, setupApp } = require('./support');
 
 test('Spelling & Words is a direct, refresh-safe hub for the existing Safari adventures', async ({ page }) => {
   await page.goto('/learning-centre/spelling');
@@ -100,12 +100,15 @@ test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden 
     });
   });
   await setupApp(page);
-  await registerAccount(page);
+  const account = await registerAccount(page);
   await page.goto('/learning-centre/spelling');
   await page.getByRole('button', { name: 'Start Spell It' }).click();
   await expect(page.locator('#spell-it-list-status')).toContainText('No spelling lists yet');
   await page.getByRole('button', { name: 'Manage weekly lists' }).click();
-  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Parent Dashboard' })).toBeVisible();
+  await page.locator('#parent-access-password').fill(account.password);
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
   await page.locator('#parent-spelling-list-name').fill('Week One');
   await page.locator('#parent-spelling-list-words').fill('quokka');
   await page.getByRole('button', { name: 'Create list' }).click();
@@ -157,6 +160,9 @@ test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden 
 
   await page.getByRole('button', { name: 'Choose another list' }).click();
   await page.getByRole('button', { name: 'Manage weekly lists' }).click();
+  await page.locator('#parent-access-password').fill(account.password);
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await page.locator('#parent-spelling-list-name').fill('Week Two');
   await page.locator('#parent-spelling-list-words').fill('echidna');
@@ -168,7 +174,7 @@ test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden 
   await expect(page.locator('#spell-it-list-status')).toContainText('No spelling lists yet');
   await expect(page.locator('#spell-it-list-options [data-action="spell-it-start"]')).toHaveCount(0);
   await page.goto('/learning-centre');
-  await page.locator('[data-action="parent-report"]').click();
+  await openParentDashboard(page, account.password);
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('Spell It');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('2 plays');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('2 / 2 (100%)');

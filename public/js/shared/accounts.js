@@ -53,6 +53,7 @@ class ProfileManager {
       theme: 'light',
       schoolYear: 3,
       subjectYears: {},
+      soundEnabled: true,
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -120,6 +121,7 @@ class ProfileManager {
       theme: source.theme === 'dark' ? 'dark' : 'light',
       schoolYear: ProfileManager.isValidSchoolYear(source.schoolYear) ? source.schoolYear : 3,
       subjectYears: ProfileManager.normalizeSubjectYears(source.subjectYears),
+      soundEnabled: source.soundEnabled !== false,
       lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
@@ -150,6 +152,7 @@ class ProfileManager {
     ProfileManager.currentProfile = ProfileManager.createGuestProfile();
     ProfileManager.currentProfile.theme = ProfileManager.readGuestThemePreference();
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
+    window.soundFX?.setMuted(!ProfileManager.currentProfile.soundEnabled);
     ProfileManager.lastSaveError = '';
     if (previousAccountId && previousAccountId !== 'guest') {
       window.gameEngine?.discardSessionForAccountChange();
@@ -169,6 +172,7 @@ class ProfileManager {
     ProfileManager.account = data.user;
     ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, data.user);
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
+    window.soundFX?.setMuted(!ProfileManager.currentProfile.soundEnabled);
     ProfileManager.accountServiceAvailable = true;
     ProfileManager.lastSaveError = '';
     if (previousAccountId && previousAccountId !== data.user.id) {
@@ -408,12 +412,16 @@ class ProfileManager {
     return 'hard';
   }
 
-  static setTheme(theme) {
+  static setTheme(theme, options = {}) {
     if (theme !== 'dark' && theme !== 'light') return Promise.resolve(false);
     const profile = ProfileManager.getActiveProfile();
     profile.theme = theme;
     ProfileManager.applyTheme(theme);
     if (!ProfileManager.account) {
+      if (options.persistGuest === false) {
+        window.app?.updateHeader();
+        return Promise.resolve(true);
+      }
       try {
         localStorage.setItem(ProfileManager.GUEST_THEME_KEY, theme);
       } catch {
@@ -455,6 +463,19 @@ class ProfileManager {
     });
     window.app?.updateHeader();
     return ProfileManager.saveQueue;
+  }
+
+  static async resetLearningProgress() {
+    const account = ProfileManager.account;
+    if (!account) throw new Error('Sign in to reset saved learning progress.');
+    await ProfileManager.flush();
+    if (ProfileManager.account?.id !== account.id) throw new Error('The active account changed before progress could be reset.');
+    const data = await ProfileManager.requestApi('/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' });
+    if (ProfileManager.account?.id !== account.id) throw new Error('The active account changed before progress could be reset.');
+    ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, account);
+    window.soundFX?.setMuted(!ProfileManager.currentProfile.soundEnabled);
+    window.app?.updateHeader();
+    return ProfileManager.currentProfile;
   }
 
   static purchaseCosmetic(cosmeticId) {

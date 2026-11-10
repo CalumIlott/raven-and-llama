@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { loginAccount, openAccountModal, registerAccount, setupApp } = require('./support');
+const { loginAccount, openAccountModal, openParentDashboard, registerAccount, setupApp } = require('./support');
 
 test.beforeEach(async ({ page }) => {
   await setupApp(page);
@@ -102,8 +102,9 @@ test('signed-in account can change avatar and keep it after reload', async ({ pa
 });
 
 test('signed-in learners save subject-specific year levels independently', async ({ page }) => {
-  const { username } = await registerAccount(page);
-  await openAccountModal(page);
+  const { username, password } = await registerAccount(page);
+  await openParentDashboard(page, password);
+  await page.getByRole('tab', { name: 'Learner settings' }).click();
 
   await expect(page.locator('#profile-school-year')).toHaveValue('3');
   await expect(page.locator('#subject-year-english')).toHaveValue('');
@@ -121,7 +122,8 @@ test('signed-in learners save subject-specific year levels independently', async
 
   await page.reload();
   await expect(page.locator('#header-profile-name')).toHaveText(username);
-  await openAccountModal(page);
+  await openParentDashboard(page, password);
+  await page.getByRole('tab', { name: 'Learner settings' }).click();
   await expect(page.locator('#profile-school-year')).toHaveValue('5');
   await expect(page.locator('#subject-year-maths')).toHaveValue('4');
   await expect(page.locator('#subject-year-science')).toHaveValue('2');
@@ -245,7 +247,8 @@ test('progress syncs to another browser context without exposing it to a differe
 
 test('theme preference syncs to another browser context for the signed-in account', async ({ browser, page }) => {
   const account = await registerAccount(page);
-  await openAccountModal(page);
+  await openParentDashboard(page, account.password);
+  await page.getByRole('tab', { name: 'Learner settings' }).click();
   await page.locator('#account-theme').selectOption('light');
   await page.evaluate(() => window.ProfileManager.flush());
   await expect(page.locator('html')).toHaveClass(/theme-light/);
@@ -256,9 +259,90 @@ test('theme preference syncs to another browser context for the signed-in accoun
     await setupApp(otherPage);
     await loginAccount(otherPage, account.username, account.password);
     await expect(otherPage.locator('html')).toHaveClass(/theme-light/);
-    await openAccountModal(otherPage);
+    await openParentDashboard(otherPage, account.password);
+    await otherPage.getByRole('tab', { name: 'Learner settings' }).click();
     await expect(otherPage.locator('#account-theme')).toHaveValue('light');
   } finally {
     await otherDevice.close();
   }
+});
+
+test('parent dashboard requires server password confirmation and reset clears only progress', async ({ page }) => {
+  const account = await registerAccount(page);
+  await openParentDashboard(page);
+  await expect(page.locator('#parent-dashboard-content')).toBeHidden();
+  await expect(page.locator('#parent-access-password')).toBeFocused();
+
+  await page.locator('#parent-access-password').fill('incorrect password 123');
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-access-status')).toContainText('couldn’t confirm parent access');
+  await expect(page.locator('#parent-dashboard-content')).toBeHidden();
+
+  await page.locator('#parent-access-password').fill(account.password);
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
+  const progressTab = page.getByRole('tab', { name: 'Progress' });
+  await expect(progressTab).toBeFocused();
+  await progressTab.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Learner settings' })).toBeFocused();
+  await expect(page.locator('#parent-dashboard-settings-panel')).toBeVisible();
+  await page.evaluate(async () => {
+    const profile = window.ProfileManager.getActiveProfile();
+    await window.ProfileManager.updateProfile({
+      ...profile,
+      stars: 20,
+      skillsProgress: { green_order: { correct: 4, total: 5, bestScore: 8, timesTrained: 2, stars: 3 } },
+      activityProgress: { 'science-virtual-lab': { title: 'Virtual Laboratory', subject: 'Science Lab', skillId: 'science_virtual_lab', kind: 'quiz', scoreUnit: 'questions', bestScore: 4, bestTotal: 4, correct: 4, total: 4, correctAnswers: 4, totalAnswers: 4, timesPlayed: 1 } },
+      subjectYears: { maths: 4 },
+      soundEnabled: false
+    });
+    await window.ProfileManager.flush();
+  });
+
+  await page.locator('[data-action="progress-reset-open"]').click();
+  await page.locator('#progress-reset-phrase').fill('RESET PROGRESS');
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.locator('#progress-reset-confirmation')).toBeHidden();
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().stars)).toBe(20);
+
+  await page.locator('[data-action="progress-reset-open"]').click();
+  await page.locator('#progress-reset-phrase').fill('RESET PROGRESS');
+  await page.evaluate(() => {
+    window.__parentResetSubmit = null;
+    document.addEventListener('submit', event => {
+      if (event.target.dataset.submitAction === 'progress-reset') {
+        window.__parentResetSubmit = {
+          confirmation: event.target.elements.confirmation.value,
+          valid: event.target.checkValidity()
+        };
+      }
+    }, { capture: true, once: true });
+  });
+  await page.getByRole('button', { name: 'Reset learning progress' }).click();
+  expect(await page.evaluate(() => window.__parentResetSubmit)).toEqual({ confirmation: 'RESET PROGRESS', valid: true });
+  await expect(page.locator('#progress-reset-status')).toContainText('Learning progress was reset');
+  const profile = await page.evaluate(() => window.ProfileManager.getActiveProfile());
+  expect(profile.stars).toBe(0);
+  expect(profile.skillsProgress).toEqual({});
+  expect(profile.activityProgress).toEqual({});
+  expect(profile.avatar.id).toBe('raven');
+  expect(profile.theme).toBe('light');
+  expect(profile.schoolYear).toBe(3);
+  expect(profile.subjectYears).toEqual({ maths: 4 });
+  expect(profile.soundEnabled).toBe(false);
+  await expect(page.locator('#header-profile-name')).toHaveText(account.username);
+});
+
+test('guest dashboard clearly identifies its session-only preferences', async ({ page }) => {
+  await page.locator('.home-stats-link').click();
+  await expect(page.locator('#parent-access-gate')).toBeHidden();
+  await expect(page.locator('#parent-session-notice')).toContainText('not protected by parent sign-in');
+  await page.getByRole('tab', { name: 'Learner settings' }).click();
+  await page.locator('#account-theme').selectOption('dark');
+  expect(await page.evaluate(() => localStorage.getItem('raven_llama_guest_theme'))).toBeNull();
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await page.locator('#parent-sound-enabled').uncheck();
+  await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().soundEnabled)).toBe(false);
+  expect(await page.evaluate(() => localStorage.getItem('math_masters_muted'))).toBeNull();
 });

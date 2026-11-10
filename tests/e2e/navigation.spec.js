@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { chooseQuestionAnswer, openLearningCentre, setupApp } = require('./support');
+const { chooseQuestionAnswer, openLearningCentre, openParentDashboard, setupApp } = require('./support');
 
 test.beforeEach(async ({ page }) => {
   await setupApp(page);
@@ -372,8 +372,8 @@ test('home counts, module navigation, and exam failure, retry, and pass gates wo
 
 test('parent progress report and trophy room render their full states', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: /Mastery Stats/ }).click();
-  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await openParentDashboard(page);
+  await expect(page.getByRole('dialog', { name: 'Parent Dashboard' })).toBeVisible();
   const skillCount = await page.evaluate(() => window.BELTS_DATA.reduce((total, belt) => total + belt.skills.length, 0));
   await expect(page.locator('#parent-stats-tbody tr')).toHaveCount(skillCount);
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('No completed Learning Centre activities yet.');
@@ -510,8 +510,8 @@ test('Maths World route filters topics and completes Number Builder with retry a
   await page.getByRole('button', { name: 'Maths World topics' }).click();
   await page.getByRole('button', { name: 'Back to Learning Centre' }).click();
   await expect(page).toHaveURL(/\/learning-centre$/);
-  await page.locator('[data-action="parent-report"]').click();
-  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await openParentDashboard(page);
+  await expect(page.getByRole('dialog', { name: 'Parent Dashboard' })).toBeVisible();
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('Number Builder');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 questions');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 (100%)');
@@ -549,8 +549,9 @@ test('Learning Centre uses colorful, rounded subject cards', async ({ page }) =>
 test('learning heading is unframed and its primary actions share a row beneath it', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openLearningCentre(page);
-  await expect(page.locator('[data-action="parent-report"]')).toContainText('Progress');
-  await expect(page.locator('[data-action="parent-report"]')).not.toContainText('Stats');
+  const progressAction = page.locator('.learning-intro__actions [data-action="parent-report"]');
+  await expect(progressAction).toContainText('Progress');
+  await expect(progressAction).not.toContainText('Stats');
 
   const intro = page.locator('.learning-intro');
   await expect(intro).toBeVisible();

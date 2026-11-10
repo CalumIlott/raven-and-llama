@@ -104,8 +104,11 @@ Responses set baseline framing, MIME-sniffing, referrer, and permissions policie
 | DELETE | `/api/auth/account` | Delete the signed-in account and progress |
 | POST | `/api/cosmetics/purchase` | Purchase one available catalog cosmetic using the signed-in learner's star balance |
 | GET/PUT | `/api/progress` | Read or update only the signed-in account's progress |
+| POST | `/api/progress/reset` | Clear the signed-in learner's progress after the exact `RESET PROGRESS` confirmation |
 
 `PUT /api/progress` validates and normalizes the profile's `activityProgress` records, including activity IDs, optional curriculum `skillId` mappings, score units, best results, play counts, and quiz `correctAnswers`/`totalAnswers`. It also validates `dailyChallenges` UTC day keys, selected activity IDs, unique completion IDs, and the one-time bonus state, plus `questProgress` against known quest and step IDs in order while preventing completed-step regressions. The API derives `earnedBadges` from validated progress, preserves prior valid awards, and ignores client-supplied badge IDs. Cosmetic purchases use the server catalog's fixed price, deduct from the authenticated learner's stored star balance, and grant each item once; profile updates cannot add cosmetic ownership, and equipping requires existing ownership. The local server and Worker use the same account-profile contract; records are only returned or updated through the authenticated account session.
+
+`POST /api/progress/reset` requires the signed-in session and the exact confirmation phrase. It resets learning records, stars, and achievements for that session's account while keeping account identity, learner preferences, and owned avatar frames. It does not accept an account ID and does not delete the account.
 
 ## Contributing
 

@@ -36,6 +36,7 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(guest.id, 'guest');
   assert.equal(guest.name, 'Guest');
   assert.equal(guest.theme, 'light');
+  assert.equal(guest.soundEnabled, true);
   assert.equal(guest.schoolYear, 3);
   assert.deepEqual(Array.from(guest.spellingLists), []);
   assert.equal(guest.activeSpellingListId, null);
@@ -168,13 +169,15 @@ test('profile normalization validates subject-specific years and inherits the gl
     user: account,
     profile: {
       schoolYear: 4,
-      subjectYears: { maths: 3, science: 0, unknown: 2, english: '5' }
+      subjectYears: { maths: 3, science: 0, unknown: 2, english: '5' },
+      soundEnabled: false
     }
   }));
   await accounts.initialize();
 
   const profile = accounts.getActiveProfile();
   assert.equal(profile.schoolYear, 4);
+  assert.equal(profile.soundEnabled, false);
   assert.deepEqual({ ...profile.subjectYears }, { maths: 3, science: 0 });
   assert.equal(accounts.getSubjectYear('maths'), 3);
   assert.equal(accounts.getSubjectYear('science'), 0);
@@ -244,6 +247,15 @@ test('guest theme is saved separately and restored without persisting progress',
   accounts.setGuest();
   assert.equal(accounts.getActiveProfile().theme, 'light');
   assert.equal(context.localStorage.getItem('raven_llama_profiles_cache_v5'), null);
+});
+
+test('guest Parent Dashboard theme changes stay in memory for the current visit', async () => {
+  const { context, accounts } = loadAccounts();
+  await accounts.initialize();
+
+  assert.equal(await accounts.setTheme('dark', { persistGuest: false }), true);
+  assert.equal(accounts.getActiveProfile().theme, 'dark');
+  assert.equal(context.localStorage.getItem(accounts.GUEST_THEME_KEY), null);
 });
 
 test('registration and logout switch between one account and unsaved guest mode', async () => {

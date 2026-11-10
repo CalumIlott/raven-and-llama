@@ -137,6 +137,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
         skillsProgress: { science_virtual_lab: { bestScore: 10, timesTrained: 1 } },
         schoolYear: 5,
         subjectYears: { science: 2 },
+        soundEnabled: false,
         spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
         activeSpellingListId: 'week-one',
         questProgress: {
@@ -188,6 +189,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.stars, 9);
   assert.equal(savedProgress.schoolYear, 5);
   assert.deepEqual(savedProgress.subjectYears, { science: 2 });
+  assert.equal(savedProgress.soundEnabled, false);
   assert.deepEqual(savedProgress.spellingLists, [
     { id: 'week-one', name: 'Week One', words: ['quokka'] }
   ]);
@@ -247,6 +249,24 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(otherProfile.ownedCosmetics, []);
   assert.deepEqual(otherProfile.dailyChallenges, { days: {} });
   assert.deepEqual(otherProfile.questProgress, {});
+
+  const resetResponse = await fetch(`${baseUrl}/api/progress/reset`, {
+    method: 'POST',
+    headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ confirmation: 'RESET PROGRESS' })
+  });
+  assert.equal(resetResponse.status, 200);
+  const resetProfile = (await resetResponse.json()).profile;
+  assert.equal(resetProfile.stars, 0);
+  assert.deepEqual(resetProfile.activityProgress, {});
+  assert.deepEqual(resetProfile.activityHistory, []);
+  assert.deepEqual(resetProfile.spellingLists, []);
+  assert.equal(resetProfile.schoolYear, 5);
+  assert.deepEqual(resetProfile.subjectYears, { science: 2 });
+  assert.equal(resetProfile.soundEnabled, false);
+  assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
+  const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: otherCookie } });
+  assert.deepEqual((await otherAfterReset.json()).profile, otherProfile);
 
   const crossOrigin = await fetch(`${baseUrl}/api/auth/register`, {
     method: 'POST',

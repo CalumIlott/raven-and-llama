@@ -1,5 +1,5 @@
 const { expect, test } = require('@playwright/test');
-const { openLearningCentre, setupApp } = require('./support');
+const { openLearningCentre, openParentDashboard, setupApp } = require('./support');
 
 test.beforeEach(async ({ page }) => {
   await setupApp(page);
@@ -69,8 +69,8 @@ test('Fraction Pizza supports touch, keyboard, drag and drop, retry, and progres
   await expect(page.locator('#app-main')).toContainText('Correct pizzas: 5 / 5');
   await page.getByRole('button', { name: 'Maths World' }).click();
   await page.getByRole('button', { name: 'Back to Learning Centre' }).click();
-  await page.locator('[data-action="parent-report"]').click();
-  await expect(page.getByRole('dialog', { name: 'Mastery & Progress Report' })).toBeVisible();
+  await openParentDashboard(page);
+  await expect(page.getByRole('dialog', { name: 'Parent Dashboard' })).toBeVisible();
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('Fraction Pizza');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 questions');
   await expect(page.locator('#parent-activity-stats-tbody')).toContainText('5 / 5 (100%)');
