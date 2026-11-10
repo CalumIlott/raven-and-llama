@@ -39,8 +39,16 @@ test('Fraction Pizza supports touch, keyboard, drag and drop, retry, and progres
   await expect(page.locator('[data-action="fraction-pizza-slot"][data-slot="0"]')).toHaveAttribute('aria-pressed', 'false');
 
   if (test.info().project.name === 'chromium') {
+    const target = page.locator('[data-action="fraction-pizza-slot"][data-slot="0"]');
+    const box = await target.boundingBox();
+    const angle = Math.PI / model.denominator - Math.PI / 2;
     await page.locator('[data-action="fraction-pizza-token"][data-token="0"]')
-      .dragTo(page.locator('[data-action="fraction-pizza-slot"][data-slot="0"]'));
+      .dragTo(target, {
+        targetPosition: {
+          x: box.width * (0.5 + 0.35 * Math.cos(angle)),
+          y: box.height * (0.5 + 0.35 * Math.sin(angle))
+        }
+      });
   } else {
     await page.locator('[data-action="fraction-pizza-token"][data-token="0"]').click();
   }
@@ -123,6 +131,13 @@ test('Fraction Pizza presents equivalent fractions and mixed-number models', asy
   expect(mixed.data.mode).toBe('mixed');
   expect(mixed.answer).toBe(mixed.data.whole * mixed.data.denominator + mixed.data.numerator);
   await expect(page.locator('[data-fraction-drop-pizza]')).toHaveCount(mixed.data.pizzas);
+  const pizzaWedges = page.locator('[data-fraction-drop-pizza="0"] [data-fraction-pizza-wedge]');
+  await expect(pizzaWedges).toHaveCount(mixed.data.denominator);
+  const clipPaths = await pizzaWedges.evaluateAll(elements => elements.map(element =>
+    getComputedStyle(element).clipPath
+  ));
+  expect(clipPaths.every(path => path.startsWith('polygon('))).toBe(true);
+  expect(new Set(clipPaths).size).toBe(mixed.data.denominator);
   await expect(page.locator('[data-action="fraction-pizza-slot"]'))
     .toHaveCount(mixed.data.pizzas * mixed.data.denominator);
 });

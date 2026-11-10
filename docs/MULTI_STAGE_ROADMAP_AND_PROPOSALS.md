@@ -49,7 +49,7 @@ flowchart TD
 ### 1.5 Expand MathMasters Brown Belt Fractions
 * **Problem**: `genBrownFractions` generates only 18 proper fractions across limited denominators `[2, 3, 4, 6, 8]`.
 * **Resolution**: Expand to denominators up to 12, improper fractions, mixed numbers, and visual geometric models (circles, fraction bars, grid matrices) to exceed 100 distinct visual problems.
-* **Fraction Pizza UI follow-up**: Refresh the activity so it shows a real pizza divided into clear wedge-shaped slices that learners can select or move. The current little pizza icons roughly arranged in a circle do not read as slices; make the fraction partitions visible and keep the controls usable by touch and keyboard.
+* **Fraction Pizza UI follow-up — implemented**: Replaced the square grid and pizza icons with wedge-shaped pizza slices, a visible crust, cheese, and toppings. Slices remain selectable by touch and keyboard and draggable on desktop. Their geometry lives in the stylesheet because the app's Content Security Policy blocks inline style attributes; browser coverage checks that each supported slice is rendered as a distinct clipped wedge.
 
 ---
 
