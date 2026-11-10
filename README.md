@@ -37,6 +37,7 @@ Comprehensive project documentation is available in the [`docs/`](docs/) directo
 - [System Architecture](docs/ARCHITECTURE.md): Runtime lifecycles, single-page structure, ActivityEngine, authentication, SQLite/D1 database schema, and security boundaries.
 - [Subjects & Activities Guide](docs/SUBJECTS_AND_ACTIVITIES.md): Full catalogue of all 8 subject hubs, learning activities, question bank sizes, procedural generators, and finite-set status.
 - [Roadmap & Pedagogical Opportunities](docs/ROADMAP_AND_OPPORTUNITIES.md): Benchmark comparisons (IXL, Prodigy, Khan Kids, Brilliant), interactive manipulative concepts beyond quizzes, UX review, and prioritized sub-sessions.
+- [Multi-Stage Strategic Plan](docs/MULTI_STAGE_ROADMAP_AND_PROPOSALS.md): Master 6-stage implementation blueprint covering bug fixes, content expansion, Parent Dashboard, recommendations, tactile manipulatives, discovery sandboxes, and long-term research.
 
 ## Project Layout
 
