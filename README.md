@@ -30,9 +30,18 @@ npm run audit
 
 The tests cover password/session handling, account isolation, cross-context progress sync, curriculum logic, server/API behavior, module navigation including Maths World, Number Builder, Fraction Pizza, and the refresh-safe Science Lab route, training and exam flows, all seven Maths Masters arcades, Times Tables quizzes, Solar System ordering, plant life-cycle sequencing, and safe Virtual Laboratory simulations by keyboard, touch, and drag-and-drop, progress/trophy views, and keyboard/mobile accessibility. Browser tests use an isolated account store. Run `npm run test:css`, `npm run test:unit`, `npm run test:integration`, `npm run test:worker`, `npm run test:e2e`, or `npm run audit` to run one check. GitHub Actions verifies committed assets, runs unit/integration checks on Node.js 22, 24, and 26, validates the Worker bundle, runs desktop and mobile Chromium E2E, and audits dependencies for pull requests targeting `main`. See [tests/README.md](tests/README.md) for coverage details.
 
+## Documentation
+
+Comprehensive project documentation is available in the [`docs/`](docs/) directory:
+
+- [System Architecture](docs/ARCHITECTURE.md): Runtime lifecycles, single-page structure, ActivityEngine, authentication, SQLite/D1 database schema, and security boundaries.
+- [Subjects & Activities Guide](docs/SUBJECTS_AND_ACTIVITIES.md): Full catalogue of all 8 subject hubs, learning activities, question bank sizes, procedural generators, and finite-set status.
+- [Roadmap & Pedagogical Opportunities](docs/ROADMAP_AND_OPPORTUNITIES.md): Benchmark comparisons (IXL, Prodigy, Khan Kids, Brilliant), interactive manipulative concepts beyond quizzes, UX review, and prioritized sub-sessions.
+
 ## Project Layout
 
 ```text
+docs/                      System architecture, activity guides, and roadmap
 public/index.html          App shell and static site root
 public/js/shared/          App shell, accounts, audio, and shared renderers
 public/js/home/            Home page view
