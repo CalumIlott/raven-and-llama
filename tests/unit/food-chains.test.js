@@ -22,7 +22,20 @@ test('food-chain data is sourced and each consumer link points to the organism i
   const chains = Array.from(context.FoodChains.chains);
 
   assert.equal(context.FoodChains.isValidData(context.FoodChains.chains), true);
-  assert.equal(chains.length, 3);
+  assert.equal(chains.length, 10);
+  assert.equal(new Set(chains.map(chain => chain.name)).size, chains.length);
+  assert.deepEqual(
+    chains.map(chain => chain.name).sort(),
+    ['Arctic tundra', 'Coral reef', 'Deep-sea hydrothermal vent', 'Deciduous forest', 'Desert', 'Grassland', 'Kelp forest', 'Pond & wetland', 'Rainforest', 'Savanna'].sort()
+  );
+  assert.ok(chains.filter(chain => ['Rainforest', 'Arctic tundra', 'Pond & wetland', 'Coral reef', 'Savanna', 'Deciduous forest', 'Deep-sea hydrothermal vent'].includes(chain.name)).every(chain => chain.organisms.length === 4));
+  const round = Array.from(context.FoodChains.selectRound(chains, () => 0));
+  const alternateRound = Array.from(context.FoodChains.selectRound(chains, () => 0.5));
+  assert.equal(round.length, 5);
+  assert.equal(new Set(round.map(chain => chain.id)).size, 5);
+  assert.ok(round.every(chain => chains.some(item => item.id === chain.id)));
+  assert.notDeepEqual(round.map(chain => chain.id), alternateRound.map(chain => chain.id));
+  assert.equal(chains.find(chain => chain.id === 'deep-sea-vent').energySource, 'chemical energy');
   assert.ok(chains.every(chain =>
     chain.name && chain.description && chain.sourceTitle && chain.sourceUrl.startsWith('https://')
   ));
@@ -124,12 +137,12 @@ test('Food Chains uses ActivityEngine retry and records completion once across a
 
   assert.equal(app.foodChainsGame.complete, true);
   assert.equal(app.foodChainsActivityEngine.status, 'complete');
-  assert.equal(app.foodChainsActivityEngine.score, 3);
+  assert.equal(app.foodChainsActivityEngine.score, app.foodChainsGame.chains.length);
   assert.equal(app.foodChainsActivityEngine.definition.settings.awardStars, true);
   assert.equal(app.foodChainsActivityEngine.progressRecorded, true);
   assert.equal(context.activityScores.length, 1);
-  assert.equal(context.activityScores[0][1], 3);
-  assert.equal(context.activityScores[0][2], 3);
+  assert.equal(context.activityScores[0][1], 5);
+  assert.equal(context.activityScores[0][2], 5);
   assert.match(context.main.innerHTML, /Food Chains Complete!/);
   assert.equal(app.submitFoodChainAnswer(), false);
   assert.equal(app.nextFoodChain(), false);

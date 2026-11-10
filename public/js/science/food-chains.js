@@ -126,6 +126,328 @@ const FOOD_CHAIN_DATA = [
         foodSourceId: 'snake'
       }
     ]
+  },
+  {
+    id: 'rainforest',
+    name: 'Rainforest',
+    description: 'Follow one possible path of energy through a Puerto Rican rainforest.',
+    energySource: 'sunlight',
+    sourceTitle: 'Missouri Botanical Garden: Tropical Rainforest Curriculum',
+    sourceUrl: 'https://www.missouribotanicalgarden.org/portals/0/education/students%20and%20teachers/pdfs/trf-2-4.pdf',
+    organisms: [
+      {
+        id: 'sierra-palm',
+        name: 'Sierra palm',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'A rainforest producer whose fruit can feed animals.',
+        fact: 'The Sierra palm makes food using sunlight; its fruit feeds animals.',
+        foodSourceId: null
+      },
+      {
+        id: 'rainforest-lizard',
+        name: 'Rainforest lizard',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Eats fruit from the Sierra palm in this example.',
+        fact: 'This lizard gets energy by eating Sierra palm fruit.',
+        foodSourceId: 'sierra-palm'
+      },
+      {
+        id: 'pearly-eyed-thrasher',
+        name: 'Pearly-eyed thrasher',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'Can prey on the lizard in this example.',
+        fact: 'The Pearly-eyed thrasher gets energy by eating the lizard.',
+        foodSourceId: 'rainforest-lizard'
+      },
+      {
+        id: 'screech-owl',
+        name: 'Screech owl',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'Can prey on the Pearly-eyed thrasher.',
+        fact: 'The screech owl is the final consumer in this example.',
+        foodSourceId: 'pearly-eyed-thrasher'
+      }
+    ]
+  },
+  {
+    id: 'arctic-tundra',
+    name: 'Arctic tundra',
+    description: 'Follow a tundra food chain from a flowering plant to a top predator.',
+    energySource: 'sunlight',
+    sourceTitle: 'Alaska Department of Fish and Game: Alaska’s Ecology',
+    sourceUrl: 'https://www.adfg.alaska.gov/static/education/educators/curricula/alaskawildlifecurriculum/pdfs/alaska_ecology_wildlife_curriculum.pdf',
+    organisms: [
+      {
+        id: 'alpine-sunflower',
+        name: 'Alpine sunflower',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'A tundra plant that captures energy from sunlight.',
+        fact: 'The alpine sunflower is the producer at the start of this example.',
+        foodSourceId: null
+      },
+      {
+        id: 'tundra-butterfly',
+        name: 'Butterfly',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Feeds on flowering tundra plants.',
+        fact: 'The butterfly is a primary consumer in this example.',
+        foodSourceId: 'alpine-sunflower'
+      },
+      {
+        id: 'golden-plover',
+        name: 'Golden plover',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'Can eat insects such as butterflies.',
+        fact: 'The golden plover gets energy by eating the butterfly.',
+        foodSourceId: 'tundra-butterfly'
+      },
+      {
+        id: 'jaeger',
+        name: 'Jaeger',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'Preys on birds such as the golden plover.',
+        fact: 'The jaeger is the final consumer in this example.',
+        foodSourceId: 'golden-plover'
+      }
+    ]
+  },
+  {
+    id: 'pond-wetland',
+    name: 'Pond & wetland',
+    description: 'Follow energy from algae through a wetland food chain.',
+    energySource: 'sunlight',
+    sourceTitle: 'Alaska Department of Fish and Game: Alaska’s Ecology',
+    sourceUrl: 'https://www.adfg.alaska.gov/static/education/educators/curricula/alaskawildlifecurriculum/pdfs/alaska_ecology_wildlife_curriculum.pdf',
+    organisms: [
+      {
+        id: 'pond-algae',
+        name: 'Algae',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'A tiny producer that uses sunlight to make food.',
+        fact: 'Algae can form the base of a pond and wetland food chain.',
+        foodSourceId: null
+      },
+      {
+        id: 'midge',
+        name: 'Midge',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Feeds on algae and dead plant material.',
+        fact: 'The midge is a primary consumer in this wetland example.',
+        foodSourceId: 'pond-algae'
+      },
+      {
+        id: 'wood-frog',
+        name: 'Wood frog',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'Eats insects such as midges.',
+        fact: 'The wood frog gets energy by eating the midge.',
+        foodSourceId: 'midge'
+      },
+      {
+        id: 'sandhill-crane',
+        name: 'Sandhill crane',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'Can prey on frogs in wetland habitats.',
+        fact: 'The sandhill crane is the final consumer in this example.',
+        foodSourceId: 'wood-frog'
+      }
+    ]
+  },
+  {
+    id: 'coral-reef',
+    name: 'Coral reef',
+    description: 'Follow one path through a coral-reef food web.',
+    energySource: 'sunlight',
+    sourceTitle: 'NOAA: Coral Reef Ecosystem Organisms',
+    sourceUrl: 'https://sanctuaries.noaa.gov/media/docs/20231129-coral-reef-organisms-table.pdf',
+    organisms: [
+      {
+        id: 'reef-phytoplankton',
+        name: 'Phytoplankton',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'Microscopic producers that use sunlight.',
+        fact: 'Phytoplankton use sunlight to make food at the base of aquatic food webs.',
+        foodSourceId: null
+      },
+      {
+        id: 'reef-zooplankton',
+        name: 'Zooplankton',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Tiny drifting animals that feed on phytoplankton.',
+        fact: 'Zooplankton get energy by feeding on phytoplankton.',
+        foodSourceId: 'reef-phytoplankton'
+      },
+      {
+        id: 'bigeye-scad',
+        name: 'Bigeye scad',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'A small fish that eats zooplankton.',
+        fact: 'Bigeye scad feed on zooplankton in this reef example.',
+        foodSourceId: 'reef-zooplankton'
+      },
+      {
+        id: 'bluefin-trevally',
+        name: 'Bluefin trevally',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'A predator that eats small fish such as bigeye scad.',
+        fact: 'The bluefin trevally is the final consumer in this example.',
+        foodSourceId: 'bigeye-scad'
+      }
+    ]
+  },
+  {
+    id: 'savanna',
+    name: 'Savanna',
+    description: 'Follow one possible path of energy across a grassy savanna.',
+    energySource: 'sunlight',
+    sourceTitle: 'National Geographic Education: Food Chain',
+    sourceUrl: 'https://education.nationalgeographic.org/resource/food-chain/',
+    organisms: [
+      {
+        id: 'savanna-grass',
+        name: 'Grass',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'A producer that makes food using sunlight.',
+        fact: 'Grass captures energy from sunlight and forms the base of this example.',
+        foodSourceId: null
+      },
+      {
+        id: 'savanna-grasshopper',
+        name: 'Grasshopper',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Eats grass and other plants.',
+        fact: 'The grasshopper is a primary consumer in this example.',
+        foodSourceId: 'savanna-grass'
+      },
+      {
+        id: 'savanna-rat',
+        name: 'Rat',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'Can eat grasshoppers.',
+        fact: 'The rat gets energy by eating the grasshopper.',
+        foodSourceId: 'savanna-grasshopper'
+      },
+      {
+        id: 'savanna-snake',
+        name: 'Snake',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'Can prey on rats.',
+        fact: 'The snake is the final consumer in this example.',
+        foodSourceId: 'savanna-rat'
+      }
+    ]
+  },
+  {
+    id: 'deciduous-forest',
+    name: 'Deciduous forest',
+    description: 'Follow a food chain from an oak tree to a forest predator.',
+    energySource: 'sunlight',
+    sourceTitle: 'Pennsylvania Game Commission: Blue Jays',
+    sourceUrl: 'https://www.pa.gov/agencies/pgc/wildlife/discover-pa-wildlife/blue-jays',
+    organisms: [
+      {
+        id: 'oak-leaves',
+        name: 'Oak leaves',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'Leaves from a deciduous tree provide food for caterpillars.',
+        fact: 'Oak trees capture sunlight and produce leaves that feed caterpillars.',
+        foodSourceId: null
+      },
+      {
+        id: 'forest-caterpillar',
+        name: 'Caterpillar',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Feeds on tree leaves and can be eaten by birds.',
+        fact: 'Caterpillars transfer energy from plants to animals that eat insects.',
+        foodSourceId: 'oak-leaves'
+      },
+      {
+        id: 'blue-jay',
+        name: 'Blue jay',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'Eats caterpillars and other insects.',
+        fact: 'Blue jays eat caterpillars and can also be prey for hawks.',
+        foodSourceId: 'forest-caterpillar'
+      },
+      {
+        id: 'coopers-hawk',
+        name: 'Cooper’s hawk',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'Can prey on blue jays and other birds.',
+        fact: 'The Cooper’s hawk is the final consumer in this example.',
+        foodSourceId: 'blue-jay'
+      }
+    ]
+  },
+  {
+    id: 'deep-sea-vent',
+    name: 'Deep-sea hydrothermal vent',
+    description: 'Follow energy through a food chain powered by chemicals rather than sunlight.',
+    energySource: 'chemical energy',
+    sourceTitle: 'NOAA Ocean Exploration: Galapagos Spreading Center',
+    sourceUrl: 'https://oceanexplorer.noaa.gov/edu/lessonplans/05galapagos_dfferent.pdf',
+    organisms: [
+      {
+        id: 'vent-bacteria',
+        name: 'Chemosynthetic bacteria',
+        role: 'producer',
+        roleLabel: 'Producer',
+        summary: 'Use chemicals from vent fluids to make food without sunlight.',
+        fact: 'Chemosynthetic bacteria are producers that use chemical energy instead of sunlight.',
+        foodSourceId: null
+      },
+      {
+        id: 'vent-shrimp',
+        name: 'Vent shrimp',
+        role: 'primary-consumer',
+        roleLabel: 'Primary consumer',
+        summary: 'Feed on microbes and other food around vents.',
+        fact: 'Vent shrimp can get energy from microbes at hydrothermal vents.',
+        foodSourceId: 'vent-bacteria'
+      },
+      {
+        id: 'vent-crab',
+        name: 'Vent crab',
+        role: 'secondary-consumer',
+        roleLabel: 'Secondary consumer',
+        summary: 'Some vent crabs prey on shrimp.',
+        fact: 'Predatory vent crabs can eat shrimp in this example.',
+        foodSourceId: 'vent-shrimp'
+      },
+      {
+        id: 'vent-octopus',
+        name: 'Vent octopus',
+        role: 'tertiary-consumer',
+        roleLabel: 'Tertiary consumer',
+        summary: 'A top predator that eats crabs.',
+        fact: 'The vent octopus is the final consumer in this example.',
+        foodSourceId: 'vent-crab'
+      }
+    ]
   }
 ];
 
@@ -137,7 +459,7 @@ function isValidFoodChainData(chains) {
       chainIds.has(chain.id) ||
       !['name', 'description', 'sourceTitle'].every(key =>
         typeof chain[key] === 'string' && chain[key].trim()) ||
-      chain.energySource !== 'sunlight' ||
+      !['sunlight', 'chemical energy'].includes(chain.energySource) ||
       typeof chain.sourceUrl !== 'string' || !chain.sourceUrl.startsWith('https://') ||
       !Array.isArray(chain.organisms) ||
       chain.organisms.length < 3 || chain.organisms.length > FOOD_CHAIN_ROLE_ORDER.length) {
@@ -174,6 +496,12 @@ function shuffleFoodChainItems(items, random = Math.random) {
     [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
   }
   return shuffled;
+}
+
+const FOOD_CHAIN_ROUNDS_PER_RUN = 5;
+
+function selectFoodChainRound(chains, random = Math.random) {
+  return shuffleFoodChainItems(chains, random).slice(0, FOOD_CHAIN_ROUNDS_PER_RUN);
 }
 
 function shuffleFoodChainOrganisms(chain, random = Math.random) {
@@ -240,7 +568,7 @@ function escapeFoodChainHtml(value) {
 Object.assign(App.prototype, {
   startFoodChainsActivity(random = Math.random) {
     this.currentView = 'science-food-chains';
-    const chains = shuffleFoodChainItems(FOOD_CHAIN_DATA, random);
+    const chains = selectFoodChainRound(FOOD_CHAIN_DATA, random);
     const firstChain = chains[0];
     this.foodChainsGame = {
       chains,
@@ -418,7 +746,7 @@ Object.assign(App.prototype, {
             <div class="text-6xl mb-4" aria-hidden="true">🌿</div>
             <p class="text-xs uppercase tracking-widest text-emerald-300 font-bold">Science Lab</p>
             <h1 class="font-ninja text-3xl text-white font-bold mt-1">Food Chains Complete!</h1>
-            <p class="text-slate-300 mt-3">You built all ${game.chains.length} food chains and earned ⭐ ${this.foodChainsActivityEngine.score} stars.</p>
+            <p class="text-slate-300 mt-3">You built all ${game.chains.length} food chains shown this round and earned ⭐ ${this.foodChainsActivityEngine.score} stars.</p>
             <p class="text-slate-300 mt-2">These are simplified examples. In nature, connected food chains form larger food webs.</p>
             <div class="flex flex-col sm:flex-row gap-3 mt-6">
               <button type="button" data-action="food-chains-restart" class="btn-ninja flex-1 py-3 rounded-xl bg-sky-700 hover:bg-sky-600 text-white font-bold transition-colors motion-reduce:transition-none">Build Again</button>
@@ -482,7 +810,7 @@ Object.assign(App.prototype, {
             <p class="text-slate-300 mt-2">${escapeFoodChainHtml(chain.description)}</p>
           </div>
 
-          <p id="food-chains-instructions" class="text-sm text-slate-300 mb-4">Energy starts with sunlight and moves from food to eater. Arrange the organisms from producer to consumer. Select a card and a position, drag a card, or tap both on a touch screen.</p>
+          <p id="food-chains-instructions" class="text-sm text-slate-300 mb-4">Energy starts with ${escapeFoodChainHtml(chain.energySource)} and moves from food to eater. Arrange the organisms from producer to consumer. Select a card and a position, drag a card, or tap both on a touch screen.</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5" aria-label="Organism cards">
             ${organismCards}
           </div>
@@ -555,6 +883,7 @@ window.FoodChains = Object.freeze({
   chains: FOOD_CHAIN_DATA,
   isValidData: isValidFoodChainData,
   shuffleChains: shuffleFoodChainItems,
+  selectRound: selectFoodChainRound,
   shuffleOrganisms: shuffleFoodChainOrganisms,
   isCompletePlacement: isCompleteFoodChainPlacement,
   moveOrganism: moveFoodChainOrganism,

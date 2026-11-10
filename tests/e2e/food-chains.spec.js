@@ -34,6 +34,7 @@ test('Food Chains opens from the refresh-safe Science Lab route', async ({ page 
   await page.goto('/learning-centre/science');
   await expect(page.getByRole('heading', { name: 'Science Lab', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Explore Food Chains', exact: true })).toBeVisible();
+  await expect(page.getByText('Build food chains from ten habitats; five different examples are selected for each round.')).toBeVisible();
 
   await page.getByRole('button', { name: 'Explore Food Chains', exact: true }).click();
   await expect(page.getByRole('heading', { name: /^Build a Food Chain:/ })).toBeVisible();
@@ -65,6 +66,7 @@ test('keyboard learners can correct a food chain, complete all examples, and rec
   await expect(page.locator('#food-chains-feedback')).toContainText('Position');
 
   const chainCount = await page.evaluate(() => window.app.foodChainsGame.chains.length);
+  expect(chainCount).toBe(5);
   for (let chainIndex = 0; chainIndex < chainCount; chainIndex++) {
     const organismIds = await page.evaluate(
       index => window.app.foodChainsGame.chains[index].organisms.map(organism => organism.id),
@@ -86,7 +88,7 @@ test('keyboard learners can correct a food chain, complete all examples, and rec
     status: window.app.foodChainsActivityEngine.status,
     progressRecorded: window.app.foodChainsActivityEngine.progressRecorded,
     score: window.app.foodChainsActivityEngine.score
-  }))).toEqual({ status: 'complete', progressRecorded: true, score: 3 });
+  }))).toEqual({ status: 'complete', progressRecorded: true, score: chainCount });
   await page.getByRole('button', { name: 'Return to Science Lab', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Science Lab', exact: true })).toBeVisible();
 });

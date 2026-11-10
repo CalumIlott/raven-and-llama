@@ -42,8 +42,8 @@ flowchart TD
 * **Test**: Add unit test ensuring at least 4 scenarios and 20+ valid items with budget constraints.
 
 ### 1.4 Expand Science Lab Food Chains & Virtual Lab
-* **Food Chains**: Expand `public/js/science/food-chains.js` from 3 habitats to 10+ habitats (Rainforest, Arctic Tundra, Pond, Coral Reef, Savanna, Deciduous Forest, Deep Ocean) with 4-tier trophic relationships.
-* **Virtual Lab**: Expand `public/js/science/virtual-lab.js` from 4 simulations to 15+ reactions (vinegar + baking soda gas production, oil + water density separation, salt crystallization, magnetic iron separation).
+* **Food Chains**: Expanded `public/js/science/food-chains.js` to 10 sourced habitats. Five distinct chains are randomly selected per run; the deep-sea vent model correctly starts with chemical energy rather than sunlight.
+* **Virtual Lab (next)**: Expand `public/js/science/virtual-lab.js` from 4 simulations to 15+ carefully sourced and scientifically safe outcomes (vinegar + baking soda gas production, oil + water density separation, salt crystallization, magnetic iron separation).
 
 ### 1.5 Expand MathMasters Brown Belt Fractions
 * **Problem**: `genBrownFractions` generates only 18 proper fractions across limited denominators `[2, 3, 4, 6, 8]`.

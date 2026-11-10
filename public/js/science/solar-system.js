@@ -195,7 +195,7 @@ Object.assign(App.prototype, {
                 <h2 class="font-ninja text-2xl text-white font-bold">Food Chains</h2>
               </div>
             </div>
-            <p class="text-slate-300 mb-5">Arrange producers and consumers to follow how energy moves through three simple ecosystems.</p>
+            <p class="text-slate-300 mb-5">Build food chains from ten habitats; five different examples are selected for each round.</p>
             <button type="button" data-action="food-chains-start" class="rounded-xl bg-lime-700 hover:bg-lime-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
               Explore Food Chains
             </button>
