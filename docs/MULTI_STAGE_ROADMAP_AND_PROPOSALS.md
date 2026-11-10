@@ -43,7 +43,7 @@ flowchart TD
 
 ### 1.4 Expand Science Lab Food Chains & Virtual Lab
 * **Food Chains**: Expanded `public/js/science/food-chains.js` to 10 sourced habitats. Five distinct chains are randomly selected per run; the deep-sea vent model correctly starts with chemical energy rather than sunlight.
-* **Virtual Lab (next)**: Expand `public/js/science/virtual-lab.js` from 4 simulations to 15+ carefully sourced and scientifically safe outcomes (vinegar + baking soda gas production, oil + water density separation, salt crystallization, magnetic iron separation).
+* **Virtual Lab**: Expanded `public/js/science/virtual-lab.js` to 17 carefully sourced outcomes. Item filters group materials, prepared mixtures, conditions, and tools; supported outcomes link to their source.
 
 ### 1.5 Expand MathMasters Brown Belt Fractions
 * **Problem**: `genBrownFractions` generates only 18 proper fractions across limited denominators `[2, 3, 4, 6, 8]`.

@@ -100,3 +100,21 @@ test.describe('virtual lab touch controls', () => {
     await expect(page.locator('#header-stars-count')).toHaveText('4');
   });
 });
+
+test('virtual lab filters materials and links each authored result to its source', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.locator('[data-action="virtual-lab-start"]').click();
+  await expect(page.getByText('Explore 17 carefully authored outcomes')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Prepared mixtures' }).click();
+  await expect(page.locator('[data-virtual-lab-material-id="salt-water"]')).toBeVisible();
+  await expect(page.locator('[data-virtual-lab-material-id="vinegar"]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'All items' }).click();
+
+  await addMaterialWithKeyboard(page, 'baking-soda', 0);
+  await addMaterialWithKeyboard(page, 'vinegar', 1);
+  await page.locator('[data-action="virtual-lab-run"]').click();
+  await expect(page.locator('#virtual-lab-result')).toContainText('Baking soda and vinegar produce carbon dioxide');
+  await expect(page.locator('#virtual-lab-result a')).toHaveAttribute('href', 'https://www.acs.org/middleschoolchemistry/lessonplans/chapter6/lesson2.html');
+});
