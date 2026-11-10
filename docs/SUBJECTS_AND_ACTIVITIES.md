@@ -15,7 +15,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **18** countries | ❌ **Non-compliant** (Needs expansion to 100+) |
 | **History Hub** | `/learning-centre/history` | Timeline Builder | **104** events | ⚠️ Pool size compliant; 90 broken `??` icons need fix |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
-| **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 1 scenario (6 items) | ❌ **Non-compliant** (Needs expansion to 4+ scenarios, 20+ items) |
+| **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 4 scenarios; 24-item catalog | ✅ Compliant |
 | **Times Tables** | `/timetables` | Times Tables Arenas & Drills | $\infty$ (Procedural) | ✅ Compliant |
 
 ---
@@ -117,7 +117,6 @@ This document catalogues every subject hub, learning activity, question bank siz
 ## 7. Life Skills Hub
 
 * **Plan a Party** (`public/js/life-skills/party-planner.js`):
-  - Budgeting activity where students allocate funds to meet required and optional party needs without overspending.
-* **Deficit**:
-  - Currently contains only **1 scenario** (Birthday Party with fixed $100 budget and 6 items).
-  - **Priority action**: Expand to 4+ diverse event scenarios (Camping Trip, Pizza Night, Science Fair, School Picnic) with dynamic budgets ($25 to $250) and a catalog of 20+ items.
+  - Budgeting activity where students allocate funds to meet required and optional event needs without overspending.
+  - Four randomized scenarios use $50, $75, $100, or $150 budgets. Each round samples 10 items from a 24-item catalog grouped into Venue, Food & Drink, Entertainment, Gear, and Decorations.
+  - Two or three item targets are marked required per round; remaining choices are optional, and each scenario keeps one event-specific item in the round.
