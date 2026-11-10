@@ -194,8 +194,8 @@ Object.assign(App.prototype, {
     const correctChoice = question.choices[question.answer];
     const feedback = game.feedback;
     const flag = game.mode === 'flags'
-      ? `<span class="mb-4 block text-6xl" role="img" aria-label="Flag of ${escapeGeographyActivityHtml(country.name)}">${escapeGeographyActivityHtml(country.flag)}</span>`
-      : `<span class="mb-3 block text-4xl" aria-hidden="true">${escapeGeographyActivityHtml(country.flag)}</span>`;
+      ? `<span class="country-flag-emoji mb-4 block text-6xl" role="img" aria-label="Flag of ${escapeGeographyActivityHtml(country.name)}">${escapeGeographyActivityHtml(country.flag)}</span>`
+      : `<span class="country-flag-emoji mb-3 block text-4xl" aria-hidden="true">${escapeGeographyActivityHtml(country.flag)}</span>`;
     const feedbackText = feedback
       ? feedback.correct
         ? (game.mode === 'flags'

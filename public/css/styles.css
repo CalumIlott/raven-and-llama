@@ -3696,6 +3696,10 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
 
 #app-main[data-page="geography-world"] .geography-map-panel,
 #app-main[data-page="geography-world"] .geography-country-list,
+.country-flag-emoji {
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+}
+
 #app-main[data-page="geography-world"] .geography-country-details {
   min-width: 0;
   padding: 1.25rem;
