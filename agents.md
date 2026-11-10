@@ -91,6 +91,15 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
+## Fast-Track Project Knowledge Base
+
+Before performing broad exploratory scans of the codebase, consult the documentation in `docs/`:
+- **Architecture & System Contracts**: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (single-page structure, ActivityEngine lifecycle, SQLite/D1 storage, PBKDF2 auth, security headers)
+- **Subject Pools & Question Banks**: [`docs/SUBJECTS_AND_ACTIVITIES.md`](docs/SUBJECTS_AND_ACTIVITIES.md) (inventory of all 8 subject hubs, 100+ question target status, procedural generators, and finite-set exceptions)
+- **Roadmap & Pedagogical Concepts**: [`docs/ROADMAP_AND_OPPORTUNITIES.md`](docs/ROADMAP_AND_OPPORTUNITIES.md) (open issue breakdown, competitive benchmarks against IXL/Prodigy/Khan, interactive manipulatives beyond quizzes, UX guidelines)
+
+---
+
 ## AI Agent Guidelines
 
 When working as an AI agent in this repository:
@@ -105,6 +114,7 @@ When working as an AI agent in this repository:
 8. **Describe intent**: Write a commit body explaining *why* the change was made when it isn't obvious from the title.
 9. **Worktree isolation and cleanup**: Make task changes in a dedicated Git worktree rather than the primary checkout (avoid placing worktrees in synced locations such as OneDrive). Use separate worktrees for independent parallel tasks to keep branches and uncommitted changes isolated. **Clean up worktrees as you go**: Once a task or pull request is completed or merged, remove the worktree with `git worktree remove <path>` and prune dead references (`git worktree prune`) to keep the repo clean.
 10. **Separate pull requests for logical units**: Keep PRs small and focused on a single logical theme (e.g. one activity, one bug fix, or one subsystem refactor). Avoid monolithic PRs that span multiple unrelated features.
+11. **Consult documentation first**: Refer to `docs/` before exploring or implementing to understand existing data contracts, question pool requirements, and module lifecycles.
 
 ---
 
