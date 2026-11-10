@@ -48,6 +48,10 @@ Object.assign(App.prototype, {
         </section>
 
         <div class="mb-8">
+          ${this.renderLearningRecommendations(profile)}
+        </div>
+
+        <div class="mb-8">
           ${this.renderDailyChallenges()}
         </div>
 
@@ -487,5 +491,59 @@ Object.assign(App.prototype, {
     ProfileManager.loadLeaderboard('learning');
     ProfileManager.loadLeaderboard('maths');
     ProfileManager.loadLeaderboard('times_tables');
+  },
+
+  renderLearningRecommendations(profile) {
+    const recommendations = window.LearningRecommendations?.recommend(profile, {
+      isAvailable: activity => typeof this[activity.startMethod] === 'function'
+    }) || [];
+    const cards = recommendations.map(activity => `
+      <li class="flex flex-col gap-4 rounded-2xl border border-slate-700 bg-slate-950/70 p-4 sm:flex-row sm:items-center sm:justify-between" data-recommendation="${escapeHtml(activity.activityId)}">
+        <div class="min-w-0">
+          <p class="learning-recommendation-subject text-xs font-bold uppercase tracking-wide text-cyan-300">${escapeHtml(activity.subject)}</p>
+          <h3 class="mt-1 font-ninja text-lg font-bold text-white">${escapeHtml(activity.title)}</h3>
+          <p class="mt-1 text-sm text-slate-300">${escapeHtml(activity.reason)}</p>
+        </div>
+        <button type="button" data-action="recommendation-start" data-activity-id="${escapeHtml(activity.activityId)}" class="shrink-0 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300">
+          Try ${escapeHtml(activity.title)}${activity.difficulty ? ` · ${escapeHtml(activity.difficulty)}` : ''}
+        </button>
+      </li>
+    `).join('');
+    return `
+      <section id="learning-recommendations" class="rounded-3xl border border-violet-700/60 bg-gradient-to-br from-violet-950/70 via-slate-900 to-cyan-950/70 p-5 shadow-xl sm:p-7" aria-labelledby="learning-recommendations-title">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-violet-300">Your next steps</p>
+            <h2 id="learning-recommendations-title" class="mt-1 font-ninja text-2xl font-bold text-white">Recommended for you</h2>
+          </div>
+          <p class="text-sm text-slate-300">Based on this learner’s practice and year settings.</p>
+        </div>
+        ${cards
+          ? `<ul class="mt-5 grid gap-3">${cards}</ul>`
+          : '<p class="mt-4 rounded-2xl border border-slate-700 bg-slate-950/60 p-4 text-sm text-slate-300" role="status">Great work. There is no specific activity to recommend right now. Choose any subject to keep exploring.</p>'}
+      </section>
+    `;
+  },
+
+  startRecommendedActivity(activityId) {
+    const profile = ProfileManager.getActiveProfile();
+    const options = {
+      isAvailable: activity => typeof this[activity.startMethod] === 'function'
+    };
+    const recommendation = window.LearningRecommendations?.recommend(profile, options)
+      .find(activity => activity.activityId === activityId);
+    const catalogEntry = window.LearningRecommendations?.getCatalog()
+      .find(activity => activity.activityId === recommendation?.activityId);
+    if (!recommendation || !catalogEntry || typeof this[catalogEntry.startMethod] !== 'function') return false;
+
+    const args = [...catalogEntry.arguments];
+    if (catalogEntry.difficultySubject) {
+      args.push(ProfileManager.getSubjectDifficulty(catalogEntry.difficultySubject));
+    } else if (catalogEntry.schoolYearDifficulty) {
+      const year = ProfileManager.isValidSchoolYear(profile?.schoolYear) ? profile.schoolYear : 3;
+      args.push(year <= 2 ? 'easy' : year <= 6 ? 'medium' : 'hard');
+    }
+    this[catalogEntry.startMethod](...args);
+    return true;
   }
 });

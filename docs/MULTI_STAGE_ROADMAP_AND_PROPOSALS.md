@@ -94,6 +94,7 @@ flowchart TD
   - Priority 3: Breadth & Discovery (unpracticed subjects).
   - Fallback: Year-appropriate core activities when history is sparse.
 * **Data Privacy**: All computations occur locally in-browser or strictly within the authenticated account session; zero external analytics tracking.
+* **Recommendation rules**: Use up to 30 days of valid quiz attempts for accuracy; require at least three answers before treating a score under 70% as a support signal. Recommend practice gaps after more than seven days, cap results at three with deterministic ordering, skip completed daily activities for the current UTC day, and launch only catalogued activities available in the app. Apply current subject-year difficulty when the chosen activity supports it; otherwise use a neutral empty state when nothing eligible remains.
 
 ### 3.2 Learning Centre Recommendation Cards
 * Surface top 3 recommended activities prominently on the Home dashboard and Learning Centre header.

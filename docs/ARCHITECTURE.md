@@ -38,6 +38,7 @@ public/
 │   │   ├── daily-challenges.js    # Deterministic UTC daily challenge generator
 │   │   ├── achievement-badges.js  # Derived milestone badges engine
 │   │   ├── progress-analytics.js  # Mastery heatmaps, 7/30/90-day progress trends
+│   │   ├── recommendations.js     # Deterministic, local next-step activity recommendations
 │   │   └── audio.js               # Web Audio sound effects & synthesis manager
 │   ├── learning/
 │   │   ├── centre.js              # Learning Centre subject directory view
