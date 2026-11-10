@@ -89,6 +89,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 * **Pool status**:
   - Both activities draw from the same 110-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
   - Follow-up: audit the remaining map features for additional sovereign countries, and document why dependent or disputed map entities are excluded from the quiz pool.
+  - Map-page facts follow-up: add about 5–10 distinct facts per country, and randomly show one whenever the selected country changes. The flag issue is browser-specific: flags work on a phone but remain broken in desktop Chrome, so investigate Chrome rendering.
 
 ---
 
