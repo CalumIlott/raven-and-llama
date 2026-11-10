@@ -19,14 +19,6 @@ const FRACTION_PIZZA_LEVELS = {
   }
 };
 
-const FRACTION_PIZZA_GRID_COLUMNS = {
-  2: 'grid-cols-2',
-  3: 'grid-cols-3',
-  4: 'grid-cols-2',
-  6: 'grid-cols-3',
-  8: 'grid-cols-4'
-};
-
 const FRACTION_PIZZA_DRAG_TYPE = 'text/plain';
 
 function fractionPizzaRandomItem(values) {
@@ -354,16 +346,19 @@ Object.assign(App.prototype, {
           <button type="button" data-action="fraction-pizza-slot" data-slot="${slotIndex}" data-drag-drop-target
             aria-label="Pizza ${pizzaIndex + 1}, slice ${sliceIndex + 1} of ${question.data.denominator}, ${filled ? 'filled' : 'empty'}"
             aria-pressed="${filled}" ${dragAttributes} ${engine.answered ? 'disabled' : ''}
-            class="fraction-pizza__slice flex aspect-square min-h-0 items-center justify-center rounded-lg border-2 border-amber-900 text-2xl font-bold text-amber-950 transition hover:brightness-110 focus-visible:outline focus-visible:outline-4 focus-visible:outline-sky-300 disabled:cursor-default">
-            <span aria-hidden="true">${filled ? '🍕' : '<span class="text-xl">+</span>'}</span>
+            data-fraction-pizza-slice="${question.data.denominator}-${sliceIndex}"
+            class="fraction-pizza__slice absolute inset-0 flex items-center justify-center font-bold transition hover:brightness-110 focus-visible:z-10 focus-visible:outline focus-visible:outline-4 focus-visible:outline-sky-300 disabled:cursor-default"
+            data-fraction-pizza-wedge>
+            <span aria-hidden="true" class="fraction-pizza__slice-mark">${filled ? '✓' : '+'}</span>
           </button>
         `;
       }).join('');
       return `
         <section class="min-w-0" aria-label="Pizza ${pizzaIndex + 1}">
           <h3 class="mb-2 text-center font-bold text-amber-100">Pizza ${pizzaIndex + 1}</h3>
-          <div class="fraction-pizza__plate mx-auto grid aspect-square w-56 ${FRACTION_PIZZA_GRID_COLUMNS[question.data.denominator]} gap-1 p-3 sm:w-64"
+          <div class="fraction-pizza__plate relative mx-auto aspect-square w-56 rounded-full sm:w-64"
             data-fraction-drop-pizza="${pizzaIndex}" data-drag-drop-target role="group"
+            data-fraction-pizza-denominator="${question.data.denominator}"
             aria-label="Pizza ${pizzaIndex + 1}, divided into ${question.data.denominator} equal slices">
             ${slots}
           </div>
@@ -373,11 +368,11 @@ Object.assign(App.prototype, {
     const availableTokens = Array.from({ length: slotCount }, (_, tokenId) => tokenId)
       .filter(tokenId => !game.slots.includes(tokenId));
     const tokenMarkup = availableTokens.map(tokenId => `
-      <button type="button" data-action="fraction-pizza-token" data-token="${tokenId}"
+        <button type="button" data-action="fraction-pizza-token" data-token="${tokenId}"
         data-fraction-drag-token="${tokenId}" aria-label="Pizza slice ${tokenId + 1}, available"
         draggable="true" ${engine.answered ? 'disabled' : ''}
-        class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-amber-500 bg-amber-100 text-3xl shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-200 focus-visible:outline focus-visible:outline-4 focus-visible:outline-sky-300 disabled:cursor-default">
-        <span aria-hidden="true">🍕</span>
+        class="fraction-pizza__tray-slice flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 border-amber-700 text-lg shadow-sm transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-4 focus-visible:outline-sky-300 disabled:cursor-default">
+        <span aria-hidden="true" class="fraction-pizza__slice-mark">+</span>
       </button>
     `).join('');
 

@@ -183,16 +183,196 @@ html.theme-light .fraction-pizza-level > span:last-child { color: #334155; }
   border: 0.75rem solid #78350f;
   border-radius: 50%;
   background-color: #b45309;
+  box-shadow: 0 0.35rem 0 #451a03, inset 0 0 0 0.15rem #fbbf24;
 }
 
 .fraction-pizza__slice {
+  padding: 0;
+  border: 0;
+  color: #7c2d12;
   background-color: #fbbf24;
-  background-image: radial-gradient(circle at 50% 52%, #7c2d12 0 0.22rem, transparent 0.24rem);
+  background-image:
+    radial-gradient(circle at 34% 30%, #b91c1c 0 3.2%, transparent 3.7%),
+    radial-gradient(circle at 66% 36%, #b91c1c 0 3.2%, transparent 3.7%),
+    radial-gradient(circle at 48% 67%, #b91c1c 0 3.2%, transparent 3.7%),
+    radial-gradient(circle at 76% 70%, #b91c1c 0 3.2%, transparent 3.7%),
+    linear-gradient(145deg, #fde68a, #f59e0b);
+  filter: drop-shadow(0 0 1px #78350f);
+  touch-action: manipulation;
 }
 
 .fraction-pizza__slice[aria-pressed="true"] {
   background-color: #fb7185;
-  background-image: radial-gradient(circle at 50% 52%, #881337 0 0.22rem, transparent 0.24rem);
+  background-image:
+    radial-gradient(circle at 34% 30%, #881337 0 3.2%, transparent 3.7%),
+    radial-gradient(circle at 66% 36%, #881337 0 3.2%, transparent 3.7%),
+    radial-gradient(circle at 48% 67%, #881337 0 3.2%, transparent 3.7%),
+    radial-gradient(circle at 76% 70%, #881337 0 3.2%, transparent 3.7%),
+    linear-gradient(145deg, #fda4af, #f43f5e);
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="2-0"] {
+  clip-path: polygon(50% 50%, 50.000% 0.000%, 62.941% 1.704%, 75.000% 6.699%, 85.355% 14.645%, 93.301% 25.000%, 98.296% 37.059%, 100.000% 50.000%, 98.296% 62.941%, 93.301% 75.000%, 85.355% 85.355%, 75.000% 93.301%, 62.941% 98.296%, 50.000% 100.000%);
+  --fraction-pizza-mark-x: 84.000%;
+  --fraction-pizza-mark-y: 50.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="2-1"] {
+  clip-path: polygon(50% 50%, 50.000% 100.000%, 37.059% 98.296%, 25.000% 93.301%, 14.645% 85.355%, 6.699% 75.000%, 1.704% 62.941%, 0.000% 50.000%, 1.704% 37.059%, 6.699% 25.000%, 14.645% 14.645%, 25.000% 6.699%, 37.059% 1.704%, 50.000% 0.000%);
+  --fraction-pizza-mark-x: 16.000%;
+  --fraction-pizza-mark-y: 50.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="3-0"] {
+  clip-path: polygon(50% 50%, 50.000% 0.000%, 62.941% 1.704%, 75.000% 6.699%, 85.355% 14.645%, 93.301% 25.000%, 98.296% 37.059%, 100.000% 50.000%, 98.296% 62.941%, 93.301% 75.000%);
+  --fraction-pizza-mark-x: 79.445%;
+  --fraction-pizza-mark-y: 33.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="3-1"] {
+  clip-path: polygon(50% 50%, 93.301% 75.000%, 85.355% 85.355%, 75.000% 93.301%, 62.941% 98.296%, 50.000% 100.000%, 37.059% 98.296%, 25.000% 93.301%, 14.645% 85.355%, 6.699% 75.000%);
+  --fraction-pizza-mark-x: 50.000%;
+  --fraction-pizza-mark-y: 84.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="3-2"] {
+  clip-path: polygon(50% 50%, 6.699% 75.000%, 1.704% 62.941%, 0.000% 50.000%, 1.704% 37.059%, 6.699% 25.000%, 14.645% 14.645%, 25.000% 6.699%, 37.059% 1.704%, 50.000% 0.000%);
+  --fraction-pizza-mark-x: 20.555%;
+  --fraction-pizza-mark-y: 33.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="4-0"] {
+  clip-path: polygon(50% 50%, 50.000% 0.000%, 62.941% 1.704%, 75.000% 6.699%, 85.355% 14.645%, 93.301% 25.000%, 98.296% 37.059%, 100.000% 50.000%);
+  --fraction-pizza-mark-x: 74.042%;
+  --fraction-pizza-mark-y: 25.958%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="4-1"] {
+  clip-path: polygon(50% 50%, 100.000% 50.000%, 98.296% 62.941%, 93.301% 75.000%, 85.355% 85.355%, 75.000% 93.301%, 62.941% 98.296%, 50.000% 100.000%);
+  --fraction-pizza-mark-x: 74.042%;
+  --fraction-pizza-mark-y: 74.042%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="4-2"] {
+  clip-path: polygon(50% 50%, 50.000% 100.000%, 37.059% 98.296%, 25.000% 93.301%, 14.645% 85.355%, 6.699% 75.000%, 1.704% 62.941%, 0.000% 50.000%);
+  --fraction-pizza-mark-x: 25.958%;
+  --fraction-pizza-mark-y: 74.042%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="4-3"] {
+  clip-path: polygon(50% 50%, 0.000% 50.000%, 1.704% 37.059%, 6.699% 25.000%, 14.645% 14.645%, 25.000% 6.699%, 37.059% 1.704%, 50.000% 0.000%);
+  --fraction-pizza-mark-x: 25.958%;
+  --fraction-pizza-mark-y: 25.958%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="6-0"] {
+  clip-path: polygon(50% 50%, 50.000% 0.000%, 62.941% 1.704%, 75.000% 6.699%, 85.355% 14.645%, 93.301% 25.000%);
+  --fraction-pizza-mark-x: 67.000%;
+  --fraction-pizza-mark-y: 20.555%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="6-1"] {
+  clip-path: polygon(50% 50%, 93.301% 25.000%, 98.296% 37.059%, 100.000% 50.000%, 98.296% 62.941%, 93.301% 75.000%);
+  --fraction-pizza-mark-x: 84.000%;
+  --fraction-pizza-mark-y: 50.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="6-2"] {
+  clip-path: polygon(50% 50%, 93.301% 75.000%, 85.355% 85.355%, 75.000% 93.301%, 62.941% 98.296%, 50.000% 100.000%);
+  --fraction-pizza-mark-x: 67.000%;
+  --fraction-pizza-mark-y: 79.445%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="6-3"] {
+  clip-path: polygon(50% 50%, 50.000% 100.000%, 37.059% 98.296%, 25.000% 93.301%, 14.645% 85.355%, 6.699% 75.000%);
+  --fraction-pizza-mark-x: 33.000%;
+  --fraction-pizza-mark-y: 79.445%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="6-4"] {
+  clip-path: polygon(50% 50%, 6.699% 75.000%, 1.704% 62.941%, 0.000% 50.000%, 1.704% 37.059%, 6.699% 25.000%);
+  --fraction-pizza-mark-x: 16.000%;
+  --fraction-pizza-mark-y: 50.000%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="6-5"] {
+  clip-path: polygon(50% 50%, 6.699% 25.000%, 14.645% 14.645%, 25.000% 6.699%, 37.059% 1.704%, 50.000% 0.000%);
+  --fraction-pizza-mark-x: 33.000%;
+  --fraction-pizza-mark-y: 20.555%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-0"] {
+  clip-path: polygon(50% 50%, 50.000% 0.000%, 59.755% 0.961%, 69.134% 3.806%, 77.779% 8.427%, 85.355% 14.645%);
+  --fraction-pizza-mark-x: 63.011%;
+  --fraction-pizza-mark-y: 18.588%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-1"] {
+  clip-path: polygon(50% 50%, 85.355% 14.645%, 91.573% 22.221%, 96.194% 30.866%, 99.039% 40.245%, 100.000% 50.000%);
+  --fraction-pizza-mark-x: 81.412%;
+  --fraction-pizza-mark-y: 36.989%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-2"] {
+  clip-path: polygon(50% 50%, 100.000% 50.000%, 99.039% 59.755%, 96.194% 69.134%, 91.573% 77.779%, 85.355% 85.355%);
+  --fraction-pizza-mark-x: 81.412%;
+  --fraction-pizza-mark-y: 63.011%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-3"] {
+  clip-path: polygon(50% 50%, 85.355% 85.355%, 77.779% 91.573%, 69.134% 96.194%, 59.755% 99.039%, 50.000% 100.000%);
+  --fraction-pizza-mark-x: 63.011%;
+  --fraction-pizza-mark-y: 81.412%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-4"] {
+  clip-path: polygon(50% 50%, 50.000% 100.000%, 40.245% 99.039%, 30.866% 96.194%, 22.221% 91.573%, 14.645% 85.355%);
+  --fraction-pizza-mark-x: 36.989%;
+  --fraction-pizza-mark-y: 81.412%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-5"] {
+  clip-path: polygon(50% 50%, 14.645% 85.355%, 8.427% 77.779%, 3.806% 69.134%, 0.961% 59.755%, 0.000% 50.000%);
+  --fraction-pizza-mark-x: 18.588%;
+  --fraction-pizza-mark-y: 63.011%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-6"] {
+  clip-path: polygon(50% 50%, 0.000% 50.000%, 0.961% 40.245%, 3.806% 30.866%, 8.427% 22.221%, 14.645% 14.645%);
+  --fraction-pizza-mark-x: 18.588%;
+  --fraction-pizza-mark-y: 36.989%;
+}
+
+.fraction-pizza__slice[data-fraction-pizza-slice="8-7"] {
+  clip-path: polygon(50% 50%, 14.645% 14.645%, 22.221% 8.427%, 30.866% 3.806%, 40.245% 0.961%, 50.000% 0.000%);
+  --fraction-pizza-mark-x: 36.989%;
+  --fraction-pizza-mark-y: 18.588%;
+}
+
+.fraction-pizza__slice-mark {
+  position: absolute;
+  left: var(--fraction-pizza-mark-x);
+  top: var(--fraction-pizza-mark-y);
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background-color: rgb(255 251 235 / 85%);
+  font-size: 1.25rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.fraction-pizza__tray-slice {
+  color: #7c2d12;
+  background-color: #fbbf24;
+  background-image:
+    radial-gradient(circle at 38% 30%, #b91c1c 0 0.17rem, transparent 0.2rem),
+    radial-gradient(circle at 63% 45%, #b91c1c 0 0.17rem, transparent 0.2rem),
+    radial-gradient(circle at 48% 68%, #b91c1c 0 0.17rem, transparent 0.2rem),
+    linear-gradient(145deg, #fde68a, #f59e0b);
 }
 
 html.theme-light body {
