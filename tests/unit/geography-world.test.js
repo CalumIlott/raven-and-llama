@@ -8,8 +8,8 @@ function createGeographyContext() {
   context.eval('class App {};');
   loadBrowserScripts(
     context,
-    'public/js/geography/country-data.js',
     'public/js/geography/world-map-context.js',
+    'public/js/geography/country-data.js',
     'public/js/geography/world-map.js'
   );
   return context;
@@ -21,7 +21,7 @@ test('geography dataset has sourced, selectable countries across inhabited conti
   const countries = Array.from(context.GeographyWorld.countries);
 
   assert.equal(context.GeographyWorld.isValidCountryData(context.GEOGRAPHY_COUNTRY_DATA), true);
-  assert.equal(countries.length, 18);
+  assert.ok(countries.length >= 100);
   assert.deepEqual(
     [...new Set(countries.map(country => country.continent))].sort(),
     [...continents].sort()

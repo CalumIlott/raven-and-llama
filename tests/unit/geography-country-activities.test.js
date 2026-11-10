@@ -18,8 +18,8 @@ function createGeographyActivityContext() {
   loadActivityEngine(context);
   loadBrowserScripts(
     context,
-    'public/js/geography/country-data.js',
     'public/js/geography/world-map-context.js',
+    'public/js/geography/country-data.js',
     'public/js/geography/world-map.js',
     'public/js/geography/country-activities.js'
   );
@@ -44,6 +44,32 @@ test('flag and capital rounds use unique countries and unambiguous answer choice
       assert.equal(question.choices[question.answer], country[answerField]);
     }
   }
+});
+
+test('country dataset covers 100+ distinct countries, capitals, flags, and all continents', () => {
+  const context = createGeographyActivityContext();
+  const countries = Array.from(context.GeographyWorld.countries);
+
+  assert.ok(countries.length >= 100);
+  for (const field of ['id', 'name', 'flag', 'capital']) {
+    assert.equal(new Set(countries.map(country => country[field].toLocaleLowerCase())).size, countries.length);
+  }
+  assert.deepEqual(
+    [...new Set(countries.map(country => country.continent))].sort(),
+    ['Africa', 'Asia', 'Europe', 'North America', 'Oceania', 'South America'].sort()
+  );
+  assert.ok(countries.every(country => country.fact && country.factSource && country.factSourceUrl.startsWith('https://')));
+});
+
+test('geography rounds randomize which eligible countries appear', () => {
+  const context = createGeographyActivityContext();
+  const countries = Array.from(context.GeographyWorld.countries);
+  const firstRound = context.GeographyCountryActivities.generateQuestions(countries, 'capitals', () => 0);
+  const secondRound = context.GeographyCountryActivities.generateQuestions(countries, 'capitals', () => 0.99);
+
+  assert.equal(firstRound.questions.length, 5);
+  assert.equal(secondRound.questions.length, 5);
+  assert.notDeepEqual(firstRound.countryIds, secondRound.countryIds);
 });
 
 test('incomplete and ambiguous country records are excluded from the relevant round', () => {
