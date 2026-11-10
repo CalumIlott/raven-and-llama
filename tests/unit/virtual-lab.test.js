@@ -20,22 +20,28 @@ function createVirtualLabContext() {
   return context;
 }
 
-test('virtual lab exposes only curated deterministic simulations', () => {
+test('virtual lab exposes a valid sourced catalog of at least 15 unique simulations', () => {
   const context = createVirtualLabContext();
-  const materials = Array.from(context.eval('VIRTUAL_LAB_MATERIALS'));
-  const simulations = Array.from(context.eval('VIRTUAL_LAB_SIMULATIONS'));
+  const { materials, simulations, isValidCatalog, getSimulation } = context.VirtualLab;
 
+  assert.ok(materials.length >= 10);
+  assert.ok(simulations.length >= 15);
   assert.equal(new Set(materials.map(material => material.id)).size, materials.length);
-  assert.deepEqual(
-    simulations.map(simulation => simulation.materials.slice().sort().join('|')).sort(),
-    ['cooling|water', 'ice|warmth', 'sand|water', 'sugar|water']
-  );
-  assert.ok(simulations.every(simulation => simulation.id && simulation.title && simulation.explanation));
-  assert.equal(context.getVirtualLabSimulation(['water', 'sugar']).id, 'sugar-dissolves');
-  assert.equal(context.getVirtualLabSimulation(['sugar', 'water']).id, 'sugar-dissolves');
-  assert.equal(context.getVirtualLabSimulation(['water', 'ice']), null);
-  assert.equal(context.getVirtualLabSimulation(['water', 'water']), null);
-  assert.equal(context.getVirtualLabSimulation(['water', 'unknown']), null);
+  assert.equal(new Set(simulations.map(simulation => simulation.id)).size, simulations.length);
+  assert.equal(isValidCatalog(materials, simulations), true);
+  assert.ok(simulations.every(simulation => /^https:\/\//.test(simulation.sourceUrl)));
+  assert.ok(simulations.every(simulation => simulation.sourceTitle && simulation.title && simulation.explanation));
+  for (const simulation of simulations) {
+    assert.equal(getSimulation(simulation.materials).id, simulation.id);
+    assert.equal(getSimulation(simulation.materials.slice().reverse()).id, simulation.id);
+  }
+  assert.equal(getSimulation(['baking-soda', 'vinegar']).id, 'baking-soda-vinegar');
+  assert.equal(getSimulation(['iron-sand-mixture', 'magnet']).id, 'iron-sand-separation');
+  assert.equal(getSimulation(['salt-water', 'filter-paper']).id, 'salt-water-filtration');
+  assert.equal(getSimulation(['water', 'ice']), null);
+  assert.equal(getSimulation(['water', 'water']), null);
+  assert.equal(getSimulation(['water', 'unknown']), null);
+  assert.equal(isValidCatalog(materials, [...simulations, { ...simulations[0], id: 'duplicate-pair' }]), false);
 });
 
 test('workspace placements move items without duplicates and reject invalid input', () => {
@@ -52,7 +58,7 @@ test('workspace placements move items without duplicates and reject invalid inpu
   assert.match(context.main.innerHTML, /Place two different items/);
 });
 
-test('unsupported combinations stay safe and supported simulations record progress once', () => {
+test('unsupported combinations stay safe and filters isolate item categories', () => {
   const context = createVirtualLabContext();
   const app = context.app;
 
@@ -60,6 +66,11 @@ test('unsupported combinations stay safe and supported simulations record progre
   assert.equal(app.virtualLabActivityEngine.definition.id, 'science-virtual-lab');
   assert.equal(app.virtualLabActivityEngine.definition.skillId, 'science_virtual_lab');
   assert.match(context.main.innerHTML, /computer simulations, not real-world experiment instructions/);
+  assert.equal(app.filterVirtualLabMaterials('Prepared mixture'), true);
+  assert.match(context.main.innerHTML, /Iron and sand mixture/);
+  assert.doesNotMatch(context.main.innerHTML, /Gentle warmth/);
+  assert.equal(app.filterVirtualLabMaterials('invalid'), false);
+  assert.equal(app.filterVirtualLabMaterials('all'), true);
 
   app.placeVirtualLabMaterial('ice', 0);
   app.placeVirtualLabMaterial('water', 1);
@@ -69,27 +80,26 @@ test('unsupported combinations stay safe and supported simulations record progre
   assert.equal(context.activityScores.length, 0);
   assert.match(context.main.innerHTML, /No authored simulation for this pairing/);
   assert.match(context.main.innerHTML, /The items stay unchanged; no outcome is assumed/);
+});
 
-  app.resetVirtualLabWorkspace();
-  app.placeVirtualLabMaterial('sugar', 0);
-  app.placeVirtualLabMaterial('water', 1);
-  assert.equal(app.runVirtualLabSimulation(), true);
+test('every authored simulation runs deterministically and records progress once', () => {
+  const context = createVirtualLabContext();
+  const app = context.app;
+  app.startVirtualLabActivity();
+
+  for (const simulation of context.VirtualLab.simulations) {
+    app.resetVirtualLabWorkspace();
+    app.placeVirtualLabMaterial(simulation.materials[0], 0);
+    app.placeVirtualLabMaterial(simulation.materials[1], 1);
+    assert.equal(app.runVirtualLabSimulation(), true, simulation.id);
+    assert.equal(app.virtualLabGame.result.id, simulation.id);
+    assert.equal(app.virtualLabGame.result.sourceUrl, simulation.sourceUrl);
+    assert.equal(context.activityScores.length, 1);
+    assert.ok(context.main.innerHTML.includes(simulation.title));
+  }
   assert.equal(app.virtualLabActivityEngine.status, 'complete');
-  assert.equal(app.virtualLabActivityEngine.score, 4);
-  assert.equal(app.virtualLabActivityEngine.definition.settings.awardStars, true);
   assert.equal(context.profile.stars, 0);
-  assert.equal(context.activityScores.length, 1);
   assert.equal(context.activityScores[0][0].settings.awardStars, true);
   assert.equal(context.activityScores[0][1], 4);
   assert.equal(context.activityScores[0][2], 4);
-  assert.match(context.main.innerHTML, /Sugar dissolves/);
-
-  app.resetVirtualLabWorkspace();
-  app.placeVirtualLabMaterial('ice', 0);
-  app.placeVirtualLabMaterial('warmth', 1);
-  assert.equal(app.runVirtualLabSimulation(), true);
-  assert.equal(app.virtualLabActivityEngine.status, 'complete');
-  assert.equal(context.profile.stars, 0);
-  assert.equal(context.activityScores.length, 1);
-  assert.match(context.main.innerHTML, /Ice melts/);
 });

@@ -209,7 +209,7 @@ Object.assign(App.prototype, {
                 <h2 class="font-ninja text-2xl text-white font-bold">Virtual Laboratory</h2>
               </div>
             </div>
-            <p class="text-slate-300 mb-5">Explore a small set of safe, authored outcomes in a resettable virtual workspace.</p>
+            <p class="text-slate-300 mb-5">Try 17 sourced outcomes with materials, mixtures, tools, and virtual conditions.</p>
             <button type="button" data-action="virtual-lab-start" class="rounded-xl bg-cyan-700 hover:bg-cyan-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
               Open Virtual Laboratory
             </button>
