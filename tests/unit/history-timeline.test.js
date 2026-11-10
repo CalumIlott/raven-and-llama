@@ -38,6 +38,11 @@ test('history event data contains at least 100 sourced events with distinct IDs 
     event.title && event.era && event.approximateDate && event.clue && event.explanation &&
     event.sourceName && event.sourceUrl.startsWith('https://')
   ));
+  assert.ok(events.every(event =>
+    typeof event.icon === 'string' && event.icon.length >= 1 &&
+    /\p{Extended_Pictographic}|\p{Regional_Indicator}{2}/u.test(event.icon)
+  ));
+  assert.ok(events.every(event => !/^\?+$/.test(event.icon)));
   const canonicalYears = Array.from(context.HistoryTimeline.canonicalOrder(), event => event.sortYear);
   assert.deepEqual(canonicalYears, [...canonicalYears].sort((left, right) => left - right));
 });
