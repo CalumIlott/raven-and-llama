@@ -4,6 +4,29 @@ Welcome to the **Raven & Llama** repository. This document defines the conventio
 
 ---
 
+## Fast-Track Starting Point for New Agents
+
+If you are an AI agent beginning a new session in this repository:
+
+1. **Do not re-scan the entire codebase**: Complete, pre-indexed documentation is maintained in `docs/`:
+   - **System Architecture & Data Contracts**: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (single-page structure, ActivityEngine lifecycle, SQLite/D1 storage, PBKDF2 auth, security headers)
+   - **Subject Pools & Question Banks**: [`docs/SUBJECTS_AND_ACTIVITIES.md`](docs/SUBJECTS_AND_ACTIVITIES.md) (inventory of all 8 subject hubs, 100+ question target status, procedural generators, and finite-set exceptions)
+   - **Multi-Stage Roadmap & Proposals**: [`docs/MULTI_STAGE_ROADMAP_AND_PROPOSALS.md`](docs/MULTI_STAGE_ROADMAP_AND_PROPOSALS.md) (master 6-stage blueprint: Stage 1 Bug Fixes & Content Pools, Stage 2 Parent Dashboard, Stage 3 Recommendations, Stage 4 Tactile Manipulatives replacing quizzes, Stage 5 Discovery Sandboxes, Stage 6 Advanced Research)
+2. **Current Priority Queue**:
+   - Check open issues with `gh issue list`.
+   - **Immediate Next Task**: **Stage 1 (Issue #138)** — Fix 90 broken `??` history icons in `public/js/history/events.js`, expand `public/js/geography/country-data.js` to 100+ countries, expand Plan a Party scenarios/items, and expand Food Chains/Virtual Lab.
+   - **Subsequent Task**: **Stage 2 (Issue #128 / LC-701)** — Parent Dashboard and settings controls.
+   - **Subsequent Task**: **Stage 3 (Issue #130 / LC-703)** — Personalised learning recommendations.
+   - **Subsequent Task**: **Stage 4 & 5** — Interactive Manipulatives and Discovery Sandboxes replacing traditional quizzes.
+3. **Execution Workflow**:
+   - Always work in an isolated worktree outside synced folders: `git worktree add -b <branch> C:/GitHub/Calum/raven-and-llama-worktrees/<slug> main`.
+   - Implement single logical units of work; run focused tests (`npm test` and `npm run audit`).
+   - Commit as you go using Conventional Commits. Push to origin at sensible intervals.
+   - Open small, focused PRs using `gh pr create`.
+   - Clean up worktrees when done (`git worktree remove <path>` and `git worktree prune`).
+
+---
+
 ## Core Rule: One Commit Per Unit of Work
 
 > **Each logical unit of work must be a separate, focused commit.**
