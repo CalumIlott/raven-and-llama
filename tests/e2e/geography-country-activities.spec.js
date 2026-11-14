@@ -29,8 +29,10 @@ test('Flag Detective supports keyboard answers, completion, and return navigatio
     const game = window.app.geographyCountryQuiz;
     return window.GeographyWorld.countryById(game.countryIds[window.app.geographyCountryQuizEngine.currentIndex]).flag;
   });
-  await expect(flag).toHaveText(currentFlag);
-  expect(await flag.evaluate(element => getComputedStyle(element).fontFamily)).toContain('Segoe UI Emoji');
+  const countryCode = Array.from(currentFlag, character => character.codePointAt(0) - 0x1f1e6 + 65)
+    .map(codePoint => String.fromCharCode(codePoint)).join('').toLowerCase();
+  await expect(flag).toHaveAttribute('src', `/images/flags/${countryCode}.svg`);
+  await expect.poll(() => flag.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await chooseCurrentCorrectAnswer(page, testInfo, true);
   await expect(page.locator('#geography-country-quiz-feedback')).toContainText('Correct!');
 

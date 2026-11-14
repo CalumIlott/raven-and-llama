@@ -31,8 +31,8 @@ flowchart TD
 * **Resolution**: Expand `country-data.js` to 100+ sovereign countries spanning Africa, Asia, Europe, North America, South America, and Oceania with verified flags, official capitals, continents, facts, and trusted source citations.
 * **Test**: Add unit test in `tests/unit/geography-country-activities.test.js` asserting `countries.length >= 100` and zero duplicate country/flag/capital combinations.
 * **Follow-up note**: The initial 100+ country target is now met, but the 177-feature map has additional geography records. Continue auditing it for eligible sovereign countries to add, and document any mapped dependencies or disputed entities that stay out of the country quiz pool.
-* **Map-page facts follow-up**: Add about 5–10 distinct, age-appropriate facts for each country. Randomly select which fact appears whenever the learner changes the selected country, so returning to a country can reveal another fact. Flag rendering also still fails in desktop Chrome even though it works on a phone; investigate the Chrome-specific rendering path.
-* **Map flag display follow-up**: Show each country's flag alongside its name and details in the selected-country panel on the map page. Verify flags in both that panel and Flag Detective in desktop Chrome; phone rendering already works, so test the browser-specific path rather than relying on initials as the fallback.
+* **Map-page facts follow-up**: Add about 5–10 distinct, age-appropriate facts for each country. Randomly select which fact appears whenever the learner changes the selected country, so returning to a country can reveal another fact.
+* **Map flag display follow-up — implemented**: Show self-hosted SVG flags in the selected-country panel and country list, and in Flag Detective and Capital Cities. This avoids the platform-dependent Unicode flag fallback that can display country initials in desktop Chrome. The map caption now uses the actual number of highlighted countries instead of a stale hard-coded count.
 
 ### 1.3 Expand Life Skills "Plan a Party"
 * **Problem**: `public/js/life-skills/party-planner.js` features exactly one scenario ($100 budget) and 6 fixed items.
