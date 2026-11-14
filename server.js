@@ -74,7 +74,7 @@ function sendJson(res, status, body) {
 
 function allowAuthAttempt(action, username, remoteAddress, userId) {
   const limits = action === 'parent-verify'
-    ? [[`parent-verify:source:${remoteAddress}`, 5], [`parent-verify:account:${userId}`, 5]]
+    ? [[`parent-verify:source:${remoteAddress}`, 60], [`parent-verify:account:${userId}`, 5]]
     : action === 'register'
     ? [[`register:${remoteAddress}`, 30]]
     : [[`login:source:${remoteAddress}`, 60], [`login:account:${remoteAddress}:${username}`, 10]];

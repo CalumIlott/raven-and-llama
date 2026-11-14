@@ -288,6 +288,8 @@ test('accounts persist securely and progress stays private to the authenticated 
   }
   const blockedParentAttempt = await postJson('/api/auth/parent-verify', { pin: '9999' }, first.cookie);
   assert.equal(blockedParentAttempt.status, 429);
+  const otherAccountParentVerify = await postJson('/api/auth/parent-verify', { password: 'a secure password 123' }, second.cookie);
+  assert.equal(otherAccountParentVerify.status, 200);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
   assert.equal((await otherAfterReset.json()).profile.stars, 0);
