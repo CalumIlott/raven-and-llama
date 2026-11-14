@@ -4534,3 +4534,35 @@ html.theme-light .mascot-companion__hint-text {
     transition-duration: 0.01ms !important;
   }
 }
+#app-main[data-page="telling-time"] .time-clock-practice {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+}
+
+#app-main[data-page="telling-time"] .time-clock--interactive {
+  width: min(100%, 17.5rem);
+  height: auto;
+  overflow: visible;
+}
+
+#app-main[data-page="telling-time"] .time-clock-hand {
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+
+#app-main[data-page="telling-time"] .time-clock-hand:active {
+  cursor: grabbing;
+}
+
+#app-main[data-page="telling-time"] .time-clock-hand:focus-visible line:last-child {
+  stroke: #fbbf24;
+  stroke-width: 10;
+}
+
+#app-main[data-page="telling-time"] .time-clock-current {
+  color: #bae6fd;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
