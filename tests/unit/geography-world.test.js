@@ -34,7 +34,9 @@ test('geography dataset has sourced, selectable countries across inhabited conti
     'sierra-leone', 'slovakia', 'slovenia', 'somalia', 'south-africa', 'south-sudan',
     'spain', 'sri-lanka', 'sudan', 'suriname', 'switzerland', 'tanzania', 'timor-leste',
     'togo', 'trinidad-and-tobago', 'tunisia', 'turkey', 'uganda', 'ukraine',
-    'united-kingdom', 'uruguay', 'vanuatu', 'venezuela', 'yemen', 'zimbabwe'
+    'united-kingdom', 'uruguay', 'vanuatu', 'venezuela', 'yemen', 'zimbabwe',
+    'mauritius', 'seychelles', 'comoros', 'maldives', 'kiribati', 'tuvalu', 'nauru',
+    'tonga', 'samoa', 'marshall-islands', 'micronesia', 'palau'
   ]) {
     assert.ok(context.GeographyWorld.countryById(id), `Expected quiz coverage for ${id}`);
   }
@@ -95,7 +97,7 @@ test('world map context connects continents and includes Pacific island groups',
   const countries = Array.from(context.GeographyWorld.worldContextCountries);
   const names = new Set(countries.map(country => country.name));
 
-  assert.ok(countries.length >= 170);
+  assert.ok(countries.length >= 180);
   for (const name of [
     'Brazil',
     'Canada',
@@ -106,7 +108,9 @@ test('world map context connects continents and includes Pacific island groups',
     'Papua New Guinea',
     'Solomon Islands',
     'Fiji',
-    'New Zealand'
+    'New Zealand',
+    'Mauritius', 'Seychelles', 'Comoros', 'Maldives', 'Kiribati', 'Tuvalu', 'Nauru',
+    'Tonga', 'Samoa', 'Marshall Islands', 'Micronesia', 'Palau'
   ]) {
     assert.ok(names.has(name), `Expected a world map outline for ${name}`);
   }
