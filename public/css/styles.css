@@ -4029,15 +4029,65 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
   margin: 0;
 }
 
-#app-main[data-page="geography-world"] .geography-map {
-  display: block;
+#app-main[data-page="geography-world"] .geography-map-viewport {
+  position: relative;
   width: 100%;
-  height: auto;
+  height: clamp(18rem, 52vh, 36rem);
+  overflow: hidden;
   border: 1px solid var(--page-edge);
   border-radius: 1rem;
   background: #d7ecf3;
+}
+
+#app-main[data-page="geography-world"] .geography-map {
+  display: block;
+  width: 100%;
+  height: 100%;
   touch-action: none;
   user-select: none;
+}
+
+#app-main[data-page="geography-world"] .geography-map-fullscreen {
+  position: absolute;
+  z-index: 1;
+  top: 0.65rem;
+  right: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #527b65;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #173c36;
+  font-size: 0.8rem;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 20%);
+}
+
+#app-main[data-page="geography-world"] .geography-map-viewport:fullscreen,
+#app-main[data-page="geography-world"] .geography-map-viewport.is-fullscreen-fallback {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  padding: max(3.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background: #d7ecf3;
+}
+
+#app-main[data-page="geography-world"] .geography-map-viewport:fullscreen .geography-map,
+#app-main[data-page="geography-world"] .geography-map-viewport.is-fullscreen-fallback .geography-map {
+  width: 100%;
+  height: 100%;
+}
+
+#app-main[data-page="geography-world"] .geography-map-fullscreen:focus-visible {
+  outline: 3px solid #0f766e;
+  outline-offset: 2px;
 }
 
 #app-main[data-page="geography-world"] .geography-map.is-draggable {
@@ -4278,6 +4328,15 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
 
   #app-main[data-page="geography-world"] .geography-map-zoom-controls {
     justify-content: space-between;
+    gap: 0.25rem;
+  }
+
+  #app-main[data-page="geography-world"] .geography-map-zoom-controls output {
+    min-width: 4.5rem;
+  }
+
+  #app-main[data-page="geography-world"] .geography-map-viewport {
+    height: clamp(18rem, 54svh, 32rem);
   }
 }
 

@@ -6,7 +6,7 @@ const GEOGRAPHY_CONTINENTS = [
   'Oceania',
   'South America'
 ];
-const GEOGRAPHY_MAP_ZOOM_LEVELS = [1, 1.5, 2, 3];
+const GEOGRAPHY_MAP_ZOOM_LEVELS = [1, 1.5, 2, 3, 4.5, 6, 8];
 const GEOGRAPHY_MAP_WORLD_VIEW_BOX = '-8 -4 376 188';
 const GEOGRAPHY_MAP_WORLD_BOUNDS = Object.freeze({
   x: -8,
@@ -101,6 +101,19 @@ function geographyCountryById(countryId) {
 
 function geographyCountryPath(country) {
   return country.mapPaths.join('');
+}
+
+function geographyMapPointFromClient(map, clientX, clientY, inverseScreenMatrix) {
+  const inverse = inverseScreenMatrix || map.getScreenCTM()?.inverse();
+  if (!inverse) return { x: clientX, y: clientY };
+  return new DOMPoint(clientX, clientY).matrixTransform(inverse);
+}
+
+function geographyMapZoomIndexForScale(scale) {
+  return GEOGRAPHY_MAP_ZOOM_LEVELS.reduce((closestIndex, level, index) =>
+    Math.abs(Math.log(level / scale)) < Math.abs(Math.log(GEOGRAPHY_MAP_ZOOM_LEVELS[closestIndex] / scale))
+      ? index
+      : closestIndex, 0);
 }
 
 function renderGeographyCountryDetails(country) {
@@ -210,24 +223,27 @@ Object.assign(App.prototype, {
               </div>
             </div>
             <figure class="geography-map-figure">
-              <svg id="geography-world-map" class="geography-map" viewBox="${GEOGRAPHY_MAP_WORLD_VIEW_BOX}" role="group" aria-label="Interactive world map. Select a highlighted country to see its capital and facts.">
-                <rect class="geography-map__ocean" x="${GEOGRAPHY_MAP_WORLD_BOUNDS.x}" y="${GEOGRAPHY_MAP_WORLD_BOUNDS.y}" width="${GEOGRAPHY_MAP_WORLD_BOUNDS.width}" height="${GEOGRAPHY_MAP_WORLD_BOUNDS.height}" rx="5"></rect>
-                <g class="geography-map__context" aria-hidden="true">
-                  ${GEOGRAPHY_WORLD_CONTEXT_COUNTRIES.map(country => `
-                    <path class="geography-map__context-country" data-world-country="${escapeGeographyHtml(country.name)}" d="${country.path}" fill-rule="evenodd"></path>
-                  `).join('')}
-                </g>
-                <g class="geography-map__countries">
-                  ${GEOGRAPHY_COUNTRIES.map(country => `
-                    <g class="geography-map__region" data-action="geography-country-select" data-country-id="${country.id}" role="button" tabindex="0" aria-label="${escapeGeographyHtml(country.name)}, ${escapeGeographyHtml(country.continent)}. Select to view capital and facts." aria-pressed="${country.id === selectedCountry.id}">
-                      <title>${escapeGeographyHtml(country.name)}</title>
-                      ${country.mapPaths.map(path => `<path d="${path}"></path>`).join('')}
-                      <circle class="geography-map__marker" cx="${country.mapPoint[0]}" cy="${country.mapPoint[1]}" r="1.7"></circle>
-                    </g>
-                  `).join('')}
-                </g>
-              </svg>
-              <figcaption class="geography-map-caption">The full world is shown; select one of the ${GEOGRAPHY_COUNTRIES.length} highlighted countries. Zoom in, then drag to pan. Small islands are simplified.</figcaption>
+              <div class="geography-map-viewport" id="geography-map-viewport">
+                <button type="button" data-action="geography-map-fullscreen" class="geography-map-fullscreen" aria-label="View map full screen" aria-pressed="false">⛶ Full screen</button>
+                <svg id="geography-world-map" class="geography-map" viewBox="${GEOGRAPHY_MAP_WORLD_VIEW_BOX}" role="group" aria-label="Interactive world map. Select a highlighted country to see its capital and facts.">
+                  <rect class="geography-map__ocean" x="${GEOGRAPHY_MAP_WORLD_BOUNDS.x}" y="${GEOGRAPHY_MAP_WORLD_BOUNDS.y}" width="${GEOGRAPHY_MAP_WORLD_BOUNDS.width}" height="${GEOGRAPHY_MAP_WORLD_BOUNDS.height}" rx="5"></rect>
+                  <g class="geography-map__context" aria-hidden="true">
+                    ${GEOGRAPHY_WORLD_CONTEXT_COUNTRIES.map(country => `
+                      <path class="geography-map__context-country" data-world-country="${escapeGeographyHtml(country.name)}" d="${country.path}" fill-rule="evenodd"></path>
+                    `).join('')}
+                  </g>
+                  <g class="geography-map__countries">
+                    ${GEOGRAPHY_COUNTRIES.map(country => `
+                      <g class="geography-map__region" data-action="geography-country-select" data-country-id="${country.id}" role="button" tabindex="0" aria-label="${escapeGeographyHtml(country.name)}, ${escapeGeographyHtml(country.continent)}. Select to view capital and facts." aria-pressed="${country.id === selectedCountry.id}">
+                        <title>${escapeGeographyHtml(country.name)}</title>
+                        ${country.mapPaths.map(path => `<path d="${path}"></path>`).join('')}
+                        <circle class="geography-map__marker" cx="${country.mapPoint[0]}" cy="${country.mapPoint[1]}" r="1.7"></circle>
+                      </g>
+                    `).join('')}
+                  </g>
+                </svg>
+              </div>
+              <figcaption class="geography-map-caption">The full world is shown; select one of the ${GEOGRAPHY_COUNTRIES.length} highlighted countries. Use the buttons or pinch to zoom, then drag to pan. Open the map full screen for a larger view. Small islands are simplified.</figcaption>
             </figure>
             <p class="geography-map-attribution">
               Map outlines: <a href="${escapeGeographyHtml(window.GEOGRAPHY_COUNTRY_DATA.mapSourceUrl)}" target="_blank" rel="noopener noreferrer">Natural Earth (public domain)</a>.
@@ -269,16 +285,24 @@ Object.assign(App.prototype, {
     `;
 
     main.onkeydown = event => {
+      const mapViewport = document.getElementById('geography-map-viewport');
+      if (event.key === 'Escape' && mapViewport?.classList.contains('is-fullscreen-fallback')) {
+        event.preventDefault();
+        void this.toggleGeographyMapFullscreen();
+        return;
+      }
       const target = event.target.closest?.('.geography-map__region');
       if (!target || !['Enter', ' '].includes(event.key)) return;
       event.preventDefault();
       this.selectGeographyCountry(target.dataset.countryId);
     };
     const map = document.getElementById('geography-world-map');
-    map.onpointerdown = event => this.startGeographyMapPan(event);
-    map.onpointermove = event => this.moveGeographyMapPan(event);
-    map.onpointerup = event => this.endGeographyMapPan(event);
-    map.onpointercancel = event => this.endGeographyMapPan(event);
+    map.onpointerdown = event => this.startGeographyMapGesture(event);
+    map.onpointermove = event => this.moveGeographyMapGesture(event);
+    map.onpointerup = event => this.endGeographyMapGesture(event);
+    map.onpointercancel = event => this.endGeographyMapGesture(event);
+    map.onlostpointercapture = event => this.endGeographyMapGesture(event);
+    document.addEventListener('fullscreenchange', this.updateGeographyMapFullscreenButton);
     map.addEventListener('click', event => {
       if (!this.geographyMapSuppressClick) return;
       this.geographyMapSuppressClick = false;
@@ -337,6 +361,35 @@ Object.assign(App.prototype, {
     if (zoomIn) zoomIn.disabled = zoomIndex === GEOGRAPHY_MAP_ZOOM_LEVELS.length - 1;
   },
 
+  updateGeographyMapFullscreenButton() {
+    const button = document.querySelector('[data-action="geography-map-fullscreen"]');
+    const viewport = document.getElementById('geography-map-viewport');
+    if (!button || !viewport) return;
+    const active = document.fullscreenElement === viewport || viewport.classList.contains('is-fullscreen-fallback');
+    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-label', active ? 'Exit full screen map' : 'View map full screen');
+    button.textContent = active ? '× Exit full screen' : '⛶ Full screen';
+  },
+
+  async toggleGeographyMapFullscreen() {
+    const viewport = document.getElementById('geography-map-viewport');
+    if (!viewport) return;
+    const active = document.fullscreenElement === viewport || viewport.classList.contains('is-fullscreen-fallback');
+    if (active) {
+      if (document.fullscreenElement === viewport && document.exitFullscreen) await document.exitFullscreen();
+      viewport.classList.remove('is-fullscreen-fallback');
+    } else if (viewport.requestFullscreen) {
+      try {
+        await viewport.requestFullscreen();
+      } catch {
+        viewport.classList.add('is-fullscreen-fallback');
+      }
+    } else {
+      viewport.classList.add('is-fullscreen-fallback');
+    }
+    this.updateGeographyMapFullscreenButton();
+  },
+
   zoomGeographyMap(delta) {
     if (![-1, 1].includes(delta)) throw new RangeError(`Invalid geography map zoom delta: ${delta}`);
     const currentIndex = Number.isInteger(this.geographyMapZoomIndex)
@@ -356,6 +409,141 @@ Object.assign(App.prototype, {
     const country = geographyCountryById(this.geographySelectedCountryId)
       || GEOGRAPHY_COUNTRIES[0];
     this.updateGeographyMapView(country);
+  },
+
+  startGeographyMapGesture(event) {
+    if (event.button !== 0 || event.isPrimary === false) {
+      if (event.pointerType !== 'touch') return;
+    }
+    const map = document.getElementById('geography-world-map');
+    if (!map) return;
+    if (!this.geographyMapPointers) this.geographyMapPointers = new Map();
+    this.geographyMapPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (event.pointerType === 'touch' && map.setPointerCapture && event.isTrusted) {
+      try { map.setPointerCapture(event.pointerId); } catch { /* capture may be unavailable in older mobile browsers */ }
+    }
+    const { x, y, width, height } = map.viewBox.baseVal;
+    if (this.geographyMapPointers.size >= 2) {
+      const [first, second] = [...this.geographyMapPointers.values()];
+      const inverseScreenMatrix = map.getScreenCTM()?.inverse();
+      const firstMapPoint = geographyMapPointFromClient(map, first.x, first.y, inverseScreenMatrix);
+      const secondMapPoint = geographyMapPointFromClient(map, second.x, second.y, inverseScreenMatrix);
+      this.geographyMapGesture = {
+        type: 'pinch',
+        startDistance: Math.max(1, Math.hypot(second.x - first.x, second.y - first.y)),
+        startViewBox: { x, y, width, height },
+        inverseScreenMatrix,
+        startMidpoint: { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 },
+        startMidpointMap: { x: (firstMapPoint.x + secondMapPoint.x) / 2, y: (firstMapPoint.y + secondMapPoint.y) / 2 }
+      };
+      map.classList.add('is-panning');
+      return;
+    }
+    if (this.geographyMapZoomIndex === 0) return;
+    this.geographyMapSuppressClick = false;
+    this.geographyMapGesture = {
+      type: 'pan',
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      inverseScreenMatrix: map.getScreenCTM()?.inverse(),
+      startMapPoint: geographyMapPointFromClient(map, event.clientX, event.clientY),
+      startViewBox: { x, y, width, height },
+      moved: false
+    };
+  },
+
+  moveGeographyMapGesture(event) {
+    const points = this.geographyMapPointers;
+    if (points?.has(event.pointerId)) points.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const gesture = this.geographyMapGesture;
+    const map = document.getElementById('geography-world-map');
+    if (!gesture || !map) return;
+    if (gesture.type === 'pinch' && points?.size >= 2) {
+      const [first, second] = [...points.values()];
+      const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+      const midpointX = (first.x + second.x) / 2;
+      const midpointY = (first.y + second.y) / 2;
+      const worldScale = GEOGRAPHY_MAP_WORLD_BOUNDS.width / gesture.startViewBox.width;
+      const scale = Math.max(1, Math.min(8, worldScale * distance / gesture.startDistance));
+      const width = GEOGRAPHY_MAP_WORLD_BOUNDS.width / scale;
+      const height = width * gesture.startViewBox.height / gesture.startViewBox.width;
+      const midpointMap = geographyMapPointFromClient(map, midpointX, midpointY, gesture.inverseScreenMatrix);
+      const normalizedX = (midpointMap.x - gesture.startViewBox.x) / gesture.startViewBox.width;
+      const normalizedY = (midpointMap.y - gesture.startViewBox.y) / gesture.startViewBox.height;
+      this.setGeographyMapViewBox(
+        gesture.startMidpointMap.x - normalizedX * width,
+        gesture.startMidpointMap.y - normalizedY * height,
+        width,
+        height
+      );
+      this.geographyMapZoomIndex = geographyMapZoomIndexForScale(scale);
+      map.classList.toggle('is-draggable', scale > 1.05);
+      this.updateGeographyMapZoomStatus();
+      event.preventDefault();
+      return;
+    }
+    if (gesture.type !== 'pan' || gesture.pointerId !== event.pointerId) return;
+    const currentMapPoint = geographyMapPointFromClient(map, event.clientX, event.clientY, gesture.inverseScreenMatrix);
+    const deltaX = currentMapPoint.x - gesture.startMapPoint.x;
+    const deltaY = currentMapPoint.y - gesture.startMapPoint.y;
+    if (!gesture.moved && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) < 4) return;
+    gesture.moved = true;
+    map.classList.add('is-panning');
+    event.preventDefault();
+    this.setGeographyMapViewBox(
+      gesture.startViewBox.x - deltaX,
+      gesture.startViewBox.y - deltaY,
+      gesture.startViewBox.width,
+      gesture.startViewBox.height
+    );
+  },
+
+  endGeographyMapGesture(event) {
+    this.geographyMapPointers?.delete(event.pointerId);
+    const map = document.getElementById('geography-world-map');
+    const gesture = this.geographyMapGesture;
+    if (gesture?.type === 'pinch') {
+      if ((this.geographyMapPointers?.size || 0) >= 2) {
+        const [first, second] = [...this.geographyMapPointers.values()];
+        const { x, y, width, height } = map.viewBox.baseVal;
+        this.geographyMapGesture = {
+          type: 'pinch', startDistance: Math.max(1, Math.hypot(second.x - first.x, second.y - first.y)),
+          startViewBox: { x, y, width, height },
+          inverseScreenMatrix: map?.getScreenCTM()?.inverse(),
+          startMidpoint: { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 },
+          startMidpointMap: (() => {
+            const inverse = map?.getScreenCTM()?.inverse();
+            const firstPoint = geographyMapPointFromClient(map, first.x, first.y, inverse);
+            const secondPoint = geographyMapPointFromClient(map, second.x, second.y, inverse);
+            return { x: (firstPoint.x + secondPoint.x) / 2, y: (firstPoint.y + secondPoint.y) / 2 };
+          })()
+        };
+      } else {
+        this.geographyMapGesture = null;
+        map?.classList.remove('is-panning');
+        this.geographyMapSuppressClick = true;
+      }
+      return;
+    }
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+    this.geographyMapGesture = null;
+    if (gesture.moved) {
+      this.geographyMapSuppressClick = true;
+      map?.classList.remove('is-panning');
+    }
+  },
+
+  updateGeographyMapZoomStatus() {
+    const map = document.getElementById('geography-world-map');
+    const status = document.getElementById('geography-map-zoom-status');
+    const country = geographyCountryById(this.geographySelectedCountryId) || GEOGRAPHY_COUNTRIES[0];
+    const scale = map ? GEOGRAPHY_MAP_WORLD_BOUNDS.width / map.viewBox.baseVal.width : 1;
+    if (status) status.textContent = scale < 1.05 ? 'World view' : `${scale.toFixed(1)}× · ${country.name}`;
+    const zoomOut = document.querySelector('[data-action="geography-map-zoom"][data-delta="-1"]');
+    const zoomIn = document.querySelector('[data-action="geography-map-zoom"][data-delta="1"]');
+    if (zoomOut) zoomOut.disabled = scale <= 1.05;
+    if (zoomIn) zoomIn.disabled = scale >= 7.9;
   },
 
   setGeographyMapViewBox(x, y, width, height) {
