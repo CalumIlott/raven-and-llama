@@ -583,6 +583,16 @@ a:focus-visible,
   }
 }
 
+html.dyslexia-friendly body,
+html.dyslexia-friendly body :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, label, button, input, select, textarea, a, output, span) {
+  font-family: Arial, Verdana, sans-serif !important;
+  letter-spacing: 0.025em;
+}
+
+html.dyslexia-friendly body :is(p, li, blockquote) {
+  line-height: 1.7;
+}
+
 /* Belt Gradient Glows */
 .belt-white-glow { box-shadow: 0 0 25px rgba(248, 250, 252, 0.25); border-color: #e2e8f0; }
 .belt-yellow-glow { box-shadow: 0 0 25px rgba(250, 204, 21, 0.35); border-color: #facc15; }

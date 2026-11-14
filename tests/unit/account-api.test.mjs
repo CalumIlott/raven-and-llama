@@ -133,6 +133,7 @@ test('progress reset requires the authenticated session and preserves only accou
     subjectYears: { maths: 4, science: 2 },
     soundEnabled: false,
     speechRate: 1.2,
+    dyslexiaFriendly: true,
     ownedCosmetics: ['sunrise-frame'],
     equippedCosmetic: 'sunrise-frame',
     stars: 45,
@@ -164,6 +165,7 @@ test('progress reset requires the authenticated session and preserves only accou
   assert.deepEqual(resetProfile.subjectYears, { maths: 4, science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
   assert.equal(resetProfile.speechRate, 1.2);
+  assert.equal(resetProfile.dyslexiaFriendly, true);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   assert.equal(resetProfile.equippedCosmetic, 'sunrise-frame');
   const firstRead = await request(store, '/api/progress', 'GET', undefined, firstCookie);
@@ -593,7 +595,7 @@ test('leaderboards expose only the top ten usernames and scoped scores', async (
   assert.equal((await request(store, '/api/leaderboards')).status, 400);
 });
 
-test('theme and last-module preferences persist independently on each account', async () => {
+test('learning preferences persist independently on each account', async () => {
   const store = new MemoryAccountStore();
   const first = await request(store, '/api/auth/register', 'POST', { username: 'theme_one', password: 'a secure password 123' });
   const second = await request(store, '/api/auth/register', 'POST', { username: 'theme_two', password: 'another secure pass 123' });
@@ -608,7 +610,8 @@ test('theme and last-module preferences persist independently on each account', 
       lastModule: 'timetables',
       schoolYear: 5,
       subjectYears: { maths: 3, science: 2 },
-      speechRate: 1.2
+      speechRate: 1.2,
+      dyslexiaFriendly: true
     }
   }, firstCookie);
   const updatedProfile = (await update.json()).profile;
@@ -617,6 +620,7 @@ test('theme and last-module preferences persist independently on each account', 
   assert.equal(updatedProfile.schoolYear, 5);
   assert.deepEqual(updatedProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(updatedProfile.speechRate, 1.2);
+  assert.equal(updatedProfile.dyslexiaFriendly, true);
 
   const firstSession = await request(store, '/api/auth/session', 'GET', undefined, firstCookie);
   const secondSession = await request(store, '/api/auth/session', 'GET', undefined, secondCookie);
@@ -627,6 +631,7 @@ test('theme and last-module preferences persist independently on each account', 
   assert.equal(firstRestoredProfile.schoolYear, 5);
   assert.deepEqual(firstRestoredProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(firstRestoredProfile.speechRate, 1.2);
+  assert.equal(firstRestoredProfile.dyslexiaFriendly, true);
   assert.equal(secondRestoredProfile.theme, 'light');
   assert.equal(secondRestoredProfile.lastModule, null);
   assert.equal(secondRestoredProfile.schoolYear, 3);
@@ -639,7 +644,8 @@ test('theme and last-module preferences persist independently on each account', 
       lastModule: '/private/path',
       schoolYear: 99,
       subjectYears: { maths: '2', unknown: 6 },
-      speechRate: 2
+      speechRate: 2,
+      dyslexiaFriendly: 'yes'
     }
   }, firstCookie);
   const invalidPreferenceProfile = (await invalidTheme.json()).profile;
@@ -648,6 +654,7 @@ test('theme and last-module preferences persist independently on each account', 
   assert.equal(invalidPreferenceProfile.schoolYear, 5);
   assert.deepEqual(invalidPreferenceProfile.subjectYears, {});
   assert.equal(invalidPreferenceProfile.speechRate, 1.2);
+  assert.equal(invalidPreferenceProfile.dyslexiaFriendly, true);
 });
 
 test('login uses a generic credential error and logout revokes the session', async () => {

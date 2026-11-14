@@ -38,6 +38,7 @@ test('guest progress is available in memory but never saved locally or remotely'
   assert.equal(guest.theme, 'light');
   assert.equal(guest.soundEnabled, true);
   assert.equal(guest.speechRate, 1);
+  assert.equal(guest.dyslexiaFriendly, false);
   assert.equal(guest.schoolYear, 3);
   assert.deepEqual(Array.from(guest.spellingLists), []);
   assert.equal(guest.activeSpellingListId, null);
@@ -172,7 +173,8 @@ test('profile normalization validates subject-specific years and inherits the gl
       schoolYear: 4,
       subjectYears: { maths: 3, science: 0, unknown: 2, english: '5' },
       soundEnabled: false,
-      speechRate: 1.2
+      speechRate: 1.2,
+      dyslexiaFriendly: true
     }
   }));
   await accounts.initialize();
@@ -181,6 +183,7 @@ test('profile normalization validates subject-specific years and inherits the gl
   assert.equal(profile.schoolYear, 4);
   assert.equal(profile.soundEnabled, false);
   assert.equal(profile.speechRate, 1.2);
+  assert.equal(profile.dyslexiaFriendly, true);
   assert.deepEqual({ ...profile.subjectYears }, { maths: 3, science: 0 });
   assert.equal(accounts.getSubjectYear('maths'), 3);
   assert.equal(accounts.getSubjectYear('science'), 0);
