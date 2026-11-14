@@ -76,7 +76,7 @@ test('world map shows full country context and keeps Pacific islands inside its 
   await page.goto('/learning-centre/geography');
 
   const contextCountries = page.locator('.geography-map__context-country');
-  await expect(contextCountries).toHaveCount(177);
+  await expect(contextCountries).toHaveCount(189);
   for (const name of [
     'Brazil',
     'Canada',
@@ -87,7 +87,9 @@ test('world map shows full country context and keeps Pacific islands inside its 
     'Papua New Guinea',
     'Solomon Islands',
     'Fiji',
-    'New Zealand'
+    'New Zealand',
+    'Mauritius', 'Seychelles', 'Comoros', 'Maldives', 'Kiribati', 'Tuvalu', 'Nauru',
+    'Tonga', 'Samoa', 'Marshall Islands', 'Micronesia', 'Palau'
   ]) {
     await expect(page.locator(`.geography-map__context-country[data-world-country="${name}"]`)).toHaveCount(1);
   }
@@ -270,4 +272,47 @@ test('country facts can be spoken with a clear fallback when speech is unavailab
 
   await page.getByRole('button', { name: 'Listen to Canada facts', exact: true }).click();
   await expect(page.locator('#geography-speech-status')).toHaveText('Audio hints are not available in this browser.');
+});
+
+test('Mauritius marker hit target selects the island country and zoom reaches 16x on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+
+  const mauritius = page.locator('.geography-map__region[data-country-id="mauritius"]');
+  await expect(mauritius).toBeVisible();
+  const hit = mauritius.locator('.geography-map__hit-target');
+  await expect(hit).toBeVisible();
+  await hit.scrollIntoViewIfNeeded();
+  const hitPoint = await hit.evaluate(element => {
+    const matrix = element.ownerSVGElement.getScreenCTM();
+    const point = new DOMPoint(Number(element.getAttribute('cx')), Number(element.getAttribute('cy'))).matrixTransform(matrix);
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(hitPoint.x, hitPoint.y);
+  await expect(page.getByRole('heading', { name: 'Mauritius', exact: true })).toBeVisible();
+  await expect(page.locator('.geography-country-details')).toContainText('Capital: Port Louis');
+  await expect(page.locator('.geography-country-details__flag')).toHaveAttribute('src', '/images/flags/mu.svg');
+
+  for (let index = 0; index < 8; index += 1) await page.getByRole('button', { name: 'Zoom in' }).click();
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('16×');
+  await expect(page.getByRole('button', { name: 'Zoom in' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Reset map view' }).click();
+  await page.locator('#geography-world-map').evaluate(element => {
+    const pointer = (type, pointerId, clientX, clientY, isPrimary) => new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId, pointerType: 'touch', isPrimary,
+      button: 0, clientX, clientY
+    });
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    element.dispatchEvent(pointer('pointerdown', 5, centerX - 25, centerY, true));
+    element.dispatchEvent(pointer('pointerdown', 6, centerX + 25, centerY, false));
+    element.dispatchEvent(pointer('pointermove', 6, centerX + 800, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 6, centerX + 800, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 5, centerX - 25, centerY, true));
+  });
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('16.0×');
 });

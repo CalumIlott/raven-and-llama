@@ -61,7 +61,7 @@ public/
 │   │   └── virtual-lab.js         # Scientific state change & mixture simulations
 │   ├── geography/
 │   │   ├── country-data.js        # Interactive country dataset (flags, capitals, facts)
-│   │   ├── world-map-context.js   # 177-country background SVG vector paths
+│   │   ├── world-map-context.js   # 189-country background SVG vector paths, including schematic markers for tiny islands
 │   │   ├── world-map.js           # Interactive SVG world map component (pan/zoom)
 │   │   └── country-activities.js  # Flag Detective & Capital Cities activities
 │   ├── history/

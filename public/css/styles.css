@@ -4156,6 +4156,19 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
   stroke-width: 1.1;
 }
 
+#app-main[data-page="geography-world"] .geography-map__hit-target {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 20px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+}
+
+@media (pointer: coarse) {
+  #app-main[data-page="geography-world"] .geography-map__hit-target {
+    stroke-width: 26px;
+  }
+}
 #app-main[data-page="geography-world"] .geography-map__marker {
   fill: #176f65;
   stroke: #fff;

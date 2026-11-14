@@ -33,6 +33,7 @@ flowchart TD
 * **Follow-up note — implemented**: Expanded the shared country pool from 110 to 165 sovereign countries, reusing map paths for 55 additional eligible countries. Audited all 177 outlines; dependent territories, Antarctica, and disputed or special-status features remain in the map context but outside the quiz pool, as documented in `docs/SUBJECTS_AND_ACTIVITIES.md`.
 * **Map-page facts follow-up — implemented**: Each country now has at least five sourced facts, combining the existing country highlight with capital, continent, official languages, currency, area, coastline status, and land-border details where available. A different fact is selected when the learner changes away from and returns to a country. Reference data is bundled locally with ODbL attribution and licensing; no live API is required.
 * **Map flag display follow-up — implemented**: Show self-hosted SVG flags in the selected-country panel and country list, and in Flag Detective and Capital Cities. This avoids the platform-dependent Unicode flag fallback that can display country initials in desktop Chrome. The map caption now uses the actual number of highlighted countries instead of a stale hard-coded count.
+* **Small-island map follow-up — implemented**: Added twelve small island countries, including Mauritius, using enlarged schematic markers where Natural Earth 1:110m does not preserve visible geometry. Markers are explicitly not to scale and have large screen-constant selection targets. Map controls and pinch zoom now reach 16×.
 
 ### 1.3 Expand Life Skills "Plan a Party"
 * **Status: Complete**: The activity has four budgeted scenarios: Birthday Party ($100), Camping Trip ($150), School Science Fair ($75), and Pizza Movie Night ($50).
@@ -212,3 +213,5 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
   - *Maths Relay*: Two students in a classroom work together to solve parts of a puzzle concurrently.
   - *Ecosystem Co-op*: One student manages plant nutrition while the other balances herbivores in a shared simulation.
   - Architecture: Lightweight Cloudflare Workers WebSocket connections backed by ephemeral Durable Objects.
+
+* **Small-island map follow-up — implemented**: Added twelve small island countries, including Mauritius, using enlarged schematic markers where Natural Earth 1:110m does not preserve visible geometry. Markers are explicitly not to scale and have large screen-constant selection targets. Map controls and pinch zoom now reach 16×.
