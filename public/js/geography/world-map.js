@@ -104,6 +104,7 @@ function geographyCountryPath(country) {
 }
 
 function renderGeographyCountryDetails(country) {
+  const fact = country.selectedFact || country.fact;
   return `
     <article class="geography-country-details" aria-labelledby="geography-country-name">
       <div class="geography-country-details__heading">
@@ -114,9 +115,9 @@ function renderGeographyCountryDetails(country) {
         </div>
       </div>
       <p class="geography-country-details__capital"><strong>Capital:</strong> ${escapeGeographyHtml(country.capital)}</p>
-      <p class="geography-country-details__fact">${escapeGeographyHtml(country.fact)}</p>
+      <p class="geography-country-details__fact" aria-live="polite">${escapeGeographyHtml(fact.text || fact)}</p>
       <p class="geography-country-details__source">
-        Source: <a href="${escapeGeographyHtml(country.factSourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeGeographyHtml(country.factSource)}</a>
+        Source: <a href="${escapeGeographyHtml(fact.sourceUrl || country.factSourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeGeographyHtml(fact.source || country.factSource)}</a>
       </p>
       <button type="button" data-action="geography-country-speak" class="geography-speak-button">
         Listen to ${escapeGeographyHtml(country.name)} facts
@@ -290,6 +291,7 @@ Object.assign(App.prototype, {
   renderGeographyCountrySelection(country) {
     const details = document.getElementById('geography-country-details');
     if (!details) throw new Error('Geography country details panel was not rendered');
+    country.selectedFact = chooseGeographyCountryFact(country);
     details.innerHTML = renderGeographyCountryDetails(country);
     const picker = document.getElementById('geography-country-picker');
     if (picker) picker.value = country.id;
@@ -442,16 +444,27 @@ Object.assign(App.prototype, {
     if (!country) throw new Error('No geography country is selected');
     const status = document.getElementById('geography-speech-status');
     return window.EducationalFeedback.speak(
-      `${country.name}. The capital city is ${country.capital}. ${country.fact}`,
+      `${country.name}. The capital city is ${country.capital}. ${(country.selectedFact || country.fact).text || country.fact}`,
       status
     );
   }
 });
 
+function chooseGeographyCountryFact(country) {
+  const facts = Array.isArray(country.facts) && country.facts.length
+    ? country.facts
+    : [{ text: country.fact, source: country.factSource, sourceUrl: country.factSourceUrl }];
+  const previous = country.selectedFact;
+  const alternatives = facts.filter(fact => fact.text !== previous?.text);
+  const pool = alternatives.length ? alternatives : facts;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 window.GeographyWorld = Object.freeze({
   continents: GEOGRAPHY_CONTINENTS,
   countries: GEOGRAPHY_COUNTRIES,
   countryById: geographyCountryById,
+  chooseCountryFact: chooseGeographyCountryFact,
   flagCodeForCountry: geographyFlagCode,
   flagImagePathForCountry: geographyFlagImagePath,
   countryPath: geographyCountryPath,
