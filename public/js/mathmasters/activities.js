@@ -274,7 +274,7 @@ Object.assign(ArcadeEngine.prototype, {
     } else if (question.type === 'array_grid') {
       visual = VisualRenderers.renderArrayGrid(question.rows, question.cols, '🟠');
     } else if (question.type === 'fraction_visual') {
-      visual = VisualRenderers.renderFractionVisual(question.numerator, question.denominator);
+      visual = VisualRenderers.renderFractionVisual(question.numerator, question.denominator, question.visualModel);
     }
     let controls;
     if (question.type === 'order_drag') {

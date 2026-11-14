@@ -128,26 +128,47 @@ class VisualRenderers {
   }
 
   // 5. Fraction Visualizer (Bar)
-  static renderFractionVisual(numerator, denominator) {
-    let segments = '';
-    for (let i = 0; i < denominator; i++) {
-      const isShaded = i < numerator;
-      segments += `
-        <div class="flex-1 h-14 border-r-2 last:border-r-0 border-slate-900 transition-all ${isShaded ? 'bg-gradient-to-r from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold' : 'bg-slate-700'}">
-          ${isShaded ? '✓' : ''}
-        </div>
-      `;
-    }
+  static renderFractionVisual(numerator, denominator, model = 'fraction_bar') {
+    const safeDenominator = Math.max(1, Math.min(12, Math.floor(Number(denominator) || 1)));
+    const safeNumerator = Math.max(0, Math.min(safeDenominator * 4, Math.floor(Number(numerator) || 0)));
+    const visualModel = ['fraction_bar', 'fraction_circles', 'fraction_grid'].includes(model)
+      ? model
+      : 'fraction_bar';
+    const wholeUnits = Math.floor(safeNumerator / safeDenominator);
+    const remainder = safeNumerator % safeDenominator;
+    const unitParts = [
+      ...Array(wholeUnits).fill(safeDenominator),
+      ...(remainder ? [remainder] : [])
+    ];
+    const modelLabel = visualModel === 'fraction_bar'
+      ? 'Fraction bars'
+      : visualModel === 'fraction_circles'
+        ? 'Fraction circles'
+        : 'Fraction grids';
+    const units = unitParts.map((shadedParts, unitIndex) => {
+      const partLabel = `Unit ${unitIndex + 1}: ${shadedParts} of ${safeDenominator} parts shaded`;
+      if (visualModel === 'fraction_circles') {
+        const percent = shadedParts / safeDenominator * 100;
+        return `<div class="flex flex-col items-center gap-2"><div role="img" aria-label="${partLabel}" class="h-24 w-24 rounded-full border-2 border-slate-900 shadow-inner" style="background: conic-gradient(#34d399 0 ${percent}%, #334155 ${percent}% 100%)"></div><span class="text-xs text-slate-300">${partLabel}</span></div>`;
+      }
+
+      const parts = Array.from({ length: safeDenominator }, (_, partIndex) => {
+        const isShaded = partIndex < shadedParts;
+        const className = visualModel === 'fraction_bar'
+          ? `flex-1 h-12 border-r border-slate-900 last:border-r-0 ${isShaded ? 'bg-emerald-400' : 'bg-slate-700'}`
+          : `aspect-square rounded-sm border border-slate-900 ${isShaded ? 'bg-emerald-400' : 'bg-slate-700'}`;
+        return `<div class="${className}" aria-hidden="true"></div>`;
+      }).join('');
+      const shapeClass = visualModel === 'fraction_bar'
+        ? 'flex w-full overflow-hidden rounded-lg border-2 border-slate-600'
+        : 'grid w-36 grid-cols-4 gap-1';
+      return `<div class="flex flex-col items-center gap-2"><div role="img" aria-label="${partLabel}" class="${shapeClass}">${parts}</div><span class="text-xs text-slate-300">${partLabel}</span></div>`;
+    }).join('');
 
     return `
       <div class="max-w-md mx-auto p-6 bg-slate-800 rounded-2xl border-2 border-slate-700 shadow-xl">
-        <div class="text-sm font-semibold text-slate-300 mb-3 text-center">Fraction Bar (${denominator} Equal Parts)</div>
-        <div class="w-full flex rounded-xl overflow-hidden border-2 border-slate-600 shadow-inner">
-          ${segments}
-        </div>
-        <div class="text-center text-xs text-emerald-400 mt-3 font-medium">
-          ${numerator} of ${denominator} parts shaded
-        </div>
+        <div class="text-sm font-semibold text-slate-300 mb-3 text-center">${modelLabel} · ${safeDenominator} equal parts per whole</div>
+        <div class="flex flex-wrap justify-center gap-4" aria-label="Shaded fraction model">${units}</div>
       </div>
     `;
   }

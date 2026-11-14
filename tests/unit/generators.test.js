@@ -20,7 +20,6 @@ const BOUNDED_VARIANT_COUNTS = {
   yellow_writing_20: { count: 42, reason: 'the twenty-one numerals matched with words in both directions' },
   yellow_tens_mate: { count: 18, reason: 'the nine number bonds to ten in two question forms' },
   green_halving: { count: 20, reason: 'the ten even numbers through twenty in two question forms' },
-  brown_fraction: { count: 18, reason: 'all proper fractions with the taught denominators 2, 3, 4, 6, and 8' }
 };
 
 function seedRandom(context, seed) {
@@ -162,6 +161,54 @@ test('every skill targets 100 unique questions unless its taught facts are finit
       }
     }
   }
+});
+
+test('Brown Belt fractions cover 100+ distinct proper, improper, and mixed visual problems', () => {
+  const { context, generator } = loadGenerator();
+  seedRandom(context, 482021);
+  const variants = new Set();
+  const modes = new Set();
+  const models = new Set();
+  const denominators = new Set();
+
+  for (let attempt = 0; attempt < 5000 && variants.size < 100; attempt++) {
+    const question = generator.getQuestionForSkill('brown_fraction');
+    assert.equal(generator.isValidQuestion(question), true);
+    assert.ok(['proper', 'improper', 'mixed'].includes(question.fractionMode));
+    assert.ok(['fraction_bar', 'fraction_circles', 'fraction_grid'].includes(question.visualModel));
+    assert.ok(question.denominator >= 2 && question.denominator <= 12);
+    assert.ok(question.numerator > 0);
+    if (question.fractionMode === 'proper') assert.ok(question.numerator < question.denominator);
+    if (question.fractionMode !== 'proper') assert.ok(question.numerator > question.denominator);
+    if (question.fractionMode === 'mixed') assert.match(question.answer, /^\d+ \d+\/\d+$/);
+    else assert.equal(question.answer, `${question.numerator}/${question.denominator}`);
+    assert.equal(new Set(question.options).size, 4);
+    assert.ok(question.options.includes(question.answer));
+    variants.add(questionSignature(question));
+    modes.add(question.fractionMode);
+    models.add(question.visualModel);
+    denominators.add(question.denominator);
+  }
+
+  assert.ok(variants.size >= 100);
+  assert.deepEqual([...modes].sort(), ['improper', 'mixed', 'proper']);
+  assert.deepEqual([...models].sort(), ['fraction_bar', 'fraction_circles', 'fraction_grid']);
+  assert.deepEqual([...denominators].sort((a, b) => a - b), [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+});
+
+test('fraction renderer shows multiple complete units and partial shading in all models', () => {
+  const context = loadBrowserScripts(createBrowserContext(), 'public/js/shared/renderers.js');
+  const bar = context.VisualRenderers.renderFractionVisual(7, 4, 'fraction_bar');
+  const circles = context.VisualRenderers.renderFractionVisual(7, 4, 'fraction_circles');
+  const grid = context.VisualRenderers.renderFractionVisual(7, 4, 'fraction_grid');
+
+  for (const html of [bar, circles, grid]) {
+    assert.match(html, /Unit 1: 4 of 4 parts shaded/);
+    assert.match(html, /Unit 2: 3 of 4 parts shaded/);
+    assert.match(html, /2 equal parts per whole|4 equal parts per whole/);
+  }
+  assert.match(circles, /conic-gradient/);
+  assert.match(grid, /grid-cols-4/);
 });
 
 test('belt question ranges and formats cover the online resource skill descriptions', () => {
