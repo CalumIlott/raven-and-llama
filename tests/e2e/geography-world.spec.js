@@ -55,7 +55,14 @@ test('country map and list selection share facts and support keyboard activation
   await expect(australiaFlag).toHaveAttribute('src', '/images/flags/au.svg');
   await expect.poll(() => australiaFlag.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.geography-country-details')).toContainText('Capital: Canberra');
-  await expect(page.locator('.geography-country-details')).toContainText('Great Barrier Reef');
+  await expect(page.locator('.geography-country-details__fact')).not.toBeEmpty();
+  await expect(page.locator('.geography-country-details__source a')).toHaveAttribute('href', /^https:\/\//);
+  const australiaFact = await page.locator('.geography-country-details__fact').textContent();
+  await page.getByRole('button', { name: 'France', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'France', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Australia', exact: true }).click();
+  await expect.poll(() => page.locator('.geography-country-details__fact').textContent())
+    .not.toBe(australiaFact);
   await expect(page.locator('.geography-map__region[data-country-id="australia"]')).toHaveAttribute('aria-pressed', 'true');
 });
 

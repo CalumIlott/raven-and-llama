@@ -12,6 +12,7 @@ function createGeographyContext() {
     context,
     'public/js/geography/world-map-context.js',
     'public/js/geography/country-data.js',
+    'public/js/geography/country-facts-data.js',
     'public/js/geography/world-map.js'
   );
   return context;
@@ -34,7 +35,19 @@ test('geography dataset has sourced, selectable countries across inhabited conti
     Array.from(country.flag).length === 2 &&
     country.mapPaths.length > 0
   ));
+  assert.ok(countries.every(country => Array.isArray(country.facts) && country.facts.length >= 5));
   assert.ok(context.GeographyWorld.countryById('brazil').capital.includes(String.fromCharCode(237)));
+});
+
+test('country fact selection changes on repeat visits and keeps each fact source', () => {
+  const context = createGeographyContext();
+  const canada = context.GeographyWorld.countryById('canada');
+  const first = context.GeographyWorld.chooseCountryFact(canada);
+  canada.selectedFact = first;
+  const second = context.GeographyWorld.chooseCountryFact(canada);
+
+  assert.notEqual(second.text, first.text);
+  assert.ok(second.source && second.sourceUrl.startsWith('https://'));
 });
 
 test('every geography flag resolves to a self-hosted SVG asset', () => {
