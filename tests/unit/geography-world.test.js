@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
 
@@ -33,6 +35,18 @@ test('geography dataset has sourced, selectable countries across inhabited conti
     country.mapPaths.length > 0
   ));
   assert.ok(context.GeographyWorld.countryById('brazil').capital.includes(String.fromCharCode(237)));
+});
+
+test('every geography flag resolves to a self-hosted SVG asset', () => {
+  const context = createGeographyContext();
+  for (const country of context.GeographyWorld.countries) {
+    const code = context.GeographyWorld.flagCodeForCountry(country);
+    assert.match(code, /^[A-Z]{2}$/);
+    assert.equal(context.GeographyWorld.flagImagePathForCountry(country), `/images/flags/${code.toLowerCase()}.svg`);
+    const filePath = path.resolve(__dirname, '../../public', 'images', 'flags', `${code.toLowerCase()}.svg`);
+    assert.equal(fs.existsSync(filePath), true, `Missing SVG flag for ${country.name} (${code})`);
+    assert.match(fs.readFileSync(filePath, 'utf8'), /<svg\b/);
+  }
 });
 
 test('geography country identifiers and map geometry remain unique and valid', () => {
@@ -86,6 +100,10 @@ test('geography data validation rejects duplicate identifiers and incomplete rec
   assert.equal(context.GeographyWorld.isValidCountryData({
     ...validData,
     countries: [{ ...firstCountry, factSourceUrl: 'http://example.test' }]
+  }), false);
+  assert.equal(context.GeographyWorld.isValidCountryData({
+    ...validData,
+    countries: [{ ...firstCountry, flag: 'CA' }]
   }), false);
   assert.equal(context.GeographyWorld.isValidCountryData({
     ...validData,

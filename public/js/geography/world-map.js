@@ -15,6 +15,20 @@ const GEOGRAPHY_MAP_WORLD_BOUNDS = Object.freeze({
   height: 188
 });
 
+function geographyFlagCode(country) {
+  const indicators = Array.from(country?.flag || '', character => character.codePointAt(0));
+  if (indicators.length !== 2 || indicators.some(codePoint =>
+    codePoint < 0x1f1e6 || codePoint > 0x1f1ff
+  )) return null;
+  return indicators.map(codePoint => String.fromCharCode(codePoint - 0x1f1e6 + 65)).join('');
+}
+
+function geographyFlagImagePath(country) {
+  const code = geographyFlagCode(country);
+  if (!code) throw new TypeError(`Country has no supported regional flag code: ${country?.id || 'unknown'}`);
+  return `/images/flags/${code.toLowerCase()}.svg`;
+}
+
 function isValidGeographyCountryData(data) {
   if (!data || !Array.isArray(data.countries) || data.countries.length === 0 ||
     typeof data.mapSource !== 'string' || !data.mapSource.trim() ||
@@ -28,6 +42,7 @@ function isValidGeographyCountryData(data) {
       ids.has(country.id) ||
       !['name', 'continent', 'flag', 'capital', 'fact', 'factSource', 'factSourceUrl']
         .every(key => typeof country[key] === 'string' && country[key].trim()) ||
+      !geographyFlagCode(country) ||
       !country.factSourceUrl.startsWith('https://') ||
       !GEOGRAPHY_CONTINENTS.includes(country.continent) ||
       !Array.isArray(country.mapPoint) || country.mapPoint.length !== 2 ||
@@ -92,7 +107,7 @@ function renderGeographyCountryDetails(country) {
   return `
     <article class="geography-country-details" aria-labelledby="geography-country-name">
       <div class="geography-country-details__heading">
-        <span class="country-flag-emoji geography-country-details__flag" aria-hidden="true">${escapeGeographyHtml(country.flag)}</span>
+        <img class="country-flag-image geography-country-details__flag" src="${geographyFlagImagePath(country)}" alt="Flag of ${escapeGeographyHtml(country.name)}" width="56" height="56" decoding="async">
         <div>
           <p class="geography-country-details__continent">${escapeGeographyHtml(country.continent)}</p>
           <h2 id="geography-country-name">${escapeGeographyHtml(country.name)}</h2>
@@ -211,7 +226,7 @@ Object.assign(App.prototype, {
                   `).join('')}
                 </g>
               </svg>
-              <figcaption class="geography-map-caption">The full world is shown; select one of the 18 highlighted countries. Zoom in, then drag to pan. Small islands are simplified.</figcaption>
+              <figcaption class="geography-map-caption">The full world is shown; select one of the ${GEOGRAPHY_COUNTRIES.length} highlighted countries. Zoom in, then drag to pan. Small islands are simplified.</figcaption>
             </figure>
             <p class="geography-map-attribution">
               Map outlines: <a href="${escapeGeographyHtml(window.GEOGRAPHY_COUNTRY_DATA.mapSourceUrl)}" target="_blank" rel="noopener noreferrer">Natural Earth (public domain)</a>.
@@ -237,7 +252,7 @@ Object.assign(App.prototype, {
                       <div class="geography-country-options">
                         ${countries.map(country => `
                           <button type="button" class="geography-country-option" data-action="geography-country-select" data-country-id="${country.id}" aria-pressed="${country.id === selectedCountry.id}">
-                            <span class="country-flag-emoji geography-country-option__flag" aria-hidden="true">${escapeGeographyHtml(country.flag)}</span>
+                            <img class="country-flag-image geography-country-option__flag" src="${geographyFlagImagePath(country)}" alt="" width="28" height="19" loading="lazy" decoding="async">
                             <span>${escapeGeographyHtml(country.name)}</span>
                           </button>
                         `).join('')}
@@ -437,6 +452,8 @@ window.GeographyWorld = Object.freeze({
   continents: GEOGRAPHY_CONTINENTS,
   countries: GEOGRAPHY_COUNTRIES,
   countryById: geographyCountryById,
+  flagCodeForCountry: geographyFlagCode,
+  flagImagePathForCountry: geographyFlagImagePath,
   countryPath: geographyCountryPath,
   isValidCountryData: isValidGeographyCountryData,
   isValidWorldContext: isValidGeographyWorldContext,

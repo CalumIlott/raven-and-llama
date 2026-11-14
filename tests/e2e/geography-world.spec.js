@@ -15,6 +15,7 @@ test('Geography & The World route survives refresh and is linked from the subjec
   const countryCount = await page.evaluate(() => window.GEOGRAPHY_COUNTRY_DATA.countries.length);
   await expect(page.locator('.geography-map__region')).toHaveCount(countryCount);
   await expect(page.locator('.geography-country-option')).toHaveCount(countryCount);
+  await expect(page.locator('.geography-map-caption')).toContainText(`${countryCount} highlighted countries`);
   expect(await page.evaluate(() =>
     document.documentElement.scrollWidth <= document.documentElement.clientWidth
   )).toBe(true);
@@ -41,15 +42,18 @@ test('country map and list selection share facts and support keyboard activation
   await franceMapRegion.focus();
   await franceMapRegion.press('Enter');
   await expect(page.getByRole('heading', { name: 'France', exact: true })).toBeVisible();
-  await expect(page.locator('.geography-country-details__flag')).toHaveText('🇫🇷');
-  expect(await page.locator('.geography-country-details__flag').evaluate(
-    element => getComputedStyle(element).fontFamily
-  )).toContain('Segoe UI Emoji');
+  const franceFlag = page.locator('.geography-country-details__flag');
+  await expect(franceFlag).toHaveAttribute('src', '/images/flags/fr.svg');
+  await expect(franceFlag).toHaveAttribute('alt', 'Flag of France');
+  await expect.poll(() => franceFlag.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.geography-country-details')).toContainText('Capital: Paris');
   await expect(franceMapRegion).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('button', { name: 'Australia', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Australia', exact: true })).toBeVisible();
+  const australiaFlag = page.locator('.geography-country-details__flag');
+  await expect(australiaFlag).toHaveAttribute('src', '/images/flags/au.svg');
+  await expect.poll(() => australiaFlag.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.geography-country-details')).toContainText('Capital: Canberra');
   await expect(page.locator('.geography-country-details')).toContainText('Great Barrier Reef');
   await expect(page.locator('.geography-map__region[data-country-id="australia"]')).toHaveAttribute('aria-pressed', 'true');
