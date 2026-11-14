@@ -245,6 +245,7 @@ class App {
       case 'geography-country-select': this.selectGeographyCountry(target.dataset.countryId); break;
       case 'geography-map-zoom': this.zoomGeographyMap(Number(target.dataset.delta)); break;
       case 'geography-map-reset': this.resetGeographyMapZoom(); break;
+      case 'geography-map-fullscreen': void this.toggleGeographyMapFullscreen(); break;
       case 'geography-country-speak': this.speakGeographyCountry(); break;
       case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
       case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;

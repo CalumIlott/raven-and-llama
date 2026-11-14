@@ -155,7 +155,7 @@ test('zoomed map supports mouse panning without selecting a country', async ({ p
   const startY = bounds.y + bounds.height / 2;
   await page.mouse.move(startX, startY);
   await page.mouse.down();
-  expect(await page.evaluate(() => window.app.geographyMapPan)).toBeDefined();
+  expect(await page.evaluate(() => window.app.geographyMapGesture?.type)).toBe('pan');
   await page.mouse.move(startX + 48, startY - 24, { steps: 4 });
   const duringPan = (await map.getAttribute('viewBox')).split(' ').map(Number);
   await page.mouse.up();
@@ -197,6 +197,68 @@ test('zoomed map supports touch panning', async ({ page }) => {
     return { before, after: map.getAttribute('viewBox') };
   });
   expect(viewBoxes.after).not.toBe(viewBoxes.before);
+});
+
+test('map supports two-finger pinch zoom and a full-screen mobile view', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+
+  const viewport = page.locator('#geography-map-viewport');
+  const map = page.locator('#geography-world-map');
+  const bounds = await map.boundingBox();
+  expect(bounds.height).toBeGreaterThan(250);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  const before = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  await map.evaluate(element => {
+    const pointer = (type, pointerId, x, y, isPrimary) => new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId, pointerType: 'touch', isPrimary,
+      button: 0, clientX: x, clientY: y
+    });
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    element.dispatchEvent(pointer('pointerdown', 1, centerX - 50, centerY, true));
+    element.dispatchEvent(pointer('pointerdown', 2, centerX + 50, centerY, false));
+    element.dispatchEvent(pointer('pointermove', 2, centerX + 90, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 2, centerX + 90, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 1, centerX - 50, centerY, true));
+  });
+  const after = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  expect(after[2]).toBeLessThan(before[2]);
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('×');
+
+  await map.evaluate(element => {
+    const pointer = (type, pointerId, x, y, isPrimary) => new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId, pointerType: 'touch', isPrimary,
+      button: 0, clientX: x, clientY: y
+    });
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    element.dispatchEvent(pointer('pointerdown', 3, centerX - 70, centerY, true));
+    element.dispatchEvent(pointer('pointerdown', 4, centerX + 70, centerY, false));
+    element.dispatchEvent(pointer('pointermove', 4, centerX + 35, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 4, centerX + 35, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 3, centerX - 70, centerY, true));
+  });
+  const afterPinchIn = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  expect(afterPinchIn[2]).toBeGreaterThan(after[2]);
+
+  await viewport.evaluate(element => {
+    element.requestFullscreen = undefined;
+  });
+  const fullscreenButton = page.getByRole('button', { name: 'View map full screen' });
+  await fullscreenButton.click();
+  await expect(viewport).toHaveClass(/is-fullscreen-fallback/);
+  await expect(page.getByRole('button', { name: 'Exit full screen map' })).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(viewport).not.toHaveClass(/is-fullscreen-fallback/);
+  await fullscreenButton.click();
+  await expect(viewport).toHaveClass(/is-fullscreen-fallback/);
+  await page.getByRole('button', { name: 'Exit full screen map' }).click();
+  await expect(viewport).not.toHaveClass(/is-fullscreen-fallback/);
 });
 
 test('country facts can be spoken with a clear fallback when speech is unavailable', async ({ page }) => {
