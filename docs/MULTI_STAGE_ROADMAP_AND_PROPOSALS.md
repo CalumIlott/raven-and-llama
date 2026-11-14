@@ -27,10 +27,10 @@ flowchart TD
 * **Test**: Add automated unit test verifying that every event has a valid emoji icon string of length $\ge 1$ and matching unicode emoji patterns.
 
 ### 1.2 Expand Geography Hub Dataset to 100+ Countries
-* **Problem**: `public/js/geography/country-data.js` contains only 18 countries, even though `world-map-context.js` contains SVG paths for 177 countries. Consequently, Flag Detective and Capital Cities quizzes only ever test 18 countries.
-* **Resolution**: Expand `country-data.js` to 100+ sovereign countries spanning Africa, Asia, Europe, North America, South America, and Oceania with verified flags, official capitals, continents, facts, and trusted source citations.
-* **Test**: Add unit test in `tests/unit/geography-country-activities.test.js` asserting `countries.length >= 100` and zero duplicate country/flag/capital combinations.
-* **Follow-up note**: The initial 100+ country target is now met, but the 177-feature map has additional geography records. Continue auditing it for eligible sovereign countries to add, and document any mapped dependencies or disputed entities that stay out of the country quiz pool.
+* **Problem (resolved)**: The quiz dataset started with 18 countries, even though `world-map-context.js` contains SVG paths for 177 countries. Flag Detective and Capital Cities therefore covered too few countries.
+* **Resolution — implemented**: The shared `country-data.js` pool now includes 165 sovereign countries spanning Africa, Asia, Europe, North America, South America, and Oceania, with local flags, capitals, continents, facts, and linked sources.
+* **Test**: Add unit test in `tests/unit/geography-country-activities.test.js` asserting `countries.length >= 160` and zero duplicate country/flag/capital combinations.
+* **Follow-up note — implemented**: Expanded the shared country pool from 110 to 165 sovereign countries, reusing map paths for 55 additional eligible countries. Audited all 177 outlines; dependent territories, Antarctica, and disputed or special-status features remain in the map context but outside the quiz pool, as documented in `docs/SUBJECTS_AND_ACTIVITIES.md`.
 * **Map-page facts follow-up — implemented**: Each country now has at least five sourced facts, combining the existing country highlight with capital, continent, official languages, currency, area, coastline status, and land-border details where available. A different fact is selected when the learner changes away from and returns to a country. Reference data is bundled locally with ODbL attribution and licensing; no live API is required.
 * **Map flag display follow-up — implemented**: Show self-hosted SVG flags in the selected-country panel and country list, and in Flag Detective and Capital Cities. This avoids the platform-dependent Unicode flag fallback that can display country initials in desktop Chrome. The map caption now uses the actual number of highlighted countries instead of a stale hard-coded count.
 

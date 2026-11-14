@@ -12,7 +12,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble | **423** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
-| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **110** countries | ✅ Compliant |
+| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **165** countries | ✅ Compliant |
 | **History Hub** | `/learning-centre/history` | Timeline Builder | **104** events | ⚠️ Pool size compliant; event icons repaired; no remaining `??` placeholders |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
 | **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 4 scenarios; 24-item catalog | ✅ Compliant |
@@ -82,14 +82,15 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 * **Dataset** (`public/js/geography/country-data.js` vs `world-map-context.js`):
   - `world-map-context.js`: Contains SVG vector boundary paths for **177 countries** for the interactive map.
-  - `country-data.js`: Contains **110 sovereign countries** with flags, capitals, continents, facts, and linked references. New records reuse the existing map paths instead of copying the SVG data.
+  - `country-data.js`: Contains **165 sovereign countries** with flags, capitals, continents, facts, and linked references. New records reuse the existing map paths instead of copying the SVG data. The 177 map outlines also include dependent territories and disputed or special-status features, which remain out of the quiz pool: Antarctica, Falkland Islands, French Southern and Antarctic Lands, Greenland, New Caledonia, Puerto Rico, Kosovo, Northern Cyprus, Palestine, Somaliland, Taiwan, and Western Sahara.
 * **Activities** (`public/js/geography/country-activities.js`):
   - **Flag Detective**: Randomly samples 5 countries per round and presents 4 distinct country choices per question.
   - **Capital Cities**: Randomly samples 5 countries per round and presents 4 distinct capital choices per question.
 * **Pool status**:
-  - Both activities draw from the same 110-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
-  - Follow-up: audit the remaining map features for additional sovereign countries, and document why dependent or disputed map entities are excluded from the quiz pool.
-  - Map-page facts follow-up: add about 5–10 distinct facts per country, and randomly show one whenever the selected country changes. The flag issue is browser-specific: flags work on a phone but remain broken in desktop Chrome, so investigate Chrome rendering.
+  - Both activities draw from the same 165-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
+  - Coverage audit: the pool includes all eligible sovereign countries present in the map context; the remaining 12 outlines are listed above as dependent territories, Antarctica, or disputed/special-status entities.
+  - Map-page facts follow-up: implemented in the selected-country panel, with at least five sourced options per country and a different fact on a return visit.
+  - Map flags: self-hosted SVGs are used so desktop Chrome shows flags consistently with mobile.
 
 ---
 

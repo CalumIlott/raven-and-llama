@@ -24,7 +24,20 @@ test('geography dataset has sourced, selectable countries across inhabited conti
   const countries = Array.from(context.GeographyWorld.countries);
 
   assert.equal(context.GeographyWorld.isValidCountryData(context.GEOGRAPHY_COUNTRY_DATA), true);
-  assert.ok(countries.length >= 100);
+  assert.ok(countries.length >= 160);
+  for (const id of [
+    'bahamas', 'bolivia', 'central-african-republic', 'colombia', 'costa-rica',
+    'cuba', 'cyprus', 'djibouti', 'dominican-republic', 'el-salvador',
+    'equatorial-guinea', 'eritrea', 'eswatini', 'guatemala', 'guyana', 'indonesia',
+    'israel', 'lebanon', 'lesotho', 'libya', 'montenegro', 'north-macedonia',
+    'niger', 'oman', 'panama', 'paraguay', 'portugal', 'russia', 'serbia',
+    'sierra-leone', 'slovakia', 'slovenia', 'somalia', 'south-africa', 'south-sudan',
+    'spain', 'sri-lanka', 'sudan', 'suriname', 'switzerland', 'tanzania', 'timor-leste',
+    'togo', 'trinidad-and-tobago', 'tunisia', 'turkey', 'uganda', 'ukraine',
+    'united-kingdom', 'uruguay', 'vanuatu', 'venezuela', 'yemen', 'zimbabwe'
+  ]) {
+    assert.ok(context.GeographyWorld.countryById(id), `Expected quiz coverage for ${id}`);
+  }
   assert.deepEqual(
     [...new Set(countries.map(country => country.continent))].sort(),
     [...continents].sort()
