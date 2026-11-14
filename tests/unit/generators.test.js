@@ -207,7 +207,8 @@ test('fraction renderer shows multiple complete units and partial shading in all
     assert.match(html, /Unit 2: 3 of 4 parts shaded/);
     assert.match(html, /2 equal parts per whole|4 equal parts per whole/);
   }
-  assert.match(circles, /conic-gradient/);
+  assert.match(circles, /<circle class="fraction-circle__shading"[^>]*fill="#34d399"/);
+  assert.match(circles, /<path class="fraction-circle__shading"[^>]*fill="#34d399"/);
   assert.match(grid, /grid-cols-4/);
 });
 

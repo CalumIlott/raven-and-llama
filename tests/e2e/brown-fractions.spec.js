@@ -27,6 +27,14 @@ test('Brown Belt fraction training shows a shaded mixed number and accepts its a
   await expect(page.getByText('Write the shaded amount as a mixed number.')).toBeVisible();
   await expect(page.getByRole('img', { name: 'Unit 1: 4 of 4 parts shaded' })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Unit 2: 3 of 4 parts shaded' })).toBeVisible();
+  const circleShading = page.locator('.fraction-circle__shading');
+  await expect(circleShading).toHaveCount(2);
+  await expect(circleShading.nth(0)).toHaveAttribute('fill', '#34d399');
+  await expect(circleShading.nth(1)).toHaveAttribute('d', /A 42 42 0 1 1/);
+  await expect(page.locator('.fraction-circle__base').first()).toHaveAttribute('fill', '#334155');
+  expect(await page.locator('[role="img"][aria-label^="Unit "]').evaluateAll(elements =>
+    elements.every(element => !element.hasAttribute('style'))
+  )).toBe(true);
   await page.getByRole('button', { name: '1 3/4', exact: true }).click();
   await expect(page.locator('#feedback-banner')).toContainText('Correct!');
 });

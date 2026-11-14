@@ -148,8 +148,14 @@ class VisualRenderers {
     const units = unitParts.map((shadedParts, unitIndex) => {
       const partLabel = `Unit ${unitIndex + 1}: ${shadedParts} of ${safeDenominator} parts shaded`;
       if (visualModel === 'fraction_circles') {
-        const percent = shadedParts / safeDenominator * 100;
-        return `<div class="flex flex-col items-center gap-2"><div role="img" aria-label="${partLabel}" class="h-24 w-24 rounded-full border-2 border-slate-900 shadow-inner" style="background: conic-gradient(#34d399 0 ${percent}%, #334155 ${percent}% 100%)"></div><span class="text-xs text-slate-300">${partLabel}</span></div>`;
+        const sweep = shadedParts / safeDenominator * 360;
+        const endAngle = (sweep - 90) * Math.PI / 180;
+        const endX = Number((48 + 42 * Math.cos(endAngle)).toFixed(3));
+        const endY = Number((48 + 42 * Math.sin(endAngle)).toFixed(3));
+        const shading = shadedParts === safeDenominator
+          ? '<circle class="fraction-circle__shading" cx="48" cy="48" r="42" fill="#34d399" />'
+          : `<path class="fraction-circle__shading" d="M 48 48 L 48 6 A 42 42 0 ${sweep > 180 ? 1 : 0} 1 ${endX} ${endY} Z" fill="#34d399" />`;
+        return `<div class="flex flex-col items-center gap-2"><svg class="h-24 w-24" viewBox="0 0 96 96" role="img" aria-label="${partLabel}"><circle class="fraction-circle__base" cx="48" cy="48" r="42" fill="#334155" />${shading}<circle class="fraction-circle__outline" cx="48" cy="48" r="42" fill="none" stroke="#0f172a" stroke-width="2" /></svg><span class="text-xs text-slate-300">${partLabel}</span></div>`;
       }
 
       const parts = Array.from({ length: safeDenominator }, (_, partIndex) => {
