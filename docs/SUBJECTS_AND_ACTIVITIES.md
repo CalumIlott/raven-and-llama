@@ -35,7 +35,7 @@ This document catalogues every subject hub, learning activity, question bank siz
     * `genBrownFractions` only uses denominators `[2, 3, 4, 6, 8]` yielding only 18 proper fractions. Needs expansion to fifths, tenths, twelfths, and mixed/improper numbers to reach 100+.
 * **Maths World Games**:
   - `fraction-pizza.js`: Interactive order fulfilment slicing pizzas into halves, thirds, quarters, and eighths.
-  - `money.js`: Shopkeeper practice calculating change using Australian currency (notes & coins).
+  - `money.js`: Shopkeeper practice calculating change using an interactive cash drawer with separate Australian coin and note slots, drag/tap/keyboard selection, and a live running total.
   - `telling-time.js`: Reading analogue clocks and matching digital times.
 
 ---
