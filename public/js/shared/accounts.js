@@ -54,6 +54,7 @@ class ProfileManager {
       schoolYear: 3,
       subjectYears: {},
       soundEnabled: true,
+      speechRate: 1,
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -122,6 +123,9 @@ class ProfileManager {
       schoolYear: ProfileManager.isValidSchoolYear(source.schoolYear) ? source.schoolYear : 3,
       subjectYears: ProfileManager.normalizeSubjectYears(source.subjectYears),
       soundEnabled: source.soundEnabled !== false,
+      speechRate: Number.isFinite(source.speechRate) && source.speechRate >= 0.75 && source.speechRate <= 1.25
+        ? source.speechRate
+        : 1,
       lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],

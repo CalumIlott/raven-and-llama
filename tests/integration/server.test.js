@@ -137,6 +137,7 @@ test('accounts persist securely and progress stays private to the authenticated 
     avatar: 'llama',
     theme: 'dark',
     soundEnabled: false,
+    speechRate: 1.15,
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
@@ -199,6 +200,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(firstProfile.schoolYear, 6);
   assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(firstProfile.soundEnabled, false);
+  assert.equal(firstProfile.speechRate, 1.15);
   assert.deepEqual(firstProfile.spellingLists, [
     { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }
   ]);
@@ -264,6 +266,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(resetProfile.schoolYear, 6);
   assert.deepEqual(resetProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
+  assert.equal(resetProfile.speechRate, 1.15);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
   assert.equal((await otherAfterReset.json()).profile.stars, 0);

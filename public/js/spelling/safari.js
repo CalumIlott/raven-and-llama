@@ -3856,7 +3856,7 @@ const SpellingPronunciation = (() => {
 
     const utterance = new Utterance(String(word));
     utterance.lang = 'en-AU';
-    utterance.rate = 0.82;
+    utterance.rate = 0.82 * (window.EducationalFeedback?.speechRateMultiplier?.() || 1);
     const voice = voices.find(candidate => candidate.lang?.toLowerCase() === 'en-au')
       || voices.find(candidate => candidate.lang?.toLowerCase().startsWith('en-'))
       || voices.find(candidate => candidate.lang?.toLowerCase() === 'en')

@@ -126,6 +126,7 @@ class App {
     document.addEventListener('click', event => this.handleClickAction(event));
     document.addEventListener('submit', event => this.handleSubmitAction(event));
     document.addEventListener('change', event => this.handleChangeAction(event));
+    document.addEventListener('input', event => this.handleInputAction(event));
     document.addEventListener('dragstart', event => this.handleNativeDragStart(event));
     document.addEventListener('dragover', event => this.handleNativeDragOver(event));
     document.addEventListener('dragleave', event => this.handleNativeDragLeave(event));
@@ -455,6 +456,9 @@ class App {
       this.setTheme(event.target.value, { persistGuest: event.target.id !== 'account-theme' });
     }
     if (event.target.dataset.action === 'audio-preference') void this.saveAudioPreference(event.target.checked);
+    if (event.target.dataset.action === 'speech-rate-preference') {
+      void this.saveSpeechRatePreference(Number(event.target.value) / 100);
+    }
     if (event.target.dataset.action === 'parent-analytics-range') {
       const rangeDays = Number(event.target.value);
       if ([7, 30, 90].includes(rangeDays)) {
@@ -488,6 +492,12 @@ class App {
       this.selectBrainPowerCodeColor(Number(event.target.dataset.positionIndex), event.target.value);
     }
     if (event.target.name === 'account_avatar') this.updateAvatarSaveButton();
+  }
+
+  handleInputAction(event) {
+    if (event.target.dataset.action !== 'speech-rate-preference') return;
+    const output = document.getElementById('parent-speech-rate-value');
+    if (output) output.textContent = `${event.target.value}% speed`;
   }
 
   getDialogFocusableElements(dialog) {
@@ -996,6 +1006,24 @@ class App {
         : 'Sound preference applies for this guest visit only.';
     const checkbox = document.getElementById('parent-sound-enabled');
     if (checkbox) checkbox.checked = ProfileManager.getActiveProfile().soundEnabled;
+  }
+
+  async saveSpeechRatePreference(speechRate) {
+    if (!Number.isFinite(speechRate) || speechRate < 0.75 || speechRate > 1.25) return false;
+    const profile = { ...ProfileManager.getActiveProfile(), speechRate };
+    const saved = await ProfileManager.updateProfile(profile);
+    const activeRate = ProfileManager.getActiveProfile().speechRate;
+    const slider = document.getElementById('parent-speech-rate');
+    if (slider) slider.value = String(Math.round(activeRate * 100));
+    const output = document.getElementById('parent-speech-rate-value');
+    if (output) output.textContent = `${Math.round(activeRate * 100)}% speed`;
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved
+      ? 'Spoken audio speed saved to this account.'
+      : ProfileManager.isAuthenticated()
+        ? ProfileManager.lastSaveError || 'Unable to save spoken audio speed.'
+        : 'Spoken audio speed applies for this guest visit only.';
+    return saved;
   }
 
   selectParentDashboardTab(tab) {
@@ -1640,6 +1668,11 @@ class App {
     if (themeSelect) themeSelect.value = profile.theme;
     const soundToggle = document.getElementById('parent-sound-enabled');
     if (soundToggle) soundToggle.checked = profile.soundEnabled;
+    const speechRate = Math.round(profile.speechRate * 100);
+    const speechRateSlider = document.getElementById('parent-speech-rate');
+    if (speechRateSlider) speechRateSlider.value = String(speechRate);
+    const speechRateOutput = document.getElementById('parent-speech-rate-value');
+    if (speechRateOutput) speechRateOutput.textContent = `${speechRate}% speed`;
     const settingsStatus = document.getElementById('parent-settings-status');
     if (settingsStatus) settingsStatus.textContent = '';
     document.getElementById('progress-reset-confirmation')?.classList.add('hidden');
