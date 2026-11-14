@@ -225,7 +225,8 @@ html.theme-light .money-change-emphasis { color: #92400e; }
 }
 .money-register-drawer__heading { justify-content: space-between; background: linear-gradient(90deg, #78350f, #92400e); color: #fff7ed; }
 .money-register-drawer__handle { width: 2.6rem; height: 0.3rem; border-radius: 999px; background: #fbbf24; box-shadow: inset 0 1px 2px rgb(120 53 15 / 45%); }
-.money-register-drawer__help { margin: 0; padding: 0.65rem 0.85rem 0; color: #fff; font-size: 0.8rem; }
+#app-main[data-page] .money-register-drawer__help { margin: 0; padding: 0.65rem 0.85rem 0; color: #fff; font-size: 0.8rem; }
+#app-main[data-page] .money-register-drawer__heading h3 { color: #fff7ed; }
 .money-register-drawer__groups { display: grid; gap: 0.7rem; padding: 0.8rem; }
 .money-drawer-group { min-width: 0; margin: 0; padding: 0.65rem; border: 1px solid #94a3b8; border-radius: 0.8rem; background: rgb(15 23 42 / 35%); }
 .money-drawer-group legend { padding: 0 0.4rem; color: #fef3c7; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
@@ -284,12 +285,13 @@ html.theme-light .money-register-receipt__amount { border-color: #cbd5e1; color:
 html.theme-light .money-register-receipt__amount strong { color: #92400e; }
 html.theme-light .money-register-receipt__payment strong { color: #166534; }
 html.theme-light .money-register-drawer { border-color: #b45309; background: linear-gradient(145deg, #fde68a, #fef3c7); }
-html.theme-light .money-register-drawer__help { color: #334155; }
+html.theme-light #app-main[data-page] .money-register-drawer__help { color: #334155; }
 html.theme-light .money-drawer-group { border-color: #d97706; background: rgb(255 255 255 / 70%); }
 html.theme-light .money-drawer-group legend { color: #78350f; }
 html.theme-light .money-register-slot { border-color: #b45309; background: #fff; color: #0f172a; }
 html.theme-light .money-register-slot__kind { color: #475569; }
 html.theme-light .money-change-tray { background: #fff; color: #0f172a; }
+html.theme-light #app-main[data-page] .money-change-tray__heading output { color: #92400e; }
 html.theme-light .money-change-tray__hint { color: #475569; }
 html.theme-light .money-change-tray__items li { background: #f1f5f9; }
 html.theme-light .money-change-tray__actions button { border-color: #94a3b8; background: #e2e8f0; color: #0f172a; }
