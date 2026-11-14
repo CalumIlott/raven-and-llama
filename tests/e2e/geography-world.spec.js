@@ -64,6 +64,11 @@ test('country map and list selection share facts and support keyboard activation
   await expect.poll(() => page.locator('.geography-country-details__fact').textContent())
     .not.toBe(australiaFact);
   await expect(page.locator('.geography-map__region[data-country-id="australia"]')).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByRole('button', { name: 'United Kingdom', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'United Kingdom', exact: true })).toBeVisible();
+  await expect(page.locator('.geography-country-details__flag')).toHaveAttribute('src', '/images/flags/gb.svg');
+  await expect(page.locator('.geography-country-details')).toContainText('Capital: London');
 });
 
 test('world map shows full country context and keeps Pacific islands inside its border', async ({ page }) => {

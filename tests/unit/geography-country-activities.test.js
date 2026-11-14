@@ -46,11 +46,11 @@ test('flag and capital rounds use unique countries and unambiguous answer choice
   }
 });
 
-test('country dataset covers 100+ distinct countries, capitals, flags, and all continents', () => {
+test('country dataset covers at least 160 distinct countries, capitals, flags, and all continents', () => {
   const context = createGeographyActivityContext();
   const countries = Array.from(context.GeographyWorld.countries);
 
-  assert.ok(countries.length >= 100);
+  assert.ok(countries.length >= 160);
   for (const field of ['id', 'name', 'flag', 'capital']) {
     assert.equal(new Set(countries.map(country => country[field].toLocaleLowerCase())).size, countries.length);
   }
