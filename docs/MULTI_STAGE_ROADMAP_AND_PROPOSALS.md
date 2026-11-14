@@ -71,6 +71,7 @@ flowchart TD
 * **Audio & Sensory Preferences**:
   - Global speech synthesis speed slider ($0.75\times$ to $1.25\times$).
   - Sound effects toggle and Dyslexia-friendly typography toggle.
+* **Dyslexia-friendly typography — implemented**: Add a profile-synced toggle for a sans serif typeface with increased letter spacing and line height; guest selection stays in memory.
 * **Guest Safety**: In guest mode, display a clear advisory that settings and progress remain memory-only.
 * **Audio preference control — implemented**: Add a parent-managed spoken-audio speed slider from 0.75× to 1.25× and apply it to hints and spelling pronunciations; keep guest changes in memory.
 

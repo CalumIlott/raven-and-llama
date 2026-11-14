@@ -405,11 +405,16 @@
               <output id="parent-speech-rate-value" for="parent-speech-rate" class="min-w-20 text-right text-sm font-bold text-cyan-100">100% speed</output>
             </div>
             <p id="parent-speech-rate-help" class="mt-1 text-xs text-slate-400">Adjusts spoken hints and spelling pronunciations from 75% to 125%. This preference follows the learner’s account.</p>
+            <label class="mt-5 flex items-center gap-3 text-sm font-semibold text-white" for="parent-dyslexia-friendly">
+              <input id="parent-dyslexia-friendly" type="checkbox" data-action="dyslexia-friendly-preference" aria-describedby="parent-dyslexia-friendly-help" class="h-5 w-5 accent-cyan-500">
+              Dyslexia-friendly typography
+            </label>
+            <p id="parent-dyslexia-friendly-help" class="mt-1 text-xs text-slate-400">Use a clear sans serif typeface with more letter spacing and line height. This preference follows the learner’s account.</p>
           </div>
           <p id="parent-settings-status" class="min-h-5 text-sm text-cyan-200" role="status" aria-live="polite"></p>
           <div id="parent-reset-section" class="rounded-2xl border border-rose-800 bg-rose-950/30 p-4">
             <h4 class="font-bold text-rose-100">Reset learner progress</h4>
-            <p class="mt-1 text-sm text-rose-200">Clears this account’s learning progress, scores, stars, badges, spelling lists, and activity history. Keeps the account, theme, avatar, owned avatar frames, school-year choices, sound preference, and spoken-audio speed. This does not delete the account.</p>
+            <p class="mt-1 text-sm text-rose-200">Clears this account’s learning progress, scores, stars, badges, spelling lists, and activity history. Keeps the account, theme, avatar, owned avatar frames, school-year choices, sound and reading preferences, and spoken-audio speed. This does not delete the account.</p>
             <button type="button" data-action="progress-reset-open" class="mt-3 rounded-xl border border-rose-700 px-4 py-2 text-sm font-bold text-rose-100 hover:bg-rose-900/60">Review progress reset</button>
             <form id="progress-reset-confirmation" data-submit-action="progress-reset" class="hidden mt-4 grid max-w-lg gap-3 rounded-xl border border-rose-800 bg-slate-950 p-4">
               <p class="text-sm text-white">To confirm, type <strong>RESET PROGRESS</strong>. Your account will remain active.</p>

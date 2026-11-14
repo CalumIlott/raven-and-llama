@@ -456,6 +456,9 @@ class App {
       this.setTheme(event.target.value, { persistGuest: event.target.id !== 'account-theme' });
     }
     if (event.target.dataset.action === 'audio-preference') void this.saveAudioPreference(event.target.checked);
+    if (event.target.dataset.action === 'dyslexia-friendly-preference') {
+      void this.saveDyslexiaFriendlyPreference(event.target.checked);
+    }
     if (event.target.dataset.action === 'speech-rate-preference') {
       void this.saveSpeechRatePreference(Number(event.target.value) / 100);
     }
@@ -1023,6 +1026,21 @@ class App {
       : ProfileManager.isAuthenticated()
         ? ProfileManager.lastSaveError || 'Unable to save spoken audio speed.'
         : 'Spoken audio speed applies for this guest visit only.';
+    return saved;
+  }
+
+  async saveDyslexiaFriendlyPreference(enabled) {
+    const profile = { ...ProfileManager.getActiveProfile(), dyslexiaFriendly: enabled === true };
+    const saved = await ProfileManager.updateProfile(profile);
+    const activePreference = ProfileManager.getActiveProfile().dyslexiaFriendly;
+    const checkbox = document.getElementById('parent-dyslexia-friendly');
+    if (checkbox) checkbox.checked = activePreference;
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved
+      ? 'Reading preference saved to this account.'
+      : ProfileManager.isAuthenticated()
+        ? ProfileManager.lastSaveError || 'Unable to save the reading preference.'
+        : 'Reading preference applies for this guest visit only.';
     return saved;
   }
 
@@ -1673,6 +1691,8 @@ class App {
     if (speechRateSlider) speechRateSlider.value = String(speechRate);
     const speechRateOutput = document.getElementById('parent-speech-rate-value');
     if (speechRateOutput) speechRateOutput.textContent = `${speechRate}% speed`;
+    const dyslexiaFriendlyToggle = document.getElementById('parent-dyslexia-friendly');
+    if (dyslexiaFriendlyToggle) dyslexiaFriendlyToggle.checked = profile.dyslexiaFriendly === true;
     const settingsStatus = document.getElementById('parent-settings-status');
     if (settingsStatus) settingsStatus.textContent = '';
     document.getElementById('progress-reset-confirmation')?.classList.add('hidden');

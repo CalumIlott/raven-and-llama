@@ -138,6 +138,7 @@ test('accounts persist securely and progress stays private to the authenticated 
     theme: 'dark',
     soundEnabled: false,
     speechRate: 1.15,
+    dyslexiaFriendly: true,
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
     spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }],
@@ -201,6 +202,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.deepEqual(firstProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(firstProfile.soundEnabled, false);
   assert.equal(firstProfile.speechRate, 1.15);
+  assert.equal(firstProfile.dyslexiaFriendly, true);
   assert.deepEqual(firstProfile.spellingLists, [
     { id: 'week-one', name: 'Week One', words: ['quokka', 'mother-in-law'] }
   ]);
@@ -267,6 +269,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.deepEqual(resetProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
   assert.equal(resetProfile.speechRate, 1.15);
+  assert.equal(resetProfile.dyslexiaFriendly, true);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
   assert.equal((await otherAfterReset.json()).profile.stars, 0);
