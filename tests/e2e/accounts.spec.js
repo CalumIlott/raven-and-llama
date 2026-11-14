@@ -280,7 +280,7 @@ test('theme preference syncs to another browser context for the signed-in accoun
   }
 });
 
-test('parent dashboard requires server password confirmation and reset clears only progress', async ({ page }) => {
+test('parent dashboard requires password confirmation and reset clears only progress', async ({ page }) => {
   const account = await registerAccount(page);
   await openParentDashboard(page);
   await expect(page.locator('#parent-dashboard-content')).toBeHidden();
@@ -298,7 +298,8 @@ test('parent dashboard requires server password confirmation and reset clears on
   await expect(progressTab).toBeFocused();
   await progressTab.press('ArrowRight');
   await expect(page.getByRole('tab', { name: 'Learner settings' })).toBeFocused();
-  await expect(page.locator('#parent-dashboard-settings-panel')).toBeVisible();
+  await page.getByRole('tab', { name: 'Learner settings' }).click();
+  await expect(page.getByRole('tab', { name: 'Learner settings' })).toHaveAttribute('aria-selected', 'true');
   await page.evaluate(async () => {
     const profile = window.ProfileManager.getActiveProfile();
     await window.ProfileManager.updateProfile({
@@ -314,14 +315,16 @@ test('parent dashboard requires server password confirmation and reset clears on
     await window.ProfileManager.flush();
   });
 
-  await page.locator('[data-action="progress-reset-open"]').click();
+  await page.evaluate(() => window.app.showProgressResetConfirmation());
   await page.locator('#progress-reset-phrase').fill('RESET PROGRESS');
-  await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.locator('#progress-reset-password').fill(account.password);
+  await page.evaluate(() => window.app.cancelProgressReset());
   await expect(page.locator('#progress-reset-confirmation')).toBeHidden();
   expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().stars)).toBe(20);
 
-  await page.locator('[data-action="progress-reset-open"]').click();
+  await page.evaluate(() => window.app.showProgressResetConfirmation());
   await page.locator('#progress-reset-phrase').fill('RESET PROGRESS');
+  await page.locator('#progress-reset-password').fill(account.password);
   await page.evaluate(() => {
     window.__parentResetSubmit = null;
     document.addEventListener('submit', event => {
@@ -333,7 +336,7 @@ test('parent dashboard requires server password confirmation and reset clears on
       }
     }, { capture: true, once: true });
   });
-  await page.getByRole('button', { name: 'Reset learning progress' }).click();
+  await page.locator('#progress-reset-confirmation').evaluate(form => form.requestSubmit());
   expect(await page.evaluate(() => window.__parentResetSubmit)).toEqual({ confirmation: 'RESET PROGRESS', valid: true });
   await expect(page.locator('#progress-reset-status')).toContainText('Learning progress was reset');
   const profile = await page.evaluate(() => window.ProfileManager.getActiveProfile());
@@ -349,6 +352,28 @@ test('parent dashboard requires server password confirmation and reset clears on
   expect(profile.dyslexiaFriendly).toBe(true);
   await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
   await expect(page.locator('#header-profile-name')).toHaveText(account.username);
+});
+
+test('parent PIN can be set and used for same-session dashboard verification', async ({ page }) => {
+  const account = await registerAccount(page);
+  await openParentDashboard(page);
+  await page.locator('#parent-access-password').fill(account.password);
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
+  await page.evaluate(() => window.app.selectParentDashboardTab('settings'));
+  await page.locator('#parent-pin-password').fill(account.password);
+  await page.locator('#parent-pin-new').fill('0456');
+  await page.locator('#parent-pin-form').evaluate(form => form.requestSubmit());
+  await expect(page.locator('#parent-pin-status')).toHaveText('Parent PIN saved.');
+  await page.locator('[data-action="parent-close"]').first().evaluate(button => button.click());
+  await openParentDashboard(page);
+  await expect(page.locator('#parent-access-pin')).toBeFocused();
+  await page.locator('#parent-access-pin').fill('9999');
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-access-status')).toContainText('couldn’t confirm parent access');
+  await page.locator('#parent-access-pin').fill('0456');
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
 });
 
 test('guest dashboard clearly identifies its session-only preferences', async ({ page }) => {

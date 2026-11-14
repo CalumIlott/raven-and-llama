@@ -264,6 +264,16 @@ class ProfileManager {
     ProfileManager.setGuest();
   }
 
+  static async verifyParent(credential) {
+    return ProfileManager.requestApi('/api/auth/parent-verify', 'POST', credential);
+  }
+
+  static async updateParentPin(password, pin) {
+    const result = await ProfileManager.requestApi('/api/auth/parent-pin', 'POST', { password, pin });
+    if (ProfileManager.account) ProfileManager.account.parentPinEnabled = result.parentPinEnabled;
+    return result;
+  }
+
   static async refreshSession() {
     if (!ProfileManager.account) return false;
     await ProfileManager.flush();

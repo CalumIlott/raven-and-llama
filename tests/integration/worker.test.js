@@ -254,6 +254,18 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.deepEqual(otherProfile.dailyChallenges, { days: {} });
   assert.deepEqual(otherProfile.questProgress, {});
 
+  const setParentPin = await fetch(`${baseUrl}/api/auth/parent-pin`, {
+    method: 'POST',
+    headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: 'a secure worker password 123', pin: '0456' })
+  });
+  assert.equal(setParentPin.status, 200);
+  const parentVerify = await fetch(`${baseUrl}/api/auth/parent-verify`, {
+    method: 'POST',
+    headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin: '0456' })
+  });
+  assert.equal(parentVerify.status, 200);
   const resetResponse = await fetch(`${baseUrl}/api/progress/reset`, {
     method: 'POST',
     headers: { Origin: baseUrl, Cookie: cookie, 'Content-Type': 'application/json' },

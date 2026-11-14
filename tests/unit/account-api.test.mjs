@@ -46,6 +46,20 @@ class MemoryAccountStore {
     user.passwordHash = passwordHash;
   }
 
+  async updateParentPin(userId, parentPinHash) {
+    const user = await this.findUserById(userId);
+    user.parentPinHash = parentPinHash;
+  }
+
+  async markParentVerified(tokenHash, validUntil) {
+    const session = this.sessions.find(item => item.tokenHash === tokenHash);
+    if (session) session.parentVerifiedUntil = validUntil;
+  }
+
+  async isParentVerified(tokenHash, now) {
+    return Boolean(this.sessions.find(item => item.tokenHash === tokenHash && item.parentVerifiedUntil > now));
+  }
+
   async deleteAccount(userId) {
     this.users = this.users.filter(user => user.id !== userId);
     this.progress.delete(userId);
@@ -67,7 +81,7 @@ class MemoryAccountStore {
   }
 }
 
-async function request(store, path, method = 'GET', body, cookie, origin = 'https://dojo.example') {
+async function request(store, path, method = 'GET', body, cookie, origin = 'https://dojo.example', options = {}) {
   const headers = { Origin: origin };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (cookie) headers.Cookie = cookie;
@@ -75,7 +89,7 @@ async function request(store, path, method = 'GET', body, cookie, origin = 'http
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body)
-  }), store);
+  }), store, options);
 }
 
 function sessionCookie(response) {
@@ -150,6 +164,8 @@ test('progress reset requires the authenticated session and preserves only accou
   const missingConfirmation = await request(store, '/api/progress/reset', 'POST', { confirmation: 'reset progress' }, firstCookie);
   assert.equal(missingConfirmation.status, 400);
 
+  await request(store, '/api/auth/parent-verify', 'POST', { password: 'a secure password 123' }, firstCookie);
+
   const reset = await request(store, '/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' }, firstCookie);
   assert.equal(reset.status, 200);
   const resetProfile = (await reset.json()).profile;
@@ -173,6 +189,49 @@ test('progress reset requires the authenticated session and preserves only accou
   assert.equal((await firstRead.json()).profile.stars, 0);
   assert.equal((await secondRead.json()).profile.stars, 9);
   assert.equal((await request(store, '/api/auth/session', 'GET', undefined, firstCookie)).status, 200);
+});
+
+test('parent PIN is validated, salted, hidden from responses, and required for parent verification', async () => {
+  const store = new MemoryAccountStore();
+  const created = await request(store, '/api/auth/register', 'POST', { username: 'pin_owner', password: 'a secure password 123' });
+  const cookie = sessionCookie(created);
+  const userId = (await created.json()).user.id;
+  const invalid = await request(store, '/api/auth/parent-pin', 'POST', { password: 'a secure password 123', pin: '12ab' }, cookie);
+  assert.equal(invalid.status, 400);
+  const configured = await request(store, '/api/auth/parent-pin', 'POST', { password: 'a secure password 123', pin: '0456' }, cookie);
+  assert.equal(configured.status, 200);
+  const storedHash = store.users[0].parentPinHash;
+  assert.match(storedHash, /^pbkdf2-sha256\$100000\$/);
+  assert.notEqual(storedHash, '0456');
+  assert.equal((await configured.text()).includes(storedHash), false);
+  assert.equal(JSON.stringify(await (await request(store, '/api/auth/session', 'GET', undefined, cookie)).json()).includes(storedHash), false);
+  const badPin = await request(store, '/api/auth/parent-verify', 'POST', { pin: '9999' }, cookie);
+  assert.equal(badPin.status, 401);
+  assert.equal(await store.isParentVerified(store.sessions[0].tokenHash, Date.now()), false);
+  const goodPin = await request(store, '/api/auth/parent-verify', 'POST', { pin: '0456' }, cookie);
+  assert.equal(goodPin.status, 200);
+  assert.equal(await store.isParentVerified(store.sessions[0].tokenHash, Date.now()), true);
+  assert.equal(await store.isParentVerified(store.sessions[0].tokenHash, Date.now() + 6 * 60 * 1000), false);
+  assert.equal((await request(store, '/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' }, cookie)).status, 200);
+  assert.equal(store.users.find(user => user.id === userId).parentPinHash, storedHash);
+  const disabled = await request(store, '/api/auth/parent-pin', 'POST', { password: 'a secure password 123', pin: null }, cookie);
+  assert.deepEqual(await disabled.json(), { parentPinEnabled: false });
+  assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { pin: '0456' }, cookie)).status, 401);
+  assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { password: 'a secure password 123' }, cookie)).status, 200);
+});
+
+test('parent verification rate limits at five attempts per minute', async () => {
+  const store = new MemoryAccountStore();
+  const created = await request(store, '/api/auth/register', 'POST', { username: 'pin_limit', password: 'a secure password 123' });
+  const cookie = sessionCookie(created);
+  let attempts = 0;
+  const rateLimit = async ({ action }) => action !== 'parent-verify' || ++attempts <= 5;
+  const limited = await request(store, '/api/auth/parent-verify', 'POST', { password: 'wrong password 123' }, cookie, 'https://dojo.example', { rateLimit });
+  assert.equal(limited.status, 401);
+  for (let index = 0; index < 4; index++) {
+    assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { password: 'wrong password 123' }, cookie, 'https://dojo.example', { rateLimit })).status, 401);
+  }
+  assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { password: 'wrong password 123' }, cookie, 'https://dojo.example', { rateLimit })).status, 429);
 });
 
 test('rejects oversized streamed bodies without a content length', async () => {

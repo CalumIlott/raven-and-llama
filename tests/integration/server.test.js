@@ -255,6 +255,17 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal((await postJson('/api/progress/reset', { confirmation: 'RESET PROGRESS' })).status, 401);
   const resetUnconfirmed = await postJson('/api/progress/reset', { confirmation: 'reset progress' }, first.cookie);
   assert.equal(resetUnconfirmed.status, 400);
+  const invalidPin = await postJson('/api/auth/parent-pin', { password: 'a secure password 123', pin: '1x34' }, first.cookie);
+  assert.equal(invalidPin.status, 400);
+  const setPin = await postJson('/api/auth/parent-pin', { password: 'a secure password 123', pin: '0456' }, first.cookie);
+  assert.equal(setPin.status, 200);
+  assert.equal(JSON.stringify(await setPin.json()).includes('0456'), false);
+  const storedUser = (await fetch(`${baseUrl}/api/auth/session`, { headers: { Cookie: first.cookie } })).json();
+  assert.equal((await storedUser).user.parentPinEnabled, true);
+  const badParentPin = await postJson('/api/auth/parent-verify', { pin: '9999' }, first.cookie);
+  assert.equal(badParentPin.status, 401);
+  const validParentPin = await postJson('/api/auth/parent-verify', { pin: '0456' }, first.cookie);
+  assert.equal(validParentPin.status, 200);
   const resetResponse = await postJson('/api/progress/reset', { confirmation: 'RESET PROGRESS' }, first.cookie);
   assert.equal(resetResponse.status, 200);
   const resetProfile = (await resetResponse.json()).profile;
@@ -270,6 +281,15 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.equal(resetProfile.soundEnabled, false);
   assert.equal(resetProfile.speechRate, 1.15);
   assert.equal(resetProfile.dyslexiaFriendly, true);
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const parentAttempt = await postJson('/api/auth/parent-verify', { pin: '9999' }, first.cookie);
+    assert.equal(parentAttempt.status, 401);
+  }
+  const blockedParentAttempt = await postJson('/api/auth/parent-verify', { pin: '9999' }, first.cookie);
+  assert.equal(blockedParentAttempt.status, 429);
+  const otherAccountParentVerify = await postJson('/api/auth/parent-verify', { password: 'a secure password 123' }, second.cookie);
+  assert.equal(otherAccountParentVerify.status, 200);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: second.cookie } });
   assert.equal((await otherAfterReset.json()).profile.stars, 0);

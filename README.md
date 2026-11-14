@@ -99,12 +99,16 @@ Responses set baseline framing, MIME-sniffing, referrer, and permissions policie
 | POST | `/api/auth/register` | Create an account and sign in |
 | POST | `/api/auth/login` | Sign in with username and password |
 | GET | `/api/auth/session` | Return the current account and its progress |
+| POST | `/api/auth/parent-verify` | Verify the signed-in parent using the account password, or configured PIN, and mark only the current session verified for five minutes |
+| POST | `/api/auth/parent-pin` | Set, change, or disable the signed-in account's optional parent PIN after confirming the account password |
 | POST | `/api/auth/logout` | Revoke the current session |
 | POST | `/api/auth/password` | Change the signed-in account password |
 | DELETE | `/api/auth/account` | Delete the signed-in account and progress |
 | POST | `/api/cosmetics/purchase` | Purchase one available catalog cosmetic using the signed-in learner's star balance |
 | GET/PUT | `/api/progress` | Read or update only the signed-in account's progress |
-| POST | `/api/progress/reset` | Clear the signed-in learner's progress after the exact `RESET PROGRESS` confirmation |
+| POST | `/api/progress/reset` | Clear the signed-in learner's progress after the exact `RESET PROGRESS` confirmation and a recent parent verification |
+
+Parent PINs are optional 4–6 digit values. The server stores only a PBKDF2-SHA-256 hash with a randomly generated per-PIN salt; hashes are never returned by the API. Verification is limited to five attempts per minute per account, with a separate 60-per-minute source-IP spray guard so shared networks do not quickly lock out unrelated accounts. The Cloudflare rate limiter is approximate and local to each Cloudflare location. Parent verification expires after five minutes and is bound to the authenticated session record; clients cannot submit or extend that marker.
 
 `PUT /api/progress` validates and normalizes the profile's `activityProgress` records, including activity IDs, optional curriculum `skillId` mappings, score units, best results, play counts, and quiz `correctAnswers`/`totalAnswers`. It also validates `dailyChallenges` UTC day keys, selected activity IDs, unique completion IDs, and the one-time bonus state, plus `questProgress` against known quest and step IDs in order while preventing completed-step regressions. The API derives `earnedBadges` from validated progress, preserves prior valid awards, and ignores client-supplied badge IDs. Cosmetic purchases use the server catalog's fixed price, deduct from the authenticated learner's stored star balance, and grant each item once; profile updates cannot add cosmetic ownership, and equipping requires existing ownership. The local server and Worker use the same account-profile contract; records are only returned or updated through the authenticated account session.
 
