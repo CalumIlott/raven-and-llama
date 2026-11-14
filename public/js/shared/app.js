@@ -295,6 +295,7 @@ class App {
       case 'parent-close': this.closeParentModal(); break;
       case 'parent-tab': this.selectParentDashboardTab(target.dataset.tab); break;
       case 'progress-reset-open': this.showProgressResetConfirmation(); break;
+      case 'parent-pin-disable': void this.submitParentPinDisable(); break;
       case 'progress-reset-cancel': this.cancelProgressReset(); break;
       case 'belt-detail': this.showBeltDetails(target.dataset.beltId); break;
       case 'skill-start': this.startSkillGame(target.dataset.beltId, target.dataset.skillId); break;
@@ -425,6 +426,7 @@ class App {
       case 'account-password': this.changePasswordSubmit(event); break;
       case 'account-delete': this.deleteAccount(event); break;
       case 'parent-access': void this.submitParentAccess(event); break;
+      case 'parent-pin': void this.submitParentPin(event); break;
       case 'progress-reset': void this.resetLearningProgress(event); break;
       case 'spelling-list-save':
         event.preventDefault();
@@ -1068,6 +1070,7 @@ class App {
     settingsTab.classList.toggle('text-slate-200', !isSettings);
     progressPanel.classList.toggle('hidden', isSettings);
     settingsPanel.classList.toggle('hidden', !isSettings);
+    if (isSettings) settingsPanel.scrollTop = 0;
     return true;
   }
 
@@ -1095,6 +1098,8 @@ class App {
     const form = event.target;
     const status = document.getElementById('progress-reset-status');
     const phrase = form.elements.confirmation.value;
+    const pin = form.elements.pin.value;
+    const password = form.elements.password.value;
     if (phrase !== 'RESET PROGRESS') {
       status.textContent = 'Type RESET PROGRESS exactly to confirm.';
       return false;
@@ -1103,6 +1108,7 @@ class App {
     if (submit) submit.disabled = true;
     status.textContent = 'Resetting this learner’s progress…';
     try {
+      await ProfileManager.verifyParent(pin ? { pin } : { password });
       await ProfileManager.resetLearningProgress();
       this.renderParentDashboardContent(false);
       status.textContent = 'Learning progress was reset. Your account and settings are still active.';
@@ -1110,6 +1116,8 @@ class App {
       form.classList.add('hidden');
       this.selectParentDashboardTab('settings');
     } catch (error) {
+      form.elements.pin.value = '';
+      form.elements.password.value = '';
       status.textContent = error.message || 'Progress could not be reset. Try again.';
     } finally {
       if (submit) submit.disabled = false;
@@ -1551,10 +1559,23 @@ class App {
       content.classList.add('hidden');
       const accessForm = gate.querySelector('form');
       accessForm?.reset();
+      const hasPin = ProfileManager.account?.parentPinEnabled === true;
+      document.getElementById('parent-pin-description').textContent = hasPin
+        ? 'A parent PIN is enabled. Enter your account password to change or disable it.'
+        : 'Add a 4–6 digit PIN for quick parent dashboard access. Your account password is required to change it.';
+      document.getElementById('parent-access-pin').classList.toggle('hidden', !hasPin);
+      document.getElementById('parent-access-pin').required = false;
+      document.getElementById('parent-access-pin-label').classList.toggle('hidden', !hasPin);
+      document.getElementById('parent-pin-disable')?.classList.toggle('hidden', !hasPin);
+      document.getElementById('parent-access-password').required = !hasPin;
+      document.getElementById('progress-reset-pin')?.classList.toggle('hidden', !hasPin);
+      document.getElementById('progress-reset-pin').required = false;
+      document.getElementById('progress-reset-password').classList.remove('hidden');
+      document.getElementById('progress-reset-password').required = !hasPin;
       document.getElementById('parent-access-status').textContent = '';
       this.openDialog(modal);
       if (accountModalIsOpen) this.dialogFocusReturn.set(modal, focusReturn);
-      document.getElementById('parent-access-password')?.focus();
+      document.getElementById(hasPin ? 'parent-access-pin' : 'parent-access-password')?.focus();
       return true;
     }
 
@@ -1569,12 +1590,13 @@ class App {
     const status = document.getElementById('parent-access-status');
     const passwordInput = document.getElementById('parent-access-password');
     const account = ProfileManager.account;
-    if (!account || !passwordInput?.value) return false;
-    status.textContent = 'Checking account password…';
+    const pinInput = document.getElementById('parent-access-pin');
+    if (!account || (!passwordInput?.value && !pinInput?.value)) return false;
+    status.textContent = 'Verifying parent access…';
     try {
-      await ProfileManager.login(account.username, passwordInput.value);
-      if (ProfileManager.account?.id !== account.id) throw new Error('The active account changed. Sign in again.');
+      await ProfileManager.verifyParent(pinInput?.value ? { pin: pinInput.value } : { password: passwordInput.value });
       passwordInput.value = '';
+      if (pinInput) pinInput.value = '';
       document.getElementById('parent-access-gate')?.classList.add('hidden');
       this.renderParentDashboardContent(false);
       status.textContent = '';
@@ -1582,14 +1604,60 @@ class App {
       return true;
     } catch (error) {
       passwordInput.value = '';
+      if (pinInput) pinInput.value = '';
       status.textContent = error.status === 429
         ? 'Too many attempts. Wait before trying again.'
         : error.status === 503
           ? 'Parent access is temporarily unavailable. Try again later.'
-          : 'We couldn’t confirm parent access. Check the password and try again.';
-      passwordInput.focus();
+          : 'We couldn’t confirm parent access. Check your PIN or password and try again.';
+      (account.parentPinEnabled ? pinInput : passwordInput)?.focus();
       return false;
     }
+  }
+
+  async submitParentPin(event) {
+    event.preventDefault();
+    const form = event.target;
+    const status = document.getElementById('parent-pin-status');
+    const password = form.elements.password.value;
+    const pin = form.elements.pin.value;
+    if (!password || !/^\d{4,6}$/.test(pin)) {
+      status.textContent = 'Enter your account password and a 4–6 digit PIN.';
+      return false;
+    }
+    try {
+      await ProfileManager.updateParentPin(password, pin);
+      form.reset();
+      document.getElementById('parent-pin-disable')?.classList.remove('hidden');
+      document.getElementById('parent-pin-description').textContent = 'A parent PIN is enabled. Enter your account password to change or disable it.';
+      status.textContent = 'Parent PIN saved.';
+    } catch (error) {
+      form.elements.password.value = '';
+      status.textContent = error.message || 'Parent PIN could not be saved.';
+    }
+    return false;
+  }
+
+  async submitParentPinDisable() {
+    const form = document.getElementById('parent-pin-form');
+    const status = document.getElementById('parent-pin-status');
+    const password = form?.elements.password.value;
+    if (!password) {
+      status.textContent = 'Enter your account password first, then choose Disable PIN.';
+      form?.elements.password.focus();
+      return false;
+    }
+    try {
+      await ProfileManager.updateParentPin(password, null);
+      form.reset();
+      document.getElementById('parent-pin-disable')?.classList.add('hidden');
+      document.getElementById('parent-pin-description').textContent = 'Add a 4–6 digit PIN for quick parent dashboard access. Your account password is required to change it.';
+      status.textContent = 'Parent PIN disabled.';
+    } catch (error) {
+      form.elements.password.value = '';
+      status.textContent = error.message || 'Parent PIN could not be disabled.';
+    }
+    return false;
   }
 
   renderParentDashboardContent(isGuest = false) {

@@ -116,7 +116,7 @@ stateDiagram-v2
 * **Guest Mode**: All progress, quiz scores, daily challenges, and unlocked cosmetics are kept in memory only (`sessionStorage` or application memory). No data is written to `localStorage`, cookies, or remote endpoints. When the window/tab closes, guest data is cleared.
 * **Authenticated Mode**: Progress is securely synchronized to the server via `/api/progress`. Account records store:
   - Account ID (UUID generated server-side).
-  - Hashed password (PBKDF2 with salt).
+  - Hashed password and optional parent PIN (PBKDF2 with unique random salts). PIN hashes are never exposed through the API; parent verification is stored as a five-minute marker on the authenticated session.
   - Session token (hashed, stored in `HttpOnly`, `SameSite=Lax` cookie).
   - Profile JSON blob (school years, subject overrides, activity progress, badges, daily challenge records, owned cosmetics).
   - Learning preferences include theme, school-year overrides, sound effects, spoken-audio speed, and dyslexia-friendly typography; guest-only Parent Dashboard changes stay in memory. Speech rate is a multiplier bounded from 0.75 to 1.25 and applies to hints and spelling pronunciations. The typography preference uses a sans serif typeface with more letter spacing and line height.

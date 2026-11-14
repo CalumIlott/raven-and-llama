@@ -72,8 +72,10 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-function allowAuthAttempt(action, username, remoteAddress) {
-  const limits = action === 'register'
+function allowAuthAttempt(action, username, remoteAddress, userId) {
+  const limits = action === 'parent-verify'
+    ? [[`parent-verify:source:${remoteAddress}`, 5], [`parent-verify:account:${userId}`, 5]]
+    : action === 'register'
     ? [[`register:${remoteAddress}`, 30]]
     : [[`login:source:${remoteAddress}`, 60], [`login:account:${remoteAddress}:${username}`, 10]];
   const now = Date.now();
@@ -113,7 +115,7 @@ const server = http.createServer(async (req, res) => {
       const request = await toFetchRequest(req);
       const handler = await accountHandler;
       const response = await handler(request, accountStore, {
-        rateLimit: ({ action, username }) => allowAuthAttempt(action, username, req.socket.remoteAddress || 'unknown')
+        rateLimit: ({ action, username, userId }) => allowAuthAttempt(action, username, req.socket.remoteAddress || 'unknown', userId)
       });
       const headers = Object.fromEntries(response.headers.entries());
       res.writeHead(response.status, headers);

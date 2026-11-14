@@ -37,3 +37,18 @@ test('registration uses the source bucket and rejects a denied decision', async 
   assert.equal(await limiter({ action: 'register', username: 'learner' }), false);
   assert.deepEqual(registrationLimiter.keys, ['unknown']);
 });
+
+test('parent verification checks account and source buckets', async () => {
+  const sourceLimiter = makeLimiter();
+  const accountLimiter = makeLimiter();
+  const limiter = createAuthRateLimiter(new Request('https://dojo.example/api/auth/parent-verify', {
+    headers: { 'CF-Connecting-IP': '203.0.113.9' }
+  }), {
+    AUTH_PARENT_VERIFY_IP_LIMITER: sourceLimiter,
+    AUTH_PARENT_VERIFY_ACCOUNT_LIMITER: accountLimiter
+  });
+
+  assert.equal(await limiter({ action: 'parent-verify', userId: 'account-123' }), true);
+  assert.deepEqual(sourceLimiter.keys, ['203.0.113.9']);
+  assert.deepEqual(accountLimiter.keys, ['account-123']);
+});

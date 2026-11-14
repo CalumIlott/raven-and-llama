@@ -25,6 +25,16 @@
       "name": "AUTH_REGISTER_LIMITER",
       "namespace_id": "91372103",
       "simple": { "limit": 30, "period": 60 }
+    },
+    {
+      "name": "AUTH_PARENT_VERIFY_IP_LIMITER",
+      "namespace_id": "91372104",
+      "simple": { "limit": 5, "period": 60 }
+    },
+    {
+      "name": "AUTH_PARENT_VERIFY_ACCOUNT_LIMITER",
+      "namespace_id": "91372105",
+      "simple": { "limit": 5, "period": 60 }
     }
   ],
   "d1_databases": [
@@ -51,6 +61,16 @@
         "name": "AUTH_REGISTER_LIMITER",
         "namespace_id": "91372203",
         "simple": { "limit": 30, "period": 60 }
+      },
+      {
+        "name": "AUTH_PARENT_VERIFY_IP_LIMITER",
+        "namespace_id": "91372204",
+        "simple": { "limit": 5, "period": 60 }
+      },
+      {
+        "name": "AUTH_PARENT_VERIFY_ACCOUNT_LIMITER",
+        "namespace_id": "91372205",
+        "simple": { "limit": 5, "period": 60 }
       }
     ],
     "d1_databases": [
