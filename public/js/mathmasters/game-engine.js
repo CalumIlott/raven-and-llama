@@ -349,7 +349,7 @@ class GameEngine {
     } else if (q.type === 'array_grid') {
       visualWidgetHtml = VisualRenderers.renderArrayGrid(q.rows, q.cols, '🗡️');
     } else if (q.type === 'fraction_visual') {
-      visualWidgetHtml = VisualRenderers.renderFractionVisual(q.numerator, q.denominator);
+      visualWidgetHtml = VisualRenderers.renderFractionVisual(q.numerator, q.denominator, q.visualModel);
     } else if (q.type === 'partition_balance') {
       visualWidgetHtml = VisualRenderers.renderPartitionBaskets(q.total, q.part1, q.part2, '🍎');
     }
