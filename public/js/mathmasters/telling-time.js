@@ -26,6 +26,13 @@ const TIME_ACTIVITY_MODES = [
     description: 'Choose the analogue clock that matches the digital time.',
     minutes: Array.from({ length: 12 }, (_, index) => index * 5),
     display: 'digital'
+  },
+  {
+    id: 'set-clock',
+    title: 'Set the Clock',
+    description: 'Drag the hands to show the time. The hour hand moves as the minutes pass.',
+    minutes: Array.from({ length: 12 }, (_, index) => index * 5),
+    display: 'interactive'
   }
 ];
 
@@ -34,7 +41,7 @@ class TimeTelling {
     return `${hour}:${String(minute).padStart(2, '0')}`;
   }
 
-  static formatClockSvg(time, size = 200) {
+  static formatClockSvg(time, size = 200, interactive = false) {
     const [hour, minute] = time.split(':').map(Number);
     const minuteAngle = minute * 6;
     const hourAngle = ((hour % 12) + minute / 60) * 30;
@@ -49,12 +56,27 @@ class TimeTelling {
       return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#64748b" stroke-width="2" /><text x="${numberX.toFixed(1)}" y="${numberY.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#e2e8f0">${index || 12}</text>`;
     }).join('');
 
-    return `
-      <svg viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="Analogue clock showing ${time}">
-        <circle cx="100" cy="100" r="94" fill="#0f172a" stroke="#fbbf24" stroke-width="4" />
-        ${marks}
+    const hands = interactive
+      ? `
+        <g id="time-clock-hour-hand" class="time-clock-hand" data-clock-hand="hour" role="slider" tabindex="0" aria-label="Hour hand" aria-valuemin="1" aria-valuemax="12" aria-valuenow="${hour}" aria-valuetext="${hour} o'clock; move with arrow keys">
+          <line x1="100" y1="100" x2="100" y2="43" stroke="transparent" stroke-width="18" stroke-linecap="round" />
+          <line x1="100" y1="100" x2="100" y2="43" stroke="#38bdf8" stroke-width="7" stroke-linecap="round" pointer-events="none" />
+        </g>
+        <g id="time-clock-minute-hand" class="time-clock-hand" data-clock-hand="minute" role="slider" tabindex="0" aria-label="Minute hand" aria-valuemin="0" aria-valuemax="55" aria-valuenow="${minute}" aria-valuetext="${minute} minutes; move with arrow keys">
+          <line x1="100" y1="100" x2="100" y2="25" stroke="transparent" stroke-width="18" stroke-linecap="round" />
+          <line x1="100" y1="100" x2="100" y2="25" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" pointer-events="none" />
+        </g>
+      `
+      : `
         <line x1="100" y1="100" x2="100" y2="43" stroke="#38bdf8" stroke-width="7" stroke-linecap="round" transform="rotate(${hourAngle} 100 100)" />
         <line x1="100" y1="100" x2="100" y2="25" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" transform="rotate(${minuteAngle} 100 100)" />
+      `;
+
+    return `
+      <svg class="${interactive ? 'time-clock time-clock--interactive' : 'time-clock'}" viewBox="0 0 200 200" width="${size}" height="${size}" role="${interactive ? 'group' : 'img'}" aria-label="${interactive ? 'Interactive clock. Drag either hand or focus a hand and use the arrow keys.' : `Analogue clock showing ${time}`}" ${interactive ? 'aria-describedby="time-clock-help"' : ''}>
+        <circle cx="100" cy="100" r="94" fill="#0f172a" stroke="#fbbf24" stroke-width="4" />
+        ${marks}
+        ${hands}
         <circle cx="100" cy="100" r="5" fill="#fbbf24" />
       </svg>
     `;
@@ -119,7 +141,7 @@ Object.assign(App.prototype, {
           ${TIME_ACTIVITY_MODES.map((mode, index) => `
             <button type="button" data-action="time-mode" data-time-mode="${mode.id}"
                     class="text-left p-5 rounded-2xl bg-slate-900 border-2 border-slate-700 hover:border-amber-400 transition shadow-xl">
-              <span class="text-2xl" aria-hidden="true">${['🕒', '🕓', '⏰', '⌚'][index]}</span>
+              <span class="text-2xl" aria-hidden="true">${['🕒', '🕓', '⏰', '⌚', '🕰️'][index]}</span>
               <h3 class="font-ninja text-xl text-amber-300 font-bold mt-2">${mode.title}</h3>
               <p class="text-sm text-slate-300 mt-1">${mode.description}</p>
             </button>
@@ -152,7 +174,8 @@ Object.assign(App.prototype, {
       })),
       index: 0,
       score: 0,
-      selected: null
+      selected: null,
+      clockTime: { hour: 12, minute: 0 }
     };
     this.timeActivityEngine = new ActivityEngine();
     this.timeActivityEngine.startQuiz({
@@ -168,7 +191,10 @@ Object.assign(App.prototype, {
   answerTimeActivity(answer) {
     const activity = this.timeActivity;
     const question = activity?.questions[activity.index];
-    if (!question || activity.selected !== null || !question.options.includes(answer)) return;
+    const validAnswer = question?.display === 'interactive'
+      ? /^(?:[1-9]|1[0-2]):[0-5][05]$/.test(answer)
+      : question?.options.includes(answer);
+    if (!question || activity.selected !== null || !validAnswer) return;
     activity.selected = answer;
     this.timeActivityEngine.submitAnswer(answer);
     activity.score = this.timeActivityEngine.score;
@@ -182,6 +208,101 @@ Object.assign(App.prototype, {
     this.renderTimeActivity();
   },
 
+  setTimeActivityClock(hour, minute) {
+    const activity = this.timeActivity;
+    if (!activity || !Number.isInteger(hour) || hour < 1 || hour > 12 ||
+      !Number.isInteger(minute) || minute < 0 || minute > 55 || minute % 5 !== 0) return false;
+    activity.clockTime = { hour, minute };
+    const hourHand = document.getElementById('time-clock-hour-hand');
+    const minuteHand = document.getElementById('time-clock-minute-hand');
+    const status = document.getElementById('time-clock-current');
+    const hourAngle = ((hour % 12) + minute / 60) * 30;
+    const minuteAngle = minute * 6;
+    if (hourHand) {
+      hourHand.setAttribute('transform', `rotate(${hourAngle} 100 100)`);
+      hourHand.setAttribute('aria-valuenow', String(hour));
+      hourHand.setAttribute('aria-valuetext', `${hour} o'clock, with the hour hand partway to ${hour === 12 ? 1 : hour + 1}`);
+    }
+    if (minuteHand) {
+      minuteHand.setAttribute('transform', `rotate(${minuteAngle} 100 100)`);
+      minuteHand.setAttribute('aria-valuenow', String(minute));
+      minuteHand.setAttribute('aria-valuetext', `${minute} minutes`);
+    }
+    if (status) status.textContent = `Your clock shows ${TimeTelling.formatTime(hour, minute)}.`;
+    return true;
+  },
+
+  setTimeActivityClockFromPointer(hand, event) {
+    const svg = document.querySelector('.time-clock--interactive');
+    const activity = this.timeActivity;
+    if (!svg || !activity || !['hour', 'minute'].includes(hand)) return false;
+    const inverse = svg.getScreenCTM()?.inverse();
+    if (!inverse) return false;
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(inverse);
+    const angle = (Math.atan2(point.x - 100, 100 - point.y) * 180 / Math.PI + 360) % 360;
+    let { hour, minute } = activity.clockTime;
+    if (hand === 'minute') {
+      const nextMinute = Math.round(angle / 30) % 12 * 5;
+      if (minute >= 50 && nextMinute <= 5) hour = hour === 12 ? 1 : hour + 1;
+      else if (minute <= 5 && nextMinute >= 50) hour = hour === 1 ? 12 : hour - 1;
+      minute = nextMinute;
+    } else {
+      const nearestHour = Math.round((angle - minute * 0.5) / 30 + 12) % 12;
+      hour = nearestHour || 12;
+    }
+    return this.setTimeActivityClock(hour, minute);
+  },
+
+  adjustTimeActivityClock(hand, direction) {
+    const activity = this.timeActivity;
+    if (!activity?.clockTime || !['hour', 'minute'].includes(hand) || ![-1, 1].includes(direction)) return false;
+    let { hour, minute } = activity.clockTime;
+    if (hand === 'minute') {
+      minute += direction * 5;
+      if (minute > 55) { minute = 0; hour = hour === 12 ? 1 : hour + 1; }
+      if (minute < 0) { minute = 55; hour = hour === 1 ? 12 : hour - 1; }
+    } else {
+      hour = ((hour - 1 + direction + 12) % 12) + 1;
+    }
+    return this.setTimeActivityClock(hour, minute);
+  },
+
+  attachTimeActivityClock() {
+    const svg = document.querySelector('.time-clock--interactive');
+    if (!svg) return;
+    svg.addEventListener('pointerdown', event => {
+      const hand = event.target.closest?.('[data-clock-hand]');
+      if (!hand || event.button !== 0 || event.isPrimary === false) return;
+      this.timeClockDrag = { pointerId: event.pointerId, hand: hand.dataset.clockHand };
+      if (svg.setPointerCapture && event.isTrusted) svg.setPointerCapture(event.pointerId);
+      event.preventDefault();
+      this.setTimeActivityClockFromPointer(this.timeClockDrag.hand, event);
+    });
+    svg.addEventListener('pointermove', event => {
+      if (this.timeClockDrag?.pointerId !== event.pointerId) return;
+      this.setTimeActivityClockFromPointer(this.timeClockDrag.hand, event);
+      event.preventDefault();
+    });
+    const finishDrag = event => {
+      if (this.timeClockDrag?.pointerId === event.pointerId) this.timeClockDrag = null;
+    };
+    svg.addEventListener('pointerup', finishDrag);
+    svg.addEventListener('pointercancel', finishDrag);
+    svg.addEventListener('keydown', event => {
+      const hand = event.target.closest?.('[data-clock-hand]');
+      if (!hand || !['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].includes(event.key)) return;
+      event.preventDefault();
+      const direction = ['ArrowUp', 'ArrowRight'].includes(event.key) ? 1 : -1;
+      this.adjustTimeActivityClock(hand.dataset.clockHand, direction);
+    });
+  },
+
+  submitTimeActivityClock() {
+    const time = this.timeActivity?.clockTime;
+    if (!time) return;
+    this.answerTimeActivity(TimeTelling.formatTime(time.hour, time.minute));
+  },
+
   advanceTimeActivity() {
     const activity = this.timeActivity;
     if (!activity || activity.selected === null) return;
@@ -190,6 +311,7 @@ Object.assign(App.prototype, {
     } else {
       activity.index = this.timeActivityEngine.currentIndex;
       activity.selected = null;
+      activity.clockTime = { hour: 12, minute: 0 };
     }
     this.renderTimeActivity();
   },
@@ -237,7 +359,14 @@ Object.assign(App.prototype, {
     }).join('');
     const prompt = question.display === 'digital'
       ? `<div class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 border-2 border-sky-500 px-6 py-3 font-mono text-4xl text-sky-300 shadow-lg" aria-label="Digital time ${question.answer}">${question.answer}</div>`
-      : TimeTelling.formatClockSvg(question.answer);
+      : question.display === 'interactive'
+        ? `<div class="inline-flex items-center gap-2 rounded-2xl bg-slate-950 border-2 border-sky-500 px-6 py-3 font-mono text-4xl text-sky-300 shadow-lg" aria-label="Target time ${question.answer}">${question.answer}</div>`
+        : TimeTelling.formatClockSvg(question.answer);
+    const interactiveClock = question.display === 'interactive'
+      ? answered
+        ? `<div class="time-clock-practice">${TimeTelling.formatClockSvg(TimeTelling.formatTime(activity.clockTime.hour, activity.clockTime.minute), 280)}<p class="text-slate-300 text-sm">Your clock showed ${TimeTelling.formatTime(activity.clockTime.hour, activity.clockTime.minute)}.</p></div>`
+        : `<div class="time-clock-practice"><p id="time-clock-help" class="text-slate-300 text-sm mb-2">Drag either hand around the clock, or focus it and press the arrow keys. The minute hand moves in five-minute steps.</p>${TimeTelling.formatClockSvg(TimeTelling.formatTime(activity.clockTime.hour, activity.clockTime.minute), 280, true)}<output id="time-clock-current" class="time-clock-current" role="status" aria-live="polite">Your clock shows ${TimeTelling.formatTime(activity.clockTime.hour, activity.clockTime.minute)}.</output><button type="button" data-action="time-submit-clock" class="mt-4 px-6 py-3 rounded-xl bg-amber-400 text-slate-950 font-bold hover:bg-amber-300">Check my clock</button></div>`
+      : '';
     const feedback = answered
       ? EducationalFeedback.render({
         correct: activity.selected === question.answer,
@@ -266,13 +395,14 @@ Object.assign(App.prototype, {
           <div class="h-2 rounded-full bg-amber-400" style="width: ${((activity.index + 1) / activity.questions.length) * 100}%"></div>
         </div>
         <section class="rounded-3xl bg-slate-900 border-2 border-slate-700 p-5 sm:p-8 text-center">
-          <h1 class="font-ninja text-xl sm:text-2xl text-white font-bold mb-5">${question.display === 'digital' ? 'Which analogue clock shows this time?' : 'What digital time does this clock show?'}</h1>
+          <h1 class="font-ninja text-xl sm:text-2xl text-white font-bold mb-5">${question.display === 'digital' ? 'Which analogue clock shows this time?' : question.display === 'interactive' ? 'Set the clock to this time' : 'What digital time does this clock show?'}</h1>
           <div class="flex justify-center mb-6">${prompt}</div>
-          <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">${options}</div>
+          ${question.display === 'interactive' ? interactiveClock : `<div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">${options}</div>`}
           ${feedback}
         </section>
       </div>
     `;
+    if (question.display === 'interactive' && !answered) this.attachTimeActivityClock();
   }
 });
 

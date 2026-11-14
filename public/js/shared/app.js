@@ -276,6 +276,7 @@ class App {
       case 'telling-time': this.showTellingTime(); break;
       case 'time-mode': this.startTimeActivity(target.dataset.timeMode); break;
       case 'time-answer': this.answerTimeActivity(target.dataset.answer); break;
+      case 'time-submit-clock': this.submitTimeActivityClock(); break;
       case 'time-next': this.advanceTimeActivity(); break;
       case 'time-retry': this.startTimeActivity(this.timeActivity.mode); break;
       case 'time-menu': this.showTellingTime(); break;
