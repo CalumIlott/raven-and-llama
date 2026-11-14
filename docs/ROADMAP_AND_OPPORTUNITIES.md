@@ -61,7 +61,7 @@ Most online learning tools for primary students fall into the trap of "drill-and
 ### Sub-Session 1: Content Expansion & Bug Repair (Issue #138)
 * [ ] Fix 90 broken `??` emoji icons in `public/js/history/events.js`.
 * [ ] Expand `public/js/geography/country-data.js` to 100+ countries with flags, capitals, and facts.
-* [ ] Expand Plan a Party (`public/js/life-skills/party-planner.js`) with 4+ scenarios, dynamic budgets, and a 20+ item catalog.
+* [x] Expand Plan a Party (`public/js/life-skills/party-planner.js`) with four budgeted scenarios and a 24-item catalog; rounds randomize the ten displayed items and two or three required targets.
 * [ ] Expand Food Chains (7 new habitats) and Virtual Lab (10 new reaction simulations).
 * [ ] Expand Brown Belt visual fractions generator in `generators.js` to 100+ distinct representations.
 

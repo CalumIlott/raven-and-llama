@@ -35,12 +35,9 @@ flowchart TD
 * **Map flag display follow-up — implemented**: Show self-hosted SVG flags in the selected-country panel and country list, and in Flag Detective and Capital Cities. This avoids the platform-dependent Unicode flag fallback that can display country initials in desktop Chrome. The map caption now uses the actual number of highlighted countries instead of a stale hard-coded count.
 
 ### 1.3 Expand Life Skills "Plan a Party"
-* **Problem**: `public/js/life-skills/party-planner.js` features exactly one scenario ($100 budget) and 6 fixed items.
-* **Resolution**:
-  - Add 4 diverse event scenarios: Birthday Party ($100), Camping Trip ($150), School Science Fair ($75), and Pizza Movie Night ($50).
-  - Expand item catalog from 6 to 24 items with category groupings (Venue, Food & Drink, Entertainment, Gear, Decorations).
-  - Randomize item sets and required vs optional targets per round.
-* **Test**: Add unit test ensuring at least 4 scenarios and 20+ valid items with budget constraints.
+* **Status: Complete**: The activity has four budgeted scenarios: Birthday Party ($100), Camping Trip ($150), School Science Fair ($75), and Pizza Movie Night ($50).
+* The 24-item catalog is grouped into Venue, Food & Drink, Entertainment, Gear, and Decorations. Each round samples ten items (two per category), includes the scenario's featured item, and assigns two or three required targets; the remaining items are optional.
+* Unit coverage in `tests/unit/party-planner.test.js` checks the scenarios, item catalog, sampling, required targets, and budget evaluation. Browser coverage in `tests/e2e/plan-party.spec.js` checks the route, controls, budget feedback, and successful plan completion.
 
 ### 1.4 Expand Science Lab Food Chains & Virtual Lab
 * **Food Chains**: Expanded `public/js/science/food-chains.js` to 10 sourced habitats. Five distinct chains are randomly selected per run; the deep-sea vent model correctly starts with chemical energy rather than sunlight.
