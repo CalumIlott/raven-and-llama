@@ -6,7 +6,7 @@ const port = Number(process.env.E2E_PORT || 4173);
 const baseURL = `http://127.0.0.1:${port}`;
 const dataDirectory = path.join(os.tmpdir(), `raven-llama-e2e-${process.pid}`);
 const outputDirectory = process.platform === 'win32'
-  ? process.env.PLAYWRIGHT_OUTPUT_DIR || path.join(os.tmpdir(), 'raven-llama-playwright')
+  ? process.env.PLAYWRIGHT_OUTPUT_DIR || path.join(os.tmpdir(), `raven-llama-playwright-${process.pid}`)
   : path.join(__dirname, 'test-results');
 process.env.RAVEN_TEST_DATA_DIR = dataDirectory;
 
