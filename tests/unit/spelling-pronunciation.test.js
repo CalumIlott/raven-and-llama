@@ -57,6 +57,14 @@ test('Spelling pronunciation uses an available Australian English voice at a chi
   assert.equal(status.textContent, 'Playing word pronunciation.');
 });
 
+test('Spelling pronunciation applies the learner speech-rate multiplier', async () => {
+  const { context, spoken } = createPronunciationContext();
+  context.EducationalFeedback = { speechRateMultiplier: () => 1.25 };
+
+  assert.equal(await context.SpellingPronunciation.speak('kangaroo', { textContent: '' }), true);
+  assert.equal(spoken[0].rate, 1.025);
+});
+
 test('Spelling pronunciation waits for voices that are still loading', async () => {
   const voices = [];
   let onVoicesChanged;

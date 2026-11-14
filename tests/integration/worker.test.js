@@ -138,6 +138,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
         schoolYear: 5,
         subjectYears: { science: 2 },
         soundEnabled: false,
+        speechRate: 1.15,
         spellingLists: [{ id: 'week-one', name: 'Week One', words: ['quokka'] }],
         activeSpellingListId: 'week-one',
         questProgress: {
@@ -190,6 +191,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(savedProgress.schoolYear, 5);
   assert.deepEqual(savedProgress.subjectYears, { science: 2 });
   assert.equal(savedProgress.soundEnabled, false);
+  assert.equal(savedProgress.speechRate, 1.15);
   assert.deepEqual(savedProgress.spellingLists, [
     { id: 'week-one', name: 'Week One', words: ['quokka'] }
   ]);
@@ -264,6 +266,7 @@ test('local Worker enforces account boundaries, rate limits, and security header
   assert.equal(resetProfile.schoolYear, 5);
   assert.deepEqual(resetProfile.subjectYears, { science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
+  assert.equal(resetProfile.speechRate, 1.15);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   const otherAfterReset = await fetch(`${baseUrl}/api/progress`, { headers: { Cookie: otherCookie } });
   assert.deepEqual((await otherAfterReset.json()).profile, otherProfile);

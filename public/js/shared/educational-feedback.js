@@ -9,6 +9,11 @@ function escapeFeedbackHtml(value) {
 }
 
 window.EducationalFeedback = {
+  speechRateMultiplier() {
+    const rate = window.ProfileManager?.getActiveProfile?.()?.speechRate;
+    return Number.isFinite(rate) && rate >= 0.75 && rate <= 1.25 ? rate : 1;
+  },
+
   render({
     id,
     correct,
@@ -66,6 +71,7 @@ window.EducationalFeedback = {
     }
 
     const utterance = new window.SpeechSynthesisUtterance(String(text));
+    utterance.rate = this.speechRateMultiplier();
     utterance.onerror = event => {
       if (statusElement) statusElement.textContent = `Audio hint could not be played: ${event.error}.`;
     };

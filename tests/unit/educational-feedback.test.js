@@ -45,6 +45,7 @@ test('speaks audio hints or reports unavailable browser support', () => {
       this.text = text;
     }
   };
+  context.ProfileManager = { getActiveProfile: () => ({ speechRate: 1.25 }) };
   context.speechSynthesis = {
     cancel() {},
     speak(utterance) {
@@ -54,5 +55,6 @@ test('speaks audio hints or reports unavailable browser support', () => {
 
   assert.equal(context.EducationalFeedback.speak('Read the short hand.', status), true);
   assert.deepEqual(spoken, ['Read the short hand.']);
+  assert.equal(context.EducationalFeedback.speechRateMultiplier(), 1.25);
   assert.equal(status.textContent, 'Playing audio hint.');
 });

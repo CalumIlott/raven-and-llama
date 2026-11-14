@@ -250,6 +250,13 @@ test('theme preference syncs to another browser context for the signed-in accoun
   await openParentDashboard(page, account.password);
   await page.getByRole('tab', { name: 'Learner settings' }).click();
   await page.locator('#account-theme').selectOption('light');
+  await page.locator('#parent-speech-rate').evaluate(input => {
+    input.value = '120';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.locator('#parent-speech-rate-value')).toHaveText('120% speed');
+  await expect(page.locator('#parent-settings-status')).toContainText('saved to this account');
   await page.evaluate(() => window.ProfileManager.flush());
   await expect(page.locator('html')).toHaveClass(/theme-light/);
 
@@ -262,6 +269,8 @@ test('theme preference syncs to another browser context for the signed-in accoun
     await openParentDashboard(otherPage, account.password);
     await otherPage.getByRole('tab', { name: 'Learner settings' }).click();
     await expect(otherPage.locator('#account-theme')).toHaveValue('light');
+    await expect(otherPage.locator('#parent-speech-rate')).toHaveValue('120');
+    await expect(otherPage.locator('#parent-speech-rate-value')).toHaveText('120% speed');
   } finally {
     await otherDevice.close();
   }
@@ -294,7 +303,8 @@ test('parent dashboard requires server password confirmation and reset clears on
       skillsProgress: { green_order: { correct: 4, total: 5, bestScore: 8, timesTrained: 2, stars: 3 } },
       activityProgress: { 'science-virtual-lab': { title: 'Virtual Laboratory', subject: 'Science Lab', skillId: 'science_virtual_lab', kind: 'quiz', scoreUnit: 'questions', bestScore: 4, bestTotal: 4, correct: 4, total: 4, correctAnswers: 4, totalAnswers: 4, timesPlayed: 1 } },
       subjectYears: { maths: 4 },
-      soundEnabled: false
+      soundEnabled: false,
+      speechRate: 1.2
     });
     await window.ProfileManager.flush();
   });
@@ -330,6 +340,7 @@ test('parent dashboard requires server password confirmation and reset clears on
   expect(profile.schoolYear).toBe(3);
   expect(profile.subjectYears).toEqual({ maths: 4 });
   expect(profile.soundEnabled).toBe(false);
+  expect(profile.speechRate).toBe(1.2);
   await expect(page.locator('#header-profile-name')).toHaveText(account.username);
 });
 
@@ -344,5 +355,12 @@ test('guest dashboard clearly identifies its session-only preferences', async ({
   await page.locator('#parent-sound-enabled').uncheck();
   await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
   expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().soundEnabled)).toBe(false);
+  await page.locator('#parent-speech-rate').evaluate(input => {
+    input.value = '125';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().speechRate)).toBe(1.25);
   expect(await page.evaluate(() => localStorage.getItem('math_masters_muted'))).toBeNull();
 });

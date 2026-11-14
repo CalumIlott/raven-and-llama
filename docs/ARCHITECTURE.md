@@ -119,7 +119,7 @@ stateDiagram-v2
   - Hashed password (PBKDF2 with salt).
   - Session token (hashed, stored in `HttpOnly`, `SameSite=Lax` cookie).
   - Profile JSON blob (school years, subject overrides, activity progress, badges, daily challenge records, owned cosmetics).
-  - Learning preferences include theme, school-year overrides, and the sound-effects setting; guest-only Parent Dashboard changes stay in memory.
+  - Learning preferences include theme, school-year overrides, sound effects, and spoken-audio speed; guest-only Parent Dashboard changes stay in memory. Speech rate is a multiplier bounded from 0.75 to 1.25 and applies to hints and spelling pronunciations.
 
 ### 4.2 Security Rules
 * **No Account Listing**: No API endpoint allows listing accounts or looking up other users.
