@@ -122,12 +122,10 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 * **Target Activity**: Replace `blue_balanced_equation` and `balance-scales` arcade.
 
 ### 4.2 Cash Register & Change Counter (Maths World Shopkeeper)
-* **Concept**: Transform the money calculation quiz into an authentic shopkeeper cash register simulation.
-* **Mechanics**:
-  - Render an open cash register drawer with distinct slots for Australian bank notes ($50, $20, $10, $5) and coins ($2, $1, 50c, 20c, 10c, 5c).
-  - A customer hands over cash for a grocery purchase.
-  - The student drags coins and notes from the till onto the customer's counter. A tactile "running total" shows the change given, teaching counting up from the purchase price to the bill paid.
-* **Target Activity**: Replaces multiple-choice selection in `public/js/mathmasters/money.js`.
+* **Status: First tactile version implemented** in the existing Shopkeeper mode.
+* The customer's basket and payment are shown on a counter, with distinct cash drawer slots grouped into Australian coins and notes. Learners drag money to the change tray or select denominations by touch and keyboard; a screen-reader live total updates as they build the change.
+* The receipt shows only the basket total and the amount paid before the learner answers, so it does not reveal the change. The prompt teaches counting up from the basket total to the payment.
+* This enhances the Shopkeeper mode in `public/js/mathmasters/money.js`; the other Money Masters activities remain available.
 
 ### 4.3 Interactive Clockwork Hands (Maths World Telling Time)
 * **Concept**: Replace multiple-choice digital clock matching with interactive draggable clock hands.

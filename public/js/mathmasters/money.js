@@ -327,8 +327,8 @@ Object.assign(App.prototype, {
         }
       },
       shopkeeper: {
-        explanation: 'Add the item prices to find the basket total, then subtract that total from the amount paid.',
-        audioHint: 'Add the basket prices, then count up from the total to the amount paid.',
+        explanation: 'Count up from the basket total until you reach the amount the customer paid. The money you add is the change.',
+        audioHint: 'Start at the basket total and count up to the amount the customer paid.',
         workedExample: {
           title: 'Serve a customer',
           steps: [
@@ -395,6 +395,89 @@ Object.assign(App.prototype, {
     });
   },
 
+  renderShopkeeperRegister(question, game, selectedTotal, targetAmount) {
+    const renderDenominations = type => question.denominations
+      .filter(item => item.type === type)
+      .map(item => `
+        <button type="button" data-action="money-coin" data-value="${item.value}"
+                draggable="true" data-money-draggable="true"
+                ${game.answered || selectedTotal + item.value > targetAmount ? 'disabled' : ''}
+                aria-label="Add ${item.label} ${item.type} to the counter"
+                class="money-register-slot money-denomination-button money-denomination-${item.type} disabled:opacity-40">
+          <span class="money-register-slot__kind">${item.type === 'note' ? 'NOTE' : 'COIN'}</span>
+          ${MoneyMasters.renderDenomination(item)}
+          <span class="money-register-slot__value">${item.label}</span>
+        </button>
+      `).join('');
+    const groups = ['coin', 'note'].filter(type => question.denominations.some(item => item.type === type));
+
+    return `
+      <div class="money-register">
+        <section class="money-register-counter" aria-labelledby="money-counter-title">
+          <div class="money-register-counter__header">
+            <span class="money-register-counter__light" aria-hidden="true"></span>
+            <h3 id="money-counter-title">Customer counter</h3>
+          </div>
+          <div class="money-register-receipt">
+            <div class="money-register-receipt__basket">
+              <h4>Basket</h4>
+              <ul data-shopkeeper-basket>
+              ${question.items.map(item => `<li><span>${item.name}</span><span class="money-register-receipt__item-price">${MoneyMasters.formatMoney(item.price)}${MoneyMasters.renderMoneyAmount(item.price, true)}</span></li>`).join('')}
+              </ul>
+              <p class="money-register-receipt__amount"><span>Basket total</span><strong class="money-transaction-amount">${MoneyMasters.formatMoney(question.total)}${MoneyMasters.renderMoneyAmount(question.total, true)}</strong></p>
+            </div>
+            <div class="money-register-receipt__payment">
+              <span>Customer pays</span>
+              <strong class="money-transaction-amount">${MoneyMasters.formatMoney(question.payment)}</strong>
+              ${MoneyMasters.renderMoneyAmount(question.payment, true)}
+            </div>
+          </div>
+        </section>
+
+        <section class="money-register-drawer" aria-labelledby="money-drawer-title">
+          <div class="money-register-drawer__heading">
+            <span class="money-register-drawer__handle" aria-hidden="true"></span>
+            <h3 id="money-drawer-title">Cash drawer</h3>
+          </div>
+          <p id="money-drawer-help" class="money-register-drawer__help">Drag money to the counter, or tap or select a slot to add it.</p>
+          <div class="money-register-drawer__groups">
+            ${groups.map(type => `
+              <fieldset class="money-drawer-group money-drawer-group--${type}">
+                <legend>${type === 'coin' ? 'Coins' : 'Notes'}</legend>
+                <div class="money-register-slots">${renderDenominations(type)}</div>
+              </fieldset>
+            `).join('')}
+          </div>
+        </section>
+
+        <section class="money-change-tray" data-money-change-drop-target data-drag-drop-target data-drag-drop-effect="copy"
+                 aria-labelledby="money-change-tray-title">
+          <div class="money-change-tray__heading">
+            <div>
+              <p class="money-change-tray__eyebrow">Place the change here</p>
+              <h3 id="money-change-tray-title">Change on the counter</h3>
+            </div>
+            <output id="money-selected-total" aria-live="polite" aria-atomic="true" aria-label="Selected change total">${MoneyMasters.formatMoney(selectedTotal)}</output>
+          </div>
+          <p class="money-change-tray__hint">Count up from the basket total until you reach the amount the customer paid.</p>
+          <ul aria-label="Selected coins and notes" aria-live="polite" aria-atomic="true" class="money-change-tray__items">
+            ${game.selectedCoins.map(value => {
+              const denomination = MoneyMasters.DENOMINATIONS.find(item => item.value === value);
+              return `<li aria-label="${denomination.label} ${denomination.type}">${MoneyMasters.renderDenomination(denomination, true)}</li>`;
+            }).join('')}
+          </ul>
+          <div class="money-change-tray__actions">
+            <button type="button" data-action="money-undo" ${game.answered || !game.selectedCoins.length ? 'disabled' : ''}>Undo last</button>
+            <button type="button" data-action="money-clear" ${game.answered || !game.selectedCoins.length ? 'disabled' : ''}>Clear</button>
+          </div>
+        </section>
+
+        <button type="button" data-action="money-submit" ${game.answered ? 'disabled' : ''}
+                class="money-submit-button money-register-check disabled:opacity-50">Check change</button>
+      </div>
+    `;
+  },
+
   renderMoneyQuestion() {
     const game = this.moneyGame;
     const arena = document.getElementById('money-arena');
@@ -420,31 +503,13 @@ Object.assign(App.prototype, {
     const selectedTotal = game.selectedCoins.reduce((total, value) => total + value, 0);
     const isShopkeeper = game.activity.id === 'shopkeeper';
     const targetAmount = isShopkeeper ? question.change : question.target;
-    const choices = ['build-total', 'shopkeeper'].includes(game.activity.id)
+    const choices = isShopkeeper
+      ? this.renderShopkeeperRegister(question, game, selectedTotal, targetAmount)
+      : game.activity.id === 'build-total'
       ? `
-        ${isShopkeeper ? `
-          <section class="my-5 rounded-2xl bg-slate-950 border border-slate-700 p-4" aria-label="Customer transaction">
-            <h3 class="font-bold text-white">Customer's basket</h3>
-            <ul data-shopkeeper-basket class="mt-2 space-y-1 text-sm text-slate-300">
-              ${question.items.map(item => `<li class="money-basket-item"><span>${item.name}</span><span class="money-basket-item__amount">${MoneyMasters.formatMoney(item.price)}${MoneyMasters.renderMoneyAmount(item.price, true)}</span></li>`).join('')}
-            </ul>
-            <dl class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-700 pt-3 text-center text-xs">
-              <div><dt class="text-slate-400">Basket total</dt><dd class="money-transaction-amount mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.total)}${MoneyMasters.renderMoneyAmount(question.total, true)}</dd></div>
-              <div><dt class="text-slate-400">Paid</dt><dd class="money-transaction-amount mt-1 font-bold text-white">${MoneyMasters.formatMoney(question.payment)}${MoneyMasters.renderMoneyAmount(question.payment, true)}</dd></div>
-              <div><dt class="text-slate-400">Change due</dt><dd class="money-transaction-amount money-change-emphasis mt-1 font-bold">${MoneyMasters.formatMoney(question.change)}${MoneyMasters.renderMoneyAmount(question.change, true)}</dd></div>
-            </dl>
-          </section>
-        ` : ''}
-        <div ${isShopkeeper ? 'role="group" data-money-change-drop-target data-drag-drop-target data-drag-drop-effect="copy" aria-label="Selected change; drop coins and notes here"' : ''} class="my-5 rounded-2xl ${isShopkeeper ? 'border-2 border-dashed border-amber-500' : 'border border-slate-700'} bg-slate-950 p-4 text-center">
-          <p class="text-xs uppercase tracking-wider text-slate-400">${isShopkeeper ? 'Your change' : 'Your amount'}</p>
+        <div class="my-5 rounded-2xl border border-slate-700 bg-slate-950 p-4 text-center">
+          <p class="text-xs uppercase tracking-wider text-slate-400">Your amount</p>
           <p id="money-selected-total" class="font-ninja text-3xl font-bold text-amber-300">${MoneyMasters.formatMoney(selectedTotal)}</p>
-          ${isShopkeeper ? `<p class="mt-1 text-sm text-slate-300">Drag a coin or note here, or select its button with a tap, Enter, or Space.</p>
-            <ul aria-label="Selected coins and notes" aria-live="polite" class="mt-2 flex min-h-8 flex-wrap justify-center gap-2">
-              ${game.selectedCoins.map(value => {
-                const denomination = MoneyMasters.DENOMINATIONS.find(item => item.value === value);
-                return `<li aria-label="${denomination.label} ${denomination.type}">${MoneyMasters.renderDenomination(denomination, true)}</li>`;
-              }).join('')}
-            </ul>` : ''}
           <div class="flex justify-center gap-3 mt-3">
             <button type="button" data-action="money-undo" ${game.answered || !game.selectedCoins.length ? 'disabled' : ''}
                     class="rounded-lg bg-slate-700 px-3 py-2 text-sm text-white disabled:opacity-40">Undo last</button>
@@ -454,7 +519,7 @@ Object.assign(App.prototype, {
         </div>
         <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
           ${question.denominations.map(item => `
-            <button type="button" data-action="money-coin" data-value="${item.value}" ${isShopkeeper ? 'draggable="true" data-money-draggable="true"' : ''} ${game.answered || selectedTotal + item.value > targetAmount ? 'disabled' : ''}
+            <button type="button" data-action="money-coin" data-value="${item.value}" ${game.answered || selectedTotal + item.value > targetAmount ? 'disabled' : ''}
                     aria-label="Add ${item.label}" class="money-denomination-button money-denomination-${item.type} rounded-xl border-2 px-2 py-3 font-bold disabled:opacity-40">
               <span class="block text-xs">${item.type === 'note' ? 'NOTE' : 'COIN'}</span>
               ${MoneyMasters.renderDenomination(item)}
@@ -462,7 +527,7 @@ Object.assign(App.prototype, {
           `).join('')}
         </div>
         <button type="button" data-action="money-submit" ${game.answered ? 'disabled' : ''}
-                class="money-submit-button mt-4 w-full rounded-xl px-4 py-3 font-bold disabled:opacity-50">${isShopkeeper ? 'Check change' : 'Check amount'}</button>
+                class="money-submit-button mt-4 w-full rounded-xl px-4 py-3 font-bold disabled:opacity-50">Check amount</button>
       `
       : `
         <div class="grid grid-cols-2 gap-3 mt-6">

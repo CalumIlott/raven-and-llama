@@ -69,6 +69,29 @@ test('Shopkeeper transactions support exact tender and validate integer-cent tot
   assert.throws(() => money.createShopkeeperQuestion([{ name: 'Apple', price: 27 }], 30, 'easy'), /5-cent increments/);
 });
 
+test('Shopkeeper renders a split cash drawer and keeps the change answer hidden until submission', () => {
+  const main = { innerHTML: '', dataset: {}, addEventListener() {} };
+  const arena = { innerHTML: '' };
+  const context = createBrowserContext({
+    App: class App {},
+    ProfileManager: { getSubjectDifficulty: () => 'hard' },
+    document: { getElementById: id => id === 'app-main' ? main : id === 'money-arena' ? arena : null }
+  });
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/mathmasters/money.js');
+  const app = new context.App();
+
+  app.startMoneyGame('shopkeeper', 'hard');
+
+  assert.match(arena.innerHTML, /Customer counter/);
+  assert.match(arena.innerHTML, /Cash drawer/);
+  assert.match(arena.innerHTML, /money-drawer-group--coin/);
+  assert.match(arena.innerHTML, /money-drawer-group--note/);
+  assert.match(arena.innerHTML, /Change on the counter/);
+  assert.match(arena.innerHTML, /aria-live="polite" aria-atomic="true" aria-label="Selected change total"/);
+  assert.doesNotMatch(arena.innerHTML, /Change due/);
+});
+
 test('Australian denominations progress from coins to notes and larger amounts', () => {
   const money = loadMoneyMasters();
 

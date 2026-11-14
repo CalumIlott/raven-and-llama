@@ -162,6 +162,151 @@ html.theme-light .money-denomination-note {
 .money-change-emphasis { color: #fcd34d; }
 html.theme-light .money-change-emphasis { color: #92400e; }
 
+.money-register { display: grid; gap: 1rem; margin: 1.25rem 0; }
+.money-register-counter {
+  overflow: hidden;
+  border: 2px solid #475569;
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  color: #f8fafc;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 25%);
+}
+.money-register-counter__header,
+.money-register-drawer__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.9rem;
+  padding: 0.6rem 0.9rem;
+  background: linear-gradient(90deg, #334155, #1e293b);
+}
+.money-register-counter__header h3,
+.money-register-drawer__heading h3,
+.money-change-tray__heading h3 { margin: 0; font-size: 1rem; font-weight: 800; }
+.money-register-counter__light {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0.65rem #34d399;
+}
+.money-register-receipt {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(7rem, 0.8fr);
+  gap: 0.8rem;
+  padding: 0.85rem;
+}
+.money-register-receipt__basket,
+.money-register-receipt__payment {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid #475569;
+  border-radius: 0.85rem;
+  background: rgb(2 6 23 / 65%);
+}
+.money-register-receipt__basket h4 { margin: 0 0 0.45rem; color: #cbd5e1; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.money-register-receipt__basket ul { display: grid; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.money-register-receipt__basket li,
+.money-register-receipt__amount,
+.money-register-receipt__payment { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.money-register-receipt__basket li { color: #e2e8f0; font-size: 0.9rem; }
+.money-register-receipt__item-price { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.3rem; }
+.money-register-receipt__item-price .money-amount-visual { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.12rem; }
+.money-register-receipt__amount { flex-wrap: wrap; margin: 0.7rem 0 0; padding-top: 0.65rem; border-top: 1px solid #475569; color: #cbd5e1; font-size: 0.8rem; }
+.money-register-receipt__amount strong { color: #fbbf24; }
+.money-register-receipt__payment { flex-direction: column; align-items: flex-start; justify-content: center; color: #cbd5e1; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+.money-register-receipt__payment strong { color: #86efac; font-size: 1.5rem; letter-spacing: 0; }
+.money-register-drawer {
+  overflow: hidden;
+  border: 3px solid #64748b;
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, #475569, #334155);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%), 0 8px 20px rgb(15 23 42 / 25%);
+}
+.money-register-drawer__heading { justify-content: space-between; background: linear-gradient(90deg, #78350f, #92400e); color: #fff7ed; }
+.money-register-drawer__handle { width: 2.6rem; height: 0.3rem; border-radius: 999px; background: #fbbf24; box-shadow: inset 0 1px 2px rgb(120 53 15 / 45%); }
+#app-main[data-page] .money-register-drawer__help { margin: 0; padding: 0.65rem 0.85rem 0; color: #fff; font-size: 0.8rem; }
+#app-main[data-page] .money-register-drawer__heading h3 { color: #fff7ed; }
+.money-register-drawer__groups { display: grid; gap: 0.7rem; padding: 0.8rem; }
+.money-drawer-group { min-width: 0; margin: 0; padding: 0.65rem; border: 1px solid #94a3b8; border-radius: 0.8rem; background: rgb(15 23 42 / 35%); }
+.money-drawer-group legend { padding: 0 0.4rem; color: #fef3c7; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+.money-register-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(7.25rem, 100%), 1fr)); gap: 0.55rem; }
+.money-register-slot {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 7.6rem;
+  justify-items: center;
+  align-content: center;
+  gap: 0.3rem;
+  padding: 0.45rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  background: #1e293b;
+  color: #fff;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+.money-register-slot:hover:not(:disabled),
+.money-register-slot:focus-visible { z-index: 1; transform: translateY(-2px); box-shadow: 0 0 0 3px #fbbf24; outline: none; }
+.money-register-slot:disabled { cursor: not-allowed; opacity: 0.45; }
+.money-register-slot__kind { color: #cbd5e1; font-size: 0.58rem; font-weight: 800; letter-spacing: 0.1em; }
+.money-register-slot__value { font-size: 0.82rem; font-weight: 800; }
+.money-register-slot .money-currency--note { width: min(100%, 6.5rem); height: 2.35rem; }
+.money-register-slot .money-currency--xxlarge.money-currency--note { width: min(100%, 6.5rem); }
+.money-change-tray {
+  min-height: 9rem;
+  padding: 0.9rem;
+  border: 2px dashed #f59e0b;
+  border-radius: 1rem;
+  background: #0f172a;
+  color: #f8fafc;
+  text-align: center;
+}
+.money-change-tray.activity-drop-target { border-style: solid; background: #1c2738; }
+.money-change-tray__heading { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; text-align: left; }
+.money-change-tray__eyebrow { margin: 0 0 0.15rem; color: #fcd34d; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+.money-change-tray__heading output { color: #fbbf24; font-size: 1.55rem; font-weight: 900; }
+.money-change-tray__hint { margin: 0.4rem 0; color: #cbd5e1; font-size: 0.8rem; }
+.money-change-tray__items { display: flex; min-height: 2rem; flex-wrap: wrap; justify-content: center; gap: 0.35rem; margin: 0.5rem 0; padding: 0; list-style: none; }
+.money-change-tray__items li { display: grid; place-items: center; min-width: 2rem; min-height: 2rem; border-radius: 0.4rem; background: #1e293b; }
+.money-change-tray__actions { display: flex; justify-content: center; gap: 0.5rem; }
+.money-change-tray__actions button { min-height: 2.5rem; padding: 0.4rem 0.75rem; border: 1px solid #64748b; border-radius: 0.6rem; background: #334155; color: #fff; font-size: 0.8rem; font-weight: 700; }
+.money-change-tray__actions button:disabled { cursor: not-allowed; opacity: 0.45; }
+.money-register-check { width: 100%; min-height: 3rem; border-radius: 0.8rem; font-weight: 800; }
+html.theme-light .money-register-counter { border-color: #94a3b8; background: linear-gradient(145deg, #fff, #e2e8f0); color: #0f172a; }
+html.theme-light .money-register-counter__header { background: linear-gradient(90deg, #e2e8f0, #cbd5e1); }
+html.theme-light .money-register-counter__header h3 { color: #0f172a; }
+html.theme-light .money-register-receipt__basket,
+html.theme-light .money-register-receipt__payment { border-color: #cbd5e1; background: #fff; }
+html.theme-light .money-register-receipt__basket h4,
+html.theme-light .money-register-receipt__basket li,
+html.theme-light .money-register-receipt__payment { color: #334155; }
+html.theme-light .money-register-receipt__amount { border-color: #cbd5e1; color: #475569; }
+html.theme-light .money-register-receipt__amount strong { color: #92400e; }
+html.theme-light .money-register-receipt__payment strong { color: #166534; }
+html.theme-light .money-register-drawer { border-color: #b45309; background: linear-gradient(145deg, #fde68a, #fef3c7); }
+html.theme-light #app-main[data-page] .money-register-drawer__help { color: #334155; }
+html.theme-light .money-drawer-group { border-color: #d97706; background: rgb(255 255 255 / 70%); }
+html.theme-light .money-drawer-group legend { color: #78350f; }
+html.theme-light .money-register-slot { border-color: #b45309; background: #fff; color: #0f172a; }
+html.theme-light .money-register-slot__kind { color: #475569; }
+html.theme-light .money-change-tray { background: #fff; color: #0f172a; }
+html.theme-light #app-main[data-page] .money-change-tray__heading output { color: #92400e; }
+html.theme-light .money-change-tray__hint { color: #475569; }
+html.theme-light .money-change-tray__items li { background: #f1f5f9; }
+html.theme-light .money-change-tray__actions button { border-color: #94a3b8; background: #e2e8f0; color: #0f172a; }
+@media (max-width: 480px) {
+  .money-register-receipt { grid-template-columns: minmax(0, 1fr) minmax(6.5rem, 0.65fr); gap: 0.5rem; padding: 0.6rem; }
+  .money-register-receipt__basket, .money-register-receipt__payment { padding: 0.6rem; }
+  .money-register-slots { grid-template-columns: repeat(auto-fit, minmax(min(6rem, 100%), 1fr)); gap: 0.4rem; }
+  .money-register-slot { min-height: 7rem; padding: 0.35rem; }
+  .money-register-slot .money-currency--note { height: 2rem; }
+  .money-change-tray__heading output { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .money-register-slot { transition: none; }
+}
+
 .fraction-pizza-eyebrow { color: #fcd34d; }
 html.theme-light .fraction-pizza-eyebrow { color: #92400e; }
 
