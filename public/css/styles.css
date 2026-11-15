@@ -936,8 +936,15 @@ html.dyslexia-friendly body :is(p, li, blockquote) {
 .balance-scale__weight--removable span { margin-left: 0.2rem; font-size: 0.8rem; }
 .balance-scale-empty { color: #cbd5e1; font-style: italic; }
 .balance-scale-actions button { min-height: 2.75rem; }
-.balance-scale-actions [data-action="arcade-balance-check"] { background-color: #047857; color: #fff; }
-html.theme-light .balance-scale-actions [data-action="arcade-balance-check"] { background-color: #166534; color: #fff; }
+.balance-scale-actions [data-action="arcade-balance-check"] {
+  background-color: #047857 !important;
+  color: #fff !important;
+  transition: transform 140ms ease;
+}
+html.theme-light #app-main[data-page] .balance-scale-actions [data-action="arcade-balance-check"] {
+  background-color: #166534 !important;
+  color: #fff !important;
+}
 html.theme-light .balance-scale { border-color: #94a3b8; background: linear-gradient(#f8fafc, #e2e8f0); }
 html.theme-light .balance-scale__pan-surface { border-color: #64748b; background: #cbd5e1; }
 html.theme-light .balance-scale__wire { background: #475569; }

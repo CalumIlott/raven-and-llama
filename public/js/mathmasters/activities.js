@@ -362,7 +362,7 @@ Object.assign(ArcadeEngine.prototype, {
         ${activity.balanceWeights.map((value, index) => `<button type="button" data-action="arcade-balance-remove" data-index="${index}" aria-label="Remove ${value} unit weight" class="balance-scale__weight balance-scale__weight--removable">${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights added yet</span>'}
       </div>
       <div class="balance-scale-actions">
-        <button type="button" data-action="arcade-balance-check" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check balance</button>
+        <button type="button" data-action="arcade-balance-check" class="btn-ninja rounded-xl px-5 py-3 font-bold">Check balance</button>
         <button type="button" data-action="arcade-balance-clear" ${activity.balanceWeights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear weights</button>
       </div>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
