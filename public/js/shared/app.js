@@ -404,6 +404,10 @@ class App {
       case 'arcade-gem': window.arcadeEngine.tapGem(Number(target.dataset.index)); break;
       case 'arcade-turret': window.arcadeEngine.fireTurret(Number(target.dataset.value)); break;
       case 'arcade-maths-answer': window.arcadeEngine.answerMathsActivity(decodeURIComponent(target.dataset.value)); break;
+      case 'arcade-balance-add': window.arcadeEngine.addBalanceScaleWeight(Number(target.dataset.value)); break;
+      case 'arcade-balance-remove': window.arcadeEngine.removeBalanceScaleWeight(Number(target.dataset.index)); break;
+      case 'arcade-balance-clear': window.arcadeEngine.clearBalanceScaleWeights(); break;
+      case 'arcade-balance-check': window.arcadeEngine.checkBalanceScale(); break;
       case 'arcade-maths-order': window.arcadeEngine.pickMathsOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
       case 'arcade-maths-model-next': window.arcadeEngine.advanceNumberModelRound(); break;
       case 'arcade-maths-cell': window.arcadeEngine.toggleMathsActivityCell(Number(target.dataset.index)); break;

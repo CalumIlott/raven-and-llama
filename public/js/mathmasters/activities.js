@@ -162,7 +162,8 @@ Object.assign(ArcadeEngine.prototype, {
       selectedPairItems: {},
       stage: 0,
       target: 0,
-      targets: []
+      targets: [],
+      balanceWeights: []
     };
 
     container.innerHTML = this.renderArcadeShell(
@@ -264,6 +265,11 @@ Object.assign(ArcadeEngine.prototype, {
     activity.userOrder = [];
     const body = document.getElementById('ma-body');
     if (!body) return;
+    if (activity.activityId === 'balance-scales') {
+      activity.balanceWeights = [];
+      this.renderBalanceScaleExercise(question);
+      return;
+    }
     let visual = '';
     if (question.type === 'subitise') {
       visual = VisualRenderers.renderSubitise(question.targetNumber, question.layout, question.itemIcon || '🔵');
@@ -309,6 +315,86 @@ Object.assign(ArcadeEngine.prototype, {
       ${controls}
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
     document.getElementById('ma-answer')?.focus?.({ preventScroll: true });
+  },
+
+  renderBalanceScaleExercise(question) {
+    const activity = this.mathsActivity;
+    const body = document.getElementById('ma-body');
+    if (!activity || !body) return;
+    const leftTotal = question.leftA + question.leftB;
+    const selectedTotal = activity.balanceWeights.reduce((total, value) => total + value, 0);
+    const rightTotal = question.rightA + selectedTotal;
+    const difference = leftTotal - rightTotal;
+    const tilt = difference === 0 ? 'balanced' : difference > 0 ? 'left-heavy' : 'right-heavy';
+    const tiltMagnitude = Math.abs(difference) >= 10 ? 3 : Math.abs(difference) >= 5 ? 2 : 1;
+    const tiltClasses = `balance-scale__beam--${tilt}${difference === 0 ? '' : ` balance-scale__beam--${tilt}-${tiltMagnitude}`}`;
+    const balanceDescription = difference === 0
+      ? 'The scale is balanced.'
+      : `${difference > 0 ? 'Left' : 'Right'} side is heavier by ${Math.abs(difference)}.`;
+    const leftWeights = [question.leftA, question.leftB].map(value =>
+      `<span class="balance-scale__weight balance-scale__weight--fixed">${value}</span>`
+    ).join('');
+    const rightWeights = [
+      `<span class="balance-scale__weight balance-scale__weight--fixed">${question.rightA}</span>`,
+      ...activity.balanceWeights.map(value => `<span class="balance-scale__weight">${value}</span>`)
+    ].join('');
+
+    body.innerHTML = `
+      <p class="balance-scale-prompt">Build the missing amount on the right pan. Add weights until the scale balances.</p>
+      <div class="balance-scale" role="img" aria-label="Balance scale. Left pan has ${leftTotal} units. Right pan has ${rightTotal} units. ${balanceDescription}">
+        <div class="balance-scale__beam ${tiltClasses}">
+          <div class="balance-scale__pan balance-scale__pan--left">
+            <span class="balance-scale__wire" aria-hidden="true"></span>
+            <div class="balance-scale__pan-surface">${leftWeights}</div>
+          </div>
+          <div class="balance-scale__pan balance-scale__pan--right">
+            <span class="balance-scale__wire" aria-hidden="true"></span>
+            <div class="balance-scale__pan-surface">${rightWeights}</div>
+          </div>
+        </div>
+        <div class="balance-scale__fulcrum" aria-hidden="true"></div>
+      </div>
+      <p class="balance-scale-status" aria-live="polite">Left pan: ${leftTotal} units · Right pan: ${rightTotal} units. ${balanceDescription}</p>
+      <div class="balance-scale-rack" role="group" aria-label="Add a weight to the right pan">
+        ${[1, 2, 5, 10, 20].map(value => `<button type="button" data-action="arcade-balance-add" data-value="${value}" aria-label="Add ${value} unit${value === 1 ? '' : 's'}" ${activity.balanceWeights.length >= 20 ? 'disabled' : ''} class="balance-scale-weight-button"><span aria-hidden="true">＋</span>${value}</button>`).join('')}
+      </div>
+      <div class="balance-scale-selected" role="group" aria-label="Weights on the right pan">
+        ${activity.balanceWeights.map((value, index) => `<button type="button" data-action="arcade-balance-remove" data-index="${index}" aria-label="Remove ${value} unit weight" class="balance-scale__weight balance-scale__weight--removable">${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights added yet</span>'}
+      </div>
+      <div class="balance-scale-actions">
+        <button type="button" data-action="arcade-balance-check" class="btn-ninja rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white">Check balance</button>
+        <button type="button" data-action="arcade-balance-clear" ${activity.balanceWeights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear weights</button>
+      </div>
+      <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
+  },
+
+  addBalanceScaleWeight(value) {
+    const activity = this.mathsActivity;
+    const denomination = Number(value);
+    if (activity?.activityId !== 'balance-scales' || ![1, 2, 5, 10, 20].includes(denomination) || activity.balanceWeights.length >= 20) return;
+    activity.balanceWeights.push(denomination);
+    this.renderBalanceScaleExercise(activity.question);
+  },
+
+  removeBalanceScaleWeight(index) {
+    const activity = this.mathsActivity;
+    if (activity?.activityId !== 'balance-scales' || !Number.isInteger(index) || index < 0 || index >= activity.balanceWeights.length) return;
+    activity.balanceWeights.splice(index, 1);
+    this.renderBalanceScaleExercise(activity.question);
+  },
+
+  clearBalanceScaleWeights() {
+    const activity = this.mathsActivity;
+    if (activity?.activityId !== 'balance-scales') return;
+    activity.balanceWeights = [];
+    this.renderBalanceScaleExercise(activity.question);
+  },
+
+  checkBalanceScale() {
+    const activity = this.mathsActivity;
+    if (activity?.activityId !== 'balance-scales') return;
+    const total = activity.balanceWeights.reduce((sum, value) => sum + value, 0);
+    this.answerMathsActivity(total);
   },
 
   answerMathsActivity(answer) {
