@@ -336,11 +336,11 @@ Object.assign(ArcadeEngine.prototype, {
     ).join('');
     const rightWeights = [
       `<span class="balance-scale__weight balance-scale__weight--fixed">${question.rightA}</span>`,
-      ...activity.balanceWeights.map(value => `<span class="balance-scale__weight">${value}</span>`)
+      ...activity.balanceWeights.map(value => `<span class="balance-scale__weight${value < 0 ? ' balance-scale__weight--balloon' : ''}">${value < 0 ? '🎈' : ''}${value}</span>`)
     ].join('');
 
     body.innerHTML = `
-      <p class="balance-scale-prompt">Build the missing amount on the right pan. Add weights until the scale balances.</p>
+      <p class="balance-scale-prompt">Build the missing amount on the right pan. Weights add units; balloons lift and subtract units.</p>
       <div class="balance-scale" role="img" aria-label="Balance scale. Left pan has ${leftTotal} units. Right pan has ${rightTotal} units. ${balanceDescription}">
         <div class="balance-scale__beam ${tiltClasses}">
           <div class="balance-scale__pan balance-scale__pan--left">
@@ -358,12 +358,15 @@ Object.assign(ArcadeEngine.prototype, {
       <div class="balance-scale-rack" role="group" aria-label="Add a weight to the right pan">
         ${[1, 2, 5, 10, 20].map(value => `<button type="button" data-action="arcade-balance-add" data-value="${value}" aria-label="Add ${value} unit${value === 1 ? '' : 's'}" ${activity.balanceWeights.length >= 20 ? 'disabled' : ''} class="balance-scale-weight-button"><span aria-hidden="true">＋</span>${value}</button>`).join('')}
       </div>
-      <div class="balance-scale-selected" role="group" aria-label="Weights on the right pan">
-        ${activity.balanceWeights.map((value, index) => `<button type="button" data-action="arcade-balance-remove" data-index="${index}" aria-label="Remove ${value} unit weight" class="balance-scale__weight balance-scale__weight--removable">${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights added yet</span>'}
+      <div class="balance-scale-rack" role="group" aria-label="Add a lifting balloon to the right pan">
+        ${[-1, -2, -5].map(value => `<button type="button" data-action="arcade-balance-add" data-value="${value}" aria-label="Add balloon: subtract ${Math.abs(value)} unit${value === -1 ? '' : 's'}" ${activity.balanceWeights.length >= 20 ? 'disabled' : ''} class="balance-scale-weight-button balance-scale-weight-button--balloon"><span aria-hidden="true">🎈</span>${value}</button>`).join('')}
+      </div>
+      <div class="balance-scale-selected" role="group" aria-label="Weights and balloons on the right pan">
+        ${activity.balanceWeights.map((value, index) => `<button type="button" data-action="arcade-balance-remove" data-index="${index}" aria-label="${value < 0 ? `Remove balloon: subtract ${Math.abs(value)} unit${value === -1 ? '' : 's'}` : `Remove ${value} unit weight`}" class="balance-scale__weight balance-scale__weight--removable${value < 0 ? ' balance-scale__weight--balloon' : ''}">${value < 0 ? '🎈' : ''}${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights or balloons added yet</span>'}
       </div>
       <div class="balance-scale-actions">
         <button type="button" data-action="arcade-balance-check" class="btn-ninja rounded-xl px-5 py-3 font-bold">Check balance</button>
-        <button type="button" data-action="arcade-balance-clear" ${activity.balanceWeights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear weights</button>
+        <button type="button" data-action="arcade-balance-clear" ${activity.balanceWeights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear all</button>
       </div>
       <p id="ma-feedback" class="mt-4 text-center font-bold text-sky-200" aria-live="polite"></p>`;
   },
@@ -371,16 +374,19 @@ Object.assign(ArcadeEngine.prototype, {
   addBalanceScaleWeight(value) {
     const activity = this.mathsActivity;
     const denomination = Number(value);
-    if (activity?.activityId !== 'balance-scales' || ![1, 2, 5, 10, 20].includes(denomination) || activity.balanceWeights.length >= 20) return;
+    if (activity?.activityId !== 'balance-scales' || ![1, 2, 5, 10, 20, -1, -2, -5].includes(denomination) || activity.balanceWeights.length >= 20) return;
     activity.balanceWeights.push(denomination);
     this.renderBalanceScaleExercise(activity.question);
+    document.querySelector?.(`[data-action="arcade-balance-add"][data-value="${denomination}"]:not(:disabled)`)?.focus?.({ preventScroll: true });
   },
 
   removeBalanceScaleWeight(index) {
     const activity = this.mathsActivity;
     if (activity?.activityId !== 'balance-scales' || !Number.isInteger(index) || index < 0 || index >= activity.balanceWeights.length) return;
+    const removed = activity.balanceWeights[index];
     activity.balanceWeights.splice(index, 1);
     this.renderBalanceScaleExercise(activity.question);
+    document.querySelector?.(`[data-action="arcade-balance-add"][data-value="${removed}"]`)?.focus?.({ preventScroll: true });
   },
 
   clearBalanceScaleWeights() {
@@ -388,6 +394,7 @@ Object.assign(ArcadeEngine.prototype, {
     if (activity?.activityId !== 'balance-scales') return;
     activity.balanceWeights = [];
     this.renderBalanceScaleExercise(activity.question);
+    document.querySelector?.('[data-action="arcade-balance-add"][data-value="1"]')?.focus?.({ preventScroll: true });
   },
 
   checkBalanceScale() {
