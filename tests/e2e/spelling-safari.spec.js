@@ -5,7 +5,7 @@ test('Spelling & Words is a direct, refresh-safe hub for the existing Safari adv
   await page.goto('/learning-centre/spelling');
   await expect(page.getByRole('heading', { name: 'Spelling & Words', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
-  await expect(page.locator('[data-action="spelling-start"]')).toHaveCount(12);
+  await expect(page.locator('[data-action="spelling-start"]')).toHaveCount(15);
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Spelling & Words', exact: true })).toBeVisible();
@@ -253,7 +253,7 @@ async function answerCurrentQuestion(page) {
   }
 }
 
-test('Spelling Safari offers and completes all four word-game adventures', async ({ page }) => {
+test('Spelling Safari offers and completes all five word-game adventures', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await setupApp(page);
   await openLearningCentre(page);
@@ -263,12 +263,13 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   await page.getByRole('button', { name: /Spelling & Words/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
 
-  for (const activity of ['Spelling Sprint', 'Phonics Trail', 'Word Explorer', 'Jungle Jumble']) {
+  for (const activity of ['Spelling Sprint', 'Phonics Trail', 'Word Explorer', 'Jungle Jumble', 'Rhyme Ranger']) {
     const activityId = {
       'Spelling Sprint': 'spelling-sprint',
       'Phonics Trail': 'phonics-trail',
       'Word Explorer': 'word-explorer',
-      'Jungle Jumble': 'jungle-jumble'
+      'Jungle Jumble': 'jungle-jumble',
+      'Rhyme Ranger': 'rhyme-ranger'
     }[activity];
     if (activity === 'Jungle Jumble') {
       const card = page.locator('[data-activity-id="jungle-jumble"][data-difficulty="medium"]');
@@ -312,6 +313,40 @@ test('Spelling Safari offers and completes all four word-game adventures', async
       await page.getByRole('button', { name: 'Choose another adventure' }).click();
     }
   }
+});
+
+test('Rhyme Ranger speaks the clue word and keeps the matching word hidden until selection', async ({ page }) => {
+  await page.addInitScript(() => {
+    const spoken = [];
+    window.__rhymeSpeechCalls = spoken;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => [{ name: 'Australian English', lang: 'en-AU' }],
+        cancel() {},
+        speak(utterance) { spoken.push(utterance.text); }
+      }
+    });
+  });
+  await page.goto('/learning-centre/spelling');
+  await page.locator('[data-activity-id="rhyme-ranger"][data-difficulty="medium"]').click();
+
+  const question = await page.evaluate(() => window.app.spellingSafariGame.questions[0]);
+  await expect(page.getByText(`Which word rhymes with ${question.soundWord}?`)).toBeVisible();
+  expect(question.answer).not.toBe(question.soundWord);
+  expect(await page.locator('.play-prompt').innerText()).not.toContain(question.answer);
+  await page.getByRole('button', { name: 'Hear the word pronunciation' }).click();
+  expect(await page.evaluate(() => window.__rhymeSpeechCalls)).toEqual([question.soundWord]);
+
+  await page.getByRole('button', { name: question.answer, exact: true }).click();
+  await expect(page.locator('#safari-feedback')).toContainText('Great work!');
+  await expect(page.locator('#safari-feedback')).toContainText('share the same ending sound');
 });
 
 test('Jungle Jumble has safe empty-pool and speech-fallback states', async ({ page }) => {

@@ -10,7 +10,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | :--- | :--- | :--- | :---: | :--- |
 | **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant (Except Brown Belt Fractions: 18) |
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
-| **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble | **423** questions | ✅ Compliant |
+| **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble, Rhyme Ranger | **847** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
 | **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **165** countries | ✅ Compliant |
 | **History Hub** | `/learning-centre/history` | Timeline Builder, Artifact Detective | **104** sourced events; 4 finite artifact cases | Event icons repaired and tested; artifact set is intentionally finite |
@@ -47,7 +47,8 @@ This document catalogues every subject hub, learning activity, question bank siz
   2. **Phonics Trail**: 108 fill-in-the-blank phoneme questions with contextual clues and an interactive grapheme soundboard. Tap tiles or swipe across the blending bar to hear an attempted word; keyboard users can select the missing sound, hear individual tiles, blend, and check it.
   3. **Word Explorer**: 100 vocabulary, synonym, antonym, and definition questions.
   4. **Jungle Jumble**: 100 anagram scramble puzzles dynamically scrambled per round.
-  5. **Spell It**: Custom spelling quiz powered by parent/teacher lists managed in the Progress modal.
+  5. **Rhyme Ranger**: 424 distinct ordered prompt/answer pairs built from 30 curated rhyme families; difficulty changes how many answer choices appear.
+  6. **Spell It**: Custom spelling quiz powered by parent/teacher lists managed in the Progress modal.
 * **Speech Synthesis Engine**:
   - Uses browser Web Speech API (`window.speechSynthesis`).
   - Automatically queries available system voices, prioritizing Australian English (`en-AU`, e.g. "Karen", "Lee", "Russell") or English regional fallbacks at child-friendly cadence ($0.85\times$ rate).
