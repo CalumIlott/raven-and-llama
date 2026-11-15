@@ -517,9 +517,20 @@ test('Balance Scales text meets WCAG AA contrast in both themes', async ({ page 
   await openMathsDojo(page);
   await page.locator('a[data-action="belt-detail"][data-belt-id="blue"]').click();
   await page.getByRole('button', { name: /Balance the Scales/ }).click();
+  const checkBalance = page.getByRole('button', { name: 'Check balance' });
 
   for (const theme of ['dark', 'light']) {
     await page.evaluate(value => window.ProfileManager.applyTheme(value), theme);
+    await page.evaluate(async () => {
+      await Promise.all(document.getAnimations({ subtree: true }).map(animation => animation.finished.catch(() => {})));
+    });
+    const colors = await checkBalance.evaluate(button => ({
+      foreground: getComputedStyle(button).color,
+      background: getComputedStyle(button).backgroundColor
+    }));
+    const expectedBackground = theme === 'light' ? 'rgb(22, 101, 52)' : 'rgb(4, 120, 87)';
+    expect(colors).toEqual({ foreground: 'rgb(255, 255, 255)', background: expectedBackground });
+    expect(contrastRatio(colors.foreground, colors.background)).toBeGreaterThanOrEqual(4.5);
     const failures = await findTextContrastFailures(page, '#ma-body');
     expect(failures, `Balance Scales (${theme} theme): ${JSON.stringify(failures)}`).toEqual([]);
   }
