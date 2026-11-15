@@ -493,7 +493,10 @@ Object.assign(App.prototype, {
     ProfileManager.loadLeaderboard('times_tables');
   },
 
-  renderLearningRecommendations(profile) {
+  renderLearningRecommendations(profile, placement = 'learning-centre') {
+    const idPrefix = placement === 'home' ? 'home' : 'learning';
+    const sectionId = `${idPrefix}-recommendations`;
+    const headingId = `${sectionId}-title`;
     const recommendations = window.LearningRecommendations?.recommend(profile, {
       isAvailable: activity => typeof this[activity.startMethod] === 'function'
     }) || [];
@@ -510,11 +513,11 @@ Object.assign(App.prototype, {
       </li>
     `).join('');
     return `
-      <section id="learning-recommendations" class="rounded-3xl border border-violet-700/60 bg-gradient-to-br from-violet-950/70 via-slate-900 to-cyan-950/70 p-5 shadow-xl sm:p-7" aria-labelledby="learning-recommendations-title">
+      <section id="${sectionId}" class="rounded-3xl border border-violet-700/60 bg-gradient-to-br from-violet-950/70 via-slate-900 to-cyan-950/70 p-5 shadow-xl sm:p-7" aria-labelledby="${headingId}">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p class="text-xs font-bold uppercase tracking-wider text-violet-300">Your next steps</p>
-            <h2 id="learning-recommendations-title" class="mt-1 font-ninja text-2xl font-bold text-white">Recommended for you</h2>
+            <h2 id="${headingId}" class="mt-1 font-ninja text-2xl font-bold text-white">Recommended for you</h2>
           </div>
           <p class="text-sm text-slate-300">Based on this learner’s practice and year settings.</p>
         </div>
