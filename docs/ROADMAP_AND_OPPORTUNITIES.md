@@ -43,7 +43,7 @@ Most online learning tools for primary students fall into the trap of "drill-and
   - Present an unidentified historical object (e.g., clay tablet, bronze astrolabe, silk scroll).
   - Learners use a magnifying glass and carbon dating tool to collect 3 clues and deduce which era or civilization made it.
 * **Passport Mystery Trail**:
-  - An interactive globe mystery where students travel from country to country following geographic clues ("Fly to the capital of the country whose flag has a maple leaf").
+  - **Initial version delivered in the Geography hub**: five replayable, three-clue mysteries that can be solved from the map or country list, including small-island marker support. Longer multi-country expeditions remain a future enhancement.
 
 ---
 

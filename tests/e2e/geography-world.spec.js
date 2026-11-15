@@ -34,6 +34,59 @@ test('Geography & The World route survives refresh and is linked from the subjec
   await expect(page).toHaveURL(/\/learning-centre$/);
 });
 
+test('Globe Trotter reveals clues and lets learners solve a country mystery from the list', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+
+  const panel = page.locator('#geography-globe-trail-panel');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('ol li')).toHaveCount(1);
+  await expect(panel.locator('[role="status"]')).toContainText('Select your guess');
+  const { answerCountryId, wrongCountryId } = await page.evaluate(() => {
+    const answerCountryId = window.app.geographyGlobeTrail.case.answerCountryId;
+    const wrongCountryId = window.GEOGRAPHY_COUNTRY_DATA.countries.find(country => country.id !== answerCountryId).id;
+    return { answerCountryId, wrongCountryId };
+  });
+
+  await page.locator(`.geography-country-option[data-country-id="${wrongCountryId}"]`).click();
+  await expect(panel.locator('[role="status"]')).toContainText('Not this stop');
+  await expect(page.getByRole('heading', { name: 'Canada', exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Reveal next clue' }).click();
+  await page.getByRole('button', { name: 'Reveal next clue' }).click();
+  await expect(panel.locator('ol li')).toHaveCount(3);
+  await page.locator(`.geography-country-option[data-country-id="${answerCountryId}"]`).click();
+
+  await expect(panel.locator('[role="status"]')).toContainText('Passport stamp earned');
+  const answer = await page.evaluate(id => window.GEOGRAPHY_COUNTRY_DATA.countries.find(country => country.id === id).name, answerCountryId);
+  await expect(page.getByRole('heading', { name: answer, exact: true })).toBeVisible();
+  await expect(page.locator(`.geography-map__region[data-country-id="${answerCountryId}"]`)).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('Globe Trotter accepts the enlarged Mauritius island marker as a clue answer', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+  await page.evaluate(() => {
+    const trailCase = window.GeographyGlobeTrail.cases.find(item => item.answerCountryId === 'mauritius');
+    window.app.geographyGlobeTrail = { case: trailCase, clueIndex: 0, solved: false, message: '' };
+    window.app.renderGeographyGlobeTrail();
+  });
+
+  const hit = page.locator('.geography-map__region[data-country-id="mauritius"] .geography-map__hit-target');
+  await hit.scrollIntoViewIfNeeded();
+  const hitPoint = await hit.evaluate(element => {
+    const matrix = element.ownerSVGElement.getScreenCTM();
+    const point = new DOMPoint(Number(element.getAttribute('cx')), Number(element.getAttribute('cy'))).matrixTransform(matrix);
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(hitPoint.x, hitPoint.y);
+
+  await expect(page.locator('#geography-globe-trail-status')).toContainText('Passport stamp earned');
+  await expect(page.getByRole('heading', { name: 'Mauritius', exact: true })).toBeVisible();
+});
+
 test('country map and list selection share facts and support keyboard activation', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/geography');
