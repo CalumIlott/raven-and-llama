@@ -4050,6 +4050,58 @@ html.theme-light .play-order-slot:not(.is-filled) { color: #47574d !important; b
 .play-shell--science { --play-accent: #65b8e4; --play-accent-soft: #173a45; }
 .play-shell--spelling { --play-accent: #e3a165; --play-accent-soft: #3a2a1c; }
 html.theme-light .play-shell--science { --play-accent: #17688c; --play-accent-soft: #e1f1f5; }
+
+.thermal-chamber-vessel {
+  position: relative;
+  min-height: 18rem;
+  overflow: hidden;
+  border: 3px solid #94a3b8;
+  border-top: 0;
+  border-radius: 0 0 2rem 2rem;
+  background: linear-gradient(180deg, #0c4a6e 0%, #082f49 100%);
+}
+.thermal-chamber-lid {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 4%;
+  width: 92%;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+.thermal-chamber-vessel--closed .thermal-chamber-lid { height: 0.8rem; background: #67e8f9; }
+.thermal-particle {
+  position: absolute;
+  left: var(--particle-x);
+  top: var(--particle-y);
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: #bae6fd;
+  box-shadow: 0 0 0.6rem rgb(186 230 253 / 60%);
+  transform: translate(-50%, -50%);
+}
+.thermal-particle--solid { animation: thermal-vibrate 1s ease-in-out infinite alternate; }
+.thermal-particle--liquid { background: #38bdf8; animation: thermal-flow 2.2s ease-in-out infinite alternate; }
+.thermal-particle--gas { background: #f0abfc; box-shadow: 0 0 0.75rem rgb(240 171 252 / 70%); animation: thermal-vapour 2.5s ease-in-out infinite alternate; }
+.thermal-particle--melting { background: #67e8f9; animation: thermal-flow 1.5s ease-in-out infinite alternate; }
+.thermal-particle--boiling { background: #f0abfc; animation: thermal-vapour 1.8s ease-in-out infinite alternate; }
+.thermal-condensation {
+  position: absolute;
+  z-index: 3;
+  top: 0.85rem;
+  left: 0;
+  width: 100%;
+  color: #bae6fd;
+  text-align: center;
+}
+@keyframes thermal-vibrate { to { transform: translate(-50%, -50%) translateY(-2px); } }
+@keyframes thermal-flow { to { transform: translate(-50%, -50%) translate(3px, -4px); } }
+@keyframes thermal-vapour { to { transform: translate(-50%, -50%) translate(10px, -12px); } }
+@media (prefers-reduced-motion: reduce) {
+  .thermal-particle { animation: none !important; }
+}
 html.theme-light .play-shell--spelling { --play-accent: #97512b; --play-accent-soft: #f7eadb; }
 
 .play-progress {
