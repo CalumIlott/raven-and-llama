@@ -1560,12 +1560,27 @@ class App {
           : activity.skillId
             ? `Unresolved Learning Centre skill (${activity.skillId})`
             : 'No Learning Centre skill mapping recorded';
-        [
-          activity.subject,
-          activity.title,
-          skill,
-          activity.australianCurriculum || 'Not mapped'
-        ].forEach(value => row.append(createCell(value)));
+        [activity.subject, activity.title, skill].forEach(value => row.append(createCell(value)));
+        const curriculumCell = document.createElement('td');
+        curriculumCell.className = 'py-2.5 px-3 text-slate-300';
+        if (activity.australianCurriculum) {
+          const mapping = activity.australianCurriculum;
+          const link = document.createElement('a');
+          link.href = mapping.sourceUrl;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = `${mapping.code} (${mapping.yearLevel})`;
+          link.setAttribute('aria-label', `${mapping.code}, ${mapping.title}; ${mapping.curriculumVersion}, official source opens in a new tab`);
+          link.className = 'text-sky-300 underline underline-offset-2 hover:text-sky-200';
+          curriculumCell.append(link);
+          const note = document.createElement('span');
+          note.className = 'mt-1 block text-xs text-slate-400';
+          note.textContent = `${mapping.title}. ${mapping.scopeNote} ${mapping.curriculumVersion}.`;
+          curriculumCell.append(note);
+        } else {
+          curriculumCell.textContent = 'Not mapped';
+        }
+        row.append(curriculumCell);
         mappingsBody.append(row);
       });
     }

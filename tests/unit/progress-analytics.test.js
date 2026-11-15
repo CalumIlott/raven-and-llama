@@ -79,6 +79,35 @@ test('aggregates selected date ranges by subject and date and resolves configure
   assert.equal(result.activities.find(item => item.activityId === 'science-water-cycle').australianCurriculum, null);
 });
 
+test('links only curated Australian Curriculum v9 mappings to their official source', () => {
+  const analytics = loadAnalytics();
+  const result = analytics.aggregateActivityHistory([
+    sample({ activityId: 'maths-equations', skillId: 'blue_balanced_equation' }),
+    sample({ activityId: 'unknown-skill', skillId: 'science_water_cycle' })
+  ], 30, new Date('2026-03-10T12:00:00.000Z'));
+  const mapped = result.activities.find(item => item.activityId === 'maths-equations').australianCurriculum;
+  const unmapped = result.activities.find(item => item.activityId === 'unknown-skill').australianCurriculum;
+
+  assert.equal(mapped.code, 'AC9M4A02');
+  assert.equal(mapped.yearLevel, 'Year 4');
+  assert.equal(mapped.curriculumVersion, 'Australian Curriculum v9.0');
+  assert.match(mapped.sourceUrl, /^https:\/\/www\.australiancurriculum\.edu\.au\//);
+  assert.match(mapped.scopeNote, /subset/);
+  assert.equal(unmapped, null);
+  assert.equal(analytics.getAustralianCurriculumMapping('unverified_skill'), null);
+  for (const [skillId, code] of [
+    ['green_order', 'AC9M3N01'],
+    ['blue_balanced_equation', 'AC9M4A02'],
+    ['brown_fraction', 'AC9M4N05'],
+    ['black_decimal_order', 'AC9M5N01']
+  ]) {
+    const mapping = analytics.getAustralianCurriculumMapping(skillId);
+    assert.equal(mapping.code, code);
+    assert.ok(mapping.sourceTitle);
+    assert.equal(mapping.curriculumVersion, 'Australian Curriculum v9.0');
+  }
+});
+
 test('returns explicit empty range buckets and rejects unsupported ranges', () => {
   const analytics = loadAnalytics();
   const result = analytics.aggregateActivityHistory([], 30, new Date('2026-03-10T00:00:00.000Z'));
