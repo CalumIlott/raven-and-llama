@@ -357,6 +357,10 @@ class App {
       case 'ecosystem-sandbox-adjust': this.adjustScienceEcosystemPopulation(target.dataset.speciesId, Number(target.dataset.delta)); break;
       case 'ecosystem-sandbox-next-day': this.advanceScienceEcosystemDay(); break;
       case 'ecosystem-sandbox-reset': this.resetScienceEcosystemSandbox(); break;
+      case 'thermal-chamber-start': this.startThermalChamber(); break;
+      case 'thermal-chamber-temperature': this.setThermalChamberTemperature(Number(target.value)); break;
+      case 'thermal-chamber-adjust': this.adjustThermalChamberTemperature(Number(target.dataset.delta)); break;
+      case 'thermal-chamber-lid': this.toggleThermalChamberLid(); break;
       case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
