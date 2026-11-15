@@ -173,6 +173,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 
 ### 5.4 Globe Trotter Clue Trail (Geography Hub)
 * **Concept**: A Carmen Sandiego-inspired mystery flight adventure across the interactive SVG world map.
+* **Initial delivery**: Five replayable, three-clue passport mysteries. Learners can solve them using either the map (including enlarged island markers) or the keyboard-friendly country list; a correct answer opens the existing flag and fact panel.
 * **Mechanics**:
   - A missing artifact or animal mystery unfolds across countries.
   - Witnesses give cultural and geographical clues:

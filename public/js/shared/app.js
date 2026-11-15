@@ -246,6 +246,8 @@ class App {
       case 'history-timeline-retry': this.retryHistoryTimeline(); break;
       case 'history-timeline-reset': this.resetHistoryTimeline(); break;
       case 'geography-world': this.showGeographyWorld(); break;
+      case 'geography-globe-start': this.startGeographyGlobeTrail(); break;
+      case 'geography-globe-clue': this.revealGeographyGlobeClue(); break;
       case 'geography-flag-start': this.startGeographyFlagDetective(); break;
       case 'geography-capital-start': this.startGeographyCapitalCities(); break;
       case 'geography-country-answer': this.answerGeographyCountryQuestion(Number(target.dataset.answerIndex)); break;

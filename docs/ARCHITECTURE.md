@@ -63,6 +63,7 @@ public/
 │   ├── geography/
 │   │   ├── country-data.js        # Interactive country dataset (flags, capitals, facts)
 │   │   ├── world-map-context.js   # 189-country background SVG vector paths, including schematic markers for tiny islands
+│   │   ├── globe-trotter.js       # Curated map-based country mystery clues
 │   │   ├── world-map.js           # Interactive SVG world map component (pan/zoom)
 │   │   └── country-activities.js  # Flag Detective & Capital Cities activities
 │   ├── history/

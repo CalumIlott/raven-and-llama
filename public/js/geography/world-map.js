@@ -145,6 +145,44 @@ function renderGeographyCountryDetails(country) {
 }
 
 Object.assign(App.prototype, {
+  startGeographyGlobeTrail() {
+    const previousCaseId = this.geographyGlobeTrail?.case?.id || null;
+    const trailCase = window.GeographyGlobeTrail.chooseCase(Math.random, previousCaseId);
+    this.geographyGlobeTrail = { case: trailCase, clueIndex: 0, solved: false, message: '' };
+    this.renderGeographyGlobeTrail();
+  },
+
+  revealGeographyGlobeClue() {
+    const trail = this.geographyGlobeTrail;
+    if (!trail || trail.solved || trail.clueIndex >= trail.case.clues.length - 1) return;
+    trail.clueIndex += 1;
+    trail.message = '';
+    this.renderGeographyGlobeTrail();
+  },
+
+  renderGeographyGlobeTrail() {
+    const panel = document.getElementById('geography-globe-trail-panel');
+    const trail = this.geographyGlobeTrail;
+    if (!panel || !trail) return;
+    panel.classList.remove('hidden');
+    panel.innerHTML = `
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-violet-300">Passport mystery · ${trail.solved ? 'stamp earned' : `clue ${trail.clueIndex + 1} of ${trail.case.clues.length}`}</p>
+          <h3 id="geography-globe-trail-title" class="mt-1 font-ninja text-xl font-bold text-white">Where are we going?</h3>
+        </div>
+        <button type="button" data-action="geography-globe-start" class="rounded-xl border border-violet-300/70 px-3 py-2 text-sm font-bold text-violet-100 hover:bg-violet-400/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200">New mystery</button>
+      </div>
+      <ol class="mt-4 grid gap-2 text-sm text-slate-200">
+        ${trail.case.clues.slice(0, trail.clueIndex + 1).map((clue, index) => `<li class="flex gap-3 rounded-xl bg-slate-900/80 p-3"><span class="font-bold text-violet-300">${index + 1}.</span><span>${escapeGeographyHtml(clue)}</span></li>`).join('')}
+      </ol>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        ${!trail.solved && trail.clueIndex < trail.case.clues.length - 1 ? '<button type="button" data-action="geography-globe-clue" class="rounded-xl bg-violet-500 px-4 py-2 font-bold text-white hover:bg-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200">Reveal next clue</button>' : ''}
+        <p id="geography-globe-trail-status" class="min-h-6 text-sm font-semibold ${trail.solved ? 'text-emerald-300' : 'text-slate-300'}" role="status" aria-live="polite">${escapeGeographyHtml(trail.message || (trail.solved ? 'Passport stamp earned! Explore the country facts below.' : `Clue ${trail.clueIndex + 1} of ${trail.case.clues.length} revealed. Select your guess on the map or in the country list.`))}</p>
+      </div>
+    `;
+  },
+
   showGeographyWorld() {
     this.currentView = 'geography-world';
     this.rememberModule('geography-world', '/learning-centre/geography');
@@ -185,7 +223,7 @@ Object.assign(App.prototype, {
             <h2 id="geography-activities-title" class="mt-1 font-ninja text-2xl font-bold text-white">Geography games</h2>
             <p class="mt-2 max-w-2xl text-sm text-slate-300">Practise spotting flags and remembering capital cities with five quick questions.</p>
           </div>
-          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
             <article class="flex flex-col items-start gap-3 rounded-2xl border border-sky-400/30 bg-slate-950/70 p-5">
               <span class="text-3xl" aria-hidden="true">🚩</span>
               <h3 class="font-ninja text-xl font-bold text-white">Flag Detective</h3>
@@ -198,7 +236,14 @@ Object.assign(App.prototype, {
               <p class="flex-1 text-sm text-slate-300">Match each country with its capital city.</p>
               <button type="button" data-action="geography-capital-start" class="rounded-xl border border-emerald-300 bg-emerald-400/20 px-4 py-2 font-bold text-emerald-100 transition hover:bg-emerald-400/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200">Play Capital Cities</button>
             </article>
+            <article class="flex flex-col items-start gap-3 rounded-2xl border border-violet-400/30 bg-slate-950/70 p-5">
+              <span class="text-3xl" aria-hidden="true">🧭</span>
+              <h3 class="font-ninja text-xl font-bold text-white">Globe Trotter</h3>
+              <p class="flex-1 text-sm text-slate-300">Follow travel clues, then find the mystery country on the map or in the country list.</p>
+              <button type="button" data-action="geography-globe-start" class="rounded-xl border border-violet-300 bg-violet-400/20 px-4 py-2 font-bold text-violet-100 transition hover:bg-violet-400/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200">Launch Globe Trotter</button>
+            </article>
           </div>
+          <section id="geography-globe-trail-panel" class="mt-5 hidden rounded-2xl border border-violet-400/30 bg-slate-950/70 p-5" aria-labelledby="geography-globe-trail-title"></section>
         </section>
 
         <div class="geography-explorer">
@@ -643,6 +688,17 @@ Object.assign(App.prototype, {
   selectGeographyCountry(countryId) {
     const country = geographyCountryById(countryId);
     if (!country) throw new RangeError(`Unknown geography country: ${countryId}`);
+    const trail = this.geographyGlobeTrail;
+    if (trail && !trail.solved) {
+      if (!window.GeographyGlobeTrail.isCorrectAnswer(trail.case, country.id)) {
+        trail.message = 'Not this stop. Read the clues and try another country.';
+        this.renderGeographyGlobeTrail();
+        return false;
+      }
+      trail.solved = true;
+      trail.message = `Passport stamp earned! You found ${country.name}. Explore its flag and facts below.`;
+      this.renderGeographyGlobeTrail();
+    }
     this.geographySelectedCountryId = country.id;
     this.renderGeographyCountrySelection(country);
     return true;
