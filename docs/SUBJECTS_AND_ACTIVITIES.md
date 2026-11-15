@@ -13,7 +13,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble | **423** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
 | **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **165** countries | ✅ Compliant |
-| **History Hub** | `/learning-centre/history` | Timeline Builder | **104** events | ⚠️ Pool size compliant; event icons repaired; no remaining `??` placeholders |
+| **History Hub** | `/learning-centre/history` | Timeline Builder, Artifact Detective | **104** sourced events; 4 finite artifact cases | Event icons repaired and tested; artifact set is intentionally finite |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
 | **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 4 scenarios; 24-item catalog | ✅ Compliant |
 | **Times Tables** | `/timetables` | Times Tables Arenas & Drills | $\infty$ (Procedural) | ✅ Compliant |
@@ -99,12 +99,16 @@ This document catalogues every subject hub, learning activity, question bank siz
 * **Event Pool** (`public/js/history/events.js`):
   - Contains **104 sourced historical events** spanning Prehistory (~65,000 BCE) to the 21st Century (2019 CE).
   - All events include title, sortYear, era, clue, explanation, and verified educational source URL.
-* **Identified Defect**:
-  - **90 events have broken `icon: '??'`** due to character encoding corruption in PR #149.
-  - **Priority action**: Restore authentic thematic emojis for each event.
+* **Icon repair — implemented**:
+  - Event icons are restored as thematic emoji; the unit test checks pictographic icons and rejects placeholder `?` strings.
+
 * **Timeline Builder** (`public/js/history/timeline-builder.js`):
-  - Randomly samples 5 events per round across eras.
+  - Randomly samples 6 events per round across eras.
   - Keyboard and drag-and-drop reordering with accessible feedback.
+* **Artifact Detective** (`public/js/history/artifact-detective.js`):
+  - Four finite, museum-sourced cases: Rosetta Stone, Mature Harappan seal, Sutton Hoo helmet, and Late Babylonian tablet.
+  - Each case has three evidence clues; civilization/period choices remain disabled until all clues are inspected. Cases are shuffled between runs.
+  - Explanations reveal the artifact identity, material/period context, and a museum source link. This first slice is deliberately finite rather than padded with paraphrases.
 
 ---
 

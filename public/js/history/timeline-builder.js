@@ -189,6 +189,16 @@ Object.assign(App.prototype, {
           <button type="button" data-action="history-timeline-start" class="history-primary-button">Build a Timeline</button>
         </section>
 
+        <section class="history-timeline-launch artifact-launch" aria-labelledby="artifact-launch-title">
+          <div class="history-timeline-launch__icon" aria-hidden="true">🏺</div>
+          <div class="history-timeline-launch__copy">
+            <p class="history-eyebrow">Evidence activity · 4 sourced cases</p>
+            <h2 id="artifact-launch-title">Artifact Detective</h2>
+            <p>Inspect three clues for each artifact, then identify its civilization or period. This is a small finite collection.</p>
+          </div>
+          <button type="button" data-action="history-artifact-start" class="history-primary-button">Investigate Artifacts</button>
+        </section>
+
         <p class="history-content-note">Dates are approximate, and events from different regions happened on their own timelines.</p>
       </div>
     `;

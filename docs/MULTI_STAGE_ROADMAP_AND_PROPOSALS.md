@@ -19,12 +19,10 @@ flowchart TD
 
 ## Stage 1: Content Pools, Question Breadth & Bug Resolutions (Issue #138)
 
-**Primary Objective**: Eliminate known defects, repair corrupted icons, and bring all eligible activities to the platform standard of **at least 100 distinct items per activity**.
+**Primary Objective**: Eliminate known defects and bring eligible generated activities toward the platform standard of **at least 100 distinct items per activity**. Finite historical evidence collections remain explicitly finite.
 
 ### 1.1 Fix History Event Icons (Encoding Repair)
-* **Problem**: 90 of 104 events in `public/js/history/events.js` currently render broken literal `'??'` strings instead of authentic emojis due to an encoding defect in PR #149.
-* **Resolution**: Replace each `'??'` with an historically accurate thematic emoji (e.g. 🏛️ Parthenon, 🚢 Lapita voyages, 📜 Magna Carta, 🔭 Galileo, ⚔️ Battle of Hastings).
-* **Test**: Add automated unit test verifying that every event has a valid emoji icon string of length $\ge 1$ and matching unicode emoji patterns.
+* **Status — implemented**: All 104 event records have thematic emoji icons. `tests/unit/history-timeline.test.js` asserts pictographic Unicode icons and rejects placeholder question marks; the pool remains 104 unique, sourced events.
 
 ### 1.2 Expand Geography Hub Dataset to 100+ Countries
 * **Problem (resolved)**: The quiz dataset started with 18 countries, even though `world-map-context.js` contains SVG paths for 177 countries. Flag Detective and Capital Cities therefore covered too few countries.
@@ -165,6 +163,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
   - Includes pressure gauges and condensation lid interactions.
 
 ### 5.3 Historical Artifact Detective (History Hub)
+**Status: First finite investigation slice implemented.** Four sourced cases cover the Rosetta Stone, an Indus stamp seal, the Sutton Hoo helmet, and a Late Babylonian tablet. Each case reveals three clues before period selection, then provides an explanation and museum citation. This is a deliberately small evidence-backed set; broader artifact coverage requires additional verified records. It adds an inquiry activity alongside Timeline Builder rather than replacing the timeline.
 * **Concept**: A forensic archaeological investigation tool replacing rote historical date memorization.
 * **Mechanics**:
   - The student is presented with an unidentified artifact unearthed at a dig site (e.g. an inscribed clay fragment, a bronze coin, a navigational astrolabe).

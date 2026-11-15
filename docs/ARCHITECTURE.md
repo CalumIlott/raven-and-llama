@@ -66,7 +66,8 @@ public/
 │   │   └── country-activities.js  # Flag Detective & Capital Cities activities
 │   ├── history/
 │   │   ├── events.js              # 104 curated historical event records
-│   │   └── timeline-builder.js    # Drag-and-drop chronological timeline builder
+│   │   ├── timeline-builder.js    # Drag-and-drop chronological timeline builder
+│   │   └── artifact-detective.js  # Finite sourced artifact investigation
 │   ├── brain-power/
 │   │   └── brain-power.js         # Pattern Recognition, Memory Match, Code Breaker
 │   ├── life-skills/
