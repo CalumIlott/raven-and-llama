@@ -79,27 +79,68 @@ test('Phonics Trail word pronunciation fills the blank instead of speaking only 
   assert.equal(spoken[0].text, 'ship');
 });
 
-test('Spelling pronunciation waits for voices that are still loading', async () => {
-  const voices = [];
-  let onVoicesChanged;
+test('Spelling pronunciation immediately uses the device voice when the voice list is empty', async () => {
   const { context, spoken } = createPronunciationContext({
-    voices,
+    voices: [],
     speechOverrides: {
-      addEventListener(name, listener) {
-        if (name === 'voiceschanged') onVoicesChanged = listener;
-      },
-      removeEventListener() {}
+      addEventListener() {
+        assert.fail('Playback must not wait for voiceschanged');
+      }
     }
   });
   const status = { textContent: '' };
 
   const playback = context.SpellingPronunciation.speak('wallaby', status);
-  assert.equal(status.textContent, 'Loading a pronunciation voice...');
-  voices.push({ name: 'Australian English', lang: 'en-AU' });
-  onVoicesChanged();
-
+  assert.equal(spoken.length, 1, 'speech.speak is called synchronously in the user-action turn');
+  assert.equal(spoken[0].voice, undefined);
+  assert.equal(status.textContent, 'No voice is ready. Playing with your device default voice.');
   assert.equal(await playback, true);
-  assert.equal(spoken[0].voice, voices[0]);
+});
+
+test('Spelling pronunciation retries the device default voice after a selected voice fails', async () => {
+  const voice = { name: 'Australian English', lang: 'en-AU' };
+  const { context, spoken } = createPronunciationContext({
+    voices: [voice],
+    speechOverrides: {
+      speak(utterance) {
+        spoken.push(utterance);
+        queueMicrotask(() => {
+          if (utterance.voice) utterance.onerror({ error: 'synthesis-failed' });
+          else utterance.onend();
+        });
+      }
+    }
+  });
+  const status = { textContent: '' };
+
+  assert.equal(await context.SpellingPronunciation.speak('wallaby', status), true);
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.equal(spoken.length, 2);
+  assert.equal(spoken[0].voice, voice);
+  assert.equal(spoken[1].voice, undefined);
+  assert.equal(status.textContent, 'Pronunciation finished.');
+});
+
+test('Spelling pronunciation reports failure when both selected and device voices fail', async () => {
+  const voice = { name: 'Australian English', lang: 'en-AU' };
+  const { context, spoken } = createPronunciationContext({
+    voices: [voice],
+    speechOverrides: {
+      speak(utterance) {
+        spoken.push(utterance);
+        queueMicrotask(() => utterance.onerror({ error: utterance.voice ? 'synthesis-failed' : 'not-allowed' }));
+      }
+    }
+  });
+  const status = { textContent: '' };
+
+  assert.equal(await context.SpellingPronunciation.speak('quokka', status), true);
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.equal(spoken.length, 2);
+  assert.match(status.textContent, /Pronunciation could not be played: not-allowed/);
+  assert.match(status.textContent, /read the clue and continue/);
 });
 
 test('Spelling pronunciation falls back to the device voice when no voice is listed', async () => {
@@ -136,23 +177,15 @@ test('Spelling pronunciation respects the app sound mute setting', async () => {
   assert.equal(status.textContent, 'Sound is muted. Turn on app sound to hear the word.');
 });
 
-test('cancelling while voices load prevents queued pronunciation from starting', async () => {
-  let onVoicesChanged;
-  const { context, spoken } = createPronunciationContext({
-    voices: [],
-    speechOverrides: {
-      addEventListener(name, listener) {
-        if (name === 'voiceschanged') onVoicesChanged = listener;
-      },
-      removeEventListener() {}
-    }
-  });
+test('cancelling pronunciation stops playback queued with the device voice', async () => {
+  const helper = createPronunciationContext({ voices: [] });
+  const { context, spoken } = helper;
   const status = { textContent: '' };
 
   const playback = context.SpellingPronunciation.speak('echidna', status);
+  assert.equal(spoken.length, 1);
   context.SpellingPronunciation.cancel();
-  onVoicesChanged();
 
-  assert.equal(await playback, false);
-  assert.equal(spoken.length, 0);
+  assert.equal(await playback, true);
+  assert.equal(helper.cancelCount, 2);
 });
