@@ -9,7 +9,8 @@ const GEOGRAPHY_CONTINENTS = [
 const GEOGRAPHY_MAP_ZOOM_LEVELS = [1, 1.5, 2, 3, 4.5, 6, 8, 12, 16];
 const GEOGRAPHY_MAP_SMALL_ISLAND_MARKERS = new Set([
   'mauritius', 'seychelles', 'comoros', 'maldives', 'kiribati', 'tuvalu',
-  'nauru', 'tonga', 'samoa', 'marshall-islands', 'micronesia', 'palau'
+  'nauru', 'tonga', 'samoa', 'marshall-islands', 'micronesia', 'palau',
+  'andorra', 'antigua-and-barbuda', 'bahrain', 'barbados', 'cabo-verde', 'dominica', 'grenada', 'liechtenstein', 'malta', 'monaco', 'saint-kitts-and-nevis', 'saint-lucia', 'saint-vincent-and-the-grenadines', 'san-marino', 'sao-tome-and-principe', 'singapore'
 ]);
 const GEOGRAPHY_MAP_WORLD_VIEW_BOX = '-8 -4 376 188';
 const GEOGRAPHY_MAP_WORLD_BOUNDS = Object.freeze({
@@ -293,7 +294,7 @@ Object.assign(App.prototype, {
                   </g>
                 </svg>
               </div>
-              <figcaption class="geography-map-caption">The full world is shown; select one of the ${GEOGRAPHY_COUNTRIES.length} highlighted countries. Use the buttons or pinch to zoom, then drag to pan. Open the map full screen for a larger view. Tiny islands are shown as enlarged markers and are not to scale; simplified outlines may omit them.</figcaption>
+              <figcaption class="geography-map-caption">The full world is shown; select one of the ${GEOGRAPHY_COUNTRIES.length} highlighted countries. Use the buttons or pinch to zoom, then drag to pan. Open the map full screen for a larger view. Tiny countries are shown as enlarged markers and are not to scale; simplified outlines may omit them.</figcaption>
             </figure>
             <p class="geography-map-attribution">
               Map outlines: <a href="${escapeGeographyHtml(window.GEOGRAPHY_COUNTRY_DATA.mapSourceUrl)}" target="_blank" rel="noopener noreferrer">Natural Earth (public domain)</a>.
@@ -355,16 +356,16 @@ Object.assign(App.prototype, {
     document.addEventListener('fullscreenchange', this.updateGeographyMapFullscreenButton);
     map.addEventListener('click', event => {
       const hitTarget = event.target.closest?.('.geography-map__hit-target');
-      if (!hitTarget) return;
+      if (!event.target.closest?.('.geography-map__region')) return;
       const nearestTarget = [...map.querySelectorAll('.geography-map__hit-target')]
         .map(target => {
           const bounds = target.getBoundingClientRect();
           const x = bounds.left + bounds.width / 2;
           const y = bounds.top + bounds.height / 2;
-          return { target, distance: Math.hypot(event.clientX - x, event.clientY - y) };
+          return { target, distance: Math.hypot(event.clientX - x, event.clientY - y), radius: bounds.width / 2 };
         })
         .sort((first, second) => first.distance - second.distance)[0];
-      if (!nearestTarget) return;
+      if (!nearestTarget || (!hitTarget && nearestTarget.distance > nearestTarget.radius)) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       this.selectGeographyCountry(nearestTarget.target.closest('.geography-map__region')?.dataset.countryId);

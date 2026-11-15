@@ -360,6 +360,22 @@ window.GEOGRAPHY_COUNTRY_DATA = {
 };
 
 const GEOGRAPHY_ADDITIONAL_COUNTRY_RECORDS = [
+  ["andorra","Andorra","AD","Europe","Andorra la Vella","Andorra lies in the Pyrenees between France and Spain.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["antigua-and-barbuda","Antigua and Barbuda","AG","North America","Saint John's","Antigua and Barbuda is an island country in the eastern Caribbean.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["bahrain","Bahrain","BH","Asia","Manama","Bahrain is an island country in the Persian Gulf.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["barbados","Barbados","BB","North America","Bridgetown","Barbados is an island country in the eastern Caribbean.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["cabo-verde","Cabo Verde","CV","Africa","Praia","Cabo Verde is an archipelago off the west coast of Africa.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["dominica","Dominica","DM","North America","Roseau","Dominica is an island country in the eastern Caribbean.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["grenada","Grenada","GD","North America","St. George's","Grenada is an island country in the eastern Caribbean.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["liechtenstein","Liechtenstein","LI","Europe","Vaduz","Liechtenstein lies between Switzerland and Austria.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["malta","Malta","MT","Europe","Valletta","Malta is an island country in the Mediterranean Sea.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["monaco","Monaco","MC","Europe","Monaco","Monaco lies on the Mediterranean coast, surrounded on land by France.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["saint-kitts-and-nevis","Saint Kitts and Nevis","KN","North America","Basseterre","Saint Kitts and Nevis consists of two main Caribbean islands.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["saint-lucia","Saint Lucia","LC","North America","Castries","Saint Lucia is an island country in the eastern Caribbean.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["saint-vincent-and-the-grenadines","Saint Vincent and the Grenadines","VC","North America","Kingstown","Saint Vincent and the Grenadines includes islands in the eastern Caribbean.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["san-marino","San Marino","SM","Europe","San Marino","San Marino is a landlocked country surrounded by Italy.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["sao-tome-and-principe","São Tomé and Príncipe","ST","Africa","São Tomé","São Tomé and Príncipe is an island country in the Gulf of Guinea.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
+  ["singapore","Singapore","SG","Asia","Singapore","Singapore is an island city-state in Southeast Asia.","United Nations Statistics Division","https://unstats.un.org/UNSDWebsite/publications/pocketbook/world-stats-pocketbook-2025.pdf"],
   ['algeria', 'Algeria', 'DZ', 'Africa', 'Algiers', 'The Sahara Desert covers much of Algeria.'],
   ['angola', 'Angola', 'AO', 'Africa', 'Luanda', 'Angola has a long coastline on the Atlantic Ocean.'],
   ['benin', 'Benin', 'BJ', 'Africa', 'Porto-Novo', 'The historic Kingdom of Dahomey was based in present-day Benin.'],
