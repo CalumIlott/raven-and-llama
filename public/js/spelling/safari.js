@@ -3805,30 +3805,9 @@ function getSpellingGraphemes(value) {
 
 const SpellingPronunciation = (() => {
   let requestId = 0;
-  let pendingVoiceLoad = null;
 
   function readVoices(speech) {
     return typeof speech.getVoices === 'function' ? speech.getVoices() : [];
-  }
-
-  function waitForVoices(speech, voices) {
-    if (voices.length || typeof speech.addEventListener !== 'function') return Promise.resolve(voices);
-
-    return new Promise(resolve => {
-      let settled = false;
-      let timeout;
-      const finish = () => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timeout);
-        speech.removeEventListener?.('voiceschanged', finish);
-        if (pendingVoiceLoad === finish) pendingVoiceLoad = null;
-        resolve(readVoices(speech));
-      };
-      pendingVoiceLoad = finish;
-      speech.addEventListener('voiceschanged', finish);
-      timeout = setTimeout(finish, 1000);
-    });
   }
 
   function setStatus(statusElement, message) {
@@ -3837,7 +3816,6 @@ const SpellingPronunciation = (() => {
 
   function cancel() {
     requestId++;
-    pendingVoiceLoad?.();
     const speech = window.speechSynthesis;
     if (speech && typeof speech.cancel === 'function') speech.cancel();
   }
@@ -3856,47 +3834,68 @@ const SpellingPronunciation = (() => {
       return false;
     }
 
-    let voices;
+    let voices = [];
     try {
-      const availableVoices = readVoices(speech);
-      if (!availableVoices.length && typeof speech.addEventListener === 'function') {
-        setStatus(statusElement, 'Loading a pronunciation voice...');
-      }
-      voices = await waitForVoices(speech, availableVoices);
+      voices = readVoices(speech);
     } catch (error) {
       voices = [];
     }
     if (currentRequestId !== requestId) return false;
 
-    const utterance = new Utterance(String(word));
-    utterance.lang = 'en-AU';
-    utterance.rate = 0.82 * (window.EducationalFeedback?.speechRateMultiplier?.() || 1);
     const voice = voices.find(candidate => candidate.lang?.toLowerCase() === 'en-au')
       || voices.find(candidate => candidate.lang?.toLowerCase().startsWith('en-'))
       || voices.find(candidate => candidate.lang?.toLowerCase() === 'en')
       || null;
-    if (voice) utterance.voice = voice;
-    utterance.onend = () => {
-      if (currentRequestId === requestId) setStatus(statusElement, 'Pronunciation finished.');
-    };
-    utterance.onerror = event => {
-      if (currentRequestId === requestId) {
-        const detail = event?.error ? `: ${event.error}` : '';
+    const text = String(word);
+    const rate = 0.82 * (window.EducationalFeedback?.speechRateMultiplier?.() || 1);
+    let fallbackUsed = false;
+
+    const createUtterance = selectedVoice => {
+      const utterance = new Utterance(text);
+      utterance.lang = 'en-AU';
+      utterance.rate = rate;
+      if (selectedVoice) utterance.voice = selectedVoice;
+      utterance.onend = () => {
+        if (currentRequestId === requestId) setStatus(statusElement, 'Pronunciation finished.');
+      };
+      utterance.onerror = event => {
+        if (currentRequestId !== requestId) return;
+        const error = event?.error || '';
+        if (selectedVoice && !fallbackUsed && !['canceled', 'interrupted'].includes(error)) {
+          fallbackUsed = true;
+          setStatus(statusElement, 'The selected voice could not play. Trying your device default voice.');
+          queueUtterance(null, true);
+          return;
+        }
+        const detail = error ? `: ${error}` : '';
         setStatus(statusElement, `Pronunciation could not be played${detail}. You can still read the clue and continue.`);
+      };
+      return utterance;
+    };
+
+    const queueUtterance = (selectedVoice, isFallback = false) => {
+      const utterance = createUtterance(selectedVoice);
+      if (isFallback) fallbackUsed = true;
+      if (selectedVoice) setStatus(statusElement, 'Playing word pronunciation.');
+      else if (isFallback) setStatus(statusElement, 'Trying your device default voice.');
+      else if (voices.length) setStatus(statusElement, 'No English voice is available. Playing with your device default voice.');
+      else setStatus(statusElement, 'No voice is ready. Playing with your device default voice.');
+      try {
+        speech.speak(utterance);
+        return true;
+      } catch (error) {
+        if (selectedVoice && !fallbackUsed) {
+          fallbackUsed = true;
+          return queueUtterance(null, true);
+        }
+        setStatus(statusElement, 'Pronunciation could not be played. You can still read the clue and continue.');
+        return false;
       }
     };
 
-    try {
-      speech.speak(utterance);
-    } catch (error) {
-      setStatus(statusElement, 'Pronunciation could not be played. You can still read the clue and continue.');
-      return false;
-    }
-
-    if (voice) setStatus(statusElement, 'Playing word pronunciation.');
-    else if (voices.length) setStatus(statusElement, 'No English voice is available. Playing with your device default voice.');
-    else setStatus(statusElement, 'No voice is ready. Playing with your device default voice.');
-    return true;
+    // Queue immediately from the click/tap handler. Waiting for `voiceschanged`
+    // can outlive the browser's user-activation window on mobile Safari/Chrome.
+    return queueUtterance(voice);
   }
 
   return { speak, cancel };

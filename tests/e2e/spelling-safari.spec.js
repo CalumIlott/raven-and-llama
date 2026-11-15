@@ -74,6 +74,56 @@ test('Spelling Safari pronunciation can be replayed without exposing the answer 
   expect((await page.evaluate(() => window.__spellingSpeechCalls)).cancelled).toBeGreaterThan(cancelledBeforeNavigation);
 });
 
+test('mobile pronunciation uses the default voice immediately and retries after synthesis failure', async ({ page }) => {
+  await page.addInitScript(() => {
+    const calls = { empty: true, spoken: [], cancelled: 0, firstDefaultUtterance: null };
+    window.__mobileSpellingSpeechCalls = calls;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => calls.empty ? [] : [{ name: 'Australian English', lang: 'en-AU' }],
+        addEventListener() {},
+        removeEventListener() {},
+        cancel() { calls.cancelled++; },
+        speak(utterance) {
+          const hasSelectedVoice = Boolean(utterance.voice);
+          calls.spoken.push({ text: utterance.text, voice: utterance.voice?.name || null });
+          if (!hasSelectedVoice && calls.spoken.length === 1) {
+            calls.firstDefaultUtterance = utterance;
+          } else if (hasSelectedVoice) {
+            setTimeout(() => utterance.onerror?.({ error: 'synthesis-failed' }), 0);
+          } else {
+            setTimeout(() => utterance.onend?.(), 0);
+          }
+        }
+      }
+    });
+  });
+  await page.goto('/learning-centre');
+  await page.getByRole('button', { name: /Spelling & Words/ }).click();
+  await page.locator('[data-activity-id="jungle-jumble"][data-difficulty="medium"]').click();
+
+  await page.getByRole('button', { name: 'Hear the word' }).click();
+  const initialCall = await page.evaluate(() => window.__mobileSpellingSpeechCalls.spoken[0]);
+  expect(initialCall).toMatchObject({ voice: null });
+  await expect(page.locator('#spelling-pronunciation-status'))
+    .toHaveText('No voice is ready. Playing with your device default voice.');
+
+  await page.evaluate(() => { window.__mobileSpellingSpeechCalls.empty = false; });
+  await page.getByRole('button', { name: 'Hear the word' }).click();
+  await expect.poll(() => page.evaluate(() => window.__mobileSpellingSpeechCalls.spoken.length)).toBe(3);
+  const calls = await page.evaluate(() => window.__mobileSpellingSpeechCalls.spoken);
+  expect(calls[1].voice).toBe('Australian English');
+  expect(calls[2].voice).toBeNull();
+  await expect(page.locator('#spelling-pronunciation-status')).toHaveText('Pronunciation finished.');
+});
+
 test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden until submitted', async ({ page }) => {
   await page.addInitScript(() => {
     const spoken = [];
