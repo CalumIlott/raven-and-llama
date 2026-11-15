@@ -310,6 +310,121 @@ html.theme-light .money-change-tray__actions button { border-color: #94a3b8; bac
 .fraction-pizza-eyebrow { color: #fcd34d; }
 html.theme-light .fraction-pizza-eyebrow { color: #92400e; }
 
+#app-main[data-page="science-ecosystem"] .ecosystem-back-link {
+  color: #a7f3d0;
+  font-weight: 800;
+}
+#app-main[data-page="science-ecosystem"] .ecosystem-back-link:hover { color: #d1fae5; }
+.ecosystem-challenge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.25rem 0;
+  padding: 1rem 1.2rem;
+  border: 1px solid #047857;
+  border-radius: 1rem;
+  background: linear-gradient(110deg, #052e2b, #064e3b);
+  color: #f0fdf4;
+}
+.ecosystem-challenge__eyebrow { margin: 0; color: #a7f3d0; font-size: 0.7rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+.ecosystem-challenge h2 { margin: 0.15rem 0; font-size: 1.2rem; font-weight: 900; }
+.ecosystem-challenge p { margin: 0.2rem 0 0; color: #d1fae5; }
+.ecosystem-day-count { display: flex; align-items: baseline; gap: 0.35rem; white-space: nowrap; color: #ecfdf5; font-weight: 800; }
+.ecosystem-day-count output { color: #fcd34d; font-size: 2rem; line-height: 1; }
+.ecosystem-populations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+.ecosystem-species {
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid #475569;
+  border-radius: 1rem;
+  background: #18221c;
+  color: #f8fafc;
+}
+.ecosystem-species__title { display: flex; align-items: center; gap: 0.65rem; }
+.ecosystem-species__title > span { font-size: 1.8rem; }
+.ecosystem-species__title h2 { margin: 0; font-size: 1.1rem; font-weight: 900; }
+.ecosystem-species__title p { margin: 0.12rem 0 0; color: #a7f3d0; font-size: 0.75rem; font-weight: 800; }
+.ecosystem-species__food { margin: 0.55rem 0; color: #e2e8f0; font-size: 0.85rem; }
+.ecosystem-population__meter { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.2rem; margin: 0.5rem 0; }
+.ecosystem-population__pip { height: 0.45rem; border-radius: 999px; background: #334155; }
+.ecosystem-population__pip.is-active { background: #34d399; }
+.ecosystem-species--tadpoles .ecosystem-population__pip.is-active { background: #a3e635; }
+.ecosystem-species--fish .ecosystem-population__pip.is-active { background: #38bdf8; }
+.ecosystem-species--kingfishers .ecosystem-population__pip.is-active { background: #c4b5fd; }
+.ecosystem-species__count { margin: 0; color: #f8fafc; font-size: 0.8rem; font-weight: 700; }
+.ecosystem-species__count output { color: #fcd34d; font-size: 1.1rem; font-weight: 900; }
+.ecosystem-species__controls { display: flex; gap: 0.5rem; margin-top: 0.6rem; }
+.ecosystem-species__controls button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: 1px solid #6ee7b7;
+  border-radius: 0.65rem;
+  background: #065f46;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+.ecosystem-species__controls button:hover:not(:disabled),
+.ecosystem-species__controls button:focus-visible { background: #047857; outline: 3px solid #fcd34d; outline-offset: 2px; }
+.ecosystem-species__controls button:disabled { cursor: not-allowed; opacity: 0.5; }
+.ecosystem-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; margin: 1rem 0; }
+.ecosystem-actions button { min-height: 3rem; padding: 0.65rem 1.2rem; border: 1px solid #34d399; border-radius: 0.8rem; background: #065f46; color: #fff; font-weight: 900; }
+.ecosystem-actions button:hover:not(:disabled),
+.ecosystem-actions button:focus-visible { background: #047857; outline: 3px solid #fcd34d; outline-offset: 2px; }
+.ecosystem-actions button:disabled { cursor: not-allowed; opacity: 0.55; }
+#app-main[data-page="science-ecosystem"] .ecosystem-status {
+  margin: 0.8rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid #0e7490;
+  border-radius: 0.8rem;
+  background: #082f49;
+  color: #f0f9ff;
+  font-weight: 800;
+}
+#app-main[data-page="science-ecosystem"] .ecosystem-status.is-complete { border-color: #047857; background: #064e3b; color: #ecfdf5; }
+.ecosystem-goal-success,
+.ecosystem-goal-failure { margin: 0.5rem 0; text-align: center; font-weight: 900; }
+#app-main[data-page="science-ecosystem"] .ecosystem-goal-success { color: #a7f3d0; }
+#app-main[data-page="science-ecosystem"] .ecosystem-goal-failure { color: #fde68a; }
+.ecosystem-rules { margin-top: 1.2rem; padding: 0.9rem 1rem; border: 1px solid #475569; border-radius: 0.8rem; background: #111827; color: #e2e8f0; }
+.ecosystem-rules summary { color: #a7f3d0; font-weight: 900; cursor: pointer; }
+.ecosystem-rules ul { margin: 0.65rem 0 0.8rem; padding-left: 1.3rem; list-style: disc; }
+.ecosystem-rules li { margin: 0.35rem 0; }
+.ecosystem-rules p { margin: 0.75rem 0; color: #e2e8f0; }
+.ecosystem-rules a { color: #7dd3fc; text-decoration: underline; text-underline-offset: 0.15em; }
+html.theme-light .ecosystem-challenge { border-color: #047857; background: #ecfdf5; color: #052e2b; }
+html.theme-light .ecosystem-challenge__eyebrow,
+html.theme-light .ecosystem-challenge p { color: #065f46; }
+html.theme-light .ecosystem-day-count { color: #064e3b; }
+html.theme-light .ecosystem-day-count output { color: #92400e; }
+html.theme-light .ecosystem-species { border-color: #94a3b8; background: #f8fafc; color: #0f172a; }
+html.theme-light .ecosystem-species__title p { color: #065f46; }
+html.theme-light .ecosystem-species__food,
+html.theme-light .ecosystem-species__count { color: #1e293b; }
+html.theme-light .ecosystem-population__pip { background: #cbd5e1; }
+html.theme-light .ecosystem-population__pip.is-active { background: #047857; }
+html.theme-light .ecosystem-species--tadpoles .ecosystem-population__pip.is-active { background: #4d7c0f; }
+html.theme-light .ecosystem-species--fish .ecosystem-population__pip.is-active { background: #0369a1; }
+html.theme-light .ecosystem-species--kingfishers .ecosystem-population__pip.is-active { background: #6d28d9; }
+html.theme-light .ecosystem-species__count output { color: #92400e; }
+html.theme-light .ecosystem-rules { border-color: #94a3b8; background: #fff; color: #1e293b; }
+html.theme-light .ecosystem-rules summary { color: #065f46; }
+html.theme-light .ecosystem-rules p { color: #1e293b; }
+html.theme-light .ecosystem-rules a { color: #075985; }
+html.theme-light #app-main[data-page="science-ecosystem"] .ecosystem-status { border-color: #0369a1; background: #e0f2fe; color: #0c4a6e; }
+html.theme-light #app-main[data-page="science-ecosystem"] .ecosystem-status.is-complete { border-color: #047857; background: #ecfdf5; color: #064e3b; }
+html.theme-light #app-main[data-page="science-ecosystem"] .ecosystem-goal-success { color: #065f46; }
+html.theme-light #app-main[data-page="science-ecosystem"] .ecosystem-goal-failure { color: #92400e; }
+@media (max-width: 520px) {
+  .ecosystem-challenge { align-items: flex-start; flex-direction: column; }
+  .ecosystem-populations { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ecosystem-species__controls button,
+  .ecosystem-actions button { transition: none; }
+}
+
 .fraction-pizza-level {
   color: #f8fafc;
   background-color: #1e293b;

@@ -58,7 +58,8 @@ public/
 │   │   ├── solar-system.js        # Planet ordering activity & factual guide
 │   │   ├── plant-life-cycle.js    # 6-stage biological sequencing activity
 │   │   ├── food-chains.js         # Habitat trophic levels activity
-│   │   └── virtual-lab.js         # Scientific state change & mixture simulations
+│   │   ├── virtual-lab.js         # Scientific state change & mixture simulations
+│   │   └── ecosystem-sandbox.js   # Simplified, learner-adjustable pond population model
 │   ├── geography/
 │   │   ├── country-data.js        # Interactive country dataset (flags, capitals, facts)
 │   │   ├── world-map-context.js   # 189-country background SVG vector paths, including schematic markers for tiny islands

@@ -44,6 +44,7 @@ class App {
       '/learning-centre': 'learning-centre',
       '/learning-centre/maths': 'maths-world',
       '/learning-centre/science': 'science-lab',
+      '/learning-centre/science/ecosystem': 'science-ecosystem',
       '/learning-centre/history': 'history-discovery',
       '/learning-centre/history/artifact-detective': 'history-artifact-detective',
       '/learning-centre/brain-power': 'brain-power-hub',
@@ -75,6 +76,7 @@ class App {
       'learning-quests': () => this.showLearningQuests(),
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
+      'science-ecosystem': () => this.showScienceEcosystemSandbox(),
       'history-discovery': () => this.showHistoryHub(),
       'history-artifact-detective': () => this.startHistoryArtifactDetective(),
       'brain-power-hub': () => this.showBrainPowerHub(),
@@ -110,7 +112,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/history/artifact-detective', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/science/ecosystem', '/learning-centre/history', '/learning-centre/history/artifact-detective', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -351,6 +353,10 @@ class App {
       case 'virtual-lab-place': this.placeSelectedVirtualLabMaterial(Number(target.dataset.slotIndex)); break;
       case 'virtual-lab-run': this.runVirtualLabSimulation(); break;
       case 'virtual-lab-reset': this.resetVirtualLabWorkspace(); break;
+      case 'ecosystem-sandbox-start': this.showScienceEcosystemSandbox(); break;
+      case 'ecosystem-sandbox-adjust': this.adjustScienceEcosystemPopulation(target.dataset.speciesId, Number(target.dataset.delta)); break;
+      case 'ecosystem-sandbox-next-day': this.advanceScienceEcosystemDay(); break;
+      case 'ecosystem-sandbox-reset': this.resetScienceEcosystemSandbox(); break;
       case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
@@ -680,7 +686,8 @@ class App {
         this.currentView === 'science-solar-system' ||
         this.currentView === 'science-plant-life-cycle' ||
         this.currentView === 'science-food-chains' ||
-        this.currentView === 'science-virtual-lab') {
+        this.currentView === 'science-virtual-lab' ||
+        this.currentView === 'science-ecosystem') {
         subBadge.textContent = 'Science Lab';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'spelling') {
@@ -763,6 +770,8 @@ class App {
       this.renderFoodChainsActivity();
     } else if (this.currentView === 'science-virtual-lab' && this.virtualLabGame) {
       this.renderVirtualLabActivity();
+    } else if (this.currentView === 'science-ecosystem' && this.ecosystemSandboxGame) {
+      this.renderScienceEcosystemSandbox();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
     } else if (this.currentView === 'spelling') {
