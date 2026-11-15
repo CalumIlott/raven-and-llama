@@ -3,6 +3,68 @@
   const VALID_RANGE_DAYS = new Set([7, 30, 90]);
   const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 
+  // Maps are intentionally limited to skills with a direct content match in
+  // ACARA's Australian Curriculum v9.0 descriptions. These are links to
+  // overlapping content, not claims that a belt or activity equals a school year.
+  const AUSTRALIAN_CURRICULUM_SOURCES = Object.freeze({
+    primaryMaths: Object.freeze({
+      title: 'Mathematics F–6 scope and sequence, Years 3–4',
+      version: 'Australian Curriculum v9.0',
+      url: 'https://www.australiancurriculum.edu.au/media/7160/primary_scope_and_sequence_years_3-4.pdf'
+    }),
+    year5Decimals: Object.freeze({
+      title: 'WS02 – Locating decimals',
+      version: 'Australian Curriculum v9.0',
+      url: 'https://www.australiancurriculum.edu.au/resources/work-samples/mathematics/year-5/ws02-locating-decimals/'
+    })
+  });
+  const AUSTRALIAN_CURRICULUM_MAPPINGS = Object.freeze({
+    green_order: Object.freeze({
+      code: 'AC9M3N01',
+      yearLevel: 'Year 3',
+      title: 'Order natural numbers using place value',
+      scopeNote: 'This skill orders numbers to 999, within the descriptor’s broader range.',
+      sourceId: 'primaryMaths'
+    }),
+    blue_balanced_equation: Object.freeze({
+      code: 'AC9M4A02',
+      yearLevel: 'Year 4',
+      title: 'Find unknowns in equivalent addition and subtraction sentences',
+      scopeNote: 'This activity practises a subset of the descriptor using inverse operations.',
+      sourceId: 'primaryMaths'
+    }),
+    brown_fraction: Object.freeze({
+      code: 'AC9M4N05',
+      yearLevel: 'Year 4',
+      title: 'Represent fraction families and equivalence',
+      scopeNote: 'The activity includes additional improper and mixed fractions beyond this descriptor.',
+      sourceId: 'primaryMaths'
+    }),
+    black_decimal_order: Object.freeze({
+      code: 'AC9M5N01',
+      yearLevel: 'Year 5',
+      title: 'Compare and order decimals using place value',
+      scopeNote: 'This skill includes tenths and hundredths as well as the descriptor’s thousandths focus.',
+      sourceId: 'year5Decimals'
+    })
+  });
+
+  function getAustralianCurriculumMapping(skillId) {
+    const mapping = AUSTRALIAN_CURRICULUM_MAPPINGS[skillId];
+    if (!mapping) return null;
+    const source = AUSTRALIAN_CURRICULUM_SOURCES[mapping.sourceId];
+    if (!source) return null;
+    return {
+      code: mapping.code,
+      yearLevel: mapping.yearLevel,
+      title: mapping.title,
+      scopeNote: mapping.scopeNote,
+      curriculumVersion: source.version,
+      sourceTitle: source.title,
+      sourceUrl: source.url
+    };
+  }
+
   function isValidDayKey(dayKey) {
     if (typeof dayKey !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return false;
     const [year, month, day] = dayKey.split('-').map(Number);
@@ -115,7 +177,7 @@
           skillId: sample.skillId,
           skillName: skill?.name || null,
           beltName: skill?.beltName || null,
-          australianCurriculum: null
+          australianCurriculum: getAustralianCurriculumMapping(sample.skillId)
         });
       }
     }
@@ -154,6 +216,7 @@
 
   window.ProgressAnalytics = Object.freeze({
     MAX_ACTIVITY_HISTORY_ENTRIES,
+    getAustralianCurriculumMapping,
     isValidDayKey,
     normalizeActivityHistory,
     aggregateActivityHistory
