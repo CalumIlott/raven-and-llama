@@ -7,6 +7,7 @@ Object.assign(App.prototype, {
     main.dataset.page = 'home';
 
     this.updateHeader();
+    const profile = ProfileManager.getActiveProfile();
     const showLeaderboardPreview = new URLSearchParams(window.location.search).get('leaderboardPreview') === '1';
 
     main.innerHTML = `
@@ -15,6 +16,10 @@ Object.assign(App.prototype, {
         <div class="home-brand-heading">
           <img class="home-brand-logo" src="assets/raven-llama-home-logo.png" alt="" />
           <h1 class="sr-only">Raven &amp; Llama</h1>
+        </div>
+
+        <div class="mb-8">
+          ${this.renderLearningRecommendations(profile, 'home')}
         </div>
 
         <div class="mb-8">

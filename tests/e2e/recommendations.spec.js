@@ -1,6 +1,27 @@
 const { expect, test } = require('@playwright/test');
 const { openLearningCentre, registerAccount, setupApp } = require('./support');
 
+test('home dashboard shows three direct recommendations and an accessible empty state', async ({ page }) => {
+  await setupApp(page);
+  const panel = page.locator('#home-recommendations');
+  await expect(panel.getByRole('heading', { name: 'Recommended for you' })).toBeVisible();
+  await expect(panel.locator('[data-recommendation]')).toHaveCount(3);
+  const pizza = panel.locator('[data-recommendation="fraction-pizza"]');
+  await pizza.getByRole('button', { name: 'Try Fraction Pizza · medium' }).click();
+  await expect(page.locator('[data-fraction-pizza-arena]')).toBeVisible();
+
+  await page.evaluate(() => {
+    const recommendations = window.LearningRecommendations;
+    Object.defineProperty(window, 'LearningRecommendations', {
+      configurable: true,
+      value: { ...recommendations, recommend: () => [] }
+    });
+  });
+  await page.locator('#nav-btn-home').click();
+  await expect(panel.locator('[role="status"]')).toContainText('There is no specific activity to recommend right now');
+  await expect(panel.locator('[data-recommendation]')).toHaveCount(0);
+});
+
 test('Learning Centre shows a small, subject-diverse fallback and launches at the learner’s year level', async ({ page }) => {
   await setupApp(page);
   await page.evaluate(async () => {
