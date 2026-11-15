@@ -147,12 +147,10 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 **Primary Objective**: Transition Science, History, and Geography into exploratory sandboxes and mystery-solving investigations.
 
 ### 5.1 Trophic Ecosystem & Population Sandbox (Science Lab)
-* **Concept**: An open ecosystem simulator demonstrating trophic cascades and ecological balance.
-* **Mechanics**:
-  - Canvas environment representing a living pond or savanna.
-  - Students drag organisms (algae, tadpoles, fish, kingfishers) into the pond.
-  - A simple time-step population graph shows live counts. If students introduce too many predators without sufficient producers, the prey population crashes, followed by predator starvation.
-  - Challenges provide open goals: *"Establish a stable pond ecosystem with at least 3 species that survives for 30 simulated days."*
+* **Status: First pond-model version implemented** in `public/js/science/ecosystem-sandbox.js`.
+* Learners adjust four population groups (algae, tadpoles, fish, kingfishers) with keyboard/touch controls and advance one simplified day at a time. Population caps and each growth/feeding rule are visible to the learner.
+* The first challenge asks learners to keep all four groups present for five days. The model is explicitly described as a simplified exploration, not a prediction of real pond dynamics, and does not award quiz progress.
+* **Future work**: add a timeline graph, more organisms, and longer open-ended challenges after evaluating the first model with learners.
 
 ### 5.2 States of Matter Thermal Chamber (Science Lab)
 * **Concept**: An interactive particle chamber demonstrating molecular behavior across temperatures.

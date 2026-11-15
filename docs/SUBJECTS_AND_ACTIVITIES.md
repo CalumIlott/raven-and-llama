@@ -75,6 +75,9 @@ This document catalogues every subject hub, learning activity, question bank siz
   - **Virtual Laboratory** (`public/js/science/virtual-lab.js`):
     * 17 sourced outcomes cover state changes, dissolving, mixtures, reactions, filtration, magnetism, evaporation, and freezing point.
     * Material filters group materials, prepared mixtures, conditions, and tools; each result links to its science source.
+  - **Pond Ecosystem Sandbox** (`public/js/science/ecosystem-sandbox.js`):
+    * Learners adjust algae, tadpole, fish, and kingfisher populations, then advance a deterministic five-day food-web model.
+    * The first model caps each population at 12 and explains its simplified feeding and growth rules; it is an exploration without score or progress rewards.
 
 ---
 
