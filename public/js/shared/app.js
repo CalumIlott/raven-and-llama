@@ -45,6 +45,7 @@ class App {
       '/learning-centre/maths': 'maths-world',
       '/learning-centre/science': 'science-lab',
       '/learning-centre/history': 'history-discovery',
+      '/learning-centre/history/artifact-detective': 'history-artifact-detective',
       '/learning-centre/brain-power': 'brain-power-hub',
       '/learning-centre/quests': 'learning-quests',
       '/learning-centre/life-skills/party-planner': 'life-skills-party',
@@ -75,6 +76,7 @@ class App {
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
       'history-discovery': () => this.showHistoryHub(),
+      'history-artifact-detective': () => this.startHistoryArtifactDetective(),
       'brain-power-hub': () => this.showBrainPowerHub(),
       'life-skills-party': () => this.startPartyPlanner(),
       'geography-world': () => this.showGeographyWorld(),
@@ -108,7 +110,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/history/artifact-detective', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -221,6 +223,11 @@ class App {
       case 'maths-world': this.showMathsWorld(); break;
       case 'history-hub': this.showHistoryHub(); break;
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
+      case 'history-artifact-start': this.startHistoryArtifactDetective(); break;
+      case 'history-artifact-clue': this.revealHistoryArtifactClue(); break;
+      case 'history-artifact-answer': this.chooseHistoryArtifactAnswer(target.value); break;
+      case 'history-artifact-submit': this.submitHistoryArtifactAnswer(); break;
+      case 'history-artifact-next': this.advanceHistoryArtifactCase(); break;
       case 'brain-power-hub': this.showBrainPowerHub(); break;
       case 'brain-power-home': this.showBrainPowerHub(); break;
       case 'brain-pattern-start': this.startBrainPowerPattern(target.dataset.difficulty || 'easy'); break;
@@ -645,7 +652,7 @@ class App {
       } else if (this.currentView === 'maths-world') {
         subBadge.textContent = 'Maths World';
         subBadge.classList.remove('hidden');
-      } else if (this.currentView === 'history-discovery' || this.currentView === 'history-timeline') {
+      } else if (this.currentView === 'history-discovery' || this.currentView === 'history-timeline' || this.currentView === 'history-artifact-detective') {
         subBadge.textContent = 'History & Discovery';
         subBadge.classList.remove('hidden');
       } else if (['brain-power', 'brain-power-pattern', 'brain-power-memory', 'brain-power-code'].includes(this.currentView)) {
@@ -734,6 +741,8 @@ class App {
       this.showHistoryHub();
     } else if (this.currentView === 'history-timeline' && this.historyTimelineGame) {
       this.renderHistoryTimelineActivity();
+    } else if (this.currentView === 'history-artifact-detective' && this.historyArtifactGame) {
+      this.renderHistoryArtifactDetective();
     } else if (this.currentView === 'brain-power') {
       this.showBrainPowerHub();
     } else if (this.currentView === 'brain-power-pattern' && this.brainPowerPatternGame) {

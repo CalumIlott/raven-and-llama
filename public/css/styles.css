@@ -4920,3 +4920,46 @@ html.theme-light .mascot-companion__hint-text {
   font-size: 0.9rem;
   font-weight: 700;
 }
+
+#app-main[data-page="history-artifact-detective"] .artifact-detective {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  color: #f8fafc;
+}
+#app-main[data-page="history-artifact-detective"] .artifact-back {
+  margin-bottom: 1.5rem;
+  color: #67e8f9;
+  font-weight: 700;
+}
+#app-main[data-page="history-artifact-detective"] .artifact-heading,
+#app-main[data-page="history-artifact-detective"] .artifact-case,
+#app-main[data-page="history-artifact-detective"] .artifact-result {
+  padding: clamp(1rem, 4vw, 2rem);
+  border: 1px solid #475569;
+  border-radius: 1rem;
+  background: #111827;
+}
+#app-main[data-page="history-artifact-detective"] .artifact-heading h1 { font-size: clamp(1.8rem, 6vw, 2.5rem); font-weight: 800; }
+#app-main[data-page="history-artifact-detective"] .artifact-case { margin-top: 1rem; }
+#app-main[data-page="history-artifact-detective"] .artifact-clues { display: grid; gap: .75rem; padding: 0; margin: 1rem 0; list-style: none; }
+#app-main[data-page="history-artifact-detective"] .artifact-clues li { padding: .85rem; border-left: 4px solid #22d3ee; border-radius: .35rem; background: #1e293b; }
+#app-main[data-page="history-artifact-detective"] .artifact-choices { display: grid; gap: .5rem; margin: 1.25rem 0; padding: 0; border: 0; }
+#app-main[data-page="history-artifact-detective"] .artifact-choices legend { margin-bottom: .6rem; font-size: 1.05rem; font-weight: 700; }
+#app-main[data-page="history-artifact-detective"] .artifact-choices label { display: flex; align-items: center; gap: .75rem; min-height: 2.75rem; padding: .65rem .8rem; border: 1px solid #475569; border-radius: .65rem; cursor: pointer; }
+#app-main[data-page="history-artifact-detective"] .artifact-choices label:has(input:checked) { border-color: #22d3ee; background: #164e63; }
+#app-main[data-page="history-artifact-detective"] :is(button, input, a):focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
+#app-main[data-page="history-artifact-detective"] button:disabled { opacity: .55; cursor: not-allowed; }
+#app-main[data-page="history-artifact-detective"] .artifact-result { margin-top: 1rem; }
+#app-main[data-page="history-artifact-detective"] .artifact-result a { color: #67e8f9; text-decoration: underline; overflow-wrap: anywhere; }
+#app-main[data-page="history-artifact-detective"] .history-primary-button,
+#app-main[data-page="history-artifact-detective"] .history-secondary-button { margin-top: .5rem; padding: .75rem 1rem; border-radius: .65rem; font-weight: 700; }
+#app-main[data-page="history-artifact-detective"] .history-primary-button { background: #0e7490; color: white; }
+#app-main[data-page="history-artifact-detective"] .history-secondary-button { border: 1px solid #64748b; background: #1e293b; color: white; }
+html.theme-light #app-main[data-page="history-artifact-detective"] :is(.artifact-heading, .artifact-case, .artifact-result) { color: #0f172a; background: #fff; border-color: #cbd5e1; }
+html.theme-light #app-main[data-page="history-artifact-detective"] .artifact-clues li { background: #f1f5f9; }
+html.theme-light #app-main[data-page="history-artifact-detective"] .artifact-choices label { border-color: #94a3b8; }
+@media (max-width: 640px) {
+  #app-main[data-page="history-discovery"] .artifact-launch { align-items: flex-start; flex-direction: column; }
+  #app-main[data-page="history-discovery"] .artifact-launch .history-primary-button { width: 100%; }
+}
