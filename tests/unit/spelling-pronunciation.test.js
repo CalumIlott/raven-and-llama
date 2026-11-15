@@ -65,6 +65,20 @@ test('Spelling pronunciation applies the learner speech-rate multiplier', async 
   assert.equal(spoken[0].rate, 1.025);
 });
 
+test('Phonics Trail word pronunciation fills the blank instead of speaking only the missing letter', async () => {
+  const { context, spoken } = createPronunciationContext();
+  context.document = { getElementById: () => null };
+  const app = new context.App();
+  app.spellingSafariGame = {
+    activity: { type: 'phonics' },
+    index: 0,
+    questions: [{ type: 'phonics', prompt: 'sh_p', answer: 'i' }]
+  };
+
+  assert.equal(await app.speakSpellingSafariWord(), true);
+  assert.equal(spoken[0].text, 'ship');
+});
+
 test('Spelling pronunciation waits for voices that are still loading', async () => {
   const voices = [];
   let onVoicesChanged;

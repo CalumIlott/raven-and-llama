@@ -195,6 +195,9 @@ async function answerCurrentQuestion(page) {
       tileIndexes.push(tileIndex);
     }
     for (const tileIndex of tileIndexes) await page.locator(`#safari-letter-${tileIndex}`).click();
+  } else if (question.type === 'phonics') {
+    await page.locator(`[data-action="spelling-answer"][data-answer="${encodeURIComponent(question.answer)}"]`).click();
+    await page.getByRole('button', { name: 'Check word' }).click();
   } else {
     await page.getByRole('button', { name: question.answer, exact: true }).click();
   }
@@ -314,6 +317,63 @@ test('Phonics Easy uses a picture clue and Medium uses a simple text clue', asyn
   await page.locator('[data-activity-id="phonics-trail"][data-difficulty="medium"]').click();
   await expect(page.locator('.spelling-hint')).toBeVisible();
   await expect(page.locator('.spelling-picture-clue')).toHaveCount(0);
+});
+
+test('Phonics Trail builds sounds with tap and swipe blending before checking the word', async ({ page }) => {
+  await page.addInitScript(() => {
+    const calls = { spoken: [] };
+    window.__phonicsSpeechCalls = calls;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => [{ name: 'Australian English', lang: 'en-AU' }],
+        addEventListener() {},
+        removeEventListener() {},
+        cancel() {},
+        speak(utterance) { calls.spoken.push(utterance.text); }
+      }
+    });
+  });
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: /Spelling & Words/ }).click();
+  await page.evaluate(() => {
+    window.SpellingSafari.createQuestions = activityId => activityId === 'phonics-trail'
+      ? [{ type: 'phonics', prompt: 'sh_p', answer: 'i', options: ['a', 'e', 'i', 'o'], hint: 'A boat that travels on the water.' }]
+      : [];
+  });
+  await page.locator('[data-activity-id="phonics-trail"][data-difficulty="medium"]').click();
+
+  await page.getByRole('button', { name: 'Hear the word pronunciation' }).click();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('ship');
+  await page.locator('[data-action="spelling-answer"][data-answer="i"]').click();
+  await expect(page.locator('.phonics-blending-bar .phonics-grapheme-tile')).toHaveText(['sh', 'i', 'p']);
+
+  await page.getByRole('button', { name: 'Hear the sound sh' }).click();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('sh');
+  await page.getByRole('button', { name: 'Blend the word' }).click();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('ship');
+
+  const centers = await page.locator('.phonics-blending-bar .phonics-grapheme-tile').evaluateAll(tiles =>
+    tiles.map(tile => {
+      const rect = tile.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })
+  );
+  await page.mouse.move(centers[0].x, centers[0].y);
+  await page.mouse.down();
+  for (const center of centers.slice(1)) await page.mouse.move(center.x, center.y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('ship');
+
+  await page.getByRole('button', { name: 'Check word' }).click();
+  await expect(page.locator('#safari-feedback')).toContainText('Great work!');
 });
 
 test('Spelling Safari does not reveal the correct answer on incorrect guesses', async ({ page }) => {

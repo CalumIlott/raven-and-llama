@@ -3789,6 +3789,20 @@ function safeSpellingAudioHint(question) {
   return hint;
 }
 
+const SPELLING_GRAPHEME_PAIRS = ['igh', 'tch', 'dge', 'sh', 'ch', 'th', 'wh', 'ph', 'ck', 'ng', 'ee', 'ea', 'oo', 'ai', 'ay', 'oa', 'oe', 'ow', 'ou', 'oi', 'oy', 'au', 'aw', 'ew', 'ui', 'ue', 'ar', 'or', 'er', 'ir', 'ur', 'qu', 'kn', 'wr'];
+
+function getSpellingGraphemes(value) {
+  const letters = String(value || '').toLocaleLowerCase();
+  const graphemes = [];
+  for (let index = 0; index < letters.length;) {
+    const pair = SPELLING_GRAPHEME_PAIRS.find(grapheme => letters.startsWith(grapheme, index));
+    const grapheme = pair || Array.from(letters.slice(index))[0];
+    graphemes.push(grapheme);
+    index += grapheme.length;
+  }
+  return graphemes;
+}
+
 const SpellingPronunciation = (() => {
   let requestId = 0;
   let pendingVoiceLoad = null;
@@ -4576,6 +4590,7 @@ Object.assign(App.prototype, {
       score: 0,
       selectedLetters: [],
       selectedAnswer: null,
+      phonicsCandidate: null,
       mistakes: []
     };
     this.spellingActivityEngine = new ActivityEngine();
@@ -4589,15 +4604,112 @@ Object.assign(App.prototype, {
     });
     this.currentView = 'spelling';
     main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
+    this.bindPhonicsSoundboard(document.getElementById('safari-arena'));
     this.renderSpellingSafariQuestion();
+  },
+
+  bindPhonicsSoundboard(arena) {
+    if (!arena || typeof arena.addEventListener !== 'function' || arena.dataset.phonicsSoundboardBound) return;
+    arena.dataset.phonicsSoundboardBound = 'true';
+    arena.addEventListener('click', event => {
+      const target = event.target.closest?.('[data-action]');
+      if (!target) return;
+      const game = this.spellingSafariGame;
+      if (target.dataset.action === 'spelling-answer' && game?.activity.type === 'phonics') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.selectSpellingPhonicsCandidate(decodeURIComponent(target.dataset.answer));
+        return;
+      }
+      if (target.dataset.action === 'phonics-grapheme') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (Date.now() <= (game?.suppressPhonicsClickUntil || 0)) return;
+        this.speakSpellingPhonicsGrapheme(decodeURIComponent(target.dataset.grapheme));
+      } else if (target.dataset.action === 'phonics-blend') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.speakSpellingPhonicsBlend();
+      } else if (target.dataset.action === 'phonics-check') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (game?.phonicsCandidate) this.submitSpellingSafariAnswer(game.phonicsCandidate);
+      }
+    }, true);
+
+    let swipe = null;
+    arena.addEventListener('pointerdown', event => {
+      const tile = event.target.closest?.('.phonics-grapheme-tile');
+      if (!tile || event.button > 0) return;
+      swipe = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        moved: false,
+        lastTile: tile,
+        graphemes: [decodeURIComponent(tile.dataset.grapheme)]
+      };
+    }, true);
+    arena.addEventListener('pointermove', event => {
+      if (!swipe || swipe.pointerId !== event.pointerId) return;
+      const deltaX = event.clientX - swipe.startX;
+      const deltaY = event.clientY - swipe.startY;
+      if (Math.abs(deltaX) < 10 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+      swipe.moved = true;
+      event.preventDefault();
+      const underPointer = document.elementFromPoint?.(event.clientX, event.clientY)?.closest?.('.phonics-grapheme-tile');
+      if (!underPointer || underPointer === swipe.lastTile) return;
+      swipe.lastTile = underPointer;
+      const grapheme = decodeURIComponent(underPointer.dataset.grapheme);
+      if (swipe.graphemes.at(-1) !== grapheme) swipe.graphemes.push(grapheme);
+    }, true);
+    const finishSwipe = event => {
+      if (!swipe || (event.pointerId !== undefined && swipe.pointerId !== event.pointerId)) return;
+      const completed = swipe;
+      swipe = null;
+      if (!completed.moved || completed.graphemes.length < 2) return;
+      const game = this.spellingSafariGame;
+      if (game) game.suppressPhonicsClickUntil = Date.now() + 300;
+      this.speakSpellingPhonicsBlend(completed.graphemes.join(''));
+    };
+    arena.addEventListener('pointerup', finishSwipe, true);
+    arena.addEventListener('pointercancel', finishSwipe, true);
+  },
+
+  selectSpellingPhonicsCandidate(candidate) {
+    const game = this.spellingSafariGame;
+    const question = game?.questions[game.index];
+    if (!game || game.answered || question?.type !== 'phonics' || !question.options.includes(candidate)) return;
+    SpellingPronunciation.cancel();
+    game.phonicsCandidate = candidate;
+    this.renderSpellingSafariQuestion();
+    document.querySelector?.('#safari-arena .phonics-option[aria-pressed="true"]')?.focus();
+  },
+
+  speakSpellingPhonicsGrapheme(grapheme) {
+    const game = this.spellingSafariGame;
+    if (!game || game.answered) return;
+    void SpellingPronunciation.speak(grapheme, document.getElementById('spelling-pronunciation-status'));
+  },
+
+  speakSpellingPhonicsBlend(word = null) {
+    const game = this.spellingSafariGame;
+    const question = game?.questions[game.index];
+    if (!game || !question || game.answered) return;
+    const attemptedWord = word || (game.phonicsCandidate ? question.prompt.replace('_', game.phonicsCandidate) : '');
+    if (!attemptedWord) return;
+    void SpellingPronunciation.speak(attemptedWord, document.getElementById('spelling-pronunciation-status'));
   },
 
   speakSpellingSafariWord() {
     const game = this.spellingSafariGame;
     const question = game?.questions[game.index];
     if (!question) return;
-    void SpellingPronunciation.speak(
-      question.answer,
+    const word = question.type === 'phonics'
+      ? question.prompt.replace('_', question.answer)
+      : question.answer;
+    return SpellingPronunciation.speak(
+      word,
       document.getElementById('spelling-pronunciation-status')
     );
   },
@@ -4630,7 +4742,44 @@ Object.assign(App.prototype, {
     const selected = game.selectedLetters.map(index => question.scramble[index]).join('');
     const selectedCharacters = Array.from(selected);
     const selectedAnswerClass = game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect';
-    const choices = question.type === 'scramble'
+    const phonicsParts = question.type === 'phonics' ? question.prompt.split('_') : [];
+    const phonicsTiles = question.type === 'phonics'
+      ? [
+        ...getSpellingGraphemes(phonicsParts[0]),
+        game.phonicsCandidate || null,
+        ...getSpellingGraphemes(phonicsParts.slice(1).join(''))
+      ]
+      : [];
+    const phonicsSoundboard = question.type === 'phonics'
+      ? `
+        <section class="phonics-soundboard" aria-labelledby="phonics-soundboard-title">
+          <h3 id="phonics-soundboard-title">Build and blend the sounds</h3>
+          <p>Choose the missing sound, then tap a tile to hear it. Swipe across the tiles or use the blend button to hear your word.</p>
+          <div class="phonics-blending-bar" data-phonics-blending-bar role="group" aria-label="Word sound tiles">
+            ${phonicsTiles.map(grapheme => grapheme === null
+              ? game.phonicsCandidate
+                ? `<button type="button" class="phonics-grapheme-tile" data-action="phonics-grapheme" data-grapheme="${encodeURIComponent(game.phonicsCandidate)}" aria-label="Hear the sound ${game.phonicsCandidate}" ${game.answered ? 'disabled' : ''}>${game.phonicsCandidate}</button>`
+                : '<span class="phonics-grapheme-tile phonics-grapheme-tile--blank" role="img" aria-label="Choose the missing sound">?</span>'
+              : `<button type="button" class="phonics-grapheme-tile" data-action="phonics-grapheme" data-grapheme="${encodeURIComponent(grapheme)}" aria-label="Hear the sound ${grapheme}" ${game.answered ? 'disabled' : ''}>${grapheme}</button>`
+            ).join('')}
+          </div>
+          <div class="phonics-soundboard__options" role="group" aria-label="Choose the missing sound">
+            ${question.options.map(option => `
+              <button type="button" data-action="spelling-answer" data-answer="${encodeURIComponent(String(option))}"
+                      aria-label="Select missing sound ${option}" aria-pressed="${game.phonicsCandidate === String(option)}" ${game.answered ? 'disabled' : ''}
+                      class="spelling-choice phonics-option ${game.phonicsCandidate === String(option) ? 'is-selected' : ''}">${option}</button>
+            `).join('')}
+          </div>
+          <div class="phonics-soundboard__actions">
+            <button type="button" data-action="phonics-blend" ${game.phonicsCandidate && !game.answered ? '' : 'disabled'}>Blend the word</button>
+            <button type="button" data-action="phonics-check" ${game.phonicsCandidate && !game.answered ? '' : 'disabled'}>Check word</button>
+          </div>
+        </section>
+      `
+      : '';
+    const choices = question.type === 'phonics'
+      ? phonicsSoundboard
+      : question.type === 'scramble'
       ? `
         <div class="spelling-answer min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold" aria-label="Your word">
           ${Array.from({ length: question.scramble.length }, (_, index) => `<span class="spelling-letter-slot w-8 border-b-2">${selectedCharacters[index] || '_'}</span>`).join('')}
@@ -4726,6 +4875,7 @@ Object.assign(App.prototype, {
     game.answered = false;
     game.lastAnswerCorrect = null;
     game.selectedAnswer = null;
+    game.phonicsCandidate = null;
     game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   },
@@ -4760,6 +4910,7 @@ Object.assign(App.prototype, {
     game.index = hasNextQuestion ? this.spellingActivityEngine.currentIndex : game.questions.length;
     game.answered = false;
     game.selectedAnswer = null;
+    game.phonicsCandidate = null;
     game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   }

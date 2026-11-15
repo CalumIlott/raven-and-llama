@@ -44,7 +44,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 * **Activities** (`public/js/spelling/safari.js`):
   1. **Spelling Sprint**: 115 multiple-choice questions identifying correctly spelled words.
-  2. **Phonics Trail**: 108 fill-in-the-blank phoneme questions with contextual sentence clues.
+  2. **Phonics Trail**: 108 fill-in-the-blank phoneme questions with contextual clues and an interactive grapheme soundboard. Tap tiles or swipe across the blending bar to hear an attempted word; keyboard users can select the missing sound, hear individual tiles, blend, and check it.
   3. **Word Explorer**: 100 vocabulary, synonym, antonym, and definition questions.
   4. **Jungle Jumble**: 100 anagram scramble puzzles dynamically scrambled per round.
   5. **Spell It**: Custom spelling quiz powered by parent/teacher lists managed in the Progress modal.
