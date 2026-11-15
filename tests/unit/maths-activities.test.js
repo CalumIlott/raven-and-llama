@@ -159,6 +159,16 @@ test('Balance Scales builds the missing side with reusable tactile weights', () 
   assert.match(body.innerHTML, /balance-scale__beam--balanced/);
   assert.match(body.innerHTML, /The scale is balanced\./);
 
+  // An overshoot can be corrected with a lifting balloon; removing it reverses the effect.
+  context.arcadeEngine.addBalanceScaleWeight(2);
+  assert.match(body.innerHTML, /balance-scale__beam--right-heavy/);
+  context.arcadeEngine.addBalanceScaleWeight(-2);
+  assert.match(body.innerHTML, /balance-scale__beam--balanced/);
+  assert.match(body.innerHTML, /Remove balloon: subtract 2 units/);
+  context.arcadeEngine.removeBalanceScaleWeight(activity.balanceWeights.length - 1);
+  assert.match(body.innerHTML, /balance-scale__beam--right-heavy/);
+  context.arcadeEngine.removeBalanceScaleWeight(activity.balanceWeights.length - 1);
+
   const lastWeight = activity.balanceWeights.at(-1);
   context.arcadeEngine.removeBalanceScaleWeight(activity.balanceWeights.length - 1);
   assert.match(body.innerHTML, /balance-scale__beam--left-heavy/);

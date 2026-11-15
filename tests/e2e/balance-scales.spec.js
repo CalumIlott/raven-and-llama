@@ -41,3 +41,25 @@ test('Balance the Scales supports keyboard controls and fits a narrow mobile vie
   await expect(page.getByRole('button', { name: 'Remove 1 unit weight' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
+
+
+test('lifting balloons subtract units and remain keyboard accessible', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await setupApp(page);
+  await openBalanceScales(page);
+  const status = page.locator('.balance-scale-status');
+  const initial = await status.textContent();
+  await page.getByRole('button', { name: 'Add 2 units' }).click();
+  const balloon = page.getByRole('button', { name: 'Add balloon: subtract 2 units' });
+  await balloon.focus();
+  await page.keyboard.press('Enter');
+  await expect(status).toHaveText(initial);
+  await expect(page.getByRole('button', { name: 'Add balloon: subtract 2 units' })).toBeFocused();
+  await page.getByRole('button', { name: 'Remove balloon: subtract 2 units' }).click();
+  await expect(page.getByRole('button', { name: 'Add balloon: subtract 2 units' })).toBeFocused();
+  await expect(status).not.toHaveText(initial);
+  await page.getByRole('button', { name: 'Clear all' }).click();
+  await expect(page.getByRole('button', { name: 'Add 1 unit' })).toBeFocused();
+  await expect(status).toHaveText(initial);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
