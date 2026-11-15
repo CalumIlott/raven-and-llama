@@ -191,6 +191,54 @@ test('Phonics Easy uses accessible picture clues and Medium keeps simple text cl
   assert.doesNotMatch(context.arena.innerHTML, /class="spelling-hint/);
 });
 
+test('Phonics Trail builds accessible grapheme tiles and lets learners blend a selected attempt', () => {
+  const phonicsPool = loadSafari().SpellingSafari.getActivity('phonics-trail').questions;
+  assert.ok(phonicsPool.every(question => (question.prompt.match(/_/g) || []).length === 1));
+  assert.ok(phonicsPool.every(question => question.options.includes(question.answer)));
+
+  const main = { innerHTML: '', dataset: {} };
+  const arena = { innerHTML: '' };
+  const context = createBrowserContext({
+    document: { getElementById: id => id === 'app-main' ? main : id === 'safari-arena' ? arena : null }
+  });
+  context.App = class {
+    rememberModule() {}
+    updateHeader() {}
+  };
+  context.ProfileManager = { getSubjectDifficulty: () => 'medium', recordActivityScore() {} };
+  loadActivityEngine(context);
+  loadBrowserScripts(context, 'public/js/spelling/safari.js');
+  const app = new context.App();
+
+  app.startSpellingSafari('phonics-trail', 'medium');
+  const question = { type: 'phonics', prompt: 'sh_p', answer: 'i', options: ['a', 'e', 'i', 'o'], hint: 'A boat.' };
+  app.spellingSafariGame.questions[0] = question;
+  app.renderSpellingSafariQuestion();
+
+  assert.match(arena.innerHTML, /Build and blend the sounds/);
+  assert.match(arena.innerHTML, /data-grapheme="sh" aria-label="Hear the sound sh"/);
+  assert.match(arena.innerHTML, /aria-label="Choose the missing sound"/);
+  assert.match(arena.innerHTML, /data-action="phonics-blend" disabled/);
+  assert.doesNotMatch(arena.innerHTML, /data-grapheme="i"/);
+
+  app.selectSpellingPhonicsCandidate('i');
+  assert.match(arena.innerHTML, /data-grapheme="i" aria-label="Hear the sound i"/);
+  assert.match(arena.innerHTML, /data-action="phonics-blend" >Blend the word/);
+  assert.match(arena.innerHTML, /aria-pressed="true"/);
+
+  app.submitSpellingSafariAnswer('i');
+  assert.equal(app.spellingSafariGame.lastAnswerCorrect, true);
+  assert.match(arena.innerHTML, /Correct!|Great work!/);
+
+  app.startSpellingSafari('phonics-trail', 'medium');
+  const digraphQuestion = { type: 'phonics', prompt: 's_p', answer: 'ou', options: ['ee', 'oo', 'ou', 'ai'], hint: 'A warm liquid meal.' };
+  app.spellingSafariGame.questions[0] = digraphQuestion;
+  app.renderSpellingSafariQuestion();
+  app.selectSpellingPhonicsCandidate('ou');
+  assert.match(arena.innerHTML, /data-grapheme="ou" aria-label="Hear the sound ou"/);
+  assert.deepEqual((arena.innerHTML.match(/class="phonics-grapheme-tile"/g) || []), Array(3).fill('class="phonics-grapheme-tile"'));
+});
+
 test('unknown activities and invalid round counts return no questions', () => {
   const context = loadSafari();
   const safari = context.SpellingSafari;

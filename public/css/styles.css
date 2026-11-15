@@ -4043,6 +4043,84 @@ html.theme-light .spelling-next-button { color: #ffffff !important; background: 
 
 .spelling-score { color: var(--play-accent) !important; }
 
+.phonics-soundboard {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--play-edge);
+  border-radius: 1rem;
+  color: var(--play-ink);
+  background: var(--play-surface-raised);
+  text-align: center;
+}
+.phonics-soundboard h3 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+.phonics-soundboard > p { margin: 0.35rem 0 0.85rem; color: var(--play-muted); font-size: 0.85rem; }
+.phonics-blending-bar {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding: 0.5rem;
+  border: 2px dashed var(--play-accent);
+  border-radius: 0.9rem;
+  background: var(--play-surface);
+  touch-action: pan-y;
+}
+.phonics-grapheme-tile {
+  display: grid;
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+  place-items: center;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid var(--play-edge);
+  border-radius: 0.7rem;
+  color: var(--play-ink);
+  background: var(--play-surface-raised);
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+  user-select: none;
+}
+button.phonics-grapheme-tile { cursor: pointer; }
+button.phonics-grapheme-tile:hover,
+button.phonics-grapheme-tile:focus-visible {
+  border-color: var(--play-accent);
+  outline: 3px solid var(--play-accent);
+  outline-offset: 2px;
+}
+button.phonics-grapheme-tile:disabled { cursor: not-allowed; }
+.phonics-grapheme-tile--blank {
+  border-style: dashed;
+  color: var(--play-accent);
+  background: var(--play-accent-soft);
+}
+.phonics-soundboard__options,
+.phonics-soundboard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+.phonics-option { min-width: 3.5rem; }
+.phonics-option.is-selected { border-color: var(--play-accent) !important; outline: 2px solid var(--play-accent); outline-offset: 1px; }
+.phonics-soundboard__actions button {
+  min-height: 2.75rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--play-edge);
+  border-radius: 0.7rem;
+  color: var(--play-ink);
+  background: var(--play-surface);
+  font-weight: 800;
+}
+.phonics-soundboard__actions button:disabled { cursor: not-allowed; opacity: 0.55; }
+@media (max-width: 420px) {
+  .phonics-soundboard { padding: 0.75rem; }
+  .phonics-blending-bar { justify-content: flex-start; }
+  .phonics-grapheme-tile { min-width: 3rem; min-height: 3rem; }
+}
+
 @media (max-width: 560px) {
   .spelling-hud { align-items: center; }
   .spelling-question-card { padding: 1rem; }

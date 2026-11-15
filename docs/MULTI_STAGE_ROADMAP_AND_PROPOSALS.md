@@ -138,11 +138,11 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 * **Target Activity**: Enhances `public/js/mathmasters/telling-time.js`.
 
 ### 4.4 Kinetic Phonics Soundboard & Blending Bar (Spelling Safari)
-* **Concept**: Replace multiple-choice spelling selections with tactile phoneme blending.
+* **Status: First tactile version implemented** in Phonics Trail. The existing phonics gap choices now fill an interactive grapheme row; tapping a tile plays its pronunciation, and a selected attempt can be blended with a button or a horizontal swipe across the tiles. Learners can still submit the word to the existing scoring and feedback flow.
 * **Mechanics**:
   - Students see interactive letter/digraph tiles (`sh`, `i`, `p`).
-  - Tapping each tile triggers localized audio pronunciation.
-  - Swiping a finger across the "Blending Bar" underneath plays the continuous blended word ("sh-i-p... ship!"), showing phonological assembly.
+  - Tapping each tile triggers the browser's built-in, English-Australian-prioritized speech synthesis; if unavailable, the learner can still read and check their word.
+  - Swiping a finger across the "Blending Bar" or activating its accessible button plays the attempted word, showing phonological assembly.
 * **Target Activity**: Enhances `public/js/spelling/safari.js` Phonics Trail.
 
 ---
