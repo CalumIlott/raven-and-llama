@@ -135,6 +135,38 @@ test('Tens Frame Fill hides the selected-cell count', () => {
   assert.doesNotMatch(elements.get('ma-body').innerHTML, /ma-filled-count|of \d+ filled/);
 });
 
+test('Balance Scales builds the missing side with reusable tactile weights', () => {
+  const { context, elements } = loadMathsActivities();
+  context.arcadeEngine.startMathsActivity('arena', 'blue', 'balance-scales');
+
+  const activity = context.arcadeEngine.mathsActivity;
+  const question = activity.question;
+  const body = elements.get('ma-body');
+  assert.equal(activity.balanceWeights.length, 0);
+  assert.match(body.innerHTML, /balance-scale__beam--left-heavy/);
+  assert.match(body.innerHTML, /data-action="arcade-balance-add" data-value="20"/);
+  assert.doesNotMatch(body.innerHTML, /data-action="arcade-maths-answer"/);
+
+  let remainder = question.answer;
+  for (const value of [20, 10, 5, 2, 1]) {
+    while (remainder >= value) {
+      context.arcadeEngine.addBalanceScaleWeight(value);
+      remainder -= value;
+    }
+  }
+  assert.equal(remainder, 0);
+  assert.equal(activity.balanceWeights.reduce((sum, value) => sum + value, 0), question.answer);
+  assert.match(body.innerHTML, /balance-scale__beam--balanced/);
+  assert.match(body.innerHTML, /The scale is balanced\./);
+
+  const lastWeight = activity.balanceWeights.at(-1);
+  context.arcadeEngine.removeBalanceScaleWeight(activity.balanceWeights.length - 1);
+  assert.match(body.innerHTML, /balance-scale__beam--left-heavy/);
+  context.arcadeEngine.addBalanceScaleWeight(lastWeight);
+  context.arcadeEngine.checkBalanceScale();
+  assert.equal(activity.round, 1);
+});
+
 test('Conversion Match presents separate fraction, decimal, and percent cards', () => {
   const { context, elements } = loadMathsActivities();
   context.arcadeEngine.startMathsActivity('arena', 'platinum', 'conversion-match');

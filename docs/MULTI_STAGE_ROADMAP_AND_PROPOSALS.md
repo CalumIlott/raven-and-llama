@@ -115,12 +115,9 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 ```
 
 ### 4.1 Digital Balance Scale (Maths Masters Algebra & Equations)
-* **Concept**: Replace multiple-choice equation balancing with an interactive, animated two-pan beam balance scale.
-* **Mechanics**:
-  - Visual beam and pointer displaying real-time angle tilt using SVG or CSS transforms.
-  - Weight repository: standard brass weights ($1, 2, 5, 10, 20$), mystery blocks ($x$), and helium balloons (negative values).
-  - Students place blocks onto left and right pans. The scale responds physically with gravity and dampening until equilibrium is achieved.
-* **Target Activity**: Replace `blue_balanced_equation` and `balance-scales` arcade.
+* **Status: First tactile version implemented** in the Blue Belt `balance-scales` arcade.
+* Learners add, remove, or clear 1, 2, 5, 10, and 20-unit weights on the right pan until it matches the fixed left pan. The beam tilts toward the heavier side and settles level when balanced; a live status reports each pan's total and which side is heavier.
+* Weight controls are keyboard and touch accessible. The first version keeps the existing `blue_balanced_equation` skill quiz and its question pool; replacing that training flow, plus unknown-value blocks and negative weights, remains future work.
 
 ### 4.2 Cash Register & Change Counter (Maths World Shopkeeper)
 * **Status: First tactile version implemented** in the existing Shopkeeper mode.

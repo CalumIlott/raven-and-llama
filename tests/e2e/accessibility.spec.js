@@ -20,8 +20,8 @@ function contrastRatio(foreground, background) {
   return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
-async function findTextContrastFailures(page) {
-  return page.locator('#app-main').evaluate(root => {
+async function findTextContrastFailures(page, selector = '#app-main') {
+  return page.locator(selector).evaluate(root => {
     const parseColor = value => {
       if (value.startsWith('oklch(') || value.startsWith('oklab(')) {
         const channels = value.match(/-?[\d.]+/g);
@@ -510,6 +510,20 @@ test('Shopkeeper text meets WCAG AA contrast in both themes', async ({ page }) =
   expect(remaining).toBe(0);
   await page.getByRole('button', { name: 'Check change' }).click();
   await checkBothThemes('Shopkeeper feedback');
+});
+
+test('Balance Scales text meets WCAG AA contrast in both themes', async ({ page }) => {
+  await setupApp(page);
+  await openMathsDojo(page);
+  await page.locator('a[data-action="belt-detail"][data-belt-id="blue"]').click();
+  await page.getByRole('button', { name: /Balance the Scales/ }).click();
+
+  for (const theme of ['dark', 'light']) {
+    await page.evaluate(value => window.ProfileManager.applyTheme(value), theme);
+    const failures = await findTextContrastFailures(page, '#ma-body');
+    expect(failures, `Balance Scales (${theme} theme): ${JSON.stringify(failures)}`).toEqual([]);
+  }
+  await page.evaluate(() => window.ProfileManager.applyTheme('dark'));
 });
 
 test('Fraction Pizza text meets WCAG AA contrast in both themes', async ({ page }) => {
