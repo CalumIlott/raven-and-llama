@@ -757,6 +757,22 @@ window.GEOGRAPHY_WORLD_MAP_CONTEXT = {
     {
       "name": "Kiribati",
       "path": "M352.35 88.13L353 87.48L353.65 88.13L353 88.78Z"
-    }
+    },
+    {"name":"Andorra","path":"M181.22 47.49L181.52 47.19L181.82 47.49L181.52 47.79Z"},
+    {"name":"Antigua and Barbuda","path":"M117.9 72.94L118.2 72.64L118.5 72.94L118.2 73.24Z"},
+    {"name":"Bahrain","path":"M230.25 63.93L230.55 63.63L230.85 63.93L230.55 64.23Z"},
+    {"name":"Barbados","path":"M120.15 76.81L120.45 76.51L120.75 76.81L120.45 77.11Z"},
+    {"name":"Cabo Verde","path":"M156.1 74.9L156.4 74.6L156.7 74.9L156.4 75.2Z"},
+    {"name":"Dominica","path":"M118.33 74.58L118.63 74.28L118.93 74.58L118.63 74.88Z"},
+    {"name":"Grenada","path":"M118.02 77.88L118.32 77.58L118.62 77.88L118.32 78.18Z"},
+    {"name":"Liechtenstein","path":"M189.25 42.86L189.55 42.56L189.85 42.86L189.55 43.16Z"},
+    {"name":"Malta","path":"M194.1 54.1L194.4 53.8L194.7 54.1L194.4 54.4Z"},
+    {"name":"Monaco","path":"M187.12 46.27L187.42 45.97L187.72 46.27L187.42 46.57Z"},
+    {"name":"Saint Kitts and Nevis","path":"M116.97 72.7L117.27 72.4L117.57 72.7L117.27 73Z"},
+    {"name":"Saint Lucia","path":"M118.72 76.09L119.02 75.79L119.32 76.09L119.02 76.39Z"},
+    {"name":"Saint Vincent and the Grenadines","path":"M118.5 76.75L118.8 76.45L119.1 76.75L118.8 77.05Z"},
+    {"name":"San Marino","path":"M192.15 46.06L192.45 45.76L192.75 46.06L192.45 46.36Z"},
+    {"name":"São Tomé and Príncipe","path":"M186.43 89.67L186.73 89.37L187.03 89.67L186.73 89.97Z"},
+    {"name":"Singapore","path":"M283.52 88.65L283.82 88.35L284.12 88.65L283.82 88.95Z"}
   ]
 };

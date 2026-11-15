@@ -4676,7 +4676,7 @@ button.phonics-grapheme-tile:disabled { cursor: not-allowed; }
   stroke: transparent;
   stroke-width: 20px;
   vector-effect: non-scaling-stroke;
-  pointer-events: stroke;
+  pointer-events: all;
 }
 
 @media (pointer: coarse) {

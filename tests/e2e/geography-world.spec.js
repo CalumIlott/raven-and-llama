@@ -129,7 +129,7 @@ test('world map shows full country context and keeps Pacific islands inside its 
   await page.goto('/learning-centre/geography');
 
   const contextCountries = page.locator('.geography-map__context-country');
-  await expect(contextCountries).toHaveCount(189);
+  await expect(contextCountries).toHaveCount(205);
   for (const name of [
     'Brazil',
     'Canada',
@@ -368,4 +368,43 @@ test('Mauritius marker hit target selects the island country and zoom reaches 16
     element.dispatchEvent(pointer('pointerup', 5, centerX - 25, centerY, true));
   });
   await expect(page.locator('#geography-map-zoom-status')).toContainText('16.0×');
+});
+
+
+test('crowded small countries can be selected by map and country list on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  const picker = page.getByRole('combobox', { name: 'Find a country' });
+  await picker.selectOption('saint-lucia');
+  for (let index = 0; index < 8; index++) await page.getByRole('button', { name: 'Zoom in' }).click();
+  for (const [id, name, capital, code] of [
+    ['saint-vincent-and-the-grenadines', 'Saint Vincent and the Grenadines', 'Kingstown', 'vc'],
+    ['saint-lucia', 'Saint Lucia', 'Castries', 'lc'],
+    ['san-marino', 'San Marino', 'San Marino', 'sm'],
+    ['monaco', 'Monaco', 'Monaco', 'mc'],
+  ]) {
+    if (id === 'san-marino') await picker.selectOption('monaco');
+    const hit = page.locator('.geography-map__region[data-country-id="' + id + '"] .geography-map__hit-target');
+    await hit.scrollIntoViewIfNeeded();
+    const point = await hit.evaluate(element => {
+      const matrix = element.ownerSVGElement.getScreenCTM();
+      const point = new DOMPoint(Number(element.getAttribute('cx')), Number(element.getAttribute('cy'))).matrixTransform(matrix);
+      return { x: point.x, y: point.y };
+    });
+    if (test.info().project.name === 'mobile-chromium') await page.touchscreen.tap(point.x, point.y);
+    else await page.mouse.click(point.x, point.y);
+    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    await expect(page.locator('.geography-country-details')).toContainText('Capital: ' + capital);
+    await expect(page.locator('.geography-country-details__flag')).toHaveAttribute('src', '/images/flags/' + code + '.svg');
+  }
+  const italy = page.locator('#geography-world-map');
+  const italyPoint = await italy.evaluate(element => {
+    const point = new DOMPoint(193.5, 48.5).matrixTransform(element.getScreenCTM());
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(italyPoint.x, italyPoint.y);
+  await expect(page.getByRole('heading', { name: 'Italy', exact: true })).toBeVisible();
+  await page.locator('.geography-country-option[data-country-id="singapore"]').click();
+  await expect(page.getByRole('heading', { name: 'Singapore', exact: true })).toBeVisible();
 });
