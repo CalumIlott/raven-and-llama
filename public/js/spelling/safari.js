@@ -3775,6 +3775,85 @@ const SPELLING_SAFARI_ACTIVITIES = [
   }
 ];
 
+// Each family groups words with a shared ending sound. Ordered prompt/answer
+// pairs create many distinct rounds without shuffling the same options and
+// calling them new questions.
+const RHYME_WORD_FAMILIES = [
+  ['cat', 'bat', 'hat', 'mat', 'rat'],
+  ['can', 'fan', 'man', 'pan', 'van'],
+  ['cap', 'map', 'nap', 'tap'],
+  ['bag', 'rag', 'tag', 'wag'],
+  ['pet', 'net', 'wet', 'get'],
+  ['hen', 'pen', 'ten', 'men'],
+  ['big', 'dig', 'pig', 'wig'],
+  ['dip', 'lip', 'sip', 'tip'],
+  ['dot', 'hot', 'pot', 'not'],
+  ['hop', 'mop', 'top', 'pop'],
+  ['bug', 'hug', 'jug', 'mug'],
+  ['bun', 'fun', 'run', 'sun'],
+  ['back', 'pack', 'sack', 'tack'],
+  ['kick', 'lick', 'pick', 'sick'],
+  ['lock', 'rock', 'sock', 'clock'],
+  ['bell', 'fell', 'tell', 'well', 'shell'],
+  ['best', 'rest', 'test', 'west'],
+  ['bump', 'jump', 'lump', 'pump'],
+  ['bake', 'cake', 'lake', 'make', 'take'],
+  ['came', 'game', 'name', 'same'],
+  ['light', 'night', 'right', 'sight', 'tight'],
+  ['fine', 'line', 'mine', 'nine', 'pine'],
+  ['fair', 'hair', 'pair', 'chair', 'stair'],
+  ['bee', 'see', 'tree', 'free', 'knee'],
+  ['day', 'play', 'stay', 'tray'],
+  ['brown', 'clown', 'down', 'town'],
+  ['found', 'ground', 'round', 'sound'],
+  ['beat', 'heat', 'seat', 'meat'],
+  ['mail', 'tail', 'nail', 'sail'],
+  ['chain', 'drain', 'train', 'brain']
+];
+
+function createRhymeRangerQuestions() {
+  const allWords = RHYME_WORD_FAMILIES.flat();
+  const questions = [];
+
+  RHYME_WORD_FAMILIES.forEach(family => {
+    const distractors = RHYME_WORD_FAMILIES
+      .filter(candidateFamily => candidateFamily !== family)
+      .flat();
+    family.forEach(soundWord => {
+      family.forEach(answer => {
+        if (soundWord === answer) return;
+        const answerIndex = allWords.indexOf(answer);
+        const wrongAnswers = [0, 1, 2].map(offset =>
+          distractors[(answerIndex + offset) % distractors.length]
+        );
+        questions.push({
+          prompt: `Which word rhymes with ${soundWord}?`,
+          soundWord,
+          answer,
+          rhymeFamily: family,
+          hint: 'Say each word aloud and listen for its ending.',
+          feedback: {
+            explanation: `${soundWord} and ${answer} share the same ending sound.`,
+            incorrect: 'Say both words slowly and listen for the sound at the end.'
+          },
+          options: [answer, ...wrongAnswers]
+        });
+      });
+    });
+  });
+
+  return questions;
+}
+
+SPELLING_SAFARI_ACTIVITIES.push({
+  id: 'rhyme-ranger',
+  title: 'Rhyme Ranger',
+  emoji: '🦜',
+  description: 'Listen to a word, then spot another word with the same ending sound.',
+  type: 'rhyme',
+  questions: createRhymeRangerQuestions()
+});
+
 const JUNGLE_JUMBLE_DIFFICULTIES = {
   easy: answer => answer.length <= 5,
   medium: answer => answer.length >= 6 && answer.length <= 7,
@@ -4704,7 +4783,9 @@ Object.assign(App.prototype, {
     const game = this.spellingSafariGame;
     const question = game?.questions[game.index];
     if (!question) return;
-    const word = question.type === 'phonics'
+    const word = question.type === 'rhyme'
+      ? question.soundWord
+      : question.type === 'phonics'
       ? question.prompt.replace('_', question.answer)
       : question.answer;
     return SpellingPronunciation.speak(

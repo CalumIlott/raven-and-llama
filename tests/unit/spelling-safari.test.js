@@ -23,9 +23,33 @@ test('Spelling Safari activities have unique ids and at least 100 questions', ()
   const context = loadSafari();
   const activities = context.SpellingSafari.getActivities();
 
-  assert.equal(activities.length, 4);
+  assert.equal(activities.length, 5);
   assert.equal(new Set(Array.from(activities, activity => activity.id)).size, activities.length);
   assert.ok(activities.every(activity => activity.questions.length >= 100));
+});
+
+test('Rhyme Ranger has a large, distinct, answerable set of real rhyme pairs', () => {
+  const safari = loadSafari().SpellingSafari;
+  const activity = safari.getActivity('rhyme-ranger');
+  assert.ok(activity);
+  const pairs = activity.questions.map(question => `${question.soundWord}:${question.answer}`);
+  assert.equal(pairs.length, 424);
+  assert.equal(new Set(pairs).size, pairs.length);
+  const invalidQuestions = activity.questions.filter(question => {
+    const distractors = question.options.filter(option => option !== question.answer);
+    const promptWords = question.prompt.toLowerCase().match(/[a-z]+/g) || [];
+    const hintWords = question.hint.toLowerCase().match(/[a-z]+/g) || [];
+    return !(question.soundWord !== question.answer
+      && question.rhymeFamily.includes(question.soundWord)
+      && question.rhymeFamily.includes(question.answer)
+      && question.options.includes(question.answer)
+      && distractors.length === 3
+      && new Set(question.options).size === question.options.length
+      && !promptWords.includes(question.answer)
+      && !hintWords.includes(question.answer)
+      && distractors.every(option => !question.rhymeFamily.includes(option)));
+  });
+  assert.equal(invalidQuestions.length, 0);
 });
 
 test('Spell It normalizes only case and surrounding whitespace and uses only the selected list', () => {
@@ -176,7 +200,7 @@ test('Phonics Easy uses accessible picture clues and Medium keeps simple text cl
   loadBrowserScripts(context, 'public/js/spelling/safari.js');
   const app = new context.App();
   app.showSpellingSafari();
-  assert.equal((context.main.innerHTML.match(/data-action="spelling-start"/g) || []).length, 12);
+  assert.equal((context.main.innerHTML.match(/data-action="spelling-start"/g) || []).length, 15);
 
   app.startSpellingSafari('phonics-trail', 'easy');
   assert.match(context.arena.innerHTML, /spelling-picture-clue[^>]*role="img" aria-label="Picture clue:/);
