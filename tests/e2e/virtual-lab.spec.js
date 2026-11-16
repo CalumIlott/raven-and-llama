@@ -33,6 +33,9 @@ test('virtual lab safely runs supported combinations and refuses unsupported one
   await page.locator('[data-action="virtual-lab-run"]').click();
   await expect(page.locator('#virtual-lab-result')).toContainText('Sugar dissolves');
   await expect(page.locator('#virtual-lab-result')).toContainText('The sugar has not vanished.');
+  await expect(page.locator('[data-virtual-lab-scene="dissolving"]')).toBeVisible();
+  const sceneAnimation = await page.locator('[data-virtual-lab-scene="dissolving"] .virtual-lab-scene__solute').first().evaluate(element => getComputedStyle(element).animationName);
+  expect(sceneAnimation).toBe('virtual-lab-dissolve');
   await expect(page.locator('#header-stars-count')).toHaveText('4');
   const firstResult = await page.evaluate(() => window.app.virtualLabGame.result);
 
@@ -64,6 +67,18 @@ test('virtual lab safely runs supported combinations and refuses unsupported one
   await expect(activityRows).toContainText('Mastered');
 });
 
+test('virtual lab scenes respect reduced motion preferences', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.locator('[data-action="virtual-lab-start"]').click();
+  await addMaterialWithKeyboard(page, 'water', 0);
+  await addMaterialWithKeyboard(page, 'sugar', 1);
+  await page.locator('[data-action="virtual-lab-run"]').click();
+  const animationName = await page.locator('[data-virtual-lab-scene="dissolving"] .virtual-lab-scene__solute').first()
+    .evaluate(element => getComputedStyle(element).animationName);
+  expect(animationName).toBe('none');
+});
 test('virtual materials can be dragged into the workspace', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name === 'mobile-chromium', 'Touch devices use tap-to-place controls instead of native drag-and-drop.');
   await setupApp(page);
