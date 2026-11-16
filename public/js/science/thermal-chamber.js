@@ -5,6 +5,20 @@ const THERMAL_CHAMBER_PARTICLE_POSITIONS = [
   [16, 67], [37, 73], [59, 64], [78, 75], [26, 88], [49, 87], [69, 91], [88, 84]
 ];
 
+// Illustrative layouts keep phase changes visible with reduced motion too.
+function getThermalParticle(phase, index) {
+  const kind = phase === 'melting' ? (index < 8 ? 'solid' : 'liquid')
+    : phase === 'boiling' ? (index < 8 ? 'liquid' : 'gas') : phase;
+  const column = index % 4, row = Math.floor(index / 4);
+  const positions = {
+    solid: [35 + column * 10, 56 + row * 10],
+    liquid: [19 + column * 21 + (row % 2) * 6, 62 + row * 9],
+    gas: THERMAL_CHAMBER_PARTICLE_POSITIONS[index]
+  };
+  const [x, y] = positions[kind];
+  return { phase: kind, x, y, dx: index % 2 ? -1 : 1, dy: index % 3 ? 1 : -1, delay: -(index % 7) * 0.23 };
+}
+
 function getThermalChamberState(temperatureC) {
   if (!Number.isFinite(temperatureC) || temperatureC < THERMAL_CHAMBER_MIN_C || temperatureC > THERMAL_CHAMBER_MAX_C) return null;
   if (temperatureC === 0) return { phase: 'melting', label: 'Melting point: ice and liquid water can coexist', sourcePhase: 'solid-liquid' };
@@ -62,8 +76,11 @@ Object.assign(App.prototype, {
     chamber.setAttribute('aria-label', `Water particle model: ${state.label}; ${game.lidClosed ? 'lid closed' : 'lid open'}`);
     phase.textContent = state.label;
     reading.textContent = `${game.temperatureC}°C`;
-    main.querySelectorAll('.thermal-particle').forEach(particle => {
-      particle.className = `thermal-particle thermal-particle--${state.phase}`;
+    main.querySelectorAll('.thermal-particle').forEach((particle, index) => {
+      const model = getThermalParticle(state.phase, index);
+      particle.className = `thermal-particle thermal-particle--${model.phase}`;
+      particle.style.setProperty('--particle-x', `${model.x}%`);
+      particle.style.setProperty('--particle-y', `${model.y}%`);
     });
     const isCondensing = game.lidClosed && state.phase === 'gas';
     feedback.textContent = isCondensing
@@ -81,9 +98,10 @@ Object.assign(App.prototype, {
     if (!main || !game) return;
     main.dataset.page = 'science-thermal-chamber';
     const state = getThermalChamberState(game.temperatureC);
-    const dots = THERMAL_CHAMBER_PARTICLE_POSITIONS.map(([x, y], index) => `
-      <span class="thermal-particle thermal-particle--${state.phase}" data-particle="${index}" style="--particle-x:${x}%;--particle-y:${y}%" aria-hidden="true"></span>
-    `).join('');
+    const dots = THERMAL_CHAMBER_PARTICLE_POSITIONS.map((_, index) => {
+      const particle = getThermalParticle(state.phase, index);
+      return `<span class="thermal-particle thermal-particle--${particle.phase}" data-particle="${index}" style="--particle-x:${particle.x}%;--particle-y:${particle.y}%;--particle-dx:${particle.dx};--particle-dy:${particle.dy};--particle-delay:${particle.delay}s" aria-hidden="true"></span>`;
+    }).join('');
     const lidFeedback = game.lidClosed && state.phase === 'gas'
       ? 'Water vapour touches the cool lid and condenses into liquid droplets.'
       : game.lidClosed

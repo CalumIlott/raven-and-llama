@@ -4084,11 +4084,9 @@ html.theme-light .play-shell--science { --play-accent: #17688c; --play-accent-so
   box-shadow: 0 0 0.6rem rgb(186 230 253 / 60%);
   transform: translate(-50%, -50%);
 }
-.thermal-particle--solid { animation: thermal-vibrate 1s ease-in-out infinite alternate; }
-.thermal-particle--liquid { background: #38bdf8; animation: thermal-flow 2.2s ease-in-out infinite alternate; }
-.thermal-particle--gas { background: #f0abfc; box-shadow: 0 0 0.75rem rgb(240 171 252 / 70%); animation: thermal-vapour 2.5s ease-in-out infinite alternate; }
-.thermal-particle--melting { background: #67e8f9; animation: thermal-flow 1.5s ease-in-out infinite alternate; }
-.thermal-particle--boiling { background: #f0abfc; animation: thermal-vapour 1.8s ease-in-out infinite alternate; }
+.thermal-particle--solid { animation: thermal-vibrate 0.8s ease-in-out infinite alternate; animation-delay: var(--particle-delay); }
+.thermal-particle--liquid { background: #38bdf8; animation: thermal-flow 1.5s ease-in-out infinite alternate; animation-delay: var(--particle-delay); }
+.thermal-particle--gas { background: #f0abfc; box-shadow: 0 0 0.75rem rgb(240 171 252 / 70%); animation: thermal-vapour 1.2s ease-in-out infinite alternate; animation-delay: var(--particle-delay); }
 .thermal-condensation {
   position: absolute;
   z-index: 3;
@@ -4098,9 +4096,9 @@ html.theme-light .play-shell--science { --play-accent: #17688c; --play-accent-so
   color: #bae6fd;
   text-align: center;
 }
-@keyframes thermal-vibrate { to { transform: translate(-50%, -50%) translateY(-2px); } }
-@keyframes thermal-flow { to { transform: translate(-50%, -50%) translate(3px, -4px); } }
-@keyframes thermal-vapour { to { transform: translate(-50%, -50%) translate(10px, -12px); } }
+@keyframes thermal-vibrate { to { transform: translate(-50%, -50%) translate(calc(var(--particle-dx) * 2px), calc(var(--particle-dy) * 2px)); } }
+@keyframes thermal-flow { to { transform: translate(-50%, -50%) translate(calc(var(--particle-dx) * 10px), calc(var(--particle-dy) * 6px)); } }
+@keyframes thermal-vapour { to { transform: translate(-50%, -50%) translate(calc(var(--particle-dx) * 18px), calc(var(--particle-dy) * 20px)); } }
 @media (prefers-reduced-motion: reduce) {
   .thermal-particle { animation: none !important; }
 }
