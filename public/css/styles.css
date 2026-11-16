@@ -5139,3 +5139,58 @@ html.theme-light #app-main[data-page="history-artifact-detective"] .artifact-cho
   #app-main[data-page="history-discovery"] .artifact-launch { align-items: flex-start; flex-direction: column; }
   #app-main[data-page="history-discovery"] .artifact-launch .history-primary-button { width: 100%; }
 }
+
+/* Virtual Laboratory outcome illustrations */
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene {
+  width: min(100%, 26rem);
+  margin: 1.25rem auto 0;
+  padding: .85rem;
+  border: 1px solid rgb(71 85 105 / 70%);
+  border-radius: 1rem;
+  background: radial-gradient(ellipse at 50% 100%, rgb(14 116 144 / 24%), rgb(2 6 23 / 75%) 72%);
+}
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene svg { display: block; width: 100%; height: auto; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene figcaption { margin-top: .35rem; color: #cbd5e1; text-align: center; font-size: .75rem; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__glass { fill: rgb(15 23 42 / 38%); stroke: #bae6fd; stroke-width: 3; stroke-linejoin: round; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__rim { stroke: #e0f2fe; stroke-width: 4; stroke-linecap: round; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__water { fill: #0e7490; fill-opacity: .65; stroke: #67e8f9; stroke-opacity: .65; stroke-width: 1.5; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__ice { fill: #bae6fd; fill-opacity: .92; stroke: #f0f9ff; stroke-width: 2; transform-origin: center; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__melting .virtual-lab-scene__ice { animation: virtual-lab-melt 2.4s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__freezing .virtual-lab-scene__ice { animation: virtual-lab-freeze 2s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__solute { fill: #facc15; stroke: #fef3c7; stroke-width: 1; animation: virtual-lab-dissolve 2.2s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__particle--1 { animation-delay: -.6s; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__particle--2 { animation-delay: -1.1s; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__particle--3 { animation-delay: -1.6s; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__sand { fill: #d6a24a; stroke: #fcd34d; stroke-width: 1.5; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__grain { fill: #fbbf24; animation: virtual-lab-settle 2.5s ease-in infinite; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__oil { fill: #f59e0b; fill-opacity: .76; stroke: #fde68a; stroke-width: 1.5; animation: virtual-lab-layer 3s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__bubble { fill: #cffafe; fill-opacity: .82; stroke: #fff; stroke-width: 1.5; animation: virtual-lab-bubble 2s ease-in infinite; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__magnet { fill: #ef4444; stroke: #fecaca; stroke-width: 2; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__iron { fill: #cbd5e1; stroke: #fff; stroke-width: 1; animation: virtual-lab-attract 1.8s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__filter { fill: #e2e8f0; fill-opacity: .28; stroke: #e0f2fe; stroke-width: 2; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__filter-line { stroke: #e0f2fe; stroke-width: 3; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__drop { fill: #67e8f9; animation: virtual-lab-drop 1.8s ease-in infinite; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__crystal { fill: #f8fafc; stroke: #bae6fd; stroke-width: 1.5; animation: virtual-lab-crystal 3s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__vapour { fill: none; stroke: #e0f2fe; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 8 8; animation: virtual-lab-vapour 2.2s linear infinite; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__colour { fill: #f43f5e; fill-opacity: .75; transform-box: fill-box; transform-origin: center; animation: virtual-lab-spread 3s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__cloud { fill: #a8a29e; fill-opacity: .66; animation: virtual-lab-suspension 2.8s ease-in-out infinite alternate; }
+#app-main[data-page="science-virtual-lab"] .virtual-lab-scene__snow { fill: none; stroke: #f0f9ff; stroke-width: 4; stroke-linecap: round; animation: virtual-lab-snow 2s ease-in-out infinite alternate; }
+@keyframes virtual-lab-melt { to { transform: translateY(17px) scale(.86); opacity: .64; } }
+@keyframes virtual-lab-freeze { to { transform: scale(1.08); filter: drop-shadow(0 0 5px #bae6fd); } }
+@keyframes virtual-lab-dissolve { to { transform: translateY(10px); opacity: .25; } }
+@keyframes virtual-lab-settle { 70% { transform: translateY(25px); } 100% { transform: translateY(25px); opacity: .45; } }
+@keyframes virtual-lab-layer { to { transform: translateY(3px); opacity: .56; } }
+@keyframes virtual-lab-bubble { to { transform: translateY(-42px) scale(.68); opacity: 0; } }
+@keyframes virtual-lab-attract { to { transform: translate(-12px, -28px); } }
+@keyframes virtual-lab-drop { 70% { transform: translateY(20px); opacity: .9; } 100% { transform: translateY(25px) scale(.5); opacity: 0; } }
+@keyframes virtual-lab-crystal { to { transform: translateY(-3px) scale(1.06); filter: drop-shadow(0 0 4px #e0f2fe); } }
+@keyframes virtual-lab-vapour { to { stroke-dashoffset: -32; opacity: .35; } }
+@keyframes virtual-lab-spread { to { transform: scale(1.35); opacity: .3; } }
+@keyframes virtual-lab-suspension { to { transform: translateY(8px); opacity: .35; } }
+@keyframes virtual-lab-snow { to { transform: translateY(7px) scale(.72); opacity: .3; } }
+@media (prefers-reduced-motion: reduce) {
+  #app-main[data-page="science-virtual-lab"] .virtual-lab-scene *,
+  #app-main[data-page="science-virtual-lab"] .virtual-lab-scene *::before,
+  #app-main[data-page="science-virtual-lab"] .virtual-lab-scene *::after { animation: none !important; }
+}
+html.theme-light #app-main[data-page="science-virtual-lab"] .virtual-lab-scene figcaption { color: #334155; }
