@@ -261,11 +261,11 @@ Object.assign(App.prototype, {
                   </div>
                 </div>
                 <span class="bg-sky-950 text-sky-300 border border-sky-600/60 text-xs font-bold px-3 py-1 rounded-full">
-                  4 Adventures 🦁
+                  5 Adventures 🦁
                 </span>
               </div>
               <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                Hear word pronunciations and explore the existing Spelling Safari phonics, spelling, vocabulary and word-scramble adventures.
+                Hear pronunciations and explore five adventures in phonics, spelling, vocabulary, word puzzles, and rhyming.
               </p>
               <div class="grid grid-cols-3 gap-2 text-center text-xs text-slate-300 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 mb-6">
                 <div>
