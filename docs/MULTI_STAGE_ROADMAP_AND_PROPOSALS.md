@@ -180,7 +180,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 
 **Primary Objective**: Investigate cutting-edge educational mechanics, voice interaction, and cooperative features for future platform iterations.
 
-**Status**: Feasibility research started for 6.1 and 6.2. Implementation remains gated on the relevant privacy, historical, and cultural reviews; 6.3 is not started.
+**Status**: Feasibility research started for 6.1–6.3. Implementation remains gated on privacy, historical, cultural, security, and cost reviews.
 
 ### 6.1 Voice Recognition & Verbal Spelling (Web Speech Recognition)
 * **Research Focus**: Can speech recognition reliably assess oral reading and verbal spelling for primary students without external cloud services?
@@ -204,6 +204,12 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 
 ### 6.3 Real-Time Cooperative Challenges via Cloudflare Durable Objects
 * **Research Focus**: Low-latency, privacy-preserving multiplayer cooperation without user chat or external accounts.
+* **Feasibility review (2026-11-21)**:
+  - Durable Objects are a reasonable fit for coordinating a small shared game room over WebSockets. Cloudflare recommends the WebSocket Hibernation API so idle rooms can sleep while keeping connected clients; room state needed after hibernation must be stored explicitly ([Cloudflare WebSockets guidance](https://developers.cloudflare.com/durable-objects/best-practices/websockets/), [Durable Object lifecycle](https://developers.cloudflare.com/durable-objects/concepts/durable-object-lifecycle/)).
+  - Keep the first slice narrow: a two-player, fixed-action Math Relay with no free-text chat, voice, public room listing, or cross-session progress. Validate every action and turn on the Worker, assign short-lived room credentials, cap room size and message rates, and expire room data after completion or a short timeout. Preserve the existing rule that a client-supplied account ID is never authority.
+  - Plan an offline/single-player fallback for learners who cannot find a partner or whose network blocks WebSockets. Reconnection should either restore the minimal active round state or explain that the room has expired; it must not silently leave a learner stuck.
+  - Review operating cost before launch. Durable Objects meter requests and compute duration; hibernation can reduce idle duration, while the current pricing page lists daily free-tier limits and usage-based paid pricing with a $5 monthly minimum. Add caps and monitor usage before enabling room creation broadly ([Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/)).
+  - Gate before implementation: review room-code abuse, session authorization, data expiry, reconnect behavior, classroom consent expectations, and expected usage/cost. Test invalid/out-of-turn actions, duplicate joins, disconnects, expiration, and rate limits.
 * **Prototypes**:
   - *Maths Relay*: Two students in a classroom work together to solve parts of a puzzle concurrently.
   - *Ecosystem Co-op*: One student manages plant nutrition while the other balances herbivores in a shared simulation.
