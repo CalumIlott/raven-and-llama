@@ -13,6 +13,7 @@ class GameEngine {
     this.lives = 3;
     this.isAnswering = false;
     this.userOrder = [];
+    this.balanceWeights = [];
     this.timerInterval = null;
     this.timeLeft = 0;
     this.totalTime = 0;
@@ -323,6 +324,7 @@ class GameEngine {
 
     this.isAnswering = false;
     this.userOrder = [];
+    if (q.type === 'balance_scale') this.balanceWeights = [];
 
     const titleText = this.mode === 'belt_test_1'
       ? `🥋 ${this.currentBelt.name} Stage 1: Show Me What You Know`
@@ -336,6 +338,7 @@ class GameEngine {
       : `Question ${this.currentIndex + 1} of ${this.totalQuestions}`;
 
     let visualWidgetHtml = '';
+    let controlsHtml = '';
     const itemIcon = q.itemIcon || '🥋';
 
     if (q.type === 'subitise') {
@@ -345,7 +348,7 @@ class GameEngine {
     } else if (q.type === 'count_objects') {
       visualWidgetHtml = VisualRenderers.renderSubitise(q.count, 'dots', itemIcon);
     } else if (q.type === 'balance_scale') {
-      visualWidgetHtml = VisualRenderers.renderBalanceScale(q.leftA, q.leftB, q.rightA, '?');
+      visualWidgetHtml = this.renderBalanceTrainingPanel(q);
     } else if (q.type === 'array_grid') {
       visualWidgetHtml = VisualRenderers.renderArrayGrid(q.rows, q.cols, '🗡️');
     } else if (q.type === 'fraction_visual') {
@@ -354,8 +357,9 @@ class GameEngine {
       visualWidgetHtml = VisualRenderers.renderPartitionBaskets(q.total, q.part1, q.part2, '🍎');
     }
 
-    let controlsHtml = '';
-    if (q.type === 'order_drag') {
+    if (q.type === 'balance_scale') {
+      controlsHtml = '';
+    } else if (q.type === 'order_drag') {
       controlsHtml = this.renderOrderControls(q);
     } else if (q.type === 'numeric_input' || q.type === 'short_answer') {
       const inputMode = q.type === 'numeric_input' ? 'decimal' : 'text';
@@ -437,6 +441,78 @@ class GameEngine {
     document.getElementById('game-answer-input')?.focus?.({ preventScroll: true });
     const timeLimit = q.timeLimitSeconds || 16;
     this.startTimer(timeLimit);
+  }
+
+  renderBalanceTrainingPanel(question) {
+    const weights = this.balanceWeights || [];
+    const leftTotal = question.leftA + question.leftB;
+    const rightTotal = question.rightA + weights.reduce((sum, value) => sum + value, 0);
+    const difference = leftTotal - rightTotal;
+    const tilt = difference === 0 ? 'balanced' : difference > 0 ? 'left-heavy' : 'right-heavy';
+    const tiltMagnitude = Math.abs(difference) >= 10 ? 3 : Math.abs(difference) >= 5 ? 2 : 1;
+    const beamClass = `balance-scale__beam--${tilt}${difference === 0 ? '' : ` balance-scale__beam--${tilt}-${tiltMagnitude}`}`;
+    const balanceDescription = difference === 0
+      ? 'The scale is balanced.'
+      : `${difference > 0 ? 'Left' : 'Right'} side is heavier by ${Math.abs(difference)}.`;
+    const fixedWeight = value => `<span class="balance-scale__weight balance-scale__weight--fixed">${value}</span>`;
+    return `
+      <div id="game-balance-panel">
+        <p class="balance-scale-prompt">Add weights to the right pan to find the missing value.</p>
+        <div class="balance-scale" role="img" aria-label="Balance scale. Left pan has ${leftTotal} units. Right pan has ${rightTotal} units. ${balanceDescription}">
+          <div class="balance-scale__beam ${beamClass}">
+            <div class="balance-scale__pan balance-scale__pan--left"><span class="balance-scale__wire" aria-hidden="true"></span><div class="balance-scale__pan-surface">${fixedWeight(question.leftA)}${fixedWeight(question.leftB)}</div></div>
+            <div class="balance-scale__pan balance-scale__pan--right"><span class="balance-scale__wire" aria-hidden="true"></span><div class="balance-scale__pan-surface">${fixedWeight(question.rightA)}${weights.map(value => `<span class="balance-scale__weight">${value}</span>`).join('')}</div></div>
+          </div>
+          <div class="balance-scale__fulcrum" aria-hidden="true"></div>
+        </div>
+        <p class="balance-scale-status" aria-live="polite">Left pan: ${leftTotal} units · Right pan: ${rightTotal} units. ${balanceDescription}</p>
+        <div class="balance-scale-rack" role="group" aria-label="Add a weight to the right pan">
+          ${[1, 2, 5, 10, 20].map(value => `<button type="button" data-action="game-balance-add" data-value="${value}" aria-label="Add ${value} unit${value === 1 ? '' : 's'}" ${weights.length >= 20 ? 'disabled' : ''} class="balance-scale-weight-button"><span aria-hidden="true">＋</span>${value}</button>`).join('')}
+        </div>
+        <div class="balance-scale-selected" role="group" aria-label="Weights on the right pan">
+          ${weights.map((value, index) => `<button type="button" data-action="game-balance-remove" data-index="${index}" aria-label="Remove ${value} unit weight" class="balance-scale__weight balance-scale__weight--removable">${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights added yet</span>'}
+        </div>
+        <div class="balance-scale-actions">
+          <button type="button" data-action="game-balance-check" class="btn-ninja rounded-xl px-5 py-3 font-bold">Check balance</button>
+          <button type="button" data-action="game-balance-clear" ${weights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear all</button>
+        </div>
+      </div>`;
+  }
+
+  refreshBalanceTrainingPanel() {
+    const panel = document.getElementById('game-balance-panel');
+    const question = this.questions[this.currentIndex];
+    if (!panel || question?.type !== 'balance_scale') return;
+    panel.outerHTML = this.renderBalanceTrainingPanel(question);
+  }
+
+  addBalanceTrainingWeight(value) {
+    if (this.isAnswering || this.questions[this.currentIndex]?.type !== 'balance_scale' ||
+      ![1, 2, 5, 10, 20].includes(Number(value)) || this.balanceWeights.length >= 20) return;
+    this.balanceWeights.push(Number(value));
+    this.refreshBalanceTrainingPanel();
+    document.querySelector?.(`[data-action="game-balance-add"][data-value="${value}"]:not(:disabled)`)?.focus?.({ preventScroll: true });
+  }
+
+  removeBalanceTrainingWeight(index) {
+    if (this.isAnswering || this.questions[this.currentIndex]?.type !== 'balance_scale' ||
+      !Number.isInteger(index) || index < 0 || index >= this.balanceWeights.length) return;
+    const removed = this.balanceWeights[index];
+    this.balanceWeights.splice(index, 1);
+    this.refreshBalanceTrainingPanel();
+    document.querySelector?.(`[data-action="game-balance-add"][data-value="${removed}"]`)?.focus?.({ preventScroll: true });
+  }
+
+  clearBalanceTrainingWeights() {
+    if (this.isAnswering || this.questions[this.currentIndex]?.type !== 'balance_scale') return;
+    this.balanceWeights = [];
+    this.refreshBalanceTrainingPanel();
+    document.querySelector?.('[data-action="game-balance-add"][data-value="1"]')?.focus?.({ preventScroll: true });
+  }
+
+  checkBalanceTrainingAnswer() {
+    if (this.isAnswering || this.questions[this.currentIndex]?.type !== 'balance_scale') return;
+    this.submitAnswer(this.balanceWeights.reduce((sum, value) => sum + value, 0));
   }
 
   renderOrderControls(q) {

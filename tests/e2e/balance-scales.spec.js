@@ -63,3 +63,27 @@ test('lifting balloons subtract units and remain keyboard accessible', async ({ 
   await expect(status).toHaveText(initial);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
+
+test('Blue Belt equation training uses the interactive balance scale', async ({ page }) => {
+  await setupApp(page);
+  await openMathsDojo(page);
+  await page.locator('a[data-action="belt-detail"][data-belt-id="blue"]').click();
+  await expect(page.getByRole('heading', { name: 'Blue Belt', exact: true })).toBeVisible();
+  await page.locator('[data-action="skill-start"][data-skill-id="blue_balanced_equation"]').click();
+  await expect(page.getByRole('heading', { name: /Balanced Equation Master/ })).toBeVisible();
+  await expect(page.locator('#game-balance-panel')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Check balance' })).toBeVisible();
+  await expect(page.locator('#game-arena .play-answer-button')).toHaveCount(0);
+
+  let remaining = await page.evaluate(() => window.gameEngine.questions[0].answer);
+  for (const value of [20, 10, 5, 2, 1]) {
+    while (remaining >= value) {
+      await page.getByRole('button', { name: `Add ${value} unit${value === 1 ? '' : 's'}` }).click();
+      remaining -= value;
+    }
+  }
+  await expect(page.locator('.balance-scale__beam--balanced')).toBeVisible();
+  await page.getByRole('button', { name: 'Check balance' }).click();
+  await expect(page.locator('#feedback-banner')).toContainText('Correct!');
+  await expect(page.getByText('Question 2 of 10', { exact: true })).toBeVisible({ timeout: 5000 });
+});
