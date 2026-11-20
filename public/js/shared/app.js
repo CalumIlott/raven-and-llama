@@ -320,6 +320,10 @@ class App {
       case 'endless-timetables': this.startEndlessTimetables(); break;
       case 'times-table-pick': this.ttPick(Number(target.dataset.id), Number(target.dataset.value)); break;
       case 'game-answer': window.gameEngine.submitAnswer(decodeURIComponent(target.dataset.answer)); break;
+      case 'game-balance-add': window.gameEngine.addBalanceTrainingWeight(Number(target.dataset.value)); break;
+      case 'game-balance-remove': window.gameEngine.removeBalanceTrainingWeight(Number(target.dataset.index)); break;
+      case 'game-balance-clear': window.gameEngine.clearBalanceTrainingWeights(); break;
+      case 'game-balance-check': window.gameEngine.checkBalanceTrainingAnswer(); break;
       case 'game-order-pick': window.gameEngine.pickOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
       case 'game-exit':
         window.gameEngine.exitGame();

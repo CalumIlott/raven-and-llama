@@ -21,6 +21,7 @@ function loadGameEngine(sessionValues = new Map(), account = null) {
             focus() { this.focusCount++; },
             style: {},
             innerHTML: '',
+            outerHTML: '',
             textContent: ''
           });
         }
@@ -77,6 +78,31 @@ test('Maths training uses the shared activity question lifecycle', () => {
   assert.equal(engine.activitySession.definition.skillId, 'white_subitising');
   assert.equal(engine.activitySession.definition.questions.length, 10);
   assert.equal(engine.activitySession.definition.settings.trackProgress, false);
+});
+
+test('Blue Belt balanced equations use the tactile scale in normal skill training', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+
+  const question = engine.questions[engine.currentIndex];
+  const arena = elements.get('game-arena').innerHTML;
+  assert.equal(question.type, 'balance_scale');
+  assert.match(arena, /id="game-balance-panel"/);
+  assert.match(arena, /data-action="game-balance-add"/);
+  assert.match(arena, /data-action="game-balance-check"/);
+  assert.doesNotMatch(arena, /id="opt-btn-/);
+
+  let remaining = question.answer;
+  for (const value of [20, 10, 5, 2, 1]) {
+    while (remaining >= value) {
+      engine.addBalanceTrainingWeight(value);
+      remaining -= value;
+    }
+  }
+  assert.match(elements.get('game-balance-panel').outerHTML, /The scale is balanced\./);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
 });
 
 test('endless sessions keep generating validated questions without a fixed question count', () => {
