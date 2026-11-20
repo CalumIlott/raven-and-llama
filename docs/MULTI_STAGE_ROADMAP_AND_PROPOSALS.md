@@ -180,14 +180,16 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 
 **Primary Objective**: Investigate cutting-edge educational mechanics, voice interaction, and cooperative features for future platform iterations.
 
-**Status**: Not started; these proposals require separate feasibility and privacy reviews before implementation.
+**Status**: Feasibility research started for 6.1. Implementation remains gated on a separate privacy and product review; 6.2 and 6.3 are not started.
 
 ### 6.1 Voice Recognition & Verbal Spelling (Web Speech Recognition)
 * **Research Focus**: Can speech recognition reliably assess oral reading and verbal spelling for primary students without external cloud services?
-* **Feasibility**:
-  - Evaluate the browser's native `webkitSpeechRecognition` / `SpeechRecognition` API.
-  - Challenges: Background noise, child accents, and speech recognition latency.
-  - Opportunity: "Spell-by-voice" where a student speaks individual letters aloud: *"T - I - G - E - R"*, with on-screen visual confirmation.
+* **Feasibility review (2026-11-21)**:
+  - The browser Web Speech Recognition API remains limited in availability. Where recognition is available, browsers may use a remote service by default; that can send the learner's audio to a service and may fail offline ([MDN Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API), [MDN SpeechRecognition](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition)).
+  - Chrome added an on-device recognition path in Chrome 139. It requires a supported language pack and explicit `processLocally = true`; the site can query availability and offer installation. This is a possible privacy-preserving route, but it does not establish support across the browsers and devices used by learners ([Chrome 139 release notes](https://developer.chrome.com/release-notes/139), [MDN on-device recognition](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API#on-device_speech_recognition)).
+  - Recommendation: if prototyped, limit the first activity to short, explicit letter-by-letter spelling. Require an intentional learner action, show a clear listening state and stop control, and use on-device recognition only. If the browser or language pack cannot support that path, keep the existing typed or tile-based response; do not silently fall back to remote recognition.
+  - Treat each spoken attempt as transient: do not persist or upload audio or transcripts. Show the recognized letters back to the learner before checking them, and let the learner edit or retry. This reduces the effect of accents, noise, and recognition errors on scoring.
+  - Gate before implementation: decide how learner/parent consent is presented and verify the target browser/device matrix, including unsupported browsers, unavailable language packs, denied microphone access, no-speech, and cancellation. The Web Speech API spec calls for explicit informed consent, an obvious recording indicator, and a user-visible way to stop recording ([W3C Web Speech API security and privacy considerations](https://dvcs.w3.org/hg/speech-api/raw-file/tip/webspeechapi#security)).
 
 ### 6.2 Branching Historical Expeditions (Choose-Your-Own-Adventure)
 * **Research Focus**: Interactive branching narratives exploring major human migrations and historical journeys.
