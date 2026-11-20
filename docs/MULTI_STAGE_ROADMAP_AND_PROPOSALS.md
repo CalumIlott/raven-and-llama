@@ -124,9 +124,9 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 ```
 
 ### 4.1 Digital Balance Scale (Maths Masters Algebra & Equations)
-* **Status: First tactile version implemented** in the Blue Belt `balance-scales` arcade.
+* **Status: Integrated into the Blue Belt `blue_balanced_equation` training path and the `balance-scales` arcade.**
 * Learners add, remove, or clear 1, 2, 5, 10, and 20-unit weights on the right pan until it matches the fixed left pan. The beam tilts toward the heavier side and settles level when balanced; a live status reports each pan's total and which side is heavier.
-* Weight controls are keyboard and touch accessible. The first version keeps the existing `blue_balanced_equation` skill quiz and its question pool; replacing that training flow and adding unknown-value blocks remain future work. Lifting balloons with values −1, −2 and −5 let learners explore negative weights and correct an overshoot.
+* Weight controls are keyboard and touch accessible. Training still uses the existing question pool, timer, scoring, retry, and progress lifecycle, but learners now build the missing amount on the scale rather than choose a multiple-choice answer. Mystery `x` blocks and operations that change both pans equally remain future work. The arcade also includes lifting balloons with values −1, −2, and −5 so learners can explore negative weights and correct an overshoot.
 
 ### 4.2 Cash Register & Change Counter (Maths World Shopkeeper)
 * **Status: First tactile version implemented** in the existing Shopkeeper mode.
