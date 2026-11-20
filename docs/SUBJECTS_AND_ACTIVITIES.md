@@ -8,7 +8,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 | Subject | Hub Route | Key Activities | Pool Size | Target (100+) Status |
 | :--- | :--- | :--- | :---: | :--- |
-| **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant (Except Brown Belt Fractions: 18) |
+| **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant; Brown Belt Fractions now has 100+ tested visual problems |
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble, Rhyme Ranger | **847** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
@@ -31,12 +31,11 @@ This document catalogues every subject hub, learning activity, question bank siz
     * `white_subitising` (1–6/10 dots/dice patterns) — pedagogical canonical finite set for early perception.
     * `yellow_tens_mate` (Friends of 10 pairs: $a + b = 10$) — canonical finite set (9 combinations).
     * `green_halving` (Halving numbers up to 24) — foundational fact set.
-  - **Identified Pool Deficit**:
-    * `genBrownFractions` only uses denominators `[2, 3, 4, 6, 8]` yielding only 18 proper fractions. Needs expansion to fifths, tenths, twelfths, and mixed/improper numbers to reach 100+.
+  - **Brown Belt fractions — compliant**: `genBrownFractions` covers denominators 2–12, proper and improper fractions, mixed numbers, and visual circle, bar, and grid models. Unit tests enforce at least 100 distinct problems and answerable visual rendering.
 * **Maths World Games**:
   - `fraction-pizza.js`: Interactive order fulfilment slicing pizzas into halves, thirds, quarters, and eighths.
   - `money.js`: Shopkeeper practice calculating change using an interactive cash drawer with separate Australian coin and note slots, drag/tap/keyboard selection, and a live running total.
-  - `telling-time.js`: Reading analogue clocks and matching digital times.
+  - `telling-time.js`: Reading analogue clocks, matching digital times, and setting a clock by dragging or keyboard-adjusting proportional hands.
 
 ---
 
@@ -94,7 +93,7 @@ This document catalogues every subject hub, learning activity, question bank siz
   - Both activities draw from the same 193-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
   - Coverage audit: the pool covers 193 UN member countries, including small states represented by selectable schematic markers.
   - Map-page facts follow-up: implemented in the selected-country panel, with at least five sourced options per country and a different fact on a return visit.
-  - Map flags: self-hosted SVGs are used so desktop Chrome shows flags consistently with mobile.
+  - Map flags: self-hosted SVGs are used across the map panel, country list, and geography activities. A later user report says they still fail in desktop Chrome while working on a phone; reproduce this before considering cross-browser rendering resolved.
 
 ---
 

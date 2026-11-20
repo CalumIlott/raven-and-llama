@@ -2,6 +2,14 @@
 
 This document serves as the master blueprint for transitioning **Raven & Llama Learning** from a quiz-centric platform into a deeply interactive, inquiry-based educational experience. It covers immediate bug resolutions, content pool expansions (to meet the 100+ items goal), core architectural additions, tactile manipulatives replacing quizzes, and longer-term research into future learning mechanics.
 
+## Current Status (21 November 2026)
+
+- **Stages 1–3: implemented.** Content-pool repairs, the core parent dashboard/settings, and deterministic recommendations are delivered.
+- **Stages 4–5: first versions implemented.** Tactile activities and discovery experiences are available, while several still augment existing quizzes or use deliberately finite/simplified models.
+- **Remaining tracked follow-ups:** verify the reported desktop Chrome flag-rendering problem; connect Balance Scales to Blue Belt equation training and add unknown-value weights; decide whether to add a learner pace control to the Parent Dashboard.
+- **Stage 6: not started.** Voice recognition, branching historical expeditions, and multiplayer remain research proposals.
+- No GitHub issues or pull requests were open when this status was reviewed. Create focused issues before starting the future work above.
+
 ---
 
 ## Executive Summary: The 6-Stage Roadmap
@@ -17,7 +25,7 @@ flowchart TD
 
 ---
 
-## Stage 1: Content Pools, Question Breadth & Bug Resolutions (Issue #138)
+## Stage 1: Content Pools, Question Breadth & Bug Resolutions (Complete)
 
 **Primary Objective**: Eliminate known defects and bring eligible generated activities toward the platform standard of **at least 100 distinct items per activity**. Finite historical evidence collections remain explicitly finite.
 
@@ -30,7 +38,7 @@ flowchart TD
 * **Test**: Add unit test in `tests/unit/geography-country-activities.test.js` asserting `countries.length >= 160` and zero duplicate country/flag/capital combinations.
 * **Follow-up note — implemented**: Expanded the shared country pool from 110 to 165 sovereign countries, reusing map paths for 55 additional eligible countries. Audited all 177 outlines; dependent territories, Antarctica, and disputed or special-status features remain in the map context but outside the quiz pool, as documented in `docs/SUBJECTS_AND_ACTIVITIES.md`.
 * **Map-page facts follow-up — implemented**: Each country now has at least five sourced facts, combining the existing country highlight with capital, continent, official languages, currency, area, coastline status, and land-border details where available. A different fact is selected when the learner changes away from and returns to a country. Reference data is bundled locally with ODbL attribution and licensing; no live API is required.
-* **Map flag display follow-up — implemented**: Show self-hosted SVG flags in the selected-country panel and country list, and in Flag Detective and Capital Cities. This avoids the platform-dependent Unicode flag fallback that can display country initials in desktop Chrome. The map caption now uses the actual number of highlighted countries instead of a stale hard-coded count.
+* **Map flag display — implementation shipped, Chrome verification outstanding**: Self-hosted SVG flags appear in the selected-country panel, country list, Flag Detective, and Capital Cities. The user later reported that flags still fail in desktop Chrome while working on a phone. Reproduce that report in Chrome before calling cross-browser rendering resolved. The map caption uses the actual number of highlighted countries.
 * **Small-island map follow-up — implemented**: Added twelve small island countries, including Mauritius, using enlarged schematic markers where Natural Earth 1:110m does not preserve visible geometry. Markers are explicitly not to scale and have large screen-constant selection targets. Sixteen further small countries complete UN-member coverage. Map controls and pinch zoom now reach 16×.
 
 ### 1.3 Expand Life Skills "Plan a Party"
@@ -43,13 +51,12 @@ flowchart TD
 * **Virtual Lab**: Expanded `public/js/science/virtual-lab.js` to 17 carefully sourced outcomes. Item filters group materials, prepared mixtures, conditions, and tools; supported outcomes link to their source.
 
 ### 1.5 Expand MathMasters Brown Belt Fractions
-* **Problem**: `genBrownFractions` generates only 18 proper fractions across limited denominators `[2, 3, 4, 6, 8]`.
-* **Resolution**: Expand to denominators up to 12, improper fractions, mixed numbers, and visual geometric models (circles, fraction bars, grid matrices) to exceed 100 distinct visual problems.
+* **Status — implemented**: Brown Belt fraction practice covers denominators 2–12, proper/improper/mixed numbers, and circle, bar, or grid models. Unit tests enforce at least 100 distinct problems and answerable visual rendering.
 * **Fraction Pizza UI follow-up — implemented**: Replaced the square grid and pizza icons with wedge-shaped pizza slices, a visible crust, cheese, and toppings. Slices remain selectable by touch and keyboard and draggable on desktop. Their geometry lives in the stylesheet because the app's Content Security Policy blocks inline style attributes; browser coverage checks that each supported slice is rendered as a distinct clipped wedge.
 
 ---
 
-## Stage 2: Parent Dashboard & Settings Controls (Issue #128 / LC-701)
+## Stage 2: Parent Dashboard & Settings Controls (Core Features Implemented)
 
 **Primary Objective**: Deliver a secure, dedicated parent portal enabling personalized difficulty configurations, learning pace controls, and safe progress management.
 
@@ -73,10 +80,11 @@ flowchart TD
 * **Dyslexia-friendly typography — implemented**: Add a profile-synced toggle for a sans serif typeface with increased letter spacing and line height; guest selection stays in memory.
 * **Guest Safety**: In guest mode, display a clear advisory that settings and progress remain memory-only.
 * **Audio preference control — implemented**: Add a parent-managed spoken-audio speed slider from 0.75× to 1.25× and apply it to hints and spelling pronunciations; keep guest changes in memory.
+* **Status**: Parent PIN access, session-scoped progress reset, year/difficulty settings, theme/sound/speech/typography preferences, and guest privacy messaging are implemented. A separate learner pace control (for example, session length or activity pacing) is not implemented; keep it as optional follow-up rather than implying it shipped.
 
 ---
 
-## Stage 3: Personalised Learning Recommendations (Issue #130 / LC-703)
+## Stage 3: Personalised Learning Recommendations (Implemented)
 
 **Primary Objective**: Turn student activity history into deterministic, explainable next-step recommendations that adapt to mastery and practice recency.
 
@@ -100,12 +108,15 @@ flowchart TD
   - *"Let's practice: You scored 60% on fractions last week. Try Fraction Pizza to level up!"*
   - *"New discovery: You haven't explored the History Timeline yet. Step back in time!"*
 * Provide one-click direct launch buttons into the recommended activity.
+* **Status**: The deterministic recommendation engine and accessible cards are available in both the Home dashboard and Learning Centre.
 
 ---
 
 ## Stage 4: Replacing Quizzes — Tactile Manipulatives (Beyond Quizzes Phase 1)
 
 **Primary Objective**: Move primary mathematics and language learning from multiple-choice testing into direct physical manipulation.
+
+**Status**: First tactile versions for all four proposals are implemented. They augment existing learning flows; full replacement of the linked quiz/training paths remains follow-up work.
 
 ```text
 Quiz Mindset:        "What is 3/4 + 1/4? [A] 1  [B] 2/4  [C] 4/8  [D] 1/2"
@@ -124,13 +135,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 * This enhances the Shopkeeper mode in `public/js/mathmasters/money.js`; the other Money Masters activities remain available.
 
 ### 4.3 Interactive Clockwork Hands (Maths World Telling Time)
-* **Concept**: Replace multiple-choice digital clock matching with interactive draggable clock hands.
-* **Mechanics**:
-  - Smooth 360-degree touch and mouse dragging on the minute hand.
-  - Realistic $12:1$ gear ratio linkage: rotating the minute hand smoothly turns the hour hand proportionally.
-  - Target challenges: "Set the clock to quarter past 3" or "Show 25 minutes after 7:15".
-  - An animated day/night window behind the clock shifts from dawn to midday to sunset, reinforcing AM/PM.
-* **Target Activity**: Enhances `public/js/mathmasters/telling-time.js`.
+* **Status — implemented**: Learners can drag either hand with mouse or touch, adjust by keyboard, and see the hour hand move proportionally as minutes change. This enhances `public/js/mathmasters/telling-time.js`; broader time-training replacement is not claimed.
 
 ### 4.4 Kinetic Phonics Soundboard & Blending Bar (Spelling Safari)
 * **Status: First tactile version implemented** in Phonics Trail. The existing phonics gap choices now fill an interactive grapheme row; tapping a tile plays its pronunciation, and a selected attempt can be blended with a button or a horizontal swipe across the tiles. Learners can still submit the word to the existing scoring and feedback flow.
@@ -153,12 +158,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 * **Future work**: add a timeline graph, more organisms, and longer open-ended challenges after evaluating the first model with learners.
 
 ### 5.2 States of Matter Thermal Chamber (Science Lab)
-* **Concept**: An interactive particle chamber demonstrating molecular behavior across temperatures.
-* **Mechanics**:
-  - A temperature slider spanning $-100^\circ\text{C}$ to $200^\circ\text{C}$ with burner and chiller controls.
-  - Molecular viewport: Water molecules shown as animated balls.
-  - At low temperatures, molecules vibrate within fixed crystalline lattices (solid ice). As heat rises, bonds loosen into flowing fluid (liquid water), and eventually break into high-velocity gas (steam).
-  - Includes pressure gauges and condensation lid interactions.
+* **Status — implemented**: The temperature control shows distinct solid, liquid, and gas particle states, phase boundaries, and a condensation-lid interaction. A follow-up fix makes particle arrangements visibly change with temperature; CSS motion respects reduced-motion settings.
 
 ### 5.3 Historical Artifact Detective (History Hub)
 **Status: First finite investigation slice implemented.** Four sourced cases cover the Rosetta Stone, an Indus stamp seal, the Sutton Hoo helmet, and a Late Babylonian tablet. Each case reveals three clues before period selection, then provides an explanation and museum citation. This is a deliberately small evidence-backed set; broader artifact coverage requires additional verified records. It adds an inquiry activity alongside Timeline Builder rather than replacing the timeline.
@@ -172,20 +172,15 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
   - Students collect 3 observational clues and select the civilization or historical period that produced it, unlocking the artifact for the museum collection.
 
 ### 5.4 Globe Trotter Clue Trail (Geography Hub)
-* **Concept**: A Carmen Sandiego-inspired mystery flight adventure across the interactive SVG world map.
-* **Initial delivery**: Five replayable, three-clue passport mysteries. Learners can solve them using either the map (including enlarged island markers) or the keyboard-friendly country list; a correct answer opens the existing flag and fact panel.
-* **Mechanics**:
-  - A missing artifact or animal mystery unfolds across countries.
-  - Witnesses give cultural and geographical clues:
-    - *"The suspect exchanged money for Yen and mentioned visiting Mount Fuji."*
-    - *"The traveler was heading to a southern hemisphere country known for the Southern Cross on its flag."*
-  - The student navigates the interactive map, zooming and panning to fly to the correct country, unlocking passport stamps and facts along the way.
+* **Status — first version implemented**: Five replayable, three-clue passport mysteries work with either map selection or the keyboard-friendly country list. A correct answer opens the existing flag and fact panel. Broader mystery content remains optional expansion.
 
 ---
 
 ## Stage 6: Long-Term Horizon & Advanced Research
 
 **Primary Objective**: Investigate cutting-edge educational mechanics, voice interaction, and cooperative features for future platform iterations.
+
+**Status**: Not started; these proposals require separate feasibility and privacy reviews before implementation.
 
 ### 6.1 Voice Recognition & Verbal Spelling (Web Speech Recognition)
 * **Research Focus**: Can speech recognition reliably assess oral reading and verbal spelling for primary students without external cloud services?
@@ -206,5 +201,3 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
   - *Maths Relay*: Two students in a classroom work together to solve parts of a puzzle concurrently.
   - *Ecosystem Co-op*: One student manages plant nutrition while the other balances herbivores in a shared simulation.
   - Architecture: Lightweight Cloudflare Workers WebSocket connections backed by ephemeral Durable Objects.
-
-* **Small-island map follow-up — implemented**: Added twelve small island countries, including Mauritius, using enlarged schematic markers where Natural Earth 1:110m does not preserve visible geometry. Markers are explicitly not to scale and have large screen-constant selection targets. Map controls and pinch zoom now reach 16×.
