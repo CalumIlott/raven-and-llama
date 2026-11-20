@@ -180,7 +180,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 
 **Primary Objective**: Investigate cutting-edge educational mechanics, voice interaction, and cooperative features for future platform iterations.
 
-**Status**: Feasibility research started for 6.1. Implementation remains gated on a separate privacy and product review; 6.2 and 6.3 are not started.
+**Status**: Feasibility research started for 6.1 and 6.2. Implementation remains gated on the relevant privacy, historical, and cultural reviews; 6.3 is not started.
 
 ### 6.1 Voice Recognition & Verbal Spelling (Web Speech Recognition)
 * **Research Focus**: Can speech recognition reliably assess oral reading and verbal spelling for primary students without external cloud services?
@@ -193,9 +193,14 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 
 ### 6.2 Branching Historical Expeditions (Choose-Your-Own-Adventure)
 * **Research Focus**: Interactive branching narratives exploring major human migrations and historical journeys.
+* **Feasibility review (2026-11-21)**:
+  - Ground each story in one named corridor and period. UNESCO describes the Silk Roads as an interconnected network of changing land and sea routes, not a single road; many merchants travelled only sections and exchanged cargo along the way. The existing Chang'an-to-Constantinople framing should therefore become a linked route with regional stops and hand-offs, not one caravan making the whole journey ([UNESCO: About the Silk Roads](https://www.unesco.org/en/silk-roads/about-silk-roads), [UNESCO: Chang'an-Tianshan Corridor](https://whc.unesco.org/en/list/1442/)).
+  - A Pacific wayfinding story is feasible, but must name and represent a specific tradition. Hōkūleʻa describes Polynesian use of stars and ocean swells; UNESCO separately documents Carolinian wayfinding in Micronesia. Do not blend these into one generic Pacific navigation system ([Hōkūleʻa: Holding a Course](https://worldwidevoyage.hokulea.com/education-at-sea/polynesian-navigation/polynesian-non-instrument-wayfinding/), [UNESCO: Carolinian wayfinding and canoe making](https://ich.unesco.org/en/RL/carolinian-wayfinding-and-canoe-making-01735)).
+  - Recommendation: prototype one short Silk Roads chapter first, set on a cited corridor with 3–4 stops. Make choices show trade-offs in terrain, rest, supplies, and exchange; explain that outcomes are a simplified teaching model rather than a reconstruction of one documented journey. Attach sources to each historical claim and have the content reviewed before adding the Pacific story.
+  - Gate before release: review chronology, place names, cultural framing, and the distinction between documented evidence and game mechanics with qualified history educators. For any Pacific chapter, include review from people connected to the tradition represented.
 * **Prototypes**:
-  - *The Silk Road Caravan*: Manage supplies (water, silk, camels) while deciding trade routes between Chang'an and Constantinople.
-  - *Pacific Wayfinding*: Use star navigation and wave patterns to guide a voyaging canoe between Polynesian islands.
+  - *The Silk Road Caravan*: Follow a documented corridor in stages, managing water, rest, and cargo while learning how goods and ideas moved between trading communities.
+  - *Pacific Wayfinding*: Explore one named, source-reviewed navigation tradition through stars, swells, and other signs, with guidance from people connected to that tradition.
 
 ### 6.3 Real-Time Cooperative Challenges via Cloudflare Durable Objects
 * **Research Focus**: Low-latency, privacy-preserving multiplayer cooperation without user chat or external accounts.
