@@ -25,7 +25,7 @@ test('Globe Trotter cases point to selectable countries and provide progressive 
     assert.ok(trailCase.clues.every(clue => typeof clue === 'string' && clue.length >= 20));
     assert.equal(typeof trailCase.sourceName, 'string');
     assert.ok(trailCase.sourceName.length > 0);
-    assert.equal(new URL(trailCase.sourceUrl).protocol, 'https:');
+    assert.match(trailCase.sourceUrl, /^https:\/\//);
   }
 });
 
