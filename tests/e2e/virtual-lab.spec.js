@@ -5,9 +5,11 @@ async function addMaterialWithKeyboard(page, materialId, slotIndex) {
   const material = page.locator(`[data-virtual-lab-material-id="${materialId}"]`);
   await material.focus();
   await material.press('Enter');
+  await expect(material).toBeFocused();
   const slot = page.locator(`[data-virtual-lab-slot-index="${slotIndex}"]`);
   await slot.focus();
   await slot.press('Enter');
+  await expect(slot).toBeFocused();
 }
 
 test('virtual lab safely runs supported combinations and refuses unsupported ones', async ({ page }) => {
