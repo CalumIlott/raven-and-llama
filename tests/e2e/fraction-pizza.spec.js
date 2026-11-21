@@ -87,7 +87,9 @@ test('Fraction Pizza supports touch, keyboard, drag and drop, retry, and progres
   await expect(page.locator('#parent-analytics-subjects')).toContainText('5 / 5 (100%)');
   await expect(page.locator('#parent-analytics-trends')).toContainText('5');
   await expect(page.locator('#parent-analytics-mappings')).toContainText('Fraction Master');
-  await expect(page.locator('#parent-analytics-mappings')).toContainText('Not mapped');
+  const curriculumLink = page.locator('#parent-analytics-mappings a', { hasText: 'AC9M4N05 (Year 4)' });
+  await expect(curriculumLink).toHaveAttribute('href', 'https://www.australiancurriculum.edu.au/media/7160/primary_scope_and_sequence_years_3-4.pdf');
+  await expect(curriculumLink).toHaveAttribute('rel', 'noopener noreferrer');
   await page.locator('#parent-analytics-range').selectOption('7');
   await expect(page.locator('#parent-analytics-range')).toHaveValue('7');
 });

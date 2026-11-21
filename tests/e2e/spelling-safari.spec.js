@@ -5,7 +5,7 @@ test('Spelling & Words is a direct, refresh-safe hub for the existing Safari adv
   await page.goto('/learning-centre/spelling');
   await expect(page.getByRole('heading', { name: 'Spelling & Words', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
-  await expect(page.locator('[data-action="spelling-start"]')).toHaveCount(12);
+  await expect(page.locator('[data-action="spelling-start"]')).toHaveCount(15);
 
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Spelling & Words', exact: true })).toBeVisible();
@@ -72,6 +72,56 @@ test('Spelling Safari pronunciation can be replayed without exposing the answer 
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Explore by subject' })).toBeVisible();
   expect((await page.evaluate(() => window.__spellingSpeechCalls)).cancelled).toBeGreaterThan(cancelledBeforeNavigation);
+});
+
+test('mobile pronunciation uses the default voice immediately and retries after synthesis failure', async ({ page }) => {
+  await page.addInitScript(() => {
+    const calls = { empty: true, spoken: [], cancelled: 0, firstDefaultUtterance: null };
+    window.__mobileSpellingSpeechCalls = calls;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => calls.empty ? [] : [{ name: 'Australian English', lang: 'en-AU' }],
+        addEventListener() {},
+        removeEventListener() {},
+        cancel() { calls.cancelled++; },
+        speak(utterance) {
+          const hasSelectedVoice = Boolean(utterance.voice);
+          calls.spoken.push({ text: utterance.text, voice: utterance.voice?.name || null });
+          if (!hasSelectedVoice && calls.spoken.length === 1) {
+            calls.firstDefaultUtterance = utterance;
+          } else if (hasSelectedVoice) {
+            setTimeout(() => utterance.onerror?.({ error: 'synthesis-failed' }), 0);
+          } else {
+            setTimeout(() => utterance.onend?.(), 0);
+          }
+        }
+      }
+    });
+  });
+  await page.goto('/learning-centre');
+  await page.getByRole('button', { name: /Spelling & Words/ }).click();
+  await page.locator('[data-activity-id="jungle-jumble"][data-difficulty="medium"]').click();
+
+  await page.getByRole('button', { name: 'Hear the word' }).click();
+  const initialCall = await page.evaluate(() => window.__mobileSpellingSpeechCalls.spoken[0]);
+  expect(initialCall).toMatchObject({ voice: null });
+  await expect(page.locator('#spelling-pronunciation-status'))
+    .toHaveText('No voice is ready. Playing with your device default voice.');
+
+  await page.evaluate(() => { window.__mobileSpellingSpeechCalls.empty = false; });
+  await page.getByRole('button', { name: 'Hear the word' }).click();
+  await expect.poll(() => page.evaluate(() => window.__mobileSpellingSpeechCalls.spoken.length)).toBe(3);
+  const calls = await page.evaluate(() => window.__mobileSpellingSpeechCalls.spoken);
+  expect(calls[1].voice).toBe('Australian English');
+  expect(calls[2].voice).toBeNull();
+  await expect(page.locator('#spelling-pronunciation-status')).toHaveText('Pronunciation finished.');
 });
 
 test('parent spelling-list CRUD syncs to Spell It and typed answers stay hidden until submitted', async ({ page }) => {
@@ -195,12 +245,15 @@ async function answerCurrentQuestion(page) {
       tileIndexes.push(tileIndex);
     }
     for (const tileIndex of tileIndexes) await page.locator(`#safari-letter-${tileIndex}`).click();
+  } else if (question.type === 'phonics') {
+    await page.locator(`[data-action="spelling-answer"][data-answer="${encodeURIComponent(question.answer)}"]`).click();
+    await page.getByRole('button', { name: 'Check word' }).click();
   } else {
     await page.getByRole('button', { name: question.answer, exact: true }).click();
   }
 }
 
-test('Spelling Safari offers and completes all four word-game adventures', async ({ page }) => {
+test('Spelling Safari offers and completes all five word-game adventures', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await setupApp(page);
   await openLearningCentre(page);
@@ -210,12 +263,13 @@ test('Spelling Safari offers and completes all four word-game adventures', async
   await page.getByRole('button', { name: /Spelling & Words/ }).click();
   await expect(page.getByRole('heading', { name: 'Choose your adventure' })).toBeVisible();
 
-  for (const activity of ['Spelling Sprint', 'Phonics Trail', 'Word Explorer', 'Jungle Jumble']) {
+  for (const activity of ['Spelling Sprint', 'Phonics Trail', 'Word Explorer', 'Jungle Jumble', 'Rhyme Ranger']) {
     const activityId = {
       'Spelling Sprint': 'spelling-sprint',
       'Phonics Trail': 'phonics-trail',
       'Word Explorer': 'word-explorer',
-      'Jungle Jumble': 'jungle-jumble'
+      'Jungle Jumble': 'jungle-jumble',
+      'Rhyme Ranger': 'rhyme-ranger'
     }[activity];
     if (activity === 'Jungle Jumble') {
       const card = page.locator('[data-activity-id="jungle-jumble"][data-difficulty="medium"]');
@@ -259,6 +313,40 @@ test('Spelling Safari offers and completes all four word-game adventures', async
       await page.getByRole('button', { name: 'Choose another adventure' }).click();
     }
   }
+});
+
+test('Rhyme Ranger speaks the clue word and keeps the matching word hidden until selection', async ({ page }) => {
+  await page.addInitScript(() => {
+    const spoken = [];
+    window.__rhymeSpeechCalls = spoken;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => [{ name: 'Australian English', lang: 'en-AU' }],
+        cancel() {},
+        speak(utterance) { spoken.push(utterance.text); }
+      }
+    });
+  });
+  await page.goto('/learning-centre/spelling');
+  await page.locator('[data-activity-id="rhyme-ranger"][data-difficulty="medium"]').click();
+
+  const question = await page.evaluate(() => window.app.spellingSafariGame.questions[0]);
+  await expect(page.getByText(`Which word rhymes with ${question.soundWord}?`)).toBeVisible();
+  expect(question.answer).not.toBe(question.soundWord);
+  expect(await page.locator('.play-prompt').innerText()).not.toContain(question.answer);
+  await page.getByRole('button', { name: 'Hear the word pronunciation' }).click();
+  expect(await page.evaluate(() => window.__rhymeSpeechCalls)).toEqual([question.soundWord]);
+
+  await page.getByRole('button', { name: question.answer, exact: true }).click();
+  await expect(page.locator('#safari-feedback')).toContainText('Great work!');
+  await expect(page.locator('#safari-feedback')).toContainText('share the same ending sound');
 });
 
 test('Jungle Jumble has safe empty-pool and speech-fallback states', async ({ page }) => {
@@ -314,6 +402,63 @@ test('Phonics Easy uses a picture clue and Medium uses a simple text clue', asyn
   await page.locator('[data-activity-id="phonics-trail"][data-difficulty="medium"]').click();
   await expect(page.locator('.spelling-hint')).toBeVisible();
   await expect(page.locator('.spelling-picture-clue')).toHaveCount(0);
+});
+
+test('Phonics Trail builds sounds with tap and swipe blending before checking the word', async ({ page }) => {
+  await page.addInitScript(() => {
+    const calls = { spoken: [] };
+    window.__phonicsSpeechCalls = calls;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+      configurable: true,
+      value: class {
+        constructor(text) { this.text = text; }
+      }
+    });
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => [{ name: 'Australian English', lang: 'en-AU' }],
+        addEventListener() {},
+        removeEventListener() {},
+        cancel() {},
+        speak(utterance) { calls.spoken.push(utterance.text); }
+      }
+    });
+  });
+  await setupApp(page);
+  await openLearningCentre(page);
+  await page.getByRole('button', { name: /Spelling & Words/ }).click();
+  await page.evaluate(() => {
+    window.SpellingSafari.createQuestions = activityId => activityId === 'phonics-trail'
+      ? [{ type: 'phonics', prompt: 'sh_p', answer: 'i', options: ['a', 'e', 'i', 'o'], hint: 'A boat that travels on the water.' }]
+      : [];
+  });
+  await page.locator('[data-activity-id="phonics-trail"][data-difficulty="medium"]').click();
+
+  await page.getByRole('button', { name: 'Hear the word pronunciation' }).click();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('ship');
+  await page.locator('[data-action="spelling-answer"][data-answer="i"]').click();
+  await expect(page.locator('.phonics-blending-bar .phonics-grapheme-tile')).toHaveText(['sh', 'i', 'p']);
+
+  await page.getByRole('button', { name: 'Hear the sound sh' }).click();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('sh');
+  await page.getByRole('button', { name: 'Blend the word' }).click();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('ship');
+
+  const centers = await page.locator('.phonics-blending-bar .phonics-grapheme-tile').evaluateAll(tiles =>
+    tiles.map(tile => {
+      const rect = tile.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })
+  );
+  await page.mouse.move(centers[0].x, centers[0].y);
+  await page.mouse.down();
+  for (const center of centers.slice(1)) await page.mouse.move(center.x, center.y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(() => page.evaluate(() => window.__phonicsSpeechCalls.spoken.at(-1))).toBe('ship');
+
+  await page.getByRole('button', { name: 'Check word' }).click();
+  await expect(page.locator('#safari-feedback')).toContainText('Great work!');
 });
 
 test('Spelling Safari does not reveal the correct answer on incorrect guesses', async ({ page }) => {

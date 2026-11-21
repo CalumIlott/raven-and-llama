@@ -8,12 +8,12 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 | Subject | Hub Route | Key Activities | Pool Size | Target (100+) Status |
 | :--- | :--- | :--- | :---: | :--- |
-| **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant (Except Brown Belt Fractions: 18) |
+| **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant; Brown Belt Fractions now has 100+ tested visual problems |
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
-| **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble | **423** questions | ✅ Compliant |
+| **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble, Rhyme Ranger | **847** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
-| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **110** countries | ✅ Compliant |
-| **History Hub** | `/learning-centre/history` | Timeline Builder | **104** events | ⚠️ Pool size compliant; event icons repaired; no remaining `??` placeholders |
+| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, Globe Trotter, World Map | **193** countries + 10 mysteries | ✅ Compliant |
+| **History Hub** | `/learning-centre/history` | Timeline Builder, Artifact Detective | **104** sourced events; 7 finite artifact cases | Event icons repaired and tested; artifact set is intentionally finite |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
 | **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 4 scenarios; 24-item catalog | ✅ Compliant |
 | **Times Tables** | `/timetables` | Times Tables Arenas & Drills | $\infty$ (Procedural) | ✅ Compliant |
@@ -31,12 +31,11 @@ This document catalogues every subject hub, learning activity, question bank siz
     * `white_subitising` (1–6/10 dots/dice patterns) — pedagogical canonical finite set for early perception.
     * `yellow_tens_mate` (Friends of 10 pairs: $a + b = 10$) — canonical finite set (9 combinations).
     * `green_halving` (Halving numbers up to 24) — foundational fact set.
-  - **Identified Pool Deficit**:
-    * `genBrownFractions` only uses denominators `[2, 3, 4, 6, 8]` yielding only 18 proper fractions. Needs expansion to fifths, tenths, twelfths, and mixed/improper numbers to reach 100+.
+  - **Brown Belt fractions — compliant**: `genBrownFractions` covers denominators 2–12, proper and improper fractions, mixed numbers, and visual circle, bar, and grid models. Unit tests enforce at least 100 distinct problems and answerable visual rendering.
 * **Maths World Games**:
   - `fraction-pizza.js`: Interactive order fulfilment slicing pizzas into halves, thirds, quarters, and eighths.
-  - `money.js`: Shopkeeper practice calculating change using Australian currency (notes & coins).
-  - `telling-time.js`: Reading analogue clocks and matching digital times.
+  - `money.js`: Shopkeeper practice calculating change using an interactive cash drawer with separate Australian coin and note slots, drag/tap/keyboard selection, and a live running total.
+  - `telling-time.js`: Reading analogue clocks, matching digital times, and setting a clock by dragging or keyboard-adjusting proportional hands.
 
 ---
 
@@ -44,10 +43,11 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 * **Activities** (`public/js/spelling/safari.js`):
   1. **Spelling Sprint**: 115 multiple-choice questions identifying correctly spelled words.
-  2. **Phonics Trail**: 108 fill-in-the-blank phoneme questions with contextual sentence clues.
+  2. **Phonics Trail**: 108 fill-in-the-blank phoneme questions with contextual clues and an interactive grapheme soundboard. Tap tiles or swipe across the blending bar to hear an attempted word; keyboard users can select the missing sound, hear individual tiles, blend, and check it.
   3. **Word Explorer**: 100 vocabulary, synonym, antonym, and definition questions.
   4. **Jungle Jumble**: 100 anagram scramble puzzles dynamically scrambled per round.
-  5. **Spell It**: Custom spelling quiz powered by parent/teacher lists managed in the Progress modal.
+  5. **Rhyme Ranger**: 424 distinct ordered prompt/answer pairs built from 30 curated rhyme families; difficulty changes how many answer choices appear.
+  6. **Spell It**: Custom spelling quiz powered by parent/teacher lists managed in the Progress modal.
 * **Speech Synthesis Engine**:
   - Uses browser Web Speech API (`window.speechSynthesis`).
   - Automatically queries available system voices, prioritizing Australian English (`en-AU`, e.g. "Karen", "Lee", "Russell") or English regional fallbacks at child-friendly cadence ($0.85\times$ rate).
@@ -75,21 +75,26 @@ This document catalogues every subject hub, learning activity, question bank siz
   - **Virtual Laboratory** (`public/js/science/virtual-lab.js`):
     * 17 sourced outcomes cover state changes, dissolving, mixtures, reactions, filtration, magnetism, evaporation, and freezing point.
     * Material filters group materials, prepared mixtures, conditions, and tools; each result links to its science source.
+  - **Pond Ecosystem Sandbox** (`public/js/science/ecosystem-sandbox.js`):
+    * Learners adjust algae, tadpole, fish, and kingfisher populations, then advance a deterministic five-day food-web model.
+    * The first model caps each population at 12 and explains its simplified feeding and growth rules; it is an exploration without score or progress rewards.
 
 ---
 
 ## 4. Geography Hub & Interactive World Map
 
 * **Dataset** (`public/js/geography/country-data.js` vs `world-map-context.js`):
-  - `world-map-context.js`: Contains SVG vector boundary paths for **177 countries** for the interactive map.
-  - `country-data.js`: Contains **110 sovereign countries** with flags, capitals, continents, facts, and linked references. New records reuse the existing map paths instead of copying the SVG data.
+  - `world-map-context.js`: Contains 205 background features, including simplified outlines and enlarged schematic markers.
+  - `country-data.js`: Contains all 193 UN member countries with flags, capitals, facts, and sources. Small countries use schematic markers and are not to scale. The background also includes 12 dependent territories, Antarctica, or disputed/special-status features outside the quiz pool.
 * **Activities** (`public/js/geography/country-activities.js`):
   - **Flag Detective**: Randomly samples 5 countries per round and presents 4 distinct country choices per question.
   - **Capital Cities**: Randomly samples 5 countries per round and presents 4 distinct capital choices per question.
+  - **Globe Trotter Clue Trail**: 10 three-clue country mysteries can be solved from the map or country list. Each mystery links its clues to a supporting source after the answer is found.
 * **Pool status**:
-  - Both activities draw from the same 110-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
-  - Follow-up: audit the remaining map features for additional sovereign countries, and document why dependent or disputed map entities are excluded from the quiz pool.
-  - Map-page facts follow-up: add about 5–10 distinct facts per country, and randomly show one whenever the selected country changes. The flag issue is browser-specific: flags work on a phone but remain broken in desktop Chrome, so investigate Chrome rendering.
+  - Both activities draw from the same 193-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
+  - Coverage audit: the pool covers 193 UN member countries, including small states represented by selectable schematic markers.
+  - Map-page facts follow-up: implemented in the selected-country panel, with at least five sourced options per country and a different fact on a return visit.
+  - Map flags: self-hosted SVGs are used across the map panel, country list, and geography activities. A later user report says they still fail in desktop Chrome while working on a phone; reproduce this before considering cross-browser rendering resolved.
 
 ---
 
@@ -98,12 +103,16 @@ This document catalogues every subject hub, learning activity, question bank siz
 * **Event Pool** (`public/js/history/events.js`):
   - Contains **104 sourced historical events** spanning Prehistory (~65,000 BCE) to the 21st Century (2019 CE).
   - All events include title, sortYear, era, clue, explanation, and verified educational source URL.
-* **Identified Defect**:
-  - **90 events have broken `icon: '??'`** due to character encoding corruption in PR #149.
-  - **Priority action**: Restore authentic thematic emojis for each event.
+* **Icon repair — implemented**:
+  - Event icons are restored as thematic emoji; the unit test checks pictographic icons and rejects placeholder `?` strings.
+
 * **Timeline Builder** (`public/js/history/timeline-builder.js`):
-  - Randomly samples 5 events per round across eras.
+  - Randomly samples 6 events per round across eras.
   - Keyboard and drag-and-drop reordering with accessible feedback.
+* **Artifact Detective** (`public/js/history/artifact-detective.js`):
+  - Seven finite, museum-sourced cases: Rosetta Stone, Mature Harappan seal, Sutton Hoo helmet, Late Babylonian tablet, Attic kylix, Rasulid Yemeni astrolabe, and Maya Stela 5 from Piedras Negras.
+  - Each case has three evidence clues; civilization/period choices remain disabled until all clues are inspected. Cases are shuffled between runs.
+  - Explanations reveal the artifact identity, material/period context, and a museum source link. The Maya stela case includes the museum’s documented looting and stewardship history. The collection is deliberately finite rather than padded with paraphrases.
 
 ---
 

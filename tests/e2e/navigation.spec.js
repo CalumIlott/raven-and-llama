@@ -35,6 +35,18 @@ test('links show a pointer cursor when hovered', async ({ page }) => {
   await expect(learningLink).toHaveCSS('cursor', 'pointer');
 });
 
+test('Learning Centre subjects use a consistent card structure and current adventure counts', async ({ page }) => {
+  await page.goto('/learning-centre');
+  const cards = page.locator('#learning-modules-grid > .learning-subject-card');
+  await expect(cards).toHaveCount(7);
+  for (const card of await cards.all()) {
+    await expect(card.locator('.learning-subject-heading h3')).toBeVisible();
+    await expect(card.locator('.learning-subject-description')).toBeVisible();
+    await expect(card.locator('.learning-subject-programs')).toHaveCount(1);
+  }
+  await expect(page.locator('[data-subject="spelling-words"]')).toContainText('5 Adventures');
+  await expect(page.locator('[data-subject="spelling-words"]')).toContainText('rhyming');
+});
 test('header brand mark follows the active hub', async ({ page }) => {
   const logo = page.locator('#header-brand-logo');
   await expect(logo).toHaveAttribute('src', 'assets/raven-llama-home-logo.png');

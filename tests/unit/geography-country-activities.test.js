@@ -46,11 +46,11 @@ test('flag and capital rounds use unique countries and unambiguous answer choice
   }
 });
 
-test('country dataset covers 100+ distinct countries, capitals, flags, and all continents', () => {
+test('country dataset covers at least 160 distinct countries, capitals, flags, and all continents', () => {
   const context = createGeographyActivityContext();
   const countries = Array.from(context.GeographyWorld.countries);
 
-  assert.ok(countries.length >= 100);
+  assert.ok(countries.length >= 160);
   for (const field of ['id', 'name', 'flag', 'capital']) {
     assert.equal(new Set(countries.map(country => country[field].toLocaleLowerCase())).size, countries.length);
   }
@@ -59,6 +59,24 @@ test('country dataset covers 100+ distinct countries, capitals, flags, and all c
     ['Africa', 'Asia', 'Europe', 'North America', 'Oceania', 'South America'].sort()
   );
   assert.ok(countries.every(country => country.fact && country.factSource && country.factSourceUrl.startsWith('https://')));
+});
+
+test('all UN member countries include selectable records and local flag artwork', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const context = createGeographyActivityContext();
+  const countries = Array.from(context.GeographyWorld.countries);
+  const additions = ['andorra', 'antigua-and-barbuda', 'bahrain', 'barbados', 'cabo-verde',
+    'dominica', 'grenada', 'liechtenstein', 'malta', 'monaco', 'saint-kitts-and-nevis',
+    'saint-lucia', 'saint-vincent-and-the-grenadines', 'san-marino', 'sao-tome-and-principe', 'singapore'];
+  assert.equal(countries.length, 193);
+  for (const id of additions) {
+    const country = countries.find(item => item.id === id);
+    assert.ok(country, id);
+    assert.ok(country.mapPaths.length && country.mapPoint.every(Number.isFinite), id);
+    const code = Array.from(country.flag, char => String.fromCharCode(char.codePointAt(0) - 0x1f1e6 + 65)).join('').toLowerCase();
+    assert.ok(fs.existsSync(path.join(__dirname, '../../public/images/flags', code + '.svg')), id);
+  }
 });
 
 test('geography rounds randomize which eligible countries appear', () => {

@@ -647,6 +647,34 @@ class QuestionGenerator {
       options: QuestionGenerator.generateChoices(d, 4, 4)
     };
   }
+
+  static genBlueMysteryWeight(diff = 'standard') {
+    const mass = QuestionGenerator.randomInt(4, 50);
+    return {
+      type: 'balance_scale',
+      balanceMode: 'mystery',
+      title: 'Mystery Weight Solver',
+      prompt: 'Find the mass of the hidden x block using known weights.',
+      answer: mass,
+      timeLimitSeconds: diff === 'hard' ? 24 : 32,
+      options: QuestionGenerator.generateChoices(mass, 4, 4)
+    };
+  }
+
+  static genBlueEqualOperation(diff = 'standard') {
+    const answer = QuestionGenerator.randomInt(3, 20);
+    const sharedWeight = [5, 10, 15, 20][QuestionGenerator.randomInt(0, 3)];
+    return {
+      type: 'balance_scale',
+      balanceMode: 'equal-operation',
+      title: 'Keep the Scale Balanced',
+      prompt: `Remove equal weights from both sides of x + ${sharedWeight} = ${answer} + ${sharedWeight}.`,
+      sharedWeight,
+      answer,
+      timeLimitSeconds: diff === 'hard' ? 24 : 32,
+      options: QuestionGenerator.generateChoices(answer, 4, 4)
+    };
+  }
   // --- BROWN BELT ---
   static genBrownMultiplication(diff = 'standard') {
     const a = QuestionGenerator.randomInt(2, 12);
@@ -680,23 +708,49 @@ class QuestionGenerator {
   }
 
   static genBrownFractions(diff = 'standard') {
-    const denoms = [2, 3, 4, 6, 8];
-    const d = denoms[QuestionGenerator.randomInt(0, denoms.length - 1)];
-    const num = QuestionGenerator.randomInt(1, d - 1);
+    const denominator = QuestionGenerator.randomInt(2, 12);
+    const mode = ['proper', 'improper', 'mixed'][QuestionGenerator.randomInt(0, 2)];
+    const remainder = QuestionGenerator.randomInt(1, denominator - 1);
+    const whole = mode === 'proper'
+      ? 0
+      : mode === 'improper'
+        ? 1
+        : QuestionGenerator.randomInt(1, 3);
+    const numerator = mode === 'proper' ? remainder : whole * denominator + remainder;
+    const visualModel = ['fraction_bar', 'fraction_circles', 'fraction_grid'][QuestionGenerator.randomInt(0, 2)];
+    const mixedAnswer = `${whole} ${remainder}/${denominator}`;
+    const answer = mode === 'mixed' ? mixedAnswer : `${numerator}/${denominator}`;
+    const prompt = mode === 'proper'
+      ? 'What fraction of this shape is shaded?'
+      : mode === 'improper'
+        ? 'Write the shaded amount as an improper fraction.'
+        : 'Write the shaded amount as a mixed number.';
+    const options = new Set([answer]);
+    if (mode === 'mixed') {
+      for (let candidateWhole = 0; options.size < 4; candidateWhole++) {
+        for (let candidateRemainder = 1; candidateRemainder < denominator && options.size < 4; candidateRemainder++) {
+          if (candidateWhole * denominator + candidateRemainder === numerator) continue;
+          options.add(candidateWhole === 0
+            ? `${candidateRemainder}/${denominator}`
+            : `${candidateWhole} ${candidateRemainder}/${denominator}`);
+        }
+      }
+    } else {
+      for (let candidate = 1; options.size < 4; candidate++) {
+        if (candidate !== numerator) options.add(`${candidate}/${denominator}`);
+      }
+    }
     return {
       type: 'fraction_visual',
       title: 'Fraction Master',
-      prompt: 'What fraction of the shape is shaded?',
-      numerator: num,
-      denominator: d,
+      prompt,
+      fractionMode: mode,
+      visualModel,
+      numerator,
+      denominator,
       timeLimitSeconds: diff === 'hard' ? 22 : 30,
-      answer: `${num}/${d}`,
-      options: QuestionGenerator.shuffle([
-        `${num}/${d}`,
-        `${num + 1 > d ? num - 1 : num + 1}/${d}`,
-        `${d - num}/${d}`,
-        `${num}/${d === 8 ? 4 : 8}`
-      ])
+      answer,
+      options: QuestionGenerator.shuffle(Array.from(options))
     };
   }
 
@@ -1482,7 +1536,13 @@ class QuestionGenerator {
       case 'blue_factor': return QuestionGenerator.genBlueFactor(diff);
       case 'blue_partitioning': return QuestionGenerator.genBluePartitionExpanded(diff);
       case 'blue_subtraction': return QuestionGenerator.genBlueSubtraction(diff);
-      case 'blue_balanced_equation': return QuestionGenerator.genBlueBalancedEquation(diff);
+      case 'blue_balanced_equation':
+        {
+          const roll = Math.random();
+          if (roll < 0.25) return QuestionGenerator.genBlueMysteryWeight(diff);
+          if (roll < 0.4) return QuestionGenerator.genBlueEqualOperation(diff);
+          return QuestionGenerator.genBlueBalancedEquation(diff);
+        }
 
       case 'brown_order': return QuestionGenerator.genBrownOrder(diff);
       case 'brown_multiplication': return QuestionGenerator.genBrownMultiplication(diff);

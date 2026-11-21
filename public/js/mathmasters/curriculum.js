@@ -306,7 +306,7 @@ const BELTS_DATA = [
         name: 'Fraction Master',
         icon: 'pie-chart',
         timeLimitSeconds: 30,
-        description: 'Identify, compare, and model halves, thirds, quarters, and eighths by folding and colouring equal parts.'
+        description: 'Model proper, improper, and mixed fractions with equal-part bars, circles, and grids using denominators from 2 to 12.'
       },
       {
         id: 'brown_read_write',

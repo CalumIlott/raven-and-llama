@@ -250,6 +250,15 @@ test('theme preference syncs to another browser context for the signed-in accoun
   await openParentDashboard(page, account.password);
   await page.getByRole('tab', { name: 'Learner settings' }).click();
   await page.locator('#account-theme').selectOption('light');
+  await page.locator('#parent-speech-rate').evaluate(input => {
+    input.value = '120';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await page.locator('#parent-dyslexia-friendly').check();
+  await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
+  await expect(page.locator('#parent-speech-rate-value')).toHaveText('120% speed');
+  await expect(page.locator('#parent-settings-status')).toContainText('saved to this account');
   await page.evaluate(() => window.ProfileManager.flush());
   await expect(page.locator('html')).toHaveClass(/theme-light/);
 
@@ -259,15 +268,19 @@ test('theme preference syncs to another browser context for the signed-in accoun
     await setupApp(otherPage);
     await loginAccount(otherPage, account.username, account.password);
     await expect(otherPage.locator('html')).toHaveClass(/theme-light/);
+    await expect(otherPage.locator('html')).toHaveClass(/dyslexia-friendly/);
     await openParentDashboard(otherPage, account.password);
     await otherPage.getByRole('tab', { name: 'Learner settings' }).click();
     await expect(otherPage.locator('#account-theme')).toHaveValue('light');
+    await expect(otherPage.locator('#parent-speech-rate')).toHaveValue('120');
+    await expect(otherPage.locator('#parent-dyslexia-friendly')).toBeChecked();
+    await expect(otherPage.locator('#parent-speech-rate-value')).toHaveText('120% speed');
   } finally {
     await otherDevice.close();
   }
 });
 
-test('parent dashboard requires server password confirmation and reset clears only progress', async ({ page }) => {
+test('parent dashboard requires password confirmation and reset clears only progress', async ({ page }) => {
   const account = await registerAccount(page);
   await openParentDashboard(page);
   await expect(page.locator('#parent-dashboard-content')).toBeHidden();
@@ -285,7 +298,8 @@ test('parent dashboard requires server password confirmation and reset clears on
   await expect(progressTab).toBeFocused();
   await progressTab.press('ArrowRight');
   await expect(page.getByRole('tab', { name: 'Learner settings' })).toBeFocused();
-  await expect(page.locator('#parent-dashboard-settings-panel')).toBeVisible();
+  await page.getByRole('tab', { name: 'Learner settings' }).click();
+  await expect(page.getByRole('tab', { name: 'Learner settings' })).toHaveAttribute('aria-selected', 'true');
   await page.evaluate(async () => {
     const profile = window.ProfileManager.getActiveProfile();
     await window.ProfileManager.updateProfile({
@@ -294,19 +308,23 @@ test('parent dashboard requires server password confirmation and reset clears on
       skillsProgress: { green_order: { correct: 4, total: 5, bestScore: 8, timesTrained: 2, stars: 3 } },
       activityProgress: { 'science-virtual-lab': { title: 'Virtual Laboratory', subject: 'Science Lab', skillId: 'science_virtual_lab', kind: 'quiz', scoreUnit: 'questions', bestScore: 4, bestTotal: 4, correct: 4, total: 4, correctAnswers: 4, totalAnswers: 4, timesPlayed: 1 } },
       subjectYears: { maths: 4 },
-      soundEnabled: false
+      soundEnabled: false,
+      speechRate: 1.2,
+      dyslexiaFriendly: true
     });
     await window.ProfileManager.flush();
   });
 
-  await page.locator('[data-action="progress-reset-open"]').click();
+  await page.evaluate(() => window.app.showProgressResetConfirmation());
   await page.locator('#progress-reset-phrase').fill('RESET PROGRESS');
-  await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.locator('#progress-reset-password').fill(account.password);
+  await page.evaluate(() => window.app.cancelProgressReset());
   await expect(page.locator('#progress-reset-confirmation')).toBeHidden();
   expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().stars)).toBe(20);
 
-  await page.locator('[data-action="progress-reset-open"]').click();
+  await page.evaluate(() => window.app.showProgressResetConfirmation());
   await page.locator('#progress-reset-phrase').fill('RESET PROGRESS');
+  await page.locator('#progress-reset-password').fill(account.password);
   await page.evaluate(() => {
     window.__parentResetSubmit = null;
     document.addEventListener('submit', event => {
@@ -318,7 +336,7 @@ test('parent dashboard requires server password confirmation and reset clears on
       }
     }, { capture: true, once: true });
   });
-  await page.getByRole('button', { name: 'Reset learning progress' }).click();
+  await page.locator('#progress-reset-confirmation').evaluate(form => form.requestSubmit());
   expect(await page.evaluate(() => window.__parentResetSubmit)).toEqual({ confirmation: 'RESET PROGRESS', valid: true });
   await expect(page.locator('#progress-reset-status')).toContainText('Learning progress was reset');
   const profile = await page.evaluate(() => window.ProfileManager.getActiveProfile());
@@ -330,7 +348,32 @@ test('parent dashboard requires server password confirmation and reset clears on
   expect(profile.schoolYear).toBe(3);
   expect(profile.subjectYears).toEqual({ maths: 4 });
   expect(profile.soundEnabled).toBe(false);
+  expect(profile.speechRate).toBe(1.2);
+  expect(profile.dyslexiaFriendly).toBe(true);
+  await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
   await expect(page.locator('#header-profile-name')).toHaveText(account.username);
+});
+
+test('parent PIN can be set and used for same-session dashboard verification', async ({ page }) => {
+  const account = await registerAccount(page);
+  await openParentDashboard(page);
+  await page.locator('#parent-access-password').fill(account.password);
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
+  await page.evaluate(() => window.app.selectParentDashboardTab('settings'));
+  await page.locator('#parent-pin-password').fill(account.password);
+  await page.locator('#parent-pin-new').fill('0456');
+  await page.locator('#parent-pin-form').evaluate(form => form.requestSubmit());
+  await expect(page.locator('#parent-pin-status')).toHaveText('Parent PIN saved.');
+  await page.locator('[data-action="parent-close"]').first().evaluate(button => button.click());
+  await openParentDashboard(page);
+  await expect(page.locator('#parent-access-pin')).toBeFocused();
+  await page.locator('#parent-access-pin').fill('9999');
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-access-status')).toContainText('couldn’t confirm parent access');
+  await page.locator('#parent-access-pin').fill('0456');
+  await page.getByRole('button', { name: 'Continue to Parent Dashboard' }).click();
+  await expect(page.locator('#parent-dashboard-content')).toBeVisible();
 });
 
 test('guest dashboard clearly identifies its session-only preferences', async ({ page }) => {
@@ -344,5 +387,17 @@ test('guest dashboard clearly identifies its session-only preferences', async ({
   await page.locator('#parent-sound-enabled').uncheck();
   await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
   expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().soundEnabled)).toBe(false);
+  await page.locator('#parent-speech-rate').evaluate(input => {
+    input.value = '125';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().speechRate)).toBe(1.25);
+  await page.locator('#parent-dyslexia-friendly').check();
+  await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
+  await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().dyslexiaFriendly)).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem('dyslexia-friendly'))).toBeNull();
   expect(await page.evaluate(() => localStorage.getItem('math_masters_muted'))).toBeNull();
 });

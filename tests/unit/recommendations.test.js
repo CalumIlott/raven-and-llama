@@ -42,6 +42,8 @@ test('recommendation catalog has unique valid activities and launch methods', ()
   assert.ok(catalog.length >= 12);
   assert.equal(new Set(catalog.map(activity => activity.activityId)).size, catalog.length);
   assert.ok(catalog.every(activity => activity.title && activity.subject && activity.startMethod));
+  assert.ok(catalog.some(activity => activity.activityId === 'spelling-rhyme-ranger' &&
+    activity.skillId === 'spelling_rhyme_ranger' && activity.arguments[0] === 'rhyme-ranger'));
 });
 
 test('recent quiz accuracy below 70 percent ranks first with an explainable reason', () => {

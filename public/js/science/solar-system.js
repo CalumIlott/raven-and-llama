@@ -214,6 +214,34 @@ Object.assign(App.prototype, {
               Open Virtual Laboratory
             </button>
           </section>
+
+          <section class="bg-slate-900 border-2 border-emerald-700 rounded-3xl p-5 sm:p-6 shadow-xl">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="w-14 h-14 rounded-2xl bg-emerald-950 border border-emerald-700/70 flex items-center justify-center text-3xl" aria-hidden="true">🐸</span>
+              <div>
+                <p class="text-xs uppercase tracking-wider text-emerald-300 font-bold">Hands-on ecosystem model</p>
+                <h2 class="font-ninja text-2xl text-white font-bold">Pond Ecosystem Sandbox</h2>
+              </div>
+            </div>
+            <p class="text-slate-300 mb-5">Adjust four linked populations and see how a simple food web changes over five days.</p>
+            <button type="button" data-action="ecosystem-sandbox-start" class="rounded-xl bg-emerald-700 hover:bg-emerald-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
+              Explore the Pond
+            </button>
+          </section>
+
+          <section class="bg-slate-900 border-2 border-slate-700 rounded-3xl p-5 sm:p-6 shadow-xl">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="w-14 h-14 rounded-2xl bg-blue-950 border border-blue-700/70 flex items-center justify-center text-3xl" aria-hidden="true">🌡️</span>
+              <div>
+                <p class="text-xs uppercase tracking-wider text-blue-300 font-bold">Interactive states of matter</p>
+                <h2 class="font-ninja text-2xl text-white font-bold">Thermal Chamber</h2>
+              </div>
+            </div>
+            <p class="text-slate-300 mb-5">Warm and cool a water sample to explore how particle movement changes between ice, liquid water, and water vapour.</p>
+            <button type="button" data-action="thermal-chamber-start" class="rounded-xl bg-blue-700 hover:bg-blue-600 px-5 py-3 font-bold text-white transition-colors motion-reduce:transition-none">
+              Open Thermal Chamber
+            </button>
+          </section>
         </div>
       </div>
     `;

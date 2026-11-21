@@ -58,15 +58,18 @@ public/
 │   │   ├── solar-system.js        # Planet ordering activity & factual guide
 │   │   ├── plant-life-cycle.js    # 6-stage biological sequencing activity
 │   │   ├── food-chains.js         # Habitat trophic levels activity
-│   │   └── virtual-lab.js         # Scientific state change & mixture simulations
+│   │   ├── virtual-lab.js         # Scientific state change & mixture simulations
+│   │   └── ecosystem-sandbox.js   # Simplified, learner-adjustable pond population model
 │   ├── geography/
 │   │   ├── country-data.js        # Interactive country dataset (flags, capitals, facts)
-│   │   ├── world-map-context.js   # 177-country background SVG vector paths
+│   │   ├── world-map-context.js   # 205 background map features, including schematic markers for small countries
+│   │   ├── globe-trotter.js       # Curated map-based country mystery clues
 │   │   ├── world-map.js           # Interactive SVG world map component (pan/zoom)
 │   │   └── country-activities.js  # Flag Detective & Capital Cities activities
 │   ├── history/
 │   │   ├── events.js              # 104 curated historical event records
-│   │   └── timeline-builder.js    # Drag-and-drop chronological timeline builder
+│   │   ├── timeline-builder.js    # Drag-and-drop chronological timeline builder
+│   │   └── artifact-detective.js  # Finite sourced artifact investigation
 │   ├── brain-power/
 │   │   └── brain-power.js         # Pattern Recognition, Memory Match, Code Breaker
 │   ├── life-skills/
@@ -116,10 +119,10 @@ stateDiagram-v2
 * **Guest Mode**: All progress, quiz scores, daily challenges, and unlocked cosmetics are kept in memory only (`sessionStorage` or application memory). No data is written to `localStorage`, cookies, or remote endpoints. When the window/tab closes, guest data is cleared.
 * **Authenticated Mode**: Progress is securely synchronized to the server via `/api/progress`. Account records store:
   - Account ID (UUID generated server-side).
-  - Hashed password (PBKDF2 with salt).
+  - Hashed password and optional parent PIN (PBKDF2 with unique random salts). PIN hashes are never exposed through the API; parent verification is stored as a five-minute marker on the authenticated session.
   - Session token (hashed, stored in `HttpOnly`, `SameSite=Lax` cookie).
   - Profile JSON blob (school years, subject overrides, activity progress, badges, daily challenge records, owned cosmetics).
-  - Learning preferences include theme, school-year overrides, and the sound-effects setting; guest-only Parent Dashboard changes stay in memory.
+  - Learning preferences include theme, school-year overrides, sound effects, spoken-audio speed, and dyslexia-friendly typography; guest-only Parent Dashboard changes stay in memory. Speech rate is a multiplier bounded from 0.75 to 1.25 and applies to hints and spelling pronunciations. The typography preference uses a sans serif typeface with more letter spacing and line height.
 
 ### 4.2 Security Rules
 * **No Account Listing**: No API endpoint allows listing accounts or looking up other users.

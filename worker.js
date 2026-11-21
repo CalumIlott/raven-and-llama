@@ -32,16 +32,20 @@ export default {
     }
 
     try {
-      const authAction = request.method === 'POST' && pathname === '/api/auth/login'
-        ? 'login'
-        : request.method === 'POST' && pathname === '/api/auth/register'
-          ? 'register'
-          : null;
-      const limiters = authAction === 'login'
-        ? [env.AUTH_LOGIN_IP_LIMITER, env.AUTH_LOGIN_ACCOUNT_LIMITER]
-        : authAction === 'register'
-          ? [env.AUTH_REGISTER_LIMITER]
-          : [];
+      const authAction = request.method === 'POST' && pathname === '/api/auth/parent-verify'
+        ? 'parent-verify'
+        : request.method === 'POST' && pathname === '/api/auth/login'
+          ? 'login'
+          : request.method === 'POST' && pathname === '/api/auth/register'
+            ? 'register'
+            : null;
+      const limiters = authAction === 'parent-verify'
+        ? [env.AUTH_PARENT_VERIFY_IP_LIMITER, env.AUTH_PARENT_VERIFY_ACCOUNT_LIMITER]
+        : authAction === 'login'
+          ? [env.AUTH_LOGIN_IP_LIMITER, env.AUTH_LOGIN_ACCOUNT_LIMITER]
+          : authAction === 'register'
+            ? [env.AUTH_REGISTER_LIMITER]
+            : [];
       if (limiters.some(limiter => !limiter)) {
         return withSecurityHeaders(Response.json(
           { error: 'Account protection is not configured' },

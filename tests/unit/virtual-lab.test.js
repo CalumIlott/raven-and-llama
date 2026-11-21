@@ -96,6 +96,7 @@ test('every authored simulation runs deterministically and records progress once
     assert.equal(app.virtualLabGame.result.sourceUrl, simulation.sourceUrl);
     assert.equal(context.activityScores.length, 1);
     assert.ok(context.main.innerHTML.includes(simulation.title));
+    assert.match(context.main.innerHTML, /data-virtual-lab-scene=/);
   }
   assert.equal(app.virtualLabActivityEngine.status, 'complete');
   assert.equal(context.profile.stars, 0);

@@ -54,6 +54,8 @@ class ProfileManager {
       schoolYear: 3,
       subjectYears: {},
       soundEnabled: true,
+      speechRate: 1,
+      dyslexiaFriendly: false,
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -122,6 +124,10 @@ class ProfileManager {
       schoolYear: ProfileManager.isValidSchoolYear(source.schoolYear) ? source.schoolYear : 3,
       subjectYears: ProfileManager.normalizeSubjectYears(source.subjectYears),
       soundEnabled: source.soundEnabled !== false,
+      speechRate: Number.isFinite(source.speechRate) && source.speechRate >= 0.75 && source.speechRate <= 1.25
+        ? source.speechRate
+        : 1,
+      dyslexiaFriendly: source.dyslexiaFriendly === true,
       lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',
       stage1PassedBelts: Array.isArray(source.stage1PassedBelts) ? source.stage1PassedBelts : [],
@@ -152,6 +158,7 @@ class ProfileManager {
     ProfileManager.currentProfile = ProfileManager.createGuestProfile();
     ProfileManager.currentProfile.theme = ProfileManager.readGuestThemePreference();
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
+    ProfileManager.applyAccessibilityPreferences(ProfileManager.currentProfile);
     window.soundFX?.setMuted(!ProfileManager.currentProfile.soundEnabled);
     ProfileManager.lastSaveError = '';
     if (previousAccountId && previousAccountId !== 'guest') {
@@ -172,6 +179,7 @@ class ProfileManager {
     ProfileManager.account = data.user;
     ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, data.user);
     ProfileManager.applyTheme(ProfileManager.currentProfile.theme);
+    ProfileManager.applyAccessibilityPreferences(ProfileManager.currentProfile);
     window.soundFX?.setMuted(!ProfileManager.currentProfile.soundEnabled);
     ProfileManager.accountServiceAvailable = true;
     ProfileManager.lastSaveError = '';
@@ -184,6 +192,11 @@ class ProfileManager {
     if (typeof document === 'undefined') return;
     document.documentElement.classList.toggle('theme-light', theme === 'light');
     document.documentElement.classList.toggle('dark', theme !== 'light');
+  }
+
+  static applyAccessibilityPreferences(profile) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('dyslexia-friendly', profile?.dyslexiaFriendly === true);
   }
 
   static async requestApi(url, method = 'GET', body) {
@@ -249,6 +262,16 @@ class ProfileManager {
   static async deleteAccount(password) {
     await ProfileManager.requestApi('/api/auth/account', 'DELETE', { password });
     ProfileManager.setGuest();
+  }
+
+  static async verifyParent(credential) {
+    return ProfileManager.requestApi('/api/auth/parent-verify', 'POST', credential);
+  }
+
+  static async updateParentPin(password, pin) {
+    const result = await ProfileManager.requestApi('/api/auth/parent-pin', 'POST', { password, pin });
+    if (ProfileManager.account) ProfileManager.account.parentPinEnabled = result.parentPinEnabled;
+    return result;
   }
 
   static async refreshSession() {
@@ -439,6 +462,7 @@ class ProfileManager {
     normalized.updatedAt = new Date().toISOString();
     ProfileManager.currentProfile = normalized;
     ProfileManager.applyTheme(normalized.theme);
+    ProfileManager.applyAccessibilityPreferences(normalized);
 
     if (!account) {
       window.app?.updateHeader();
@@ -473,6 +497,7 @@ class ProfileManager {
     const data = await ProfileManager.requestApi('/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' });
     if (ProfileManager.account?.id !== account.id) throw new Error('The active account changed before progress could be reset.');
     ProfileManager.currentProfile = ProfileManager.normalizeProfile(data.profile, account);
+    ProfileManager.applyAccessibilityPreferences(ProfileManager.currentProfile);
     window.soundFX?.setMuted(!ProfileManager.currentProfile.soundEnabled);
     window.app?.updateHeader();
     return ProfileManager.currentProfile;

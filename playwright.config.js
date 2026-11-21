@@ -6,7 +6,7 @@ const port = Number(process.env.E2E_PORT || 4173);
 const baseURL = `http://127.0.0.1:${port}`;
 const dataDirectory = path.join(os.tmpdir(), `raven-llama-e2e-${process.pid}`);
 const outputDirectory = process.platform === 'win32'
-  ? process.env.PLAYWRIGHT_OUTPUT_DIR || path.join(os.tmpdir(), 'raven-llama-playwright')
+  ? process.env.PLAYWRIGHT_OUTPUT_DIR || path.join(os.tmpdir(), `raven-llama-playwright-${process.pid}`)
   : path.join(__dirname, 'test-results');
 process.env.RAVEN_TEST_DATA_DIR = dataDirectory;
 
@@ -29,7 +29,7 @@ module.exports = defineConfig({
     use: { ...devices['Desktop Chrome'] }
   }, {
     name: 'mobile-chromium',
-    testMatch: ['**/accessibility.spec.js', '**/achievement-badges.spec.js', '**/cosmetic-shop.spec.js', '**/daily-challenges.spec.js', '**/fraction-pizza.spec.js', '**/food-chains.spec.js', '**/learning-quests.spec.js', '**/missing-number.spec.js', '**/shopkeeper.spec.js', '**/solar-system.spec.js', '**/spelling-safari.spec.js', '**/plant-life-cycle.spec.js', '**/virtual-lab.spec.js', '**/geography-world.spec.js', '**/geography-country-activities.spec.js', '**/history-timeline.spec.js', '**/brain-power.spec.js', '**/plan-party.spec.js', '**/mascot-companion.spec.js'],
+    testMatch: ['**/accessibility.spec.js', '**/achievement-badges.spec.js', '**/balance-scales.spec.js', '**/cosmetic-shop.spec.js', '**/daily-challenges.spec.js', '**/ecosystem-sandbox.spec.js', '**/fraction-pizza.spec.js', '**/food-chains.spec.js', '**/learning-quests.spec.js', '**/missing-number.spec.js', '**/recommendations.spec.js', '**/shopkeeper.spec.js', '**/solar-system.spec.js', '**/spelling-safari.spec.js', '**/plant-life-cycle.spec.js', '**/virtual-lab.spec.js', '**/thermal-chamber.spec.js', '**/geography-world.spec.js', '**/geography-country-activities.spec.js', '**/history-timeline.spec.js', '**/history-artifact-detective.spec.js', '**/brain-power.spec.js', '**/plan-party.spec.js', '**/mascot-companion.spec.js', '**/telling-time.spec.js', '**/parent-dashboard.spec.js'],
     use: { ...devices['Pixel 7'] }
   }],
   webServer: {

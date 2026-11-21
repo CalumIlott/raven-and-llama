@@ -91,6 +91,73 @@ function escapeVirtualLabHtml(value) {
   })[character]);
 }
 
+// These diagrams are illustrative, not a molecular or time-accurate model.
+const VIRTUAL_LAB_SCENES = Object.freeze({
+  'ice-warms': 'melting', 'water-cools': 'freezing',
+  'sugar-dissolves': 'dissolving', 'salt-dissolves': 'dissolving',
+  'baking-soda-dissolves': 'dissolving', 'sand-mixture': 'settling',
+  'oil-water': 'layers', 'baking-soda-vinegar': 'bubbles',
+  'iron-sand-separation': 'magnet', 'sand-water-filtration': 'filter',
+  'muddy-water-filtration': 'filter', 'salt-water-filtration': 'filter-salt',
+  'salt-crystals': 'crystals', 'saltwater-freezing-point': 'brine',
+  'water-evaporates': 'evaporation', 'food-coloring-mixes': 'coloring',
+  'flour-suspension': 'suspension'
+});
+
+function renderVirtualLabScene(simulation) {
+  const scene = VIRTUAL_LAB_SCENES[simulation.id];
+  if (!scene) return '';
+  const dots = (className, points, radius = 3) => points.map(([x, y], index) =>
+    `<circle class="${className} virtual-lab-scene__particle--${index % 4}" cx="${x}" cy="${y}" r="${radius}"/>`).join('');
+  const scattered = [[78,96],[106,118],[136,95],[163,123],[92,145],[124,151],[153,148],[176,101]];
+  const base = `<path class="virtual-lab-scene__glass" d="M58 35 L69 181 Q70 190 80 190 H180 Q190 190 191 181 L202 35"/><path class="virtual-lab-scene__rim" d="M54 35 H206"/>`;
+  const water = '<path class="virtual-lab-scene__water" d="M65 90 H195 L189 180 Q188 187 180 187 H80 Q72 187 71 180 Z"/>';
+  const waterLow = '<path class="virtual-lab-scene__water" d="M69 137 H191 L189 180 Q188 187 180 187 H80 Q72 187 71 180 Z"/>';
+  let picture = '';
+  switch (scene) {
+    case 'melting': case 'freezing':
+      picture = `${waterLow}<g class="virtual-lab-scene__ice virtual-lab-scene__${scene}"><rect x="91" y="93" width="34" height="34" rx="5" transform="rotate(-12 108 110)"/><rect x="137" y="102" width="29" height="29" rx="4" transform="rotate(10 151 116)"/></g>`;
+      break;
+    case 'dissolving':
+      picture = `${water}${dots('virtual-lab-scene__solute', scattered)}`;
+      break;
+    case 'settling':
+      picture = `${water}<path class="virtual-lab-scene__sand" d="M72 171 Q99 160 128 170 T188 170 L188 182 Q187 187 180 187 H80 Q73 187 72 181Z"/>${dots('virtual-lab-scene__grain', [[89,112],[112,128],[149,115],[170,139]])}`;
+      break;
+    case 'layers':
+      picture = `${waterLow}<path class="virtual-lab-scene__oil" d="M65 90 H195 L191 137 H69Z"/>`;
+      break;
+    case 'bubbles':
+      picture = `${water}${dots('virtual-lab-scene__bubble', [[82,163],[104,142],[126,170],[145,138],[172,158],[117,110]], 5)}`;
+      break;
+    case 'magnet':
+      picture = `<path class="virtual-lab-scene__sand" d="M72 169 Q130 156 188 169 L188 182 Q187 187 180 187 H80 Q73 187 72 181Z"/><path class="virtual-lab-scene__magnet" d="M103 40 V67 A27 27 0 0 0 157 67 V40 H144 V67 A14 14 0 0 1 116 67 V40Z"/>${dots('virtual-lab-scene__iron', [[108,89],[122,99],[142,88],[153,102]], 3)}`;
+      break;
+    case 'filter': case 'filter-salt':
+      picture = `${waterLow}<path class="virtual-lab-scene__filter" d="M83 55 H177 L130 130Z"/><path class="virtual-lab-scene__filter-line" d="M83 55 H177"/>${dots('virtual-lab-scene__grain', [[112,73],[124,81],[138,74],[146,84]], 3)}${scene === 'filter-salt' ? dots('virtual-lab-scene__solute', [[110,151],[140,159],[165,172]], 2) : ''}<circle class="virtual-lab-scene__drop" cx="130" cy="137" r="4"/>`;
+      break;
+    case 'crystals':
+      picture = `${waterLow}<path class="virtual-lab-scene__crystal" d="M93 184 l8 -15 8 15 Z M119 184 l9 -20 10 20 Z M148 184 l8 -14 8 14 Z"/><path class="virtual-lab-scene__vapour" d="M108 110 V65 M130 116 V58 M152 110 V65"/>`;
+      break;
+    case 'evaporation':
+      picture = `${waterLow}<path class="virtual-lab-scene__vapour" d="M108 116 V67 M130 118 V58 M152 116 V67"/>`;
+      break;
+    case 'coloring':
+      picture = `${water}<path class="virtual-lab-scene__colour" d="M130 91 C99 110 96 145 120 166 C142 180 168 148 151 124 C143 112 139 101 130 91Z"/>`;
+      break;
+    case 'suspension':
+      picture = `${water}<path class="virtual-lab-scene__cloud" d="M72 113 Q100 96 125 113 T189 110 L187 168 Q160 181 130 167 T73 170Z"/>`;
+      break;
+    case 'brine':
+      picture = `${water}${dots('virtual-lab-scene__solute', scattered, 2)}<path class="virtual-lab-scene__snow" d="M130 49 V75 M118 55 L142 69 M142 55 L118 69"/>`;
+      break;
+  }
+  return `<figure class="virtual-lab-scene" data-virtual-lab-scene="${scene}" aria-label="Illustration: ${escapeVirtualLabHtml(simulation.title)}">
+    <svg viewBox="0 0 260 210" role="img" aria-hidden="true" focusable="false">${picture}${base}</svg>
+    <figcaption>Illustration of the simulated outcome</figcaption>
+  </figure>`;
+}
+
 const VIRTUAL_LAB_FILTERS = [
   { id: 'all', label: 'All items' },
   { id: 'Material', label: 'Materials' },
@@ -311,6 +378,7 @@ Object.assign(App.prototype, {
               ${game.result.kind === 'supported' && game.result.sourceUrl ? `<p class="text-xs text-slate-300 mt-3">Learn more: <a class="text-cyan-300 underline" href="${escapeVirtualLabHtml(game.result.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeVirtualLabHtml(game.result.sourceTitle)}</a></p>` : ''}
             </div>
           </div>
+          ${game.result.kind === 'supported' ? renderVirtualLabScene(game.result) : ''}
         </section>
       `
       : '';

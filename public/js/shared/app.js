@@ -44,7 +44,9 @@ class App {
       '/learning-centre': 'learning-centre',
       '/learning-centre/maths': 'maths-world',
       '/learning-centre/science': 'science-lab',
+      '/learning-centre/science/ecosystem': 'science-ecosystem',
       '/learning-centre/history': 'history-discovery',
+      '/learning-centre/history/artifact-detective': 'history-artifact-detective',
       '/learning-centre/brain-power': 'brain-power-hub',
       '/learning-centre/quests': 'learning-quests',
       '/learning-centre/life-skills/party-planner': 'life-skills-party',
@@ -74,7 +76,9 @@ class App {
       'learning-quests': () => this.showLearningQuests(),
       'maths-world': () => this.showMathsWorld(),
       'science-lab': () => this.showScienceLab(),
+      'science-ecosystem': () => this.showScienceEcosystemSandbox(),
       'history-discovery': () => this.showHistoryHub(),
+      'history-artifact-detective': () => this.startHistoryArtifactDetective(),
       'brain-power-hub': () => this.showBrainPowerHub(),
       'life-skills-party': () => this.startPartyPlanner(),
       'geography-world': () => this.showGeographyWorld(),
@@ -108,7 +112,7 @@ class App {
 
   showHomeRoute() {
     const path = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/history', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
+    if (['/learning', '/learning-centre', '/learning-centre/maths', '/learning-centre/science', '/learning-centre/science/ecosystem', '/learning-centre/history', '/learning-centre/history/artifact-detective', '/learning-centre/brain-power', '/learning-centre/quests', '/learning-centre/life-skills/party-planner', '/learning-centre/geography', '/learning-centre/spelling', '/games', '/critter-catch', '/dojo', '/timetables', '/telling-time', '/spelling'].includes(path)) {
       this.navigateToPath('/');
     }
   }
@@ -126,6 +130,7 @@ class App {
     document.addEventListener('click', event => this.handleClickAction(event));
     document.addEventListener('submit', event => this.handleSubmitAction(event));
     document.addEventListener('change', event => this.handleChangeAction(event));
+    document.addEventListener('input', event => this.handleInputAction(event));
     document.addEventListener('dragstart', event => this.handleNativeDragStart(event));
     document.addEventListener('dragover', event => this.handleNativeDragOver(event));
     document.addEventListener('dragleave', event => this.handleNativeDragLeave(event));
@@ -220,6 +225,11 @@ class App {
       case 'maths-world': this.showMathsWorld(); break;
       case 'history-hub': this.showHistoryHub(); break;
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
+      case 'history-artifact-start': this.startHistoryArtifactDetective(); break;
+      case 'history-artifact-clue': this.revealHistoryArtifactClue(); break;
+      case 'history-artifact-answer': this.chooseHistoryArtifactAnswer(target.value); break;
+      case 'history-artifact-submit': this.submitHistoryArtifactAnswer(); break;
+      case 'history-artifact-next': this.advanceHistoryArtifactCase(); break;
       case 'brain-power-hub': this.showBrainPowerHub(); break;
       case 'brain-power-home': this.showBrainPowerHub(); break;
       case 'brain-pattern-start': this.startBrainPowerPattern(target.dataset.difficulty || 'easy'); break;
@@ -236,6 +246,8 @@ class App {
       case 'history-timeline-retry': this.retryHistoryTimeline(); break;
       case 'history-timeline-reset': this.resetHistoryTimeline(); break;
       case 'geography-world': this.showGeographyWorld(); break;
+      case 'geography-globe-start': this.startGeographyGlobeTrail(); break;
+      case 'geography-globe-clue': this.revealGeographyGlobeClue(); break;
       case 'geography-flag-start': this.startGeographyFlagDetective(); break;
       case 'geography-capital-start': this.startGeographyCapitalCities(); break;
       case 'geography-country-answer': this.answerGeographyCountryQuestion(Number(target.dataset.answerIndex)); break;
@@ -244,6 +256,7 @@ class App {
       case 'geography-country-select': this.selectGeographyCountry(target.dataset.countryId); break;
       case 'geography-map-zoom': this.zoomGeographyMap(Number(target.dataset.delta)); break;
       case 'geography-map-reset': this.resetGeographyMapZoom(); break;
+      case 'geography-map-fullscreen': void this.toggleGeographyMapFullscreen(); break;
       case 'geography-country-speak': this.speakGeographyCountry(); break;
       case 'maths-topic': this.setMathsWorldTopic(target.dataset.topic); break;
       case 'number-builder-start': this.startNumberBuilder(target.dataset.difficulty); break;
@@ -274,6 +287,7 @@ class App {
       case 'telling-time': this.showTellingTime(); break;
       case 'time-mode': this.startTimeActivity(target.dataset.timeMode); break;
       case 'time-answer': this.answerTimeActivity(target.dataset.answer); break;
+      case 'time-submit-clock': this.submitTimeActivityClock(); break;
       case 'time-next': this.advanceTimeActivity(); break;
       case 'time-retry': this.startTimeActivity(this.timeActivity.mode); break;
       case 'time-menu': this.showTellingTime(); break;
@@ -292,6 +306,7 @@ class App {
       case 'parent-close': this.closeParentModal(); break;
       case 'parent-tab': this.selectParentDashboardTab(target.dataset.tab); break;
       case 'progress-reset-open': this.showProgressResetConfirmation(); break;
+      case 'parent-pin-disable': void this.submitParentPinDisable(); break;
       case 'progress-reset-cancel': this.cancelProgressReset(); break;
       case 'belt-detail': this.showBeltDetails(target.dataset.beltId); break;
       case 'skill-start': this.startSkillGame(target.dataset.beltId, target.dataset.skillId); break;
@@ -305,6 +320,10 @@ class App {
       case 'endless-timetables': this.startEndlessTimetables(); break;
       case 'times-table-pick': this.ttPick(Number(target.dataset.id), Number(target.dataset.value)); break;
       case 'game-answer': window.gameEngine.submitAnswer(decodeURIComponent(target.dataset.answer)); break;
+      case 'game-balance-add': window.gameEngine.addBalanceTrainingWeight(Number(target.dataset.value)); break;
+      case 'game-balance-remove': window.gameEngine.removeBalanceTrainingWeight(Number(target.dataset.index)); break;
+      case 'game-balance-clear': window.gameEngine.clearBalanceTrainingWeights(); break;
+      case 'game-balance-check': window.gameEngine.checkBalanceTrainingAnswer(); break;
       case 'game-order-pick': window.gameEngine.pickOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
       case 'game-exit':
         window.gameEngine.exitGame();
@@ -340,6 +359,14 @@ class App {
       case 'virtual-lab-place': this.placeSelectedVirtualLabMaterial(Number(target.dataset.slotIndex)); break;
       case 'virtual-lab-run': this.runVirtualLabSimulation(); break;
       case 'virtual-lab-reset': this.resetVirtualLabWorkspace(); break;
+      case 'ecosystem-sandbox-start': this.showScienceEcosystemSandbox(); break;
+      case 'ecosystem-sandbox-adjust': this.adjustScienceEcosystemPopulation(target.dataset.speciesId, Number(target.dataset.delta)); break;
+      case 'ecosystem-sandbox-next-day': this.advanceScienceEcosystemDay(); break;
+      case 'ecosystem-sandbox-reset': this.resetScienceEcosystemSandbox(); break;
+      case 'thermal-chamber-start': this.startThermalChamber(); break;
+      case 'thermal-chamber-temperature': this.setThermalChamberTemperature(Number(target.value)); break;
+      case 'thermal-chamber-adjust': this.adjustThermalChamberTemperature(Number(target.dataset.delta)); break;
+      case 'thermal-chamber-lid': this.toggleThermalChamberLid(); break;
       case 'science-start': this.startScienceMission(target.dataset.missionId, target.dataset.difficulty); break;
       case 'science-answer': this.answerScienceQuestion(Number(target.dataset.index)); break;
       case 'science-continue': this.continueScienceMission(); break;
@@ -400,6 +427,10 @@ class App {
       case 'arcade-gem': window.arcadeEngine.tapGem(Number(target.dataset.index)); break;
       case 'arcade-turret': window.arcadeEngine.fireTurret(Number(target.dataset.value)); break;
       case 'arcade-maths-answer': window.arcadeEngine.answerMathsActivity(decodeURIComponent(target.dataset.value)); break;
+      case 'arcade-balance-add': window.arcadeEngine.addBalanceScaleWeight(Number(target.dataset.value)); break;
+      case 'arcade-balance-remove': window.arcadeEngine.removeBalanceScaleWeight(Number(target.dataset.index)); break;
+      case 'arcade-balance-clear': window.arcadeEngine.clearBalanceScaleWeights(); break;
+      case 'arcade-balance-check': window.arcadeEngine.checkBalanceScale(); break;
       case 'arcade-maths-order': window.arcadeEngine.pickMathsOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
       case 'arcade-maths-model-next': window.arcadeEngine.advanceNumberModelRound(); break;
       case 'arcade-maths-cell': window.arcadeEngine.toggleMathsActivityCell(Number(target.dataset.index)); break;
@@ -422,6 +453,7 @@ class App {
       case 'account-password': this.changePasswordSubmit(event); break;
       case 'account-delete': this.deleteAccount(event); break;
       case 'parent-access': void this.submitParentAccess(event); break;
+      case 'parent-pin': void this.submitParentPin(event); break;
       case 'progress-reset': void this.resetLearningProgress(event); break;
       case 'spelling-list-save':
         event.preventDefault();
@@ -455,6 +487,12 @@ class App {
       this.setTheme(event.target.value, { persistGuest: event.target.id !== 'account-theme' });
     }
     if (event.target.dataset.action === 'audio-preference') void this.saveAudioPreference(event.target.checked);
+    if (event.target.dataset.action === 'dyslexia-friendly-preference') {
+      void this.saveDyslexiaFriendlyPreference(event.target.checked);
+    }
+    if (event.target.dataset.action === 'speech-rate-preference') {
+      void this.saveSpeechRatePreference(Number(event.target.value) / 100);
+    }
     if (event.target.dataset.action === 'parent-analytics-range') {
       const rangeDays = Number(event.target.value);
       if ([7, 30, 90].includes(rangeDays)) {
@@ -488,6 +526,12 @@ class App {
       this.selectBrainPowerCodeColor(Number(event.target.dataset.positionIndex), event.target.value);
     }
     if (event.target.name === 'account_avatar') this.updateAvatarSaveButton();
+  }
+
+  handleInputAction(event) {
+    if (event.target.dataset.action !== 'speech-rate-preference') return;
+    const output = document.getElementById('parent-speech-rate-value');
+    if (output) output.textContent = `${event.target.value}% speed`;
   }
 
   getDialogFocusableElements(dialog) {
@@ -624,7 +668,7 @@ class App {
       } else if (this.currentView === 'maths-world') {
         subBadge.textContent = 'Maths World';
         subBadge.classList.remove('hidden');
-      } else if (this.currentView === 'history-discovery' || this.currentView === 'history-timeline') {
+      } else if (this.currentView === 'history-discovery' || this.currentView === 'history-timeline' || this.currentView === 'history-artifact-detective') {
         subBadge.textContent = 'History & Discovery';
         subBadge.classList.remove('hidden');
       } else if (['brain-power', 'brain-power-pattern', 'brain-power-memory', 'brain-power-code'].includes(this.currentView)) {
@@ -652,7 +696,8 @@ class App {
         this.currentView === 'science-solar-system' ||
         this.currentView === 'science-plant-life-cycle' ||
         this.currentView === 'science-food-chains' ||
-        this.currentView === 'science-virtual-lab') {
+        this.currentView === 'science-virtual-lab' ||
+        this.currentView === 'science-ecosystem') {
         subBadge.textContent = 'Science Lab';
         subBadge.classList.remove('hidden');
       } else if (this.currentView === 'spelling') {
@@ -713,6 +758,8 @@ class App {
       this.showHistoryHub();
     } else if (this.currentView === 'history-timeline' && this.historyTimelineGame) {
       this.renderHistoryTimelineActivity();
+    } else if (this.currentView === 'history-artifact-detective' && this.historyArtifactGame) {
+      this.renderHistoryArtifactDetective();
     } else if (this.currentView === 'brain-power') {
       this.showBrainPowerHub();
     } else if (this.currentView === 'brain-power-pattern' && this.brainPowerPatternGame) {
@@ -733,6 +780,8 @@ class App {
       this.renderFoodChainsActivity();
     } else if (this.currentView === 'science-virtual-lab' && this.virtualLabGame) {
       this.renderVirtualLabActivity();
+    } else if (this.currentView === 'science-ecosystem' && this.ecosystemSandboxGame) {
+      this.renderScienceEcosystemSandbox();
     } else if (this.currentView === 'trophy') {
       this.showTrophyRoom();
     } else if (this.currentView === 'spelling') {
@@ -998,6 +1047,39 @@ class App {
     if (checkbox) checkbox.checked = ProfileManager.getActiveProfile().soundEnabled;
   }
 
+  async saveSpeechRatePreference(speechRate) {
+    if (!Number.isFinite(speechRate) || speechRate < 0.75 || speechRate > 1.25) return false;
+    const profile = { ...ProfileManager.getActiveProfile(), speechRate };
+    const saved = await ProfileManager.updateProfile(profile);
+    const activeRate = ProfileManager.getActiveProfile().speechRate;
+    const slider = document.getElementById('parent-speech-rate');
+    if (slider) slider.value = String(Math.round(activeRate * 100));
+    const output = document.getElementById('parent-speech-rate-value');
+    if (output) output.textContent = `${Math.round(activeRate * 100)}% speed`;
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved
+      ? 'Spoken audio speed saved to this account.'
+      : ProfileManager.isAuthenticated()
+        ? ProfileManager.lastSaveError || 'Unable to save spoken audio speed.'
+        : 'Spoken audio speed applies for this guest visit only.';
+    return saved;
+  }
+
+  async saveDyslexiaFriendlyPreference(enabled) {
+    const profile = { ...ProfileManager.getActiveProfile(), dyslexiaFriendly: enabled === true };
+    const saved = await ProfileManager.updateProfile(profile);
+    const activePreference = ProfileManager.getActiveProfile().dyslexiaFriendly;
+    const checkbox = document.getElementById('parent-dyslexia-friendly');
+    if (checkbox) checkbox.checked = activePreference;
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved
+      ? 'Reading preference saved to this account.'
+      : ProfileManager.isAuthenticated()
+        ? ProfileManager.lastSaveError || 'Unable to save the reading preference.'
+        : 'Reading preference applies for this guest visit only.';
+    return saved;
+  }
+
   selectParentDashboardTab(tab) {
     if (!['progress', 'settings'].includes(tab)) return false;
     const isSettings = tab === 'settings';
@@ -1020,6 +1102,7 @@ class App {
     settingsTab.classList.toggle('text-slate-200', !isSettings);
     progressPanel.classList.toggle('hidden', isSettings);
     settingsPanel.classList.toggle('hidden', !isSettings);
+    if (isSettings) settingsPanel.scrollTop = 0;
     return true;
   }
 
@@ -1047,6 +1130,8 @@ class App {
     const form = event.target;
     const status = document.getElementById('progress-reset-status');
     const phrase = form.elements.confirmation.value;
+    const pin = form.elements.pin.value;
+    const password = form.elements.password.value;
     if (phrase !== 'RESET PROGRESS') {
       status.textContent = 'Type RESET PROGRESS exactly to confirm.';
       return false;
@@ -1055,6 +1140,7 @@ class App {
     if (submit) submit.disabled = true;
     status.textContent = 'Resetting this learner’s progress…';
     try {
+      await ProfileManager.verifyParent(pin ? { pin } : { password });
       await ProfileManager.resetLearningProgress();
       this.renderParentDashboardContent(false);
       status.textContent = 'Learning progress was reset. Your account and settings are still active.';
@@ -1062,6 +1148,8 @@ class App {
       form.classList.add('hidden');
       this.selectParentDashboardTab('settings');
     } catch (error) {
+      form.elements.pin.value = '';
+      form.elements.password.value = '';
       status.textContent = error.message || 'Progress could not be reset. Try again.';
     } finally {
       if (submit) submit.disabled = false;
@@ -1476,12 +1564,27 @@ class App {
           : activity.skillId
             ? `Unresolved Learning Centre skill (${activity.skillId})`
             : 'No Learning Centre skill mapping recorded';
-        [
-          activity.subject,
-          activity.title,
-          skill,
-          activity.australianCurriculum || 'Not mapped'
-        ].forEach(value => row.append(createCell(value)));
+        [activity.subject, activity.title, skill].forEach(value => row.append(createCell(value)));
+        const curriculumCell = document.createElement('td');
+        curriculumCell.className = 'py-2.5 px-3 text-slate-300';
+        if (activity.australianCurriculum) {
+          const mapping = activity.australianCurriculum;
+          const link = document.createElement('a');
+          link.href = mapping.sourceUrl;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = `${mapping.code} (${mapping.yearLevel})`;
+          link.setAttribute('aria-label', `${mapping.code}, ${mapping.title}; ${mapping.curriculumVersion}, official source opens in a new tab`);
+          link.className = 'text-sky-300 underline underline-offset-2 hover:text-sky-200';
+          curriculumCell.append(link);
+          const note = document.createElement('span');
+          note.className = 'mt-1 block text-xs text-slate-400';
+          note.textContent = `${mapping.title}. ${mapping.scopeNote} ${mapping.curriculumVersion}.`;
+          curriculumCell.append(note);
+        } else {
+          curriculumCell.textContent = 'Not mapped';
+        }
+        row.append(curriculumCell);
         mappingsBody.append(row);
       });
     }
@@ -1503,10 +1606,23 @@ class App {
       content.classList.add('hidden');
       const accessForm = gate.querySelector('form');
       accessForm?.reset();
+      const hasPin = ProfileManager.account?.parentPinEnabled === true;
+      document.getElementById('parent-pin-description').textContent = hasPin
+        ? 'A parent PIN is enabled. Enter your account password to change or disable it.'
+        : 'Add a 4–6 digit PIN for quick parent dashboard access. Your account password is required to change it.';
+      document.getElementById('parent-access-pin').classList.toggle('hidden', !hasPin);
+      document.getElementById('parent-access-pin').required = false;
+      document.getElementById('parent-access-pin-label').classList.toggle('hidden', !hasPin);
+      document.getElementById('parent-pin-disable')?.classList.toggle('hidden', !hasPin);
+      document.getElementById('parent-access-password').required = !hasPin;
+      document.getElementById('progress-reset-pin')?.classList.toggle('hidden', !hasPin);
+      document.getElementById('progress-reset-pin').required = false;
+      document.getElementById('progress-reset-password').classList.remove('hidden');
+      document.getElementById('progress-reset-password').required = !hasPin;
       document.getElementById('parent-access-status').textContent = '';
       this.openDialog(modal);
       if (accountModalIsOpen) this.dialogFocusReturn.set(modal, focusReturn);
-      document.getElementById('parent-access-password')?.focus();
+      document.getElementById(hasPin ? 'parent-access-pin' : 'parent-access-password')?.focus();
       return true;
     }
 
@@ -1521,12 +1637,13 @@ class App {
     const status = document.getElementById('parent-access-status');
     const passwordInput = document.getElementById('parent-access-password');
     const account = ProfileManager.account;
-    if (!account || !passwordInput?.value) return false;
-    status.textContent = 'Checking account password…';
+    const pinInput = document.getElementById('parent-access-pin');
+    if (!account || (!passwordInput?.value && !pinInput?.value)) return false;
+    status.textContent = 'Verifying parent access…';
     try {
-      await ProfileManager.login(account.username, passwordInput.value);
-      if (ProfileManager.account?.id !== account.id) throw new Error('The active account changed. Sign in again.');
+      await ProfileManager.verifyParent(pinInput?.value ? { pin: pinInput.value } : { password: passwordInput.value });
       passwordInput.value = '';
+      if (pinInput) pinInput.value = '';
       document.getElementById('parent-access-gate')?.classList.add('hidden');
       this.renderParentDashboardContent(false);
       status.textContent = '';
@@ -1534,14 +1651,60 @@ class App {
       return true;
     } catch (error) {
       passwordInput.value = '';
+      if (pinInput) pinInput.value = '';
       status.textContent = error.status === 429
         ? 'Too many attempts. Wait before trying again.'
         : error.status === 503
           ? 'Parent access is temporarily unavailable. Try again later.'
-          : 'We couldn’t confirm parent access. Check the password and try again.';
-      passwordInput.focus();
+          : 'We couldn’t confirm parent access. Check your PIN or password and try again.';
+      (account.parentPinEnabled ? pinInput : passwordInput)?.focus();
       return false;
     }
+  }
+
+  async submitParentPin(event) {
+    event.preventDefault();
+    const form = event.target;
+    const status = document.getElementById('parent-pin-status');
+    const password = form.elements.password.value;
+    const pin = form.elements.pin.value;
+    if (!password || !/^\d{4,6}$/.test(pin)) {
+      status.textContent = 'Enter your account password and a 4–6 digit PIN.';
+      return false;
+    }
+    try {
+      await ProfileManager.updateParentPin(password, pin);
+      form.reset();
+      document.getElementById('parent-pin-disable')?.classList.remove('hidden');
+      document.getElementById('parent-pin-description').textContent = 'A parent PIN is enabled. Enter your account password to change or disable it.';
+      status.textContent = 'Parent PIN saved.';
+    } catch (error) {
+      form.elements.password.value = '';
+      status.textContent = error.message || 'Parent PIN could not be saved.';
+    }
+    return false;
+  }
+
+  async submitParentPinDisable() {
+    const form = document.getElementById('parent-pin-form');
+    const status = document.getElementById('parent-pin-status');
+    const password = form?.elements.password.value;
+    if (!password) {
+      status.textContent = 'Enter your account password first, then choose Disable PIN.';
+      form?.elements.password.focus();
+      return false;
+    }
+    try {
+      await ProfileManager.updateParentPin(password, null);
+      form.reset();
+      document.getElementById('parent-pin-disable')?.classList.add('hidden');
+      document.getElementById('parent-pin-description').textContent = 'Add a 4–6 digit PIN for quick parent dashboard access. Your account password is required to change it.';
+      status.textContent = 'Parent PIN disabled.';
+    } catch (error) {
+      form.elements.password.value = '';
+      status.textContent = error.message || 'Parent PIN could not be disabled.';
+    }
+    return false;
   }
 
   renderParentDashboardContent(isGuest = false) {
@@ -1640,6 +1803,13 @@ class App {
     if (themeSelect) themeSelect.value = profile.theme;
     const soundToggle = document.getElementById('parent-sound-enabled');
     if (soundToggle) soundToggle.checked = profile.soundEnabled;
+    const speechRate = Math.round(profile.speechRate * 100);
+    const speechRateSlider = document.getElementById('parent-speech-rate');
+    if (speechRateSlider) speechRateSlider.value = String(speechRate);
+    const speechRateOutput = document.getElementById('parent-speech-rate-value');
+    if (speechRateOutput) speechRateOutput.textContent = `${speechRate}% speed`;
+    const dyslexiaFriendlyToggle = document.getElementById('parent-dyslexia-friendly');
+    if (dyslexiaFriendlyToggle) dyslexiaFriendlyToggle.checked = profile.dyslexiaFriendly === true;
     const settingsStatus = document.getElementById('parent-settings-status');
     if (settingsStatus) settingsStatus.textContent = '';
     document.getElementById('progress-reset-confirmation')?.classList.add('hidden');

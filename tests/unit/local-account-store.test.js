@@ -19,13 +19,18 @@ test('local account store persists accounts, sessions, and per-account progress 
   store = new LocalAccountStore(directory);
   const user = { id: 'account-a', username: 'learner_a', passwordHash: 'pbkdf2-hash', createdAt: new Date().toISOString() };
   store.createUser(user);
+  store.updateParentPin(user.id, 'pbkdf2-sha256$100000$c2FsdA$hash');
   store.createSession({ tokenHash: 'session-hash', userId: user.id, expiresAt: Date.now() + 10000 });
+  store.markParentVerified('session-hash', Date.now() + 5000);
   store.saveProgress(user.id, { stars: 17 });
   assert.deepEqual(store.getLeaderboardProfiles(), [{ username: user.username, profile: { stars: 17 } }]);
 
   reopened = new LocalAccountStore(directory);
   assert.equal(reopened.findUserByUsername('learner_a').id, user.id);
+  assert.equal(reopened.findUserById(user.id).parentPinHash, 'pbkdf2-sha256$100000$c2FsdA$hash');
   assert.deepEqual(reopened.findSession('session-hash', Date.now()), { id: user.id, username: user.username });
+  assert.equal(reopened.isParentVerified('session-hash', Date.now()), true);
+  assert.equal(reopened.isParentVerified('session-hash', Date.now() + 6000), false);
   assert.deepEqual(reopened.getProgress(user.id), { stars: 17 });
   assert.deepEqual(reopened.getLeaderboardProfiles(), [{ username: user.username, profile: { stars: 17 } }]);
   assert.equal(reopened.findSession('session-hash', Date.now() + 20000), null);

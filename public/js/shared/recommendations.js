@@ -15,6 +15,7 @@
     { activityId: 'spelling-phonics-trail', title: 'Phonics Trail', subject: 'Spelling', skillId: 'spelling_phonics_trail', difficultySubject: 'english', startMethod: 'startSpellingSafari', arguments: ['phonics-trail'] },
     { activityId: 'spelling-word-explorer', title: 'Word Explorer', subject: 'Spelling', skillId: 'spelling_word_explorer', difficultySubject: 'english', startMethod: 'startSpellingSafari', arguments: ['word-explorer'] },
     { activityId: 'spelling-jungle-jumble', title: 'Jungle Jumble', subject: 'Spelling', skillId: 'spelling_jungle_jumble', difficultySubject: 'english', startMethod: 'startSpellingSafari', arguments: ['jungle-jumble'] },
+    { activityId: 'spelling-rhyme-ranger', title: 'Rhyme Ranger', subject: 'Spelling', skillId: 'spelling_rhyme_ranger', difficultySubject: 'english', startMethod: 'startSpellingSafari', arguments: ['rhyme-ranger'] },
     { activityId: 'science-solar-system-order', title: 'Build a Solar System', subject: 'Science', skillId: 'science_solar_system_order', startMethod: 'startSolarSystemActivity', arguments: [] },
     { activityId: 'science-plant-life-cycle-order', title: 'Plant Life Cycle', subject: 'Science', skillId: 'science_plant_life_cycle', startMethod: 'startPlantLifeCycleActivity', arguments: [] },
     { activityId: 'brain-power-pattern-recognition', title: 'Pattern Recognition', subject: 'Brain Power', skillId: 'logic_pattern_recognition', schoolYearDifficulty: true, startMethod: 'startBrainPowerPattern', arguments: [] },

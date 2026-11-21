@@ -15,6 +15,7 @@ test('Geography & The World route survives refresh and is linked from the subjec
   const countryCount = await page.evaluate(() => window.GEOGRAPHY_COUNTRY_DATA.countries.length);
   await expect(page.locator('.geography-map__region')).toHaveCount(countryCount);
   await expect(page.locator('.geography-country-option')).toHaveCount(countryCount);
+  await expect(page.locator('.geography-map-caption')).toContainText(`${countryCount} highlighted countries`);
   expect(await page.evaluate(() =>
     document.documentElement.scrollWidth <= document.documentElement.clientWidth
   )).toBe(true);
@@ -33,6 +34,63 @@ test('Geography & The World route survives refresh and is linked from the subjec
   await expect(page).toHaveURL(/\/learning-centre$/);
 });
 
+test('Globe Trotter reveals clues and lets learners solve a country mystery from the list', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+
+  const panel = page.locator('#geography-globe-trail-panel');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('ol li')).toHaveCount(1);
+  await expect(panel.locator('[role="status"]')).toContainText('Select your guess');
+  const { answerCountryId, wrongCountryId, sourceName, sourceUrl } = await page.evaluate(() => {
+    const trailCase = window.app.geographyGlobeTrail.case;
+    const answerCountryId = trailCase.answerCountryId;
+    const wrongCountryId = window.GEOGRAPHY_COUNTRY_DATA.countries.find(country => country.id !== answerCountryId).id;
+    return { answerCountryId, wrongCountryId, sourceName: trailCase.sourceName, sourceUrl: trailCase.sourceUrl };
+  });
+
+  await page.locator(`.geography-country-option[data-country-id="${wrongCountryId}"]`).click();
+  await expect(panel.locator('[role="status"]')).toContainText('Not this stop');
+  await expect(page.getByRole('heading', { name: 'Canada', exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Reveal next clue' }).click();
+  await page.getByRole('button', { name: 'Reveal next clue' }).click();
+  await expect(panel.locator('ol li')).toHaveCount(3);
+  await page.locator(`.geography-country-option[data-country-id="${answerCountryId}"]`).click();
+
+  await expect(panel.locator('[role="status"]')).toContainText('Passport stamp earned');
+  const sourceLink = panel.getByRole('link', { name: sourceName, exact: true });
+  await expect(sourceLink).toHaveAttribute('href', sourceUrl);
+  await expect(sourceLink).toHaveAttribute('target', '_blank');
+  const answer = await page.evaluate(id => window.GEOGRAPHY_COUNTRY_DATA.countries.find(country => country.id === id).name, answerCountryId);
+  await expect(page.getByRole('heading', { name: answer, exact: true })).toBeVisible();
+  await expect(page.locator(`.geography-map__region[data-country-id="${answerCountryId}"]`)).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('Globe Trotter accepts the enlarged Mauritius island marker as a clue answer', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+  await page.evaluate(() => {
+    const trailCase = window.GeographyGlobeTrail.cases.find(item => item.answerCountryId === 'mauritius');
+    window.app.geographyGlobeTrail = { case: trailCase, clueIndex: 0, solved: false, message: '' };
+    window.app.renderGeographyGlobeTrail();
+  });
+
+  const hit = page.locator('.geography-map__region[data-country-id="mauritius"] .geography-map__hit-target');
+  await hit.scrollIntoViewIfNeeded();
+  const hitPoint = await hit.evaluate(element => {
+    const matrix = element.ownerSVGElement.getScreenCTM();
+    const point = new DOMPoint(Number(element.getAttribute('cx')), Number(element.getAttribute('cy'))).matrixTransform(matrix);
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(hitPoint.x, hitPoint.y);
+
+  await expect(page.locator('#geography-globe-trail-status')).toContainText('Passport stamp earned');
+  await expect(page.getByRole('heading', { name: 'Mauritius', exact: true })).toBeVisible();
+});
+
 test('country map and list selection share facts and support keyboard activation', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/geography');
@@ -41,18 +99,33 @@ test('country map and list selection share facts and support keyboard activation
   await franceMapRegion.focus();
   await franceMapRegion.press('Enter');
   await expect(page.getByRole('heading', { name: 'France', exact: true })).toBeVisible();
-  await expect(page.locator('.geography-country-details__flag')).toHaveText('🇫🇷');
-  expect(await page.locator('.geography-country-details__flag').evaluate(
-    element => getComputedStyle(element).fontFamily
-  )).toContain('Segoe UI Emoji');
+  const franceFlag = page.locator('.geography-country-details__flag');
+  await expect(franceFlag).toHaveAttribute('src', '/images/flags/fr.svg');
+  await expect(franceFlag).toHaveAttribute('alt', 'Flag of France');
+  await expect.poll(() => franceFlag.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.geography-country-details')).toContainText('Capital: Paris');
   await expect(franceMapRegion).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('button', { name: 'Australia', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Australia', exact: true })).toBeVisible();
+  const australiaFlag = page.locator('.geography-country-details__flag');
+  await expect(australiaFlag).toHaveAttribute('src', '/images/flags/au.svg');
+  await expect.poll(() => australiaFlag.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
   await expect(page.locator('.geography-country-details')).toContainText('Capital: Canberra');
-  await expect(page.locator('.geography-country-details')).toContainText('Great Barrier Reef');
+  await expect(page.locator('.geography-country-details__fact')).not.toBeEmpty();
+  await expect(page.locator('.geography-country-details__source a')).toHaveAttribute('href', /^https:\/\//);
+  const australiaFact = await page.locator('.geography-country-details__fact').textContent();
+  await page.getByRole('button', { name: 'France', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'France', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Australia', exact: true }).click();
+  await expect.poll(() => page.locator('.geography-country-details__fact').textContent())
+    .not.toBe(australiaFact);
   await expect(page.locator('.geography-map__region[data-country-id="australia"]')).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByRole('button', { name: 'United Kingdom', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'United Kingdom', exact: true })).toBeVisible();
+  await expect(page.locator('.geography-country-details__flag')).toHaveAttribute('src', '/images/flags/gb.svg');
+  await expect(page.locator('.geography-country-details')).toContainText('Capital: London');
 });
 
 test('world map shows full country context and keeps Pacific islands inside its border', async ({ page }) => {
@@ -60,7 +133,7 @@ test('world map shows full country context and keeps Pacific islands inside its 
   await page.goto('/learning-centre/geography');
 
   const contextCountries = page.locator('.geography-map__context-country');
-  await expect(contextCountries).toHaveCount(177);
+  await expect(contextCountries).toHaveCount(205);
   for (const name of [
     'Brazil',
     'Canada',
@@ -71,7 +144,9 @@ test('world map shows full country context and keeps Pacific islands inside its 
     'Papua New Guinea',
     'Solomon Islands',
     'Fiji',
-    'New Zealand'
+    'New Zealand',
+    'Mauritius', 'Seychelles', 'Comoros', 'Maldives', 'Kiribati', 'Tuvalu', 'Nauru',
+    'Tonga', 'Samoa', 'Marshall Islands', 'Micronesia', 'Palau'
   ]) {
     await expect(page.locator(`.geography-map__context-country[data-world-country="${name}"]`)).toHaveCount(1);
   }
@@ -139,7 +214,7 @@ test('zoomed map supports mouse panning without selecting a country', async ({ p
   const startY = bounds.y + bounds.height / 2;
   await page.mouse.move(startX, startY);
   await page.mouse.down();
-  expect(await page.evaluate(() => window.app.geographyMapPan)).toBeDefined();
+  expect(await page.evaluate(() => window.app.geographyMapGesture?.type)).toBe('pan');
   await page.mouse.move(startX + 48, startY - 24, { steps: 4 });
   const duringPan = (await map.getAttribute('viewBox')).split(' ').map(Number);
   await page.mouse.up();
@@ -183,6 +258,68 @@ test('zoomed map supports touch panning', async ({ page }) => {
   expect(viewBoxes.after).not.toBe(viewBoxes.before);
 });
 
+test('map supports two-finger pinch zoom and a full-screen mobile view', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+
+  const viewport = page.locator('#geography-map-viewport');
+  const map = page.locator('#geography-world-map');
+  const bounds = await map.boundingBox();
+  expect(bounds.height).toBeGreaterThan(250);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
+  const before = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  await map.evaluate(element => {
+    const pointer = (type, pointerId, x, y, isPrimary) => new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId, pointerType: 'touch', isPrimary,
+      button: 0, clientX: x, clientY: y
+    });
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    element.dispatchEvent(pointer('pointerdown', 1, centerX - 50, centerY, true));
+    element.dispatchEvent(pointer('pointerdown', 2, centerX + 50, centerY, false));
+    element.dispatchEvent(pointer('pointermove', 2, centerX + 90, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 2, centerX + 90, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 1, centerX - 50, centerY, true));
+  });
+  const after = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  expect(after[2]).toBeLessThan(before[2]);
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('×');
+
+  await map.evaluate(element => {
+    const pointer = (type, pointerId, x, y, isPrimary) => new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId, pointerType: 'touch', isPrimary,
+      button: 0, clientX: x, clientY: y
+    });
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    element.dispatchEvent(pointer('pointerdown', 3, centerX - 70, centerY, true));
+    element.dispatchEvent(pointer('pointerdown', 4, centerX + 70, centerY, false));
+    element.dispatchEvent(pointer('pointermove', 4, centerX + 35, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 4, centerX + 35, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 3, centerX - 70, centerY, true));
+  });
+  const afterPinchIn = (await map.getAttribute('viewBox')).split(' ').map(Number);
+  expect(afterPinchIn[2]).toBeGreaterThan(after[2]);
+
+  await viewport.evaluate(element => {
+    element.requestFullscreen = undefined;
+  });
+  const fullscreenButton = page.getByRole('button', { name: 'View map full screen' });
+  await fullscreenButton.click();
+  await expect(viewport).toHaveClass(/is-fullscreen-fallback/);
+  await expect(page.getByRole('button', { name: 'Exit full screen map' })).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(viewport).not.toHaveClass(/is-fullscreen-fallback/);
+  await fullscreenButton.click();
+  await expect(viewport).toHaveClass(/is-fullscreen-fallback/);
+  await page.getByRole('button', { name: 'Exit full screen map' }).click();
+  await expect(viewport).not.toHaveClass(/is-fullscreen-fallback/);
+});
+
 test('country facts can be spoken with a clear fallback when speech is unavailable', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/geography');
@@ -192,4 +329,86 @@ test('country facts can be spoken with a clear fallback when speech is unavailab
 
   await page.getByRole('button', { name: 'Listen to Canada facts', exact: true }).click();
   await expect(page.locator('#geography-speech-status')).toHaveText('Audio hints are not available in this browser.');
+});
+
+test('Mauritius marker hit target selects the island country and zoom reaches 16x on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+
+  const mauritius = page.locator('.geography-map__region[data-country-id="mauritius"]');
+  await expect(mauritius).toBeVisible();
+  const hit = mauritius.locator('.geography-map__hit-target');
+  await expect(hit).toBeVisible();
+  await hit.scrollIntoViewIfNeeded();
+  const hitPoint = await hit.evaluate(element => {
+    const matrix = element.ownerSVGElement.getScreenCTM();
+    const point = new DOMPoint(Number(element.getAttribute('cx')), Number(element.getAttribute('cy'))).matrixTransform(matrix);
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(hitPoint.x, hitPoint.y);
+  await expect(page.getByRole('heading', { name: 'Mauritius', exact: true })).toBeVisible();
+  await expect(page.locator('.geography-country-details')).toContainText('Capital: Port Louis');
+  await expect(page.locator('.geography-country-details__flag')).toHaveAttribute('src', '/images/flags/mu.svg');
+
+  for (let index = 0; index < 8; index += 1) await page.getByRole('button', { name: 'Zoom in' }).click();
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('16×');
+  await expect(page.getByRole('button', { name: 'Zoom in' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Reset map view' }).click();
+  await page.locator('#geography-world-map').evaluate(element => {
+    const pointer = (type, pointerId, clientX, clientY, isPrimary) => new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerId, pointerType: 'touch', isPrimary,
+      button: 0, clientX, clientY
+    });
+    const rect = element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    element.dispatchEvent(pointer('pointerdown', 5, centerX - 25, centerY, true));
+    element.dispatchEvent(pointer('pointerdown', 6, centerX + 25, centerY, false));
+    element.dispatchEvent(pointer('pointermove', 6, centerX + 800, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 6, centerX + 800, centerY, false));
+    element.dispatchEvent(pointer('pointerup', 5, centerX - 25, centerY, true));
+  });
+  await expect(page.locator('#geography-map-zoom-status')).toContainText('16.0×');
+});
+
+
+test('crowded small countries can be selected by map and country list on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  const picker = page.getByRole('combobox', { name: 'Find a country' });
+  await picker.selectOption('saint-lucia');
+  for (let index = 0; index < 8; index++) await page.getByRole('button', { name: 'Zoom in' }).click();
+  for (const [id, name, capital, code] of [
+    ['saint-vincent-and-the-grenadines', 'Saint Vincent and the Grenadines', 'Kingstown', 'vc'],
+    ['saint-lucia', 'Saint Lucia', 'Castries', 'lc'],
+    ['san-marino', 'San Marino', 'San Marino', 'sm'],
+    ['monaco', 'Monaco', 'Monaco', 'mc'],
+  ]) {
+    if (id === 'san-marino') await picker.selectOption('monaco');
+    const hit = page.locator('.geography-map__region[data-country-id="' + id + '"] .geography-map__hit-target');
+    await hit.scrollIntoViewIfNeeded();
+    const point = await hit.evaluate(element => {
+      const matrix = element.ownerSVGElement.getScreenCTM();
+      const point = new DOMPoint(Number(element.getAttribute('cx')), Number(element.getAttribute('cy'))).matrixTransform(matrix);
+      return { x: point.x, y: point.y };
+    });
+    if (test.info().project.name === 'mobile-chromium') await page.touchscreen.tap(point.x, point.y);
+    else await page.mouse.click(point.x, point.y);
+    await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    await expect(page.locator('.geography-country-details')).toContainText('Capital: ' + capital);
+    await expect(page.locator('.geography-country-details__flag')).toHaveAttribute('src', '/images/flags/' + code + '.svg');
+  }
+  const italy = page.locator('#geography-world-map');
+  const italyPoint = await italy.evaluate(element => {
+    const point = new DOMPoint(193.5, 48.5).matrixTransform(element.getScreenCTM());
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(italyPoint.x, italyPoint.y);
+  await expect(page.getByRole('heading', { name: 'Italy', exact: true })).toBeVisible();
+  await page.locator('.geography-country-option[data-country-id="singapore"]').click();
+  await expect(page.getByRole('heading', { name: 'Singapore', exact: true })).toBeVisible();
 });

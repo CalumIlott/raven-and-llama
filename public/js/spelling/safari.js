@@ -3775,6 +3775,85 @@ const SPELLING_SAFARI_ACTIVITIES = [
   }
 ];
 
+// Each family groups words with a shared ending sound. Ordered prompt/answer
+// pairs create many distinct rounds without shuffling the same options and
+// calling them new questions.
+const RHYME_WORD_FAMILIES = [
+  ['cat', 'bat', 'hat', 'mat', 'rat'],
+  ['can', 'fan', 'man', 'pan', 'van'],
+  ['cap', 'map', 'nap', 'tap'],
+  ['bag', 'rag', 'tag', 'wag'],
+  ['pet', 'net', 'wet', 'get'],
+  ['hen', 'pen', 'ten', 'men'],
+  ['big', 'dig', 'pig', 'wig'],
+  ['dip', 'lip', 'sip', 'tip'],
+  ['dot', 'hot', 'pot', 'not'],
+  ['hop', 'mop', 'top', 'pop'],
+  ['bug', 'hug', 'jug', 'mug'],
+  ['bun', 'fun', 'run', 'sun'],
+  ['back', 'pack', 'sack', 'tack'],
+  ['kick', 'lick', 'pick', 'sick'],
+  ['lock', 'rock', 'sock', 'clock'],
+  ['bell', 'fell', 'tell', 'well', 'shell'],
+  ['best', 'rest', 'test', 'west'],
+  ['bump', 'jump', 'lump', 'pump'],
+  ['bake', 'cake', 'lake', 'make', 'take'],
+  ['came', 'game', 'name', 'same'],
+  ['light', 'night', 'right', 'sight', 'tight'],
+  ['fine', 'line', 'mine', 'nine', 'pine'],
+  ['fair', 'hair', 'pair', 'chair', 'stair'],
+  ['bee', 'see', 'tree', 'free', 'knee'],
+  ['day', 'play', 'stay', 'tray'],
+  ['brown', 'clown', 'down', 'town'],
+  ['found', 'ground', 'round', 'sound'],
+  ['beat', 'heat', 'seat', 'meat'],
+  ['mail', 'tail', 'nail', 'sail'],
+  ['chain', 'drain', 'train', 'brain']
+];
+
+function createRhymeRangerQuestions() {
+  const allWords = RHYME_WORD_FAMILIES.flat();
+  const questions = [];
+
+  RHYME_WORD_FAMILIES.forEach(family => {
+    const distractors = RHYME_WORD_FAMILIES
+      .filter(candidateFamily => candidateFamily !== family)
+      .flat();
+    family.forEach(soundWord => {
+      family.forEach(answer => {
+        if (soundWord === answer) return;
+        const answerIndex = allWords.indexOf(answer);
+        const wrongAnswers = [0, 1, 2].map(offset =>
+          distractors[(answerIndex + offset) % distractors.length]
+        );
+        questions.push({
+          prompt: `Which word rhymes with ${soundWord}?`,
+          soundWord,
+          answer,
+          rhymeFamily: family,
+          hint: 'Say each word aloud and listen for its ending.',
+          feedback: {
+            explanation: `${soundWord} and ${answer} share the same ending sound.`,
+            incorrect: 'Say both words slowly and listen for the sound at the end.'
+          },
+          options: [answer, ...wrongAnswers]
+        });
+      });
+    });
+  });
+
+  return questions;
+}
+
+SPELLING_SAFARI_ACTIVITIES.push({
+  id: 'rhyme-ranger',
+  title: 'Rhyme Ranger',
+  emoji: '🦜',
+  description: 'Listen to a word, then spot another word with the same ending sound.',
+  type: 'rhyme',
+  questions: createRhymeRangerQuestions()
+});
+
 const JUNGLE_JUMBLE_DIFFICULTIES = {
   easy: answer => answer.length <= 5,
   medium: answer => answer.length >= 6 && answer.length <= 7,
@@ -3789,32 +3868,25 @@ function safeSpellingAudioHint(question) {
   return hint;
 }
 
+const SPELLING_GRAPHEME_PAIRS = ['igh', 'tch', 'dge', 'sh', 'ch', 'th', 'wh', 'ph', 'ck', 'ng', 'ee', 'ea', 'oo', 'ai', 'ay', 'oa', 'oe', 'ow', 'ou', 'oi', 'oy', 'au', 'aw', 'ew', 'ui', 'ue', 'ar', 'or', 'er', 'ir', 'ur', 'qu', 'kn', 'wr'];
+
+function getSpellingGraphemes(value) {
+  const letters = String(value || '').toLocaleLowerCase();
+  const graphemes = [];
+  for (let index = 0; index < letters.length;) {
+    const pair = SPELLING_GRAPHEME_PAIRS.find(grapheme => letters.startsWith(grapheme, index));
+    const grapheme = pair || Array.from(letters.slice(index))[0];
+    graphemes.push(grapheme);
+    index += grapheme.length;
+  }
+  return graphemes;
+}
+
 const SpellingPronunciation = (() => {
   let requestId = 0;
-  let pendingVoiceLoad = null;
 
   function readVoices(speech) {
     return typeof speech.getVoices === 'function' ? speech.getVoices() : [];
-  }
-
-  function waitForVoices(speech, voices) {
-    if (voices.length || typeof speech.addEventListener !== 'function') return Promise.resolve(voices);
-
-    return new Promise(resolve => {
-      let settled = false;
-      let timeout;
-      const finish = () => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timeout);
-        speech.removeEventListener?.('voiceschanged', finish);
-        if (pendingVoiceLoad === finish) pendingVoiceLoad = null;
-        resolve(readVoices(speech));
-      };
-      pendingVoiceLoad = finish;
-      speech.addEventListener('voiceschanged', finish);
-      timeout = setTimeout(finish, 1000);
-    });
   }
 
   function setStatus(statusElement, message) {
@@ -3823,7 +3895,6 @@ const SpellingPronunciation = (() => {
 
   function cancel() {
     requestId++;
-    pendingVoiceLoad?.();
     const speech = window.speechSynthesis;
     if (speech && typeof speech.cancel === 'function') speech.cancel();
   }
@@ -3842,47 +3913,68 @@ const SpellingPronunciation = (() => {
       return false;
     }
 
-    let voices;
+    let voices = [];
     try {
-      const availableVoices = readVoices(speech);
-      if (!availableVoices.length && typeof speech.addEventListener === 'function') {
-        setStatus(statusElement, 'Loading a pronunciation voice...');
-      }
-      voices = await waitForVoices(speech, availableVoices);
+      voices = readVoices(speech);
     } catch (error) {
       voices = [];
     }
     if (currentRequestId !== requestId) return false;
 
-    const utterance = new Utterance(String(word));
-    utterance.lang = 'en-AU';
-    utterance.rate = 0.82;
     const voice = voices.find(candidate => candidate.lang?.toLowerCase() === 'en-au')
       || voices.find(candidate => candidate.lang?.toLowerCase().startsWith('en-'))
       || voices.find(candidate => candidate.lang?.toLowerCase() === 'en')
       || null;
-    if (voice) utterance.voice = voice;
-    utterance.onend = () => {
-      if (currentRequestId === requestId) setStatus(statusElement, 'Pronunciation finished.');
-    };
-    utterance.onerror = event => {
-      if (currentRequestId === requestId) {
-        const detail = event?.error ? `: ${event.error}` : '';
+    const text = String(word);
+    const rate = 0.82 * (window.EducationalFeedback?.speechRateMultiplier?.() || 1);
+    let fallbackUsed = false;
+
+    const createUtterance = selectedVoice => {
+      const utterance = new Utterance(text);
+      utterance.lang = 'en-AU';
+      utterance.rate = rate;
+      if (selectedVoice) utterance.voice = selectedVoice;
+      utterance.onend = () => {
+        if (currentRequestId === requestId) setStatus(statusElement, 'Pronunciation finished.');
+      };
+      utterance.onerror = event => {
+        if (currentRequestId !== requestId) return;
+        const error = event?.error || '';
+        if (selectedVoice && !fallbackUsed && !['canceled', 'interrupted'].includes(error)) {
+          fallbackUsed = true;
+          setStatus(statusElement, 'The selected voice could not play. Trying your device default voice.');
+          queueUtterance(null, true);
+          return;
+        }
+        const detail = error ? `: ${error}` : '';
         setStatus(statusElement, `Pronunciation could not be played${detail}. You can still read the clue and continue.`);
+      };
+      return utterance;
+    };
+
+    const queueUtterance = (selectedVoice, isFallback = false) => {
+      const utterance = createUtterance(selectedVoice);
+      if (isFallback) fallbackUsed = true;
+      if (selectedVoice) setStatus(statusElement, 'Playing word pronunciation.');
+      else if (isFallback) setStatus(statusElement, 'Trying your device default voice.');
+      else if (voices.length) setStatus(statusElement, 'No English voice is available. Playing with your device default voice.');
+      else setStatus(statusElement, 'No voice is ready. Playing with your device default voice.');
+      try {
+        speech.speak(utterance);
+        return true;
+      } catch (error) {
+        if (selectedVoice && !fallbackUsed) {
+          fallbackUsed = true;
+          return queueUtterance(null, true);
+        }
+        setStatus(statusElement, 'Pronunciation could not be played. You can still read the clue and continue.');
+        return false;
       }
     };
 
-    try {
-      speech.speak(utterance);
-    } catch (error) {
-      setStatus(statusElement, 'Pronunciation could not be played. You can still read the clue and continue.');
-      return false;
-    }
-
-    if (voice) setStatus(statusElement, 'Playing word pronunciation.');
-    else if (voices.length) setStatus(statusElement, 'No English voice is available. Playing with your device default voice.');
-    else setStatus(statusElement, 'No voice is ready. Playing with your device default voice.');
-    return true;
+    // Queue immediately from the click/tap handler. Waiting for `voiceschanged`
+    // can outlive the browser's user-activation window on mobile Safari/Chrome.
+    return queueUtterance(voice);
   }
 
   return { speak, cancel };
@@ -4576,6 +4668,7 @@ Object.assign(App.prototype, {
       score: 0,
       selectedLetters: [],
       selectedAnswer: null,
+      phonicsCandidate: null,
       mistakes: []
     };
     this.spellingActivityEngine = new ActivityEngine();
@@ -4589,15 +4682,114 @@ Object.assign(App.prototype, {
     });
     this.currentView = 'spelling';
     main.innerHTML = '<div class="play-shell play-shell--spelling max-w-2xl mx-auto px-4 py-6"><div id="safari-arena"></div></div>';
+    this.bindPhonicsSoundboard(document.getElementById('safari-arena'));
     this.renderSpellingSafariQuestion();
+  },
+
+  bindPhonicsSoundboard(arena) {
+    if (!arena || typeof arena.addEventListener !== 'function' || arena.dataset.phonicsSoundboardBound) return;
+    arena.dataset.phonicsSoundboardBound = 'true';
+    arena.addEventListener('click', event => {
+      const target = event.target.closest?.('[data-action]');
+      if (!target) return;
+      const game = this.spellingSafariGame;
+      if (target.dataset.action === 'spelling-answer' && game?.activity.type === 'phonics') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.selectSpellingPhonicsCandidate(decodeURIComponent(target.dataset.answer));
+        return;
+      }
+      if (target.dataset.action === 'phonics-grapheme') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (Date.now() <= (game?.suppressPhonicsClickUntil || 0)) return;
+        this.speakSpellingPhonicsGrapheme(decodeURIComponent(target.dataset.grapheme));
+      } else if (target.dataset.action === 'phonics-blend') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.speakSpellingPhonicsBlend();
+      } else if (target.dataset.action === 'phonics-check') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (game?.phonicsCandidate) this.submitSpellingSafariAnswer(game.phonicsCandidate);
+      }
+    }, true);
+
+    let swipe = null;
+    arena.addEventListener('pointerdown', event => {
+      const tile = event.target.closest?.('.phonics-grapheme-tile');
+      if (!tile || event.button > 0) return;
+      swipe = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        moved: false,
+        lastTile: tile,
+        graphemes: [decodeURIComponent(tile.dataset.grapheme)]
+      };
+    }, true);
+    arena.addEventListener('pointermove', event => {
+      if (!swipe || swipe.pointerId !== event.pointerId) return;
+      const deltaX = event.clientX - swipe.startX;
+      const deltaY = event.clientY - swipe.startY;
+      if (Math.abs(deltaX) < 10 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+      swipe.moved = true;
+      event.preventDefault();
+      const underPointer = document.elementFromPoint?.(event.clientX, event.clientY)?.closest?.('.phonics-grapheme-tile');
+      if (!underPointer || underPointer === swipe.lastTile) return;
+      swipe.lastTile = underPointer;
+      const grapheme = decodeURIComponent(underPointer.dataset.grapheme);
+      if (swipe.graphemes.at(-1) !== grapheme) swipe.graphemes.push(grapheme);
+    }, true);
+    const finishSwipe = event => {
+      if (!swipe || (event.pointerId !== undefined && swipe.pointerId !== event.pointerId)) return;
+      const completed = swipe;
+      swipe = null;
+      if (!completed.moved || completed.graphemes.length < 2) return;
+      const game = this.spellingSafariGame;
+      if (game) game.suppressPhonicsClickUntil = Date.now() + 300;
+      this.speakSpellingPhonicsBlend(completed.graphemes.join(''));
+    };
+    arena.addEventListener('pointerup', finishSwipe, true);
+    arena.addEventListener('pointercancel', finishSwipe, true);
+  },
+
+  selectSpellingPhonicsCandidate(candidate) {
+    const game = this.spellingSafariGame;
+    const question = game?.questions[game.index];
+    if (!game || game.answered || question?.type !== 'phonics' || !question.options.includes(candidate)) return;
+    SpellingPronunciation.cancel();
+    game.phonicsCandidate = candidate;
+    this.renderSpellingSafariQuestion();
+    document.querySelector?.('#safari-arena .phonics-option[aria-pressed="true"]')?.focus();
+  },
+
+  speakSpellingPhonicsGrapheme(grapheme) {
+    const game = this.spellingSafariGame;
+    if (!game || game.answered) return;
+    void SpellingPronunciation.speak(grapheme, document.getElementById('spelling-pronunciation-status'));
+  },
+
+  speakSpellingPhonicsBlend(word = null) {
+    const game = this.spellingSafariGame;
+    const question = game?.questions[game.index];
+    if (!game || !question || game.answered) return;
+    const attemptedWord = word || (game.phonicsCandidate ? question.prompt.replace('_', game.phonicsCandidate) : '');
+    if (!attemptedWord) return;
+    void SpellingPronunciation.speak(attemptedWord, document.getElementById('spelling-pronunciation-status'));
   },
 
   speakSpellingSafariWord() {
     const game = this.spellingSafariGame;
     const question = game?.questions[game.index];
     if (!question) return;
-    void SpellingPronunciation.speak(
-      question.answer,
+    const word = question.type === 'rhyme'
+      ? question.soundWord
+      : question.type === 'phonics'
+      ? question.prompt.replace('_', question.answer)
+      : question.answer;
+    return SpellingPronunciation.speak(
+      word,
       document.getElementById('spelling-pronunciation-status')
     );
   },
@@ -4630,7 +4822,44 @@ Object.assign(App.prototype, {
     const selected = game.selectedLetters.map(index => question.scramble[index]).join('');
     const selectedCharacters = Array.from(selected);
     const selectedAnswerClass = game.lastAnswerCorrect ? 'is-correct' : 'is-incorrect';
-    const choices = question.type === 'scramble'
+    const phonicsParts = question.type === 'phonics' ? question.prompt.split('_') : [];
+    const phonicsTiles = question.type === 'phonics'
+      ? [
+        ...getSpellingGraphemes(phonicsParts[0]),
+        game.phonicsCandidate || null,
+        ...getSpellingGraphemes(phonicsParts.slice(1).join(''))
+      ]
+      : [];
+    const phonicsSoundboard = question.type === 'phonics'
+      ? `
+        <section class="phonics-soundboard" aria-labelledby="phonics-soundboard-title">
+          <h3 id="phonics-soundboard-title">Build and blend the sounds</h3>
+          <p>Choose the missing sound, then tap a tile to hear it. Swipe across the tiles or use the blend button to hear your word.</p>
+          <div class="phonics-blending-bar" data-phonics-blending-bar role="group" aria-label="Word sound tiles">
+            ${phonicsTiles.map(grapheme => grapheme === null
+              ? game.phonicsCandidate
+                ? `<button type="button" class="phonics-grapheme-tile" data-action="phonics-grapheme" data-grapheme="${encodeURIComponent(game.phonicsCandidate)}" aria-label="Hear the sound ${game.phonicsCandidate}" ${game.answered ? 'disabled' : ''}>${game.phonicsCandidate}</button>`
+                : '<span class="phonics-grapheme-tile phonics-grapheme-tile--blank" role="img" aria-label="Choose the missing sound">?</span>'
+              : `<button type="button" class="phonics-grapheme-tile" data-action="phonics-grapheme" data-grapheme="${encodeURIComponent(grapheme)}" aria-label="Hear the sound ${grapheme}" ${game.answered ? 'disabled' : ''}>${grapheme}</button>`
+            ).join('')}
+          </div>
+          <div class="phonics-soundboard__options" role="group" aria-label="Choose the missing sound">
+            ${question.options.map(option => `
+              <button type="button" data-action="spelling-answer" data-answer="${encodeURIComponent(String(option))}"
+                      aria-label="Select missing sound ${option}" aria-pressed="${game.phonicsCandidate === String(option)}" ${game.answered ? 'disabled' : ''}
+                      class="spelling-choice phonics-option ${game.phonicsCandidate === String(option) ? 'is-selected' : ''}">${option}</button>
+            `).join('')}
+          </div>
+          <div class="phonics-soundboard__actions">
+            <button type="button" data-action="phonics-blend" ${game.phonicsCandidate && !game.answered ? '' : 'disabled'}>Blend the word</button>
+            <button type="button" data-action="phonics-check" ${game.phonicsCandidate && !game.answered ? '' : 'disabled'}>Check word</button>
+          </div>
+        </section>
+      `
+      : '';
+    const choices = question.type === 'phonics'
+      ? phonicsSoundboard
+      : question.type === 'scramble'
       ? `
         <div class="spelling-answer min-h-12 flex items-center justify-center gap-1 my-5 text-2xl font-bold" aria-label="Your word">
           ${Array.from({ length: question.scramble.length }, (_, index) => `<span class="spelling-letter-slot w-8 border-b-2">${selectedCharacters[index] || '_'}</span>`).join('')}
@@ -4726,6 +4955,7 @@ Object.assign(App.prototype, {
     game.answered = false;
     game.lastAnswerCorrect = null;
     game.selectedAnswer = null;
+    game.phonicsCandidate = null;
     game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   },
@@ -4760,6 +4990,7 @@ Object.assign(App.prototype, {
     game.index = hasNextQuestion ? this.spellingActivityEngine.currentIndex : game.questions.length;
     game.answered = false;
     game.selectedAnswer = null;
+    game.phonicsCandidate = null;
     game.selectedLetters = [];
     this.renderSpellingSafariQuestion();
   }

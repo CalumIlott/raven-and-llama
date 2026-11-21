@@ -46,6 +46,20 @@ class MemoryAccountStore {
     user.passwordHash = passwordHash;
   }
 
+  async updateParentPin(userId, parentPinHash) {
+    const user = await this.findUserById(userId);
+    user.parentPinHash = parentPinHash;
+  }
+
+  async markParentVerified(tokenHash, validUntil) {
+    const session = this.sessions.find(item => item.tokenHash === tokenHash);
+    if (session) session.parentVerifiedUntil = validUntil;
+  }
+
+  async isParentVerified(tokenHash, now) {
+    return Boolean(this.sessions.find(item => item.tokenHash === tokenHash && item.parentVerifiedUntil > now));
+  }
+
   async deleteAccount(userId) {
     this.users = this.users.filter(user => user.id !== userId);
     this.progress.delete(userId);
@@ -67,7 +81,7 @@ class MemoryAccountStore {
   }
 }
 
-async function request(store, path, method = 'GET', body, cookie, origin = 'https://dojo.example') {
+async function request(store, path, method = 'GET', body, cookie, origin = 'https://dojo.example', options = {}) {
   const headers = { Origin: origin };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (cookie) headers.Cookie = cookie;
@@ -75,7 +89,7 @@ async function request(store, path, method = 'GET', body, cookie, origin = 'http
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body)
-  }), store);
+  }), store, options);
 }
 
 function sessionCookie(response) {
@@ -132,6 +146,8 @@ test('progress reset requires the authenticated session and preserves only accou
     schoolYear: 8,
     subjectYears: { maths: 4, science: 2 },
     soundEnabled: false,
+    speechRate: 1.2,
+    dyslexiaFriendly: true,
     ownedCosmetics: ['sunrise-frame'],
     equippedCosmetic: 'sunrise-frame',
     stars: 45,
@@ -148,6 +164,8 @@ test('progress reset requires the authenticated session and preserves only accou
   const missingConfirmation = await request(store, '/api/progress/reset', 'POST', { confirmation: 'reset progress' }, firstCookie);
   assert.equal(missingConfirmation.status, 400);
 
+  await request(store, '/api/auth/parent-verify', 'POST', { password: 'a secure password 123' }, firstCookie);
+
   const reset = await request(store, '/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' }, firstCookie);
   assert.equal(reset.status, 200);
   const resetProfile = (await reset.json()).profile;
@@ -162,6 +180,8 @@ test('progress reset requires the authenticated session and preserves only accou
   assert.equal(resetProfile.schoolYear, 8);
   assert.deepEqual(resetProfile.subjectYears, { maths: 4, science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
+  assert.equal(resetProfile.speechRate, 1.2);
+  assert.equal(resetProfile.dyslexiaFriendly, true);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   assert.equal(resetProfile.equippedCosmetic, 'sunrise-frame');
   const firstRead = await request(store, '/api/progress', 'GET', undefined, firstCookie);
@@ -169,6 +189,49 @@ test('progress reset requires the authenticated session and preserves only accou
   assert.equal((await firstRead.json()).profile.stars, 0);
   assert.equal((await secondRead.json()).profile.stars, 9);
   assert.equal((await request(store, '/api/auth/session', 'GET', undefined, firstCookie)).status, 200);
+});
+
+test('parent PIN is validated, salted, hidden from responses, and required for parent verification', async () => {
+  const store = new MemoryAccountStore();
+  const created = await request(store, '/api/auth/register', 'POST', { username: 'pin_owner', password: 'a secure password 123' });
+  const cookie = sessionCookie(created);
+  const userId = (await created.json()).user.id;
+  const invalid = await request(store, '/api/auth/parent-pin', 'POST', { password: 'a secure password 123', pin: '12ab' }, cookie);
+  assert.equal(invalid.status, 400);
+  const configured = await request(store, '/api/auth/parent-pin', 'POST', { password: 'a secure password 123', pin: '0456' }, cookie);
+  assert.equal(configured.status, 200);
+  const storedHash = store.users[0].parentPinHash;
+  assert.match(storedHash, /^pbkdf2-sha256\$100000\$/);
+  assert.notEqual(storedHash, '0456');
+  assert.equal((await configured.text()).includes(storedHash), false);
+  assert.equal(JSON.stringify(await (await request(store, '/api/auth/session', 'GET', undefined, cookie)).json()).includes(storedHash), false);
+  const badPin = await request(store, '/api/auth/parent-verify', 'POST', { pin: '9999' }, cookie);
+  assert.equal(badPin.status, 401);
+  assert.equal(await store.isParentVerified(store.sessions[0].tokenHash, Date.now()), false);
+  const goodPin = await request(store, '/api/auth/parent-verify', 'POST', { pin: '0456' }, cookie);
+  assert.equal(goodPin.status, 200);
+  assert.equal(await store.isParentVerified(store.sessions[0].tokenHash, Date.now()), true);
+  assert.equal(await store.isParentVerified(store.sessions[0].tokenHash, Date.now() + 6 * 60 * 1000), false);
+  assert.equal((await request(store, '/api/progress/reset', 'POST', { confirmation: 'RESET PROGRESS' }, cookie)).status, 200);
+  assert.equal(store.users.find(user => user.id === userId).parentPinHash, storedHash);
+  const disabled = await request(store, '/api/auth/parent-pin', 'POST', { password: 'a secure password 123', pin: null }, cookie);
+  assert.deepEqual(await disabled.json(), { parentPinEnabled: false });
+  assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { pin: '0456' }, cookie)).status, 401);
+  assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { password: 'a secure password 123' }, cookie)).status, 200);
+});
+
+test('parent verification rate limits at five attempts per minute', async () => {
+  const store = new MemoryAccountStore();
+  const created = await request(store, '/api/auth/register', 'POST', { username: 'pin_limit', password: 'a secure password 123' });
+  const cookie = sessionCookie(created);
+  let attempts = 0;
+  const rateLimit = async ({ action }) => action !== 'parent-verify' || ++attempts <= 5;
+  const limited = await request(store, '/api/auth/parent-verify', 'POST', { password: 'wrong password 123' }, cookie, 'https://dojo.example', { rateLimit });
+  assert.equal(limited.status, 401);
+  for (let index = 0; index < 4; index++) {
+    assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { password: 'wrong password 123' }, cookie, 'https://dojo.example', { rateLimit })).status, 401);
+  }
+  assert.equal((await request(store, '/api/auth/parent-verify', 'POST', { password: 'wrong password 123' }, cookie, 'https://dojo.example', { rateLimit })).status, 429);
 });
 
 test('rejects oversized streamed bodies without a content length', async () => {
@@ -591,7 +654,7 @@ test('leaderboards expose only the top ten usernames and scoped scores', async (
   assert.equal((await request(store, '/api/leaderboards')).status, 400);
 });
 
-test('theme and last-module preferences persist independently on each account', async () => {
+test('learning preferences persist independently on each account', async () => {
   const store = new MemoryAccountStore();
   const first = await request(store, '/api/auth/register', 'POST', { username: 'theme_one', password: 'a secure password 123' });
   const second = await request(store, '/api/auth/register', 'POST', { username: 'theme_two', password: 'another secure pass 123' });
@@ -605,7 +668,9 @@ test('theme and last-module preferences persist independently on each account', 
       theme: 'light',
       lastModule: 'timetables',
       schoolYear: 5,
-      subjectYears: { maths: 3, science: 2 }
+      subjectYears: { maths: 3, science: 2 },
+      speechRate: 1.2,
+      dyslexiaFriendly: true
     }
   }, firstCookie);
   const updatedProfile = (await update.json()).profile;
@@ -613,6 +678,8 @@ test('theme and last-module preferences persist independently on each account', 
   assert.equal(updatedProfile.lastModule, 'timetables');
   assert.equal(updatedProfile.schoolYear, 5);
   assert.deepEqual(updatedProfile.subjectYears, { maths: 3, science: 2 });
+  assert.equal(updatedProfile.speechRate, 1.2);
+  assert.equal(updatedProfile.dyslexiaFriendly, true);
 
   const firstSession = await request(store, '/api/auth/session', 'GET', undefined, firstCookie);
   const secondSession = await request(store, '/api/auth/session', 'GET', undefined, secondCookie);
@@ -622,6 +689,8 @@ test('theme and last-module preferences persist independently on each account', 
   assert.equal(firstRestoredProfile.lastModule, 'timetables');
   assert.equal(firstRestoredProfile.schoolYear, 5);
   assert.deepEqual(firstRestoredProfile.subjectYears, { maths: 3, science: 2 });
+  assert.equal(firstRestoredProfile.speechRate, 1.2);
+  assert.equal(firstRestoredProfile.dyslexiaFriendly, true);
   assert.equal(secondRestoredProfile.theme, 'light');
   assert.equal(secondRestoredProfile.lastModule, null);
   assert.equal(secondRestoredProfile.schoolYear, 3);
@@ -633,7 +702,9 @@ test('theme and last-module preferences persist independently on each account', 
       theme: 'system',
       lastModule: '/private/path',
       schoolYear: 99,
-      subjectYears: { maths: '2', unknown: 6 }
+      subjectYears: { maths: '2', unknown: 6 },
+      speechRate: 2,
+      dyslexiaFriendly: 'yes'
     }
   }, firstCookie);
   const invalidPreferenceProfile = (await invalidTheme.json()).profile;
@@ -641,6 +712,8 @@ test('theme and last-module preferences persist independently on each account', 
   assert.equal(invalidPreferenceProfile.lastModule, 'timetables');
   assert.equal(invalidPreferenceProfile.schoolYear, 5);
   assert.deepEqual(invalidPreferenceProfile.subjectYears, {});
+  assert.equal(invalidPreferenceProfile.speechRate, 1.2);
+  assert.equal(invalidPreferenceProfile.dyslexiaFriendly, true);
 });
 
 test('login uses a generic credential error and logout revokes the session', async () => {

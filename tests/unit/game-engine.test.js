@@ -21,6 +21,7 @@ function loadGameEngine(sessionValues = new Map(), account = null) {
             focus() { this.focusCount++; },
             style: {},
             innerHTML: '',
+            outerHTML: '',
             textContent: ''
           });
         }
@@ -77,6 +78,88 @@ test('Maths training uses the shared activity question lifecycle', () => {
   assert.equal(engine.activitySession.definition.skillId, 'white_subitising');
   assert.equal(engine.activitySession.definition.questions.length, 10);
   assert.equal(engine.activitySession.definition.settings.trackProgress, false);
+});
+
+test('Blue Belt balanced equations use the tactile scale in normal skill training', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+
+  const question = engine.questions[engine.currentIndex];
+  Object.assign(question, { balanceMode: null, leftA: question.answer, leftB: 0, rightA: 0 });
+  engine.renderCurrentQuestion();
+  const arena = elements.get('game-arena').innerHTML;
+  assert.equal(question.type, 'balance_scale');
+  assert.match(arena, /id="game-balance-panel"/);
+  assert.match(arena, /data-action="game-balance-add"/);
+  assert.match(arena, /data-action="game-balance-check"/);
+  assert.doesNotMatch(arena, /id="opt-btn-/);
+
+  let remaining = question.answer;
+  for (const value of [20, 10, 5, 2, 1]) {
+    while (remaining >= value) {
+      engine.addBalanceTrainingWeight(value);
+      remaining -= value;
+    }
+  }
+  assert.match(elements.get('game-balance-panel').outerHTML, /The scale is balanced\./);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
+});
+
+test('the mystery x block can be weighed without exposing its hidden mass', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+  Object.assign(engine.questions[0], {
+    balanceMode: 'mystery',
+    prompt: 'Find the mass of the hidden x block using known weights.',
+    answer: 17
+  });
+  engine.renderCurrentQuestion();
+
+  let panel = elements.get('game-arena').innerHTML;
+  assert.match(panel, /balance-scale__weight--mystery[^>]*>x</);
+  assert.match(panel, /Add a known weight to the left pan/);
+  assert.doesNotMatch(panel, />17</);
+
+  engine.addBalanceTrainingWeight(10);
+  panel = elements.get('game-balance-panel').outerHTML;
+  assert.match(panel, /Left pan: 10 known units/);
+  assert.match(panel, /Right pan: hidden block x/);
+  assert.doesNotMatch(panel, /17/);
+
+  engine.addBalanceTrainingWeight(5);
+  engine.addBalanceTrainingWeight(2);
+  assert.match(elements.get('game-balance-panel').outerHTML, /The scale is balanced\./);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
+});
+
+test('equal-operation questions remove the same weights from both pans before checking x', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+  Object.assign(engine.questions[0], {
+    balanceMode: 'equal-operation',
+    sharedWeight: 15,
+    answer: 8,
+    prompt: 'Remove equal weights from both sides of x + 15 = 8 + 15.'
+  });
+  engine.renderCurrentQuestion();
+
+  let panel = elements.get('game-arena').innerHTML;
+  assert.match(panel, /x plus 15 shared units/);
+  assert.match(panel, /aria-label="Remove 10 from both pans"/);
+  assert.match(panel, /data-action="game-balance-check" disabled/);
+
+  engine.addBalanceTrainingWeight(10);
+  engine.addBalanceTrainingWeight(5);
+  panel = elements.get('game-balance-panel').outerHTML;
+  assert.match(panel, /x plus 0 shared units/);
+  assert.match(panel, /Check x/);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
 });
 
 test('endless sessions keep generating validated questions without a fixed question count', () => {
