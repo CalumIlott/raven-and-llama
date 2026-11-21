@@ -58,22 +58,31 @@ Most online learning tools for primary students fall into the trap of "drill-and
 
 ## 4. Priority Roadmap & Sub-Sessions
 
+**Status reviewed 21 November 2026:** The implementation work listed below is complete. For current follow-ups and the gated Stage 6 proposals, see [`MULTI_STAGE_ROADMAP_AND_PROPOSALS.md`](MULTI_STAGE_ROADMAP_AND_PROPOSALS.md).
+
 ### Sub-Session 1: Content Expansion & Bug Repair (Issue #138)
-* [ ] Fix 90 broken `??` emoji icons in `public/js/history/events.js`.
-* [ ] Expand `public/js/geography/country-data.js` to 100+ countries with flags, capitals, and facts.
+* [x] Restore thematic Unicode icons for all 104 history events in `public/js/history/events.js`.
+* [x] Expand `public/js/geography/country-data.js` to 193 UN member countries with local flags, capitals, facts, and sources.
 * [x] Expand Plan a Party (`public/js/life-skills/party-planner.js`) with four budgeted scenarios and a 24-item catalog; rounds randomize the ten displayed items and two or three required targets.
-* [ ] Expand Food Chains (7 new habitats) and Virtual Lab (10 new reaction simulations).
-* [ ] Expand Brown Belt visual fractions generator in `generators.js` to 100+ distinct representations.
+* [x] Expand Food Chains to 10 sourced habitats and Virtual Lab to 17 sourced outcomes.
+* [x] Expand Brown Belt fraction practice to 100+ distinct problems with circle, bar, and grid models.
 
 ### Sub-Session 2: Parent Dashboard & Settings Controls (Issue #128 / LC-701)
-* [ ] Server-side parent PIN hashing, rate-limiting, and reauthentication endpoints.
-* [ ] Dedicated Parent Dashboard UI for school-year preferences, subject difficulties, and audio controls.
-* [ ] Safe progress-reset flow with confirmation modal and session isolation.
+* [x] Add server-side parent PIN hashing, rate-limiting, and reauthentication endpoints.
+* [x] Add the Parent Dashboard for school-year preferences, subject difficulties, and audio controls.
+* [x] Add a safe progress-reset flow with confirmation and session isolation.
 
 ### Sub-Session 3: Personalised Learning Recommendations (Issue #130 / LC-703)
-* [ ] Recommendation engine calculating weak skills (< 70% accuracy) and unpracticed topics.
-* [ ] Prominent recommendation cards on Home / Learning Centre with direct activity links and rationales.
+* [x] Add deterministic recommendations for weak skills and unpracticed topics.
+* [x] Add recommendation cards on Home and Learning Centre with direct activity links and explanations.
 
 ### Sub-Session 4: Interactive Manipulatives ("Beyond Quizzes")
-* [ ] Build Digital Balance Scale manipulative for algebraic equations.
-* [ ] Build interactive Cash Register for Shopkeeper Money activity.
+* [x] Add the Digital Balance Scale to Blue Belt equation training, including mystery-value weights.
+* [x] Add the interactive Cash Register to Shopkeeper Money.
+* [x] Add draggable clockwork hands and the Phonics Trail blending bar.
+
+### Sub-Session 5: Discovery Sandboxes & Deductive Mysteries
+* [x] Add the pond ecosystem sandbox and population timeline.
+* [x] Add the animated Thermal Chamber for states of matter.
+* [x] Add seven sourced Artifact Detective cases.
+* [x] Expand Globe Trotter Clue Trail to ten source-backed mysteries across five continents.
