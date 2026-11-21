@@ -32,9 +32,10 @@ test('Pattern Recognition supports keyboard retries and records a finite run', a
   await wrongAnswer.focus();
   await wrongAnswer.press('Enter');
   await expect(page.locator('.brain-power-status')).toContainText('try again');
-  await page.locator('[data-action="brain-pattern-retry"]').focus();
-  await page.locator('[data-action="brain-pattern-retry"]').press('Enter');
+  await expect(page.locator('[data-action="brain-pattern-retry"]')).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.locator('.brain-power-status')).toContainText('What is the step');
+  await expect(page.locator('[data-action="brain-pattern-answer"]').first()).toBeFocused();
 
   for (let index = 0; index < questionCount; index++) {
     const answer = await page.evaluate(() => window.app.brainPowerPatternEngine.currentQuestion.answer);
