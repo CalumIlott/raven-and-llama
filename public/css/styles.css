@@ -5251,3 +5251,13 @@ html.theme-light #app-main[data-page="science-virtual-lab"] .virtual-lab-scene f
 @media (prefers-reduced-motion: reduce) {
   .lab-investigation-liquid { animation: none; }
 }
+.maths-model-grid[data-columns="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="5"] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="6"] { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="7"] { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="8"] { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="9"] { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="10"] { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+.maths-model-grid[data-columns="11"] { grid-template-columns: repeat(11, minmax(0, 1fr)); }

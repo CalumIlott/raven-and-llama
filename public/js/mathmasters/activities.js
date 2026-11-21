@@ -753,7 +753,7 @@ Object.assign(ArcadeEngine.prototype, {
     ).join('');
     body.innerHTML = `
       <h3 class="text-center text-xl font-bold text-white">Build an array with ${activity.rows} rows and ${activity.columns} columns.</h3>
-      <div role="img" aria-label="${activity.rows} rows of ${activity.columns} counters" class="mx-auto my-5 grid max-w-sm gap-1" style="grid-template-columns: repeat(${activity.columns}, minmax(0, 1fr))">${cells}</div>
+      <div role="img" aria-label="${activity.rows} rows of ${activity.columns} counters" class="maths-model-grid mx-auto my-5 grid max-w-sm gap-1" data-columns="${activity.columns}">${cells}</div>
       <p class="mb-3 text-center text-slate-300">How many counters are there altogether?</p>
       <form data-submit-action="arcade-maths-answer" class="mx-auto flex max-w-sm gap-3">
         <label class="sr-only" for="ma-answer">Total counters</label>
@@ -780,7 +780,7 @@ Object.assign(ArcadeEngine.prototype, {
     body.innerHTML = `
       <h3 class="text-center text-xl font-bold text-white">Fold a shape into ${activity.denominator} equal parts, then colour ${activity.target}.</h3>
       <p class="my-2 text-center text-slate-300">Tap the sections you want to colour.</p>
-      <div class="mx-auto my-5 grid max-w-md gap-2" style="grid-template-columns: repeat(${Math.min(activity.denominator, 4)}, minmax(0, 1fr))">
+      <div class="maths-model-grid mx-auto my-5 grid max-w-md gap-2" data-columns="${Math.min(activity.denominator, 4)}">
         ${Array.from({ length: activity.denominator }, (_, index) => {
           const shaded = activity.selectedCells.has(index);
           return `<button data-action="arcade-maths-cell" data-index="${index}" aria-pressed="${shaded}" aria-label="Fraction part ${index + 1}${shaded ? ', coloured' : ', uncoloured'}" class="aspect-square rounded-xl border-2 ${shaded ? 'border-pink-300 bg-pink-500 text-white' : 'border-slate-500 bg-slate-950 text-slate-400'}">${shaded ? '■' : '□'}</button>`;
