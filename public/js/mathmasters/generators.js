@@ -660,6 +660,21 @@ class QuestionGenerator {
       options: QuestionGenerator.generateChoices(mass, 4, 4)
     };
   }
+
+  static genBlueEqualOperation(diff = 'standard') {
+    const answer = QuestionGenerator.randomInt(3, 20);
+    const sharedWeight = [5, 10, 15, 20][QuestionGenerator.randomInt(0, 3)];
+    return {
+      type: 'balance_scale',
+      balanceMode: 'equal-operation',
+      title: 'Keep the Scale Balanced',
+      prompt: `Remove equal weights from both sides of x + ${sharedWeight} = ${answer} + ${sharedWeight}.`,
+      sharedWeight,
+      answer,
+      timeLimitSeconds: diff === 'hard' ? 24 : 32,
+      options: QuestionGenerator.generateChoices(answer, 4, 4)
+    };
+  }
   // --- BROWN BELT ---
   static genBrownMultiplication(diff = 'standard') {
     const a = QuestionGenerator.randomInt(2, 12);
@@ -1522,9 +1537,12 @@ class QuestionGenerator {
       case 'blue_partitioning': return QuestionGenerator.genBluePartitionExpanded(diff);
       case 'blue_subtraction': return QuestionGenerator.genBlueSubtraction(diff);
       case 'blue_balanced_equation':
-        return Math.random() < 0.25
-          ? QuestionGenerator.genBlueMysteryWeight(diff)
-          : QuestionGenerator.genBlueBalancedEquation(diff);
+        {
+          const roll = Math.random();
+          if (roll < 0.25) return QuestionGenerator.genBlueMysteryWeight(diff);
+          if (roll < 0.4) return QuestionGenerator.genBlueEqualOperation(diff);
+          return QuestionGenerator.genBlueBalancedEquation(diff);
+        }
 
       case 'brown_order': return QuestionGenerator.genBrownOrder(diff);
       case 'brown_multiplication': return QuestionGenerator.genBrownMultiplication(diff);

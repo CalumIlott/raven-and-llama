@@ -85,6 +85,8 @@ test('Blue Belt balanced equations use the tactile scale in normal skill trainin
   engine.startTraining('blue', 'blue_balanced_equation');
 
   const question = engine.questions[engine.currentIndex];
+  Object.assign(question, { balanceMode: null, leftA: question.answer, leftB: 0, rightA: 0 });
+  engine.renderCurrentQuestion();
   const arena = elements.get('game-arena').innerHTML;
   assert.equal(question.type, 'balance_scale');
   assert.match(arena, /id="game-balance-panel"/);
@@ -129,6 +131,32 @@ test('the mystery x block can be weighed without exposing its hidden mass', () =
   engine.addBalanceTrainingWeight(5);
   engine.addBalanceTrainingWeight(2);
   assert.match(elements.get('game-balance-panel').outerHTML, /The scale is balanced\./);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
+});
+
+test('equal-operation questions remove the same weights from both pans before checking x', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+  Object.assign(engine.questions[0], {
+    balanceMode: 'equal-operation',
+    sharedWeight: 15,
+    answer: 8,
+    prompt: 'Remove equal weights from both sides of x + 15 = 8 + 15.'
+  });
+  engine.renderCurrentQuestion();
+
+  let panel = elements.get('game-arena').innerHTML;
+  assert.match(panel, /x plus 15 shared units/);
+  assert.match(panel, /aria-label="Remove 10 from both pans"/);
+  assert.match(panel, /data-action="game-balance-check" disabled/);
+
+  engine.addBalanceTrainingWeight(10);
+  engine.addBalanceTrainingWeight(5);
+  panel = elements.get('game-balance-panel').outerHTML;
+  assert.match(panel, /x plus 0 shared units/);
+  assert.match(panel, /Check x/);
   engine.checkBalanceTrainingAnswer();
   assert.equal(engine.activitySession.score, 1);
   assert.equal(engine.activitySession.questionOutcomes[0], true);

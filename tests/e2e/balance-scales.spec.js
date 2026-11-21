@@ -71,6 +71,11 @@ test('Blue Belt equation training uses the interactive balance scale', async ({ 
   await expect(page.getByRole('heading', { name: 'Blue Belt', exact: true })).toBeVisible();
   await page.locator('[data-action="skill-start"][data-skill-id="blue_balanced_equation"]').click();
   await expect(page.getByRole('heading', { name: /Balanced Equation Master/ })).toBeVisible();
+  await page.evaluate(() => {
+    const question = window.gameEngine.questions[0];
+    Object.assign(question, { balanceMode: null, leftA: question.answer, leftB: 0, rightA: 0 });
+    window.gameEngine.renderCurrentQuestion();
+  });
   await expect(page.locator('#game-balance-panel')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Check balance' })).toBeVisible();
   await expect(page.locator('#game-arena .play-answer-button')).toHaveCount(0);
@@ -117,4 +122,32 @@ test('Blue Belt training lets learners weigh a hidden x block with known weights
   await page.getByRole('button', { name: 'Check balance' }).click();
   await expect(page.locator('#feedback-banner')).toContainText('Correct!');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
+test('Blue Belt training lets learners remove equal weights from both pans', async ({ page }) => {
+  await setupApp(page);
+  await openMathsDojo(page);
+  await page.locator('a[data-action="belt-detail"][data-belt-id="blue"]').click();
+  await expect(page.getByRole('heading', { name: 'Blue Belt', exact: true })).toBeVisible();
+  await page.locator('[data-action="skill-start"][data-skill-id="blue_balanced_equation"]').click();
+  await expect(page.locator('#game-balance-panel')).toBeVisible();
+  await page.evaluate(() => {
+    Object.assign(window.gameEngine.questions[0], {
+      balanceMode: 'equal-operation',
+      sharedWeight: 15,
+      answer: 8,
+      prompt: 'Remove equal weights from both sides of x + 15 = 8 + 15.'
+    });
+    window.gameEngine.renderCurrentQuestion();
+  });
+
+  await expect(page.locator('.balance-scale-status')).toContainText('15 shared units remain');
+  await expect(page.getByRole('button', { name: 'Check x' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Remove 10 from both pans' }).click();
+  await expect(page.locator('.balance-scale-status')).toContainText('5 shared units remain');
+  await page.getByRole('button', { name: 'Remove 5 from both pans' }).click();
+  await expect(page.locator('.balance-scale-status')).toContainText('leaving x equal to the known weight');
+  await expect(page.locator('.balance-scale__weight--mystery')).toHaveText('x');
+  await page.getByRole('button', { name: 'Check x' }).click();
+  await expect(page.locator('#feedback-banner')).toContainText('Correct!');
 });

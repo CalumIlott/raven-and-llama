@@ -446,34 +446,48 @@ class GameEngine {
   renderBalanceTrainingPanel(question) {
     const weights = this.balanceWeights || [];
     const isMystery = question.balanceMode === 'mystery';
+    const isEqualOperation = question.balanceMode === 'equal-operation';
     const placedTotal = weights.reduce((sum, value) => sum + value, 0);
-    const leftTotal = isMystery ? placedTotal : question.leftA + question.leftB;
-    const rightTotal = isMystery ? question.answer : question.rightA + placedTotal;
+    const remainingShared = isEqualOperation ? question.sharedWeight - placedTotal : 0;
+    const leftTotal = isMystery ? placedTotal : isEqualOperation ? question.answer + remainingShared : question.leftA + question.leftB;
+    const rightTotal = isMystery ? question.answer : isEqualOperation ? question.answer + remainingShared : question.rightA + placedTotal;
     const difference = leftTotal - rightTotal;
     const tilt = difference === 0 ? 'balanced' : difference > 0 ? 'left-heavy' : 'right-heavy';
     const tiltMagnitude = Math.abs(difference) >= 10 ? 3 : Math.abs(difference) >= 5 ? 2 : 1;
     const beamClass = `balance-scale__beam--${tilt}${difference === 0 ? '' : ` balance-scale__beam--${tilt}-${tiltMagnitude}`}`;
-    const balanceDescription = difference === 0
+    const balanceDescription = isEqualOperation
+      ? remainingShared === 0
+        ? 'The equal weights are removed. The scale still balances, leaving x equal to the known weight.'
+        : `The scale balances. Remove the same amount from both pans; ${remainingShared} shared units remain.`
+      : difference === 0
       ? 'The scale is balanced.'
       : isMystery
         ? `${difference > 0 ? 'Left' : 'Right'} side is heavier.`
         : `${difference > 0 ? 'Left' : 'Right'} side is heavier by ${Math.abs(difference)}.`;
     const fixedWeight = value => `<span class="balance-scale__weight balance-scale__weight--fixed">${value}</span>`;
-    const leftWeights = isMystery
+    const leftWeights = isEqualOperation
+      ? `<span class="balance-scale__weight balance-scale__weight--mystery" aria-label="Unknown weight x">x</span>${remainingShared ? fixedWeight(remainingShared) : ''}`
+      : isMystery
       ? weights.map(fixedWeight).join('') || '<span class="balance-scale-empty">No known weights yet</span>'
       : `${fixedWeight(question.leftA)}${fixedWeight(question.leftB)}`;
-    const rightWeights = isMystery
+    const rightWeights = isEqualOperation
+      ? `${fixedWeight(question.answer)}${remainingShared ? fixedWeight(remainingShared) : ''}`
+      : isMystery
       ? '<span class="balance-scale__weight balance-scale__weight--mystery" aria-label="Hidden mystery weight x">x</span>'
       : `${fixedWeight(question.rightA)}${weights.map(value => `<span class="balance-scale__weight">${value}</span>`).join('')}`;
-    const scaleDescription = isMystery
+    const scaleDescription = isEqualOperation
+      ? `Balance scale showing x plus ${remainingShared} shared units on the left and ${question.answer} plus ${remainingShared} shared units on the right. ${balanceDescription}`
+      : isMystery
       ? `Balance scale. Left pan has ${leftTotal} known units. Right pan holds a hidden mystery block x. ${balanceDescription}`
       : `Balance scale. Left pan has ${leftTotal} units. Right pan has ${rightTotal} units. ${balanceDescription}`;
-    const statusDescription = isMystery
+    const statusDescription = isEqualOperation
+      ? `Both pans balance. ${balanceDescription}`
+      : isMystery
       ? `Left pan: ${leftTotal} known units · Right pan: hidden block x. ${balanceDescription}`
       : `Left pan: ${leftTotal} units · Right pan: ${rightTotal} units. ${balanceDescription}`;
     return `
       <div id="game-balance-panel">
-        <p class="balance-scale-prompt">${isMystery ? 'Add known weights to the left pan until it balances the hidden x block.' : 'Add weights to the right pan to find the missing value.'}</p>
+        <p class="balance-scale-prompt">${isEqualOperation ? 'Remove the same weight from both pans. Keep going until only x and its matching known weight remain.' : isMystery ? 'Add known weights to the left pan until it balances the hidden x block.' : 'Add weights to the right pan to find the missing value.'}</p>
         <div class="balance-scale" role="img" aria-label="${scaleDescription}">
           <div class="balance-scale__beam ${beamClass}">
             <div class="balance-scale__pan balance-scale__pan--left"><span class="balance-scale__wire" aria-hidden="true"></span><div class="balance-scale__pan-surface">${leftWeights}</div></div>
@@ -482,15 +496,15 @@ class GameEngine {
           <div class="balance-scale__fulcrum" aria-hidden="true"></div>
         </div>
         <p class="balance-scale-status" aria-live="polite">${statusDescription}</p>
-        <div class="balance-scale-rack" role="group" aria-label="${isMystery ? 'Add a known weight to the left pan' : 'Add a weight to the right pan'}">
-          ${[1, 2, 5, 10, 20].map(value => `<button type="button" data-action="game-balance-add" data-value="${value}" aria-label="Add ${value} unit${value === 1 ? '' : 's'}" ${weights.length >= 20 ? 'disabled' : ''} class="balance-scale-weight-button"><span aria-hidden="true">＋</span>${value}</button>`).join('')}
+        <div class="balance-scale-rack" role="group" aria-label="${isEqualOperation ? 'Remove equal weights from both pans' : isMystery ? 'Add a known weight to the left pan' : 'Add a weight to the right pan'}">
+          ${[1, 2, 5, 10, 20].map(value => `<button type="button" data-action="game-balance-add" data-value="${value}" aria-label="${isEqualOperation ? `Remove ${value} from both pans` : `Add ${value} unit${value === 1 ? '' : 's'}`}" ${isEqualOperation ? (remainingShared < value ? 'disabled' : '') : (weights.length >= 20 ? 'disabled' : '')} class="balance-scale-weight-button"><span aria-hidden="true">${isEqualOperation ? '−' : '＋'}</span>${value}</button>`).join('')}
         </div>
-        <div class="balance-scale-selected" role="group" aria-label="${isMystery ? 'Known weights on the left pan' : 'Weights on the right pan'}">
-          ${weights.map((value, index) => `<button type="button" data-action="game-balance-remove" data-index="${index}" aria-label="Remove ${value} unit weight" class="balance-scale__weight balance-scale__weight--removable">${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights added yet</span>'}
+        <div class="balance-scale-selected" role="group" aria-label="${isEqualOperation ? 'Equal weights removed from both pans' : isMystery ? 'Known weights on the left pan' : 'Weights on the right pan'}">
+          ${weights.map((value, index) => `<button type="button" data-action="game-balance-remove" data-index="${index}" aria-label="Undo removing ${value} from both pans" class="balance-scale__weight balance-scale__weight--removable">${isEqualOperation ? '−' : ''}${value}<span aria-hidden="true">×</span></button>`).join('') || `<span class="balance-scale-empty">${isEqualOperation ? 'No equal weights removed yet' : 'No weights added yet'}</span>`}
         </div>
         <div class="balance-scale-actions">
-          <button type="button" data-action="game-balance-check" class="btn-ninja rounded-xl px-5 py-3 font-bold">Check balance</button>
-          <button type="button" data-action="game-balance-clear" ${weights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear all</button>
+          <button type="button" data-action="game-balance-check" ${isEqualOperation && remainingShared ? 'disabled' : ''} class="btn-ninja rounded-xl px-5 py-3 font-bold disabled:opacity-50">${isEqualOperation ? 'Check x' : 'Check balance'}</button>
+          <button type="button" data-action="game-balance-clear" ${weights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">${isEqualOperation ? 'Undo all' : 'Clear all'}</button>
         </div>
       </div>`;
   }
@@ -503,8 +517,12 @@ class GameEngine {
   }
 
   addBalanceTrainingWeight(value) {
-    if (this.isAnswering || this.questions[this.currentIndex]?.type !== 'balance_scale' ||
-      ![1, 2, 5, 10, 20].includes(Number(value)) || this.balanceWeights.length >= 20) return;
+    const question = this.questions[this.currentIndex];
+    if (this.isAnswering || question?.type !== 'balance_scale' || ![1, 2, 5, 10, 20].includes(Number(value))) return;
+    if (question.balanceMode === 'equal-operation') {
+      const removed = this.balanceWeights.reduce((sum, weight) => sum + weight, 0);
+      if (removed + Number(value) > question.sharedWeight) return;
+    } else if (this.balanceWeights.length >= 20) return;
     this.balanceWeights.push(Number(value));
     this.refreshBalanceTrainingPanel();
     document.querySelector?.(`[data-action="game-balance-add"][data-value="${value}"]:not(:disabled)`)?.focus?.({ preventScroll: true });
@@ -528,6 +546,13 @@ class GameEngine {
 
   checkBalanceTrainingAnswer() {
     if (this.isAnswering || this.questions[this.currentIndex]?.type !== 'balance_scale') return;
+    const question = this.questions[this.currentIndex];
+    if (question.balanceMode === 'equal-operation') {
+      const removed = this.balanceWeights.reduce((sum, value) => sum + value, 0);
+      if (removed !== question.sharedWeight) return;
+      this.submitAnswer(question.answer);
+      return;
+    }
     this.submitAnswer(this.balanceWeights.reduce((sum, value) => sum + value, 0));
   }
 
