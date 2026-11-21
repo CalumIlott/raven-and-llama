@@ -11,18 +11,24 @@ test('Pond Ecosystem Sandbox supports keyboard population changes and a five-day
   await expect(page).toHaveURL('/learning-centre/science/ecosystem');
   await expect(page.getByRole('heading', { name: 'Pond Ecosystem Sandbox', exact: true })).toBeVisible();
   await expect(page.locator('.ecosystem-rules')).toContainText('simplified learning model');
+  await expect(page.getByRole('heading', { name: 'Population over time' })).toBeVisible();
+  const algaeTimeline = page.locator('.ecosystem-timeline__point--algae');
+  await expect(algaeTimeline).toHaveCount(1);
+  await expect(algaeTimeline.first()).toHaveAttribute('data-population', '12');
 
   const algaeCard = page.locator('.ecosystem-species--algae');
   const removeAlgae = algaeCard.getByRole('button', { name: 'Remove one algae group' });
   await removeAlgae.focus();
   await page.keyboard.press('Enter');
   await expect(algaeCard.locator('output')).toHaveText('11');
+  await expect(algaeTimeline.first()).toHaveAttribute('data-population', '11');
   await expect(algaeCard.getByRole('button', { name: 'Remove one algae group' })).toBeFocused();
 
   for (let day = 0; day < 5; day += 1) {
     await page.getByRole('button', { name: 'Advance one day' }).click();
   }
   await expect(page.locator('#ecosystem-day-count')).toHaveText('5');
+  await expect(algaeTimeline).toHaveCount(6);
   await expect(page.locator('#ecosystem-status')).toContainText('Goal reached!');
   await expect(page.locator('.ecosystem-goal-success')).toContainText('challenge complete');
   await expect(page.getByRole('button', { name: 'Advance one day' })).toBeDisabled();

@@ -155,7 +155,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
 * **Status: First pond-model version implemented** in `public/js/science/ecosystem-sandbox.js`.
 * Learners adjust four population groups (algae, tadpoles, fish, kingfishers) with keyboard/touch controls and advance one simplified day at a time. Population caps and each growth/feeding rule are visible to the learner.
 * The first challenge asks learners to keep all four groups present for five days. The model is explicitly described as a simplified exploration, not a prediction of real pond dynamics, and does not award quiz progress.
-* **Future work**: add a timeline graph, more organisms, and longer open-ended challenges after evaluating the first model with learners.
+* **Timeline graph — implemented**: A responsive chart tracks each group across days 0–5. Pre-advance adjustments update the current day's point; each simulation step adds a new point. More organisms and longer open-ended challenges remain future work after evaluating the first model with learners.
 
 ### 5.2 States of Matter Thermal Chamber (Science Lab)
 * **Status — implemented**: The temperature control shows distinct solid, liquid, and gas particle states, phase boundaries, and a condensation-lid interaction. A follow-up fix makes particle arrangements visibly change with temperature; CSS motion respects reduced-motion settings.
