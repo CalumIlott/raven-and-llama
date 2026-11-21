@@ -127,6 +127,23 @@ test('Blue Belt balanced equation training can generate an x mystery weight', ()
   }
 });
 
+test('Blue Belt balanced equations can generate equal-operation scale questions', () => {
+  const { context, generator } = loadGenerator();
+  const originalRandom = context.Math.random;
+
+  try {
+    context.Math.random = () => 0.3;
+    const question = generator.getQuestionForSkill('blue_balanced_equation', 'standard');
+    assert.equal(question.type, 'balance_scale');
+    assert.equal(question.balanceMode, 'equal-operation');
+    assert.equal(question.answer, 8);
+    assert.equal(question.sharedWeight, 10);
+    assert.match(question.prompt, /x \+ 10 = 8 \+ 10/);
+  } finally {
+    context.Math.random = originalRandom;
+  }
+});
+
 test('belt tests return the requested question count with answerable questions', () => {
   const { belts, generator } = loadGenerator();
 

@@ -134,6 +134,32 @@ test('the mystery x block can be weighed without exposing its hidden mass', () =
   assert.equal(engine.activitySession.questionOutcomes[0], true);
 });
 
+test('equal-operation questions remove the same weights from both pans before checking x', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+  Object.assign(engine.questions[0], {
+    balanceMode: 'equal-operation',
+    sharedWeight: 15,
+    answer: 8,
+    prompt: 'Remove equal weights from both sides of x + 15 = 8 + 15.'
+  });
+  engine.renderCurrentQuestion();
+
+  let panel = elements.get('game-balance-panel').outerHTML;
+  assert.match(panel, /x plus 15 shared units/);
+  assert.match(panel, /aria-label="Remove 10 from both pans"/);
+  assert.match(panel, /data-action="game-balance-check" disabled/);
+
+  engine.addBalanceTrainingWeight(10);
+  engine.addBalanceTrainingWeight(5);
+  panel = elements.get('game-balance-panel').outerHTML;
+  assert.match(panel, /x plus 0 shared units/);
+  assert.match(panel, /Check x/);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
+});
+
 test('endless sessions keep generating validated questions without a fixed question count', () => {
   const { engine, elements, delayedCallbacks } = loadGameEngine();
   const makeQuestion = () => ({
