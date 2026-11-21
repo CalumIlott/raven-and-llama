@@ -28,6 +28,17 @@ function sample(overrides = {}) {
   };
 }
 
+test('legacy laboratory demonstrations count as participation without changing accuracy', () => {
+  const analytics = loadAnalytics();
+  const history = analytics.normalizeActivityHistory([sample({ activityId: 'science-virtual-lab' })]);
+  assert.equal(history[0].kind, 'game');
+  assert.equal(history[0].total, null);
+  assert.equal(history[0].totalAnswers, null);
+  const report = analytics.aggregateActivityHistory(history, 30, new Date('2026-03-10T12:00:00Z'));
+  assert.equal(report.subjects[0].attempts, 1);
+  assert.equal(report.subjects[0].accuracy, null);
+});
+
 test('normalizes bounded activity history and removes invalid or identifying fields', () => {
   const analytics = loadAnalytics();
   const history = Array.from({ length: 367 }, (_, index) =>

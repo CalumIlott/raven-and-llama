@@ -661,7 +661,12 @@ class ProfileManager {
           ? Math.min(stat.correctAnswers, totalAnswers)
           : 0,
         totalAnswers,
-        timesPlayed: stat.timesPlayed
+        timesPlayed: stat.timesPlayed,
+        // Legacy lab demonstrations were recorded as synthetic quiz answers.
+        ...(id === 'science-virtual-lab' ? {
+          kind: 'game', scoreUnit: 'points', bestTotal: null,
+          correct: 0, total: 0, correctAnswers: 0, totalAnswers: 0
+        } : {})
       }];
     }));
   }

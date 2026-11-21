@@ -102,5 +102,7 @@ test('every authored simulation runs deterministically and records progress once
   assert.equal(context.profile.stars, 0);
   assert.equal(context.activityScores[0][0].settings.awardStars, true);
   assert.equal(context.activityScores[0][1], 4);
-  assert.equal(context.activityScores[0][2], 4);
+  assert.equal(context.activityScores[0][2], null);
+  assert.equal(context.activityScores[0][0].kind, 'game');
+  assert.equal(context.activityScores[0][3], null);
 });
