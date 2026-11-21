@@ -4,7 +4,7 @@ const { setupApp } = require('./support');
 test('country search filters the list and keeps the map selection available', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre/geography');
-  const search = page.getByRole('searchbox', { name: 'Find a country' });
+  const search = page.getByRole('searchbox', { name: 'Search country list' });
   const options = page.locator('.geography-country-option:visible');
   await search.fill('Port Louis');
   await expect(search).toBeFocused();

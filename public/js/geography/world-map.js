@@ -317,7 +317,7 @@ Object.assign(App.prototype, {
                   <h2 id="geography-country-list-title">Choose from the country list</h2>
                 </div>
               </div>
-              <label class="geography-country-picker" for="geography-country-search">Find a country
+              <label class="geography-country-picker" for="geography-country-search">Search country list
                 <input id="geography-country-search" type="search" placeholder="Country, capital or continent" aria-describedby="geography-country-search-status" autocomplete="off">
               </label>
               <p id="geography-country-search-status" role="status" aria-live="polite">${GEOGRAPHY_COUNTRIES.length} countries shown</p>
