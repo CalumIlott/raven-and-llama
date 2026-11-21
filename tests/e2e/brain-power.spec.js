@@ -42,8 +42,10 @@ test('Pattern Recognition supports keyboard retries and records a finite run', a
     const choice = page.locator(`[data-action="brain-pattern-answer"][data-answer-value="${answer}"]`);
     await choice.focus();
     await choice.press('Enter');
+    if (index < questionCount - 1) await expect(page.locator('[data-action="brain-pattern-answer"]').first()).toBeFocused();
   }
   await expect(page.getByRole('heading', { name: 'Patterns Complete!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play Again', exact: true })).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.app.brainPowerPatternEngine.status)).toBe('complete');
   await page.getByRole('button', { name: 'Back to Brain Power', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Brain Power', exact: true })).toBeVisible();
@@ -112,12 +114,14 @@ test('Code Breaker applies clue feedback, accepts a correct code, and returns to
 
   await page.locator('[data-action="brain-code-submit"]').click();
   await expect(page.locator('.brain-power-status')).toContainText('in the right place');
+  await expect(page.locator('[data-action="brain-code-color"]').first()).toBeFocused();
   for (const [index, color] of guesses.solution.entries()) {
     await page.locator(`[data-action="brain-code-color"][data-position-index="${index}"]`).selectOption(color);
   }
   await page.locator('[data-action="brain-code-submit"]').click();
 
   await expect(page.getByRole('heading', { name: 'Code cracked!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Try a new code', exact: true })).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.app.brainPowerCodeEngine.progressRecorded)).toBe(true);
   await page.getByRole('button', { name: 'Back to Brain Power', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Brain Power', exact: true })).toBeVisible();
