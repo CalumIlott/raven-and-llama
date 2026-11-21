@@ -43,10 +43,11 @@ test('Globe Trotter reveals clues and lets learners solve a country mystery from
   await expect(panel).toBeVisible();
   await expect(panel.locator('ol li')).toHaveCount(1);
   await expect(panel.locator('[role="status"]')).toContainText('Select your guess');
-  const { answerCountryId, wrongCountryId } = await page.evaluate(() => {
-    const answerCountryId = window.app.geographyGlobeTrail.case.answerCountryId;
+  const { answerCountryId, wrongCountryId, sourceName, sourceUrl } = await page.evaluate(() => {
+    const trailCase = window.app.geographyGlobeTrail.case;
+    const answerCountryId = trailCase.answerCountryId;
     const wrongCountryId = window.GEOGRAPHY_COUNTRY_DATA.countries.find(country => country.id !== answerCountryId).id;
-    return { answerCountryId, wrongCountryId };
+    return { answerCountryId, wrongCountryId, sourceName: trailCase.sourceName, sourceUrl: trailCase.sourceUrl };
   });
 
   await page.locator(`.geography-country-option[data-country-id="${wrongCountryId}"]`).click();
@@ -59,6 +60,9 @@ test('Globe Trotter reveals clues and lets learners solve a country mystery from
   await page.locator(`.geography-country-option[data-country-id="${answerCountryId}"]`).click();
 
   await expect(panel.locator('[role="status"]')).toContainText('Passport stamp earned');
+  const sourceLink = panel.getByRole('link', { name: sourceName, exact: true });
+  await expect(sourceLink).toHaveAttribute('href', sourceUrl);
+  await expect(sourceLink).toHaveAttribute('target', '_blank');
   const answer = await page.evaluate(id => window.GEOGRAPHY_COUNTRY_DATA.countries.find(country => country.id === id).name, answerCountryId);
   await expect(page.getByRole('heading', { name: answer, exact: true })).toBeVisible();
   await expect(page.locator(`.geography-map__region[data-country-id="${answerCountryId}"]`)).toHaveAttribute('aria-pressed', 'true');
