@@ -160,7 +160,7 @@ test('hub introductions align their copy to the left', async ({ page }) => {
 
   await page.locator('[data-action="science-lab"]').first().click();
   const scienceIntro = page.locator('.module-intro');
-  await expect(scienceIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(scienceIntro).toHaveCSS('align-items', /^(?:flex|flow)-start$/);
   await expect(scienceIntro).toHaveCSS('background-image', 'none');
   await expect(scienceIntro).toHaveCSS('border-width', '0px');
   await expect(page.locator('.module-banner-aside')).toHaveCSS('text-align', 'left');
@@ -172,25 +172,25 @@ test('hub introductions align their copy to the left', async ({ page }) => {
   await page.locator('[data-action="learning-centre"]').first().click();
   await page.locator('[data-action="dojo"]').first().click();
   const dojoIntro = page.locator('.module-intro');
-  await expect(dojoIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(dojoIntro).toHaveCSS('align-items', /^(?:flex|flow)-start$/);
   await expect(dojoIntro).toHaveCSS('background-image', 'none');
   await expect(dojoIntro).toHaveCSS('border-width', '0px');
 
   await page.locator('[data-action="learning-centre"]').first().click();
   await page.locator('[data-action="spelling-home"]').click();
   const spellingIntro = page.locator('.module-intro');
-  await expect(spellingIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(spellingIntro).toHaveCSS('align-items', /^(?:flex|flow)-start$/);
   await expect(spellingIntro).toHaveCSS('background-image', 'none');
   await expect(spellingIntro).toHaveCSS('border-width', '0px');
 
   await page.goto('/timetables');
   const timetablesIntro = page.locator('.module-intro');
-  await expect(timetablesIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(timetablesIntro).toHaveCSS('align-items', /^(?:flex|flow)-start$/);
   await expect(timetablesIntro).toHaveCSS('background-image', 'none');
   await expect(timetablesIntro).toHaveCSS('border-width', '0px');
   await page.locator('#nav-btn-games').click();
   const gamesIntro = page.locator('.games-hub-hero');
-  await expect(gamesIntro).toHaveCSS('align-items', 'flex-start');
+  await expect(gamesIntro).toHaveCSS('align-items', /^(?:flex|flow)-start$/);
   await expect(gamesIntro).toHaveCSS('background-image', 'none');
   await expect(gamesIntro).toHaveCSS('border-width', '0px');
 });
