@@ -87,3 +87,34 @@ test('Blue Belt equation training uses the interactive balance scale', async ({ 
   await expect(page.locator('#feedback-banner')).toContainText('Correct!');
   await expect(page.getByText('Question 2 of 10', { exact: true })).toBeVisible({ timeout: 5000 });
 });
+
+test('Blue Belt training lets learners weigh a hidden x block with known weights', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await setupApp(page);
+  await openMathsDojo(page);
+  await page.locator('a[data-action="belt-detail"][data-belt-id="blue"]').click();
+  await expect(page.getByRole('heading', { name: 'Blue Belt', exact: true })).toBeVisible();
+  await page.locator('[data-action="skill-start"][data-skill-id="blue_balanced_equation"]').click();
+  await expect(page.locator('#game-balance-panel')).toBeVisible();
+  await page.evaluate(() => {
+    Object.assign(window.gameEngine.questions[0], {
+      balanceMode: 'mystery',
+      prompt: 'Find the mass of the hidden x block using known weights.',
+      answer: 17
+    });
+    window.gameEngine.renderCurrentQuestion();
+  });
+
+  await expect(page.locator('.balance-scale__weight--mystery')).toHaveText('x');
+  await expect(page.getByRole('group', { name: 'Add a known weight to the left pan' })).toBeVisible();
+  await page.getByRole('button', { name: 'Add 10 units' }).click();
+  await expect(page.locator('.balance-scale-status')).toContainText('Left pan: 10 known units');
+  await expect(page.locator('.balance-scale-status')).not.toContainText('17');
+  await expect(page.locator('.balance-scale')).toHaveAttribute('aria-label', /hidden mystery block x/);
+  await page.getByRole('button', { name: 'Add 5 units' }).click();
+  await page.getByRole('button', { name: 'Add 2 units' }).click();
+  await expect(page.locator('.balance-scale__beam--balanced')).toBeVisible();
+  await page.getByRole('button', { name: 'Check balance' }).click();
+  await expect(page.locator('#feedback-banner')).toContainText('Correct!');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
