@@ -542,6 +542,8 @@ Object.assign(App.prototype, {
     engine.nextQuestion();
     game.complete = engine.status === 'complete';
     this.renderBrainPowerPattern();
+    document.getElementById('app-main')?.querySelector?.(game.complete
+      ? '[data-action="brain-pattern-start"]' : '[data-action="brain-pattern-answer"]')?.focus?.({ preventScroll: true });
     return true;
   },
 
@@ -765,6 +767,8 @@ Object.assign(App.prototype, {
         .map(colorId => game.colors.find(color => color.id === colorId).name).join(', ')}.`;
     }
     this.renderBrainPowerCodeBreaker();
+    document.getElementById('app-main')?.querySelector?.(game.complete || game.failed
+      ? '[data-action="brain-code-start"]' : '[data-action="brain-code-color"]')?.focus?.({ preventScroll: true });
     return game.complete;
   },
 
