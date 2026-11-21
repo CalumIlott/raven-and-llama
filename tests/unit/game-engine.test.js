@@ -59,6 +59,20 @@ function loadGameEngine(sessionValues = new Map(), account = null) {
   return { context, engine: context.gameEngine, elements, delayedCallbacks, sessionValues };
 }
 
+test('relaxed training skips countdowns while belt exams retain them', () => {
+  const { engine, context } = loadGameEngine();
+  context.ProfileManager.getActiveProfile = () => ({ practiceTiming: 'relaxed' });
+  engine.saveSession = () => {};
+  engine.mode = 'training';
+  engine.startTimer(16);
+  assert.equal(engine.timerInterval, null);
+  assert.equal(engine.timeLeft, 0);
+  engine.mode = 'belt_test_1';
+  engine.startTimer(16);
+  assert.equal(engine.timerInterval, 1);
+  assert.ok(engine.timeLeft > 0);
+});
+
 test('endless timer gets shorter every five questions and stops at ten seconds', () => {
   const { engine } = loadGameEngine();
 

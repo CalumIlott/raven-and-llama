@@ -486,6 +486,7 @@ class App {
     if (event.target.dataset.action === 'theme-select') {
       this.setTheme(event.target.value, { persistGuest: event.target.id !== 'account-theme' });
     }
+    if (event.target.dataset.action === 'practice-timing-preference') void this.savePracticeTimingPreference(event.target.value);
     if (event.target.dataset.action === 'audio-preference') void this.saveAudioPreference(event.target.checked);
     if (event.target.dataset.action === 'dyslexia-friendly-preference') {
       void this.saveDyslexiaFriendlyPreference(event.target.checked);
@@ -1062,6 +1063,18 @@ class App {
       : ProfileManager.isAuthenticated()
         ? ProfileManager.lastSaveError || 'Unable to save spoken audio speed.'
         : 'Spoken audio speed applies for this guest visit only.';
+    return saved;
+  }
+
+  async savePracticeTimingPreference(practiceTiming) {
+    if (!['standard', 'relaxed'].includes(practiceTiming)) return false;
+    const saved = await ProfileManager.updateProfile({ ...ProfileManager.getActiveProfile(), practiceTiming });
+    const control = document.getElementById('parent-practice-timing');
+    if (control) control.value = ProfileManager.getActiveProfile().practiceTiming;
+    const status = document.getElementById('parent-settings-status');
+    if (status) status.textContent = saved ? 'Practice timing saved to this account.'
+      : ProfileManager.isAuthenticated() ? ProfileManager.lastSaveError || 'Unable to save practice timing.'
+      : 'Practice timing applies for this guest visit only.';
     return saved;
   }
 
@@ -1803,6 +1816,8 @@ class App {
     if (themeSelect) themeSelect.value = profile.theme;
     const soundToggle = document.getElementById('parent-sound-enabled');
     if (soundToggle) soundToggle.checked = profile.soundEnabled;
+    const timingControl = document.getElementById('parent-practice-timing');
+    if (timingControl) timingControl.value = profile.practiceTiming;
     const speechRate = Math.round(profile.speechRate * 100);
     const speechRateSlider = document.getElementById('parent-speech-rate');
     if (speechRateSlider) speechRateSlider.value = String(speechRate);

@@ -394,6 +394,9 @@ test('guest dashboard clearly identifies its session-only preferences', async ({
   });
   await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
   expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().speechRate)).toBe(1.25);
+  await page.locator('#parent-practice-timing').selectOption('relaxed');
+  await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().practiceTiming)).toBe('relaxed');
   await page.locator('#parent-dyslexia-friendly').check();
   await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
   await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');

@@ -31,6 +31,22 @@ const gameDefinition = {
   game: { adapter: 'arcade', gameId: 'balloon-pop', scoreUnit: 'points' }
 };
 
+test('relaxed quiz practice clears an existing timer without scheduling a timeout', () => {
+  let scheduled = 0;
+  let cleared = 0;
+  const context = createEngineContext({
+    ProfileManager: { getActiveProfile: () => ({ practiceTiming: 'relaxed' }) },
+    setInterval() { scheduled++; return 1; },
+    clearInterval() { cleared++; }
+  });
+  const engine = new context.ActivityEngine().start({ ...quizDefinition, settings: { timeLimitSeconds: 1 } });
+  engine.timerInterval = 1;
+  assert.equal(engine.startTimer(() => assert.fail('Relaxed practice must not time out')), false);
+  assert.equal(scheduled, 0);
+  assert.equal(cleared, 1);
+  assert.equal(engine.timeLeft, 0);
+});
+
 test('validates definitions for quizzes and arcade games', () => {
   const context = createEngineContext();
   const engine = new context.ActivityEngine();

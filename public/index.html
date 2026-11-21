@@ -419,6 +419,12 @@
               Sound effects
             </label>
             <p class="mt-1 text-xs text-slate-400">Turn game sounds on or off. This preference follows the learner’s account.</p>
+            <label for="parent-practice-timing" class="block mt-5 text-sm font-semibold text-white">Practice timing</label>
+            <select id="parent-practice-timing" data-action="practice-timing-preference" aria-describedby="parent-practice-timing-help" class="mt-2 w-full rounded-xl bg-slate-800 p-3 text-white">
+              <option value="standard">Standard</option>
+              <option value="relaxed">Relaxed</option>
+            </select>
+            <p id="parent-practice-timing-help" class="mt-1 text-xs text-slate-400">Relaxed removes question countdowns in ordinary practice. Belt exams and speed challenges keep their timers.</p>
             <label for="parent-speech-rate" class="block mt-5 text-sm font-semibold text-white">Spoken audio speed</label>
             <div class="mt-2 flex items-center gap-3">
               <span class="text-xs text-slate-400" aria-hidden="true">Slower</span>
