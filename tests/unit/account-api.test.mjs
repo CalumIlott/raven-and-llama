@@ -147,6 +147,7 @@ test('progress reset requires the authenticated session and preserves only accou
     subjectYears: { maths: 4, science: 2 },
     soundEnabled: false,
     speechRate: 1.2,
+    practiceTiming: 'relaxed',
     dyslexiaFriendly: true,
     ownedCosmetics: ['sunrise-frame'],
     equippedCosmetic: 'sunrise-frame',
@@ -181,6 +182,7 @@ test('progress reset requires the authenticated session and preserves only accou
   assert.deepEqual(resetProfile.subjectYears, { maths: 4, science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
   assert.equal(resetProfile.speechRate, 1.2);
+  assert.equal(resetProfile.practiceTiming, 'relaxed');
   assert.equal(resetProfile.dyslexiaFriendly, true);
   assert.deepEqual(resetProfile.ownedCosmetics, ['sunrise-frame']);
   assert.equal(resetProfile.equippedCosmetic, 'sunrise-frame');
