@@ -94,7 +94,7 @@ This document catalogues every subject hub, learning activity, question bank siz
   - Both activities draw from the same 193-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
   - Coverage audit: the pool covers 193 UN member countries, including small states represented by selectable schematic markers.
   - Map-page facts follow-up: implemented in the selected-country panel, with at least five sourced options per country and a different fact on a return visit.
-  - Map flags: self-hosted SVGs are used across the map panel, country list, and geography activities. A clean-profile desktop Chrome check rendered the map and Flag Detective flags successfully. The user's affected-profile failure remains un reproduced; inspect that profile before considering the original report resolved.
+  - Map flags: self-hosted SVGs are used across the map panel, country list, and geography activities. A clean-profile desktop Chrome check rendered the map and Flag Detective flags successfully. The user's affected-profile failure has not been reproduced; inspect that profile before considering the original report resolved.
 
 ---
 
