@@ -435,6 +435,7 @@ class App {
       case 'arcade-balance-add': window.arcadeEngine.addBalanceScaleWeight(Number(target.dataset.value)); break;
       case 'arcade-balance-remove': window.arcadeEngine.removeBalanceScaleWeight(Number(target.dataset.index)); break;
       case 'arcade-balance-clear': window.arcadeEngine.clearBalanceScaleWeights(); break;
+      case 'arcade-balance-undo': window.arcadeEngine.undoBalanceScaleChange(); break;
       case 'arcade-balance-check': window.arcadeEngine.checkBalanceScale(); break;
       case 'arcade-maths-order': window.arcadeEngine.pickMathsOrderItem(Number(target.dataset.index), decodeURIComponent(target.dataset.value)); break;
       case 'arcade-maths-model-next': window.arcadeEngine.advanceNumberModelRound(); break;

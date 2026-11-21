@@ -39,6 +39,14 @@ test('Balance the Scales supports keyboard controls and fits a narrow mobile vie
   await addOne.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Remove 1 unit weight' })).toBeVisible();
+  await page.getByRole('button', { name: 'Add 5 units', exact: true }).click();
+  await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+  const undo = page.getByRole('button', { name: 'Undo last change', exact: true });
+  await undo.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Remove 1 unit weight' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Remove 5 unit weight' })).toBeVisible();
+  await expect(undo).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
