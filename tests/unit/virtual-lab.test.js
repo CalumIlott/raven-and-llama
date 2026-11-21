@@ -130,3 +130,36 @@ test('every authored simulation runs deterministically and records progress once
   assert.equal(context.activityScores[0][0].kind, 'game');
   assert.equal(context.activityScores[0][3], null);
 });
+
+test('guided lab only places the material appropriate to the current step', () => {
+  const context = createVirtualLabContext();
+  const app = context.app;
+  app.startVirtualLabActivity();
+  app.startVirtualLabInvestigation();
+  assert.equal(app.selectVirtualLabInvestigationMaterial('vinegar'), false);
+  app.predictVirtualLabInvestigation('bubbles');
+  assert.equal(app.placeSelectedVirtualLabInvestigationMaterial(), false);
+  assert.equal(app.selectVirtualLabInvestigationMaterial('baking-soda'), false);
+  assert.equal(app.selectVirtualLabInvestigationMaterial('vinegar'), true);
+  assert.equal(app.placeVirtualLabInvestigationMaterial('baking-soda'), false);
+  assert.equal(app.placeVirtualLabInvestigationMaterial('vinegar'), true);
+  assert.equal(app.virtualLabGame.investigation.stage, 'add');
+  assert.equal(app.selectVirtualLabInvestigationMaterial('vinegar'), false);
+  assert.equal(app.selectVirtualLabInvestigationMaterial('baking-soda'), true);
+  assert.equal(app.placeVirtualLabInvestigationMaterial('baking-soda'), true);
+  assert.equal(app.virtualLabGame.investigation.stage, 'observe');
+  assert.equal(app.placeVirtualLabInvestigationMaterial('baking-soda'), false);
+});
+
+test('using the step button clears any previously selected material', () => {
+  const context = createVirtualLabContext();
+  const app = context.app;
+  app.startVirtualLabActivity();
+  app.startVirtualLabInvestigation();
+  app.predictVirtualLabInvestigation('bubbles');
+  app.selectVirtualLabInvestigationMaterial('vinegar');
+  app.advanceVirtualLabInvestigation();
+  assert.equal(app.virtualLabGame.investigation.stage, 'add');
+  assert.equal(app.virtualLabGame.investigation.selectedMaterial, null);
+  assert.equal(app.placeSelectedVirtualLabInvestigationMaterial(), false);
+});

@@ -362,6 +362,8 @@ class App {
       case 'virtual-lab-investigate': this.startVirtualLabInvestigation(); break;
       case 'virtual-lab-predict': this.predictVirtualLabInvestigation(target.dataset.prediction); break;
       case 'virtual-lab-investigation-step': this.advanceVirtualLabInvestigation(); break;
+      case 'virtual-lab-investigation-select': this.selectVirtualLabInvestigationMaterial(target.dataset.investigationMaterial); break;
+      case 'virtual-lab-investigation-place': this.placeSelectedVirtualLabInvestigationMaterial(); break;
       case 'virtual-lab-explore': this.exitVirtualLabInvestigation(); break;
       case 'virtual-lab-select': this.selectVirtualLabMaterial(target.dataset.materialId); break;
       case 'virtual-lab-place': this.placeSelectedVirtualLabMaterial(Number(target.dataset.slotIndex)); break;

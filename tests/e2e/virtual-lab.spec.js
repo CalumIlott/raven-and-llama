@@ -11,7 +11,7 @@ test('guided bubbling investigation supports keyboard steps and a reversible not
   const pour = page.getByRole('button', { name: 'Pour virtual vinegar' });
   await expect(pour).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('img', { name: 'Beaker containing virtual vinegar' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Place selected material in beaker; contains vinegar/ })).toBeVisible();
   await expect(page.locator('.lab-investigation-liquid')).toBeVisible();
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.locator('.lab-investigation-liquid')).toHaveCSS('animation-name', 'none');
@@ -161,4 +161,66 @@ test('virtual lab filters materials and links each authored result to its source
   await page.locator('[data-action="virtual-lab-run"]').click();
   await expect(page.locator('#virtual-lab-result')).toContainText('Baking soda and vinegar produce carbon dioxide');
   await expect(page.locator('#virtual-lab-result a')).toHaveAttribute('href', 'https://www.acs.org/middleschoolchemistry/lessonplans/chapter6/lesson2.html');
+});
+
+test('guided lab materials can be placed in the beaker with keyboard and touch', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.locator('[data-action="virtual-lab-start"]').click();
+  await page.getByRole('button', { name: 'Guided investigation: What makes bubbles?' }).click();
+  await page.getByRole('button', { name: 'I predict bubbles' }).click();
+  const vinegar = page.getByRole('button', { name: 'Select virtual vinegar bottle' });
+  await vinegar.focus();
+  await page.keyboard.press('Enter');
+  const beaker = page.getByRole('button', { name: /Place selected material in beaker/ });
+  await expect(beaker).toBeFocused();
+  await page.keyboard.press('Enter');
+  const soda = page.getByRole('button', { name: 'Select virtual baking soda jar' });
+  await expect(soda).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(beaker).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('region', { name: 'Investigation notebook' })).toContainText('bubbles');
+});
+
+test('guided lab materials can be dragged onto the beaker', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'mobile-chromium', 'Touch uses select and place.');
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.locator('[data-action="virtual-lab-start"]').click();
+  await page.getByRole('button', { name: 'Guided investigation: What makes bubbles?' }).click();
+  await page.getByRole('button', { name: 'I predict bubbles' }).click();
+  async function dragMaterial(name) {
+    const bench = page.locator('.lab-investigation-bench');
+    await bench.scrollIntoViewIfNeeded();
+    const source = await page.getByRole('button', { name }).boundingBox();
+    const target = await page.getByRole('button', { name: /Place selected material in beaker/ }).boundingBox();
+    await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 12 });
+    await page.mouse.up();
+  }
+  await dragMaterial('Select virtual vinegar bottle');
+  await expect(page.locator('.lab-investigation-liquid')).toBeVisible();
+  await dragMaterial('Select virtual baking soda jar');
+  await expect(page.getByRole('region', { name: 'Investigation notebook' })).toContainText('gas, not smoke');
+});
+
+test.describe('guided lab touch placement', () => {
+  test.use({ hasTouch: true });
+  test('touch users place both materials without a drag', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 740 });
+    await setupApp(page);
+    await page.goto('/learning-centre/science');
+    await page.locator('[data-action="virtual-lab-start"]').tap();
+    await page.getByRole('button', { name: 'Guided investigation: What makes bubbles?' }).tap();
+    await page.getByRole('button', { name: 'I predict no visible change' }).tap();
+    expect(await page.locator('.lab-investigation-apparatus').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(2);
+    await page.getByRole('button', { name: 'Select virtual vinegar bottle' }).tap();
+    await page.getByRole('button', { name: /Place selected material in beaker/ }).tap();
+    await page.getByRole('button', { name: 'Select virtual baking soda jar' }).tap();
+    await page.getByRole('button', { name: /Place selected material in beaker/ }).tap();
+    await expect(page.getByRole('region', { name: 'Investigation notebook' })).toContainText('no visible change');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
 });

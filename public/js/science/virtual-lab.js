@@ -199,22 +199,50 @@ Object.assign(App.prototype, {
     return true;
   },
 
-  advanceVirtualLabInvestigation() {
+  selectVirtualLabInvestigationMaterial(materialId) {
+    const investigation = this.virtualLabGame?.investigation;
+    const expected = investigation?.stage === 'pour' ? 'vinegar' : investigation?.stage === 'add' ? 'baking-soda' : null;
+    if (!expected || materialId !== expected) return false;
+    investigation.selectedMaterial = materialId;
+    this.renderVirtualLabInvestigation('[data-action="virtual-lab-investigation-place"]');
+    return true;
+  },
+
+  placeSelectedVirtualLabInvestigationMaterial() {
+    const materialId = this.virtualLabGame?.investigation?.selectedMaterial;
+    if (!materialId) {
+      const status = document.getElementById('lab-investigation-instruction');
+      if (status) status.textContent = 'Select the highlighted material before choosing the beaker.';
+      return false;
+    }
+    return this.placeVirtualLabInvestigationMaterial(materialId);
+  },
+  placeVirtualLabInvestigationMaterial(materialId) {
+    const investigation = this.virtualLabGame?.investigation;
+    const expected = investigation?.stage === 'pour' ? 'vinegar' : investigation?.stage === 'add' ? 'baking-soda' : null;
+    if (!expected || materialId !== expected) return false;
+    investigation.selectedMaterial = null;
+    return this.advanceVirtualLabInvestigation(investigation.stage === 'pour'
+      ? '[data-investigation-material="baking-soda"]' : null);
+  },
+  advanceVirtualLabInvestigation(focusSelector = null) {
     const game = this.virtualLabGame;
     const investigation = game?.investigation;
     if (investigation?.stage === 'pour') {
+      investigation.selectedMaterial = null;
       game.slots = ['vinegar', null];
       investigation.stage = 'add';
     } else if (investigation?.stage === 'add') {
+      investigation.selectedMaterial = null;
       game.slots = ['vinegar', 'baking-soda'];
       investigation.stage = 'observe';
       return this.runVirtualLabSimulation();
     } else return false;
-    this.renderVirtualLabInvestigation();
+    this.renderVirtualLabInvestigation(focusSelector);
     return true;
   },
 
-  renderVirtualLabInvestigation() {
+  renderVirtualLabInvestigation(focusSelector = null) {
     const main = document.getElementById('app-main');
     const investigation = this.virtualLabGame?.investigation;
     if (!main || !investigation) return;
@@ -224,8 +252,8 @@ Object.assign(App.prototype, {
     const steps = ['predict', 'pour', 'add', 'observe'];
     const instructions = {
       predict: 'What do you predict when virtual vinegar and baking soda meet?',
-      pour: 'Add the virtual vinegar to the empty beaker. Watch the liquid level change.',
-      add: 'The beaker now contains vinegar. Add the virtual baking soda and observe what changes.',
+      pour: 'Select the virtual vinegar bottle, then the beaker, or drag the bottle into the beaker. Watch the liquid level change.',
+      add: 'The beaker contains vinegar. Select the baking soda jar, then the beaker, or drag the jar into the beaker.',
       observe: 'Compare your prediction with the bubbles in the beaker. What evidence shows a gas formed?'
     };
     main.innerHTML = `<div class="play-shell play-shell--science max-w-4xl mx-auto px-4 py-6">
@@ -234,9 +262,9 @@ Object.assign(App.prototype, {
         <h1 class="text-2xl font-bold text-white">What makes bubbles?</h1>
         <p class="text-slate-300 mt-2">Guided virtual investigation · Step ${steps.indexOf(stage) + 1} of 4</p>
         <p class="text-amber-100 mt-3">Computer simulation only, not real-world experiment instructions. Amounts, apparatus and reaction speed are illustrative.</p>
-        <p id="lab-investigation-instruction" role="status" class="text-white mt-4">${instructions[stage]}</p>
+        <p id="lab-investigation-instruction" role="status" class="text-white mt-4">${investigation.selectedMaterial ? `${investigation.selectedMaterial === 'vinegar' ? 'Vinegar bottle' : 'Baking soda jar'} selected. Choose the beaker.` : instructions[stage]}</p>
         <div class="lab-investigation-bench" aria-label="Virtual laboratory bench">
-          ${stage === 'observe' ? renderVirtualLabScene(reaction) : `
+          ${stage === 'observe' ? renderVirtualLabScene(reaction) : stage === 'predict' ? `
           <svg viewBox="0 0 400 240" role="img" aria-label="${stage === 'add' ? 'Beaker containing virtual vinegar' : 'Empty beaker beside a vinegar bottle and baking soda jar'}">
             <path d="M10 215H390" stroke="#94a3b8" stroke-width="8"/>
             <path d="M40 75V190Q40 200 50 200H105Q115 200 115 190V75Z" fill="#38bdf8" fill-opacity=".3" stroke="#bae6fd" stroke-width="3"/>
@@ -249,7 +277,18 @@ Object.assign(App.prototype, {
             <rect x="308" y="108" width="74" height="15" rx="4" fill="#64748b"/>
             <text x="345" y="154" text-anchor="middle" fill="#0f172a" font-size="16">Baking</text>
             <text x="345" y="175" text-anchor="middle" fill="#0f172a" font-size="16">soda</text>
-          </svg>`}
+          </svg>` : `
+          <div class="lab-investigation-apparatus" aria-label="Choose and place virtual materials">
+            <button type="button" data-action="virtual-lab-investigation-select" data-investigation-material="vinegar" draggable="${stage === 'pour'}" aria-label="Select virtual vinegar bottle" aria-pressed="${investigation.selectedMaterial === 'vinegar'}" ${stage !== 'pour' ? 'disabled' : ''}>
+              <svg viewBox="0 0 90 130" aria-hidden="true"><path d="M20 40V115Q20 123 28 123H62Q70 123 70 115V40Z" fill="#0e7490" stroke="#bae6fd" stroke-width="3"/><path d="M32 40V12H58V40" fill="none" stroke="#bae6fd" stroke-width="3"/></svg><span>Vinegar bottle</span>
+            </button>
+            <button type="button" data-action="virtual-lab-investigation-place" data-drag-drop-target aria-label="Place selected material in beaker; ${stage === 'add' ? 'contains vinegar' : 'empty'}">
+              <svg viewBox="0 0 100 130" aria-hidden="true"><path d="M18 12V119H82V12" fill="#0f172a" stroke="#bae6fd" stroke-width="3"/>${stage === 'add' ? '<path class="lab-investigation-liquid" d="M20 75H80V117H20Z" fill="#38bdf8" fill-opacity=".7"/>' : ''}</svg><span>Beaker</span>
+            </button>
+            <button type="button" data-action="virtual-lab-investigation-select" data-investigation-material="baking-soda" draggable="${stage === 'add'}" aria-label="Select virtual baking soda jar" aria-pressed="${investigation.selectedMaterial === 'baking-soda'}" ${stage !== 'add' ? 'disabled' : ''}>
+              <svg viewBox="0 0 90 130" aria-hidden="true"><rect x="12" y="40" width="66" height="82" rx="8" fill="#e2e8f0"/><rect x="10" y="28" width="70" height="14" rx="4" fill="#64748b"/><text x="45" y="78" text-anchor="middle" fill="#0f172a" font-size="12">Baking</text><text x="45" y="94" text-anchor="middle" fill="#0f172a" font-size="12">soda</text></svg><span>Baking soda jar</span>
+            </button>
+          </div>`}
         </div>
         <div class="flex flex-wrap gap-3 mt-4">
           ${stage === 'predict' ? `<button type="button" data-action="virtual-lab-predict" data-prediction="bubbles" class="rounded-xl bg-sky-700 px-5 py-3 text-white font-bold">I predict bubbles</button>
@@ -265,7 +304,19 @@ Object.assign(App.prototype, {
           <a href="${reaction.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-sky-300">${escapeVirtualLabHtml(reaction.sourceTitle)}</a>
         </section>` : ''}
       </section></div>`;
-    main.querySelector?.('[data-action="virtual-lab-predict"], [data-action="virtual-lab-investigation-step"], [data-action="virtual-lab-investigate"]')?.focus?.({ preventScroll: true });
+    main.querySelectorAll?.('[data-investigation-material]').forEach(button => {
+      button.addEventListener('dragstart', event => {
+        event.dataTransfer?.setData('text/plain', button.dataset.investigationMaterial);
+      });
+    });
+    const beaker = main.querySelector?.('[data-action="virtual-lab-investigation-place"]');
+    beaker?.addEventListener('dragover', event => event.preventDefault());
+    beaker?.addEventListener('drop', event => {
+      event.preventDefault();
+      this.placeVirtualLabInvestigationMaterial(event.dataTransfer?.getData('text/plain'));
+    });
+    const defaultFocus = '[data-action="virtual-lab-predict"], [data-action="virtual-lab-investigation-step"], [data-action="virtual-lab-investigate"]';
+    main.querySelector?.(focusSelector || defaultFocus)?.focus?.({ preventScroll: true });
   },
 
   startVirtualLabActivity() {
