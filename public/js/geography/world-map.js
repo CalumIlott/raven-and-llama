@@ -88,6 +88,12 @@ if (!isValidGeographyWorldContext(window.GEOGRAPHY_WORLD_MAP_CONTEXT)) {
 }
 
 const GEOGRAPHY_COUNTRIES = window.GEOGRAPHY_COUNTRY_DATA.countries;
+function filterGeographyCountries(query) {
+  const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const search = normalize(query);
+  return GEOGRAPHY_COUNTRIES.filter(country =>
+    normalize(`${country.name} ${country.capital} ${country.continent}`).includes(search));
+}
 const GEOGRAPHY_WORLD_CONTEXT_COUNTRIES = window.GEOGRAPHY_WORLD_MAP_CONTEXT.countries;
 
 function escapeGeographyHtml(value) {
@@ -311,6 +317,10 @@ Object.assign(App.prototype, {
                   <h2 id="geography-country-list-title">Choose from the country list</h2>
                 </div>
               </div>
+              <label class="geography-country-picker" for="geography-country-search">Search country list
+                <input id="geography-country-search" type="search" placeholder="Country, capital or continent" aria-describedby="geography-country-search-status" autocomplete="off">
+              </label>
+              <p id="geography-country-search-status" role="status" aria-live="polite">${GEOGRAPHY_COUNTRIES.length} countries shown</p>
               <div class="geography-country-groups">
                 ${GEOGRAPHY_CONTINENTS.map(continent => {
                   const countries = GEOGRAPHY_COUNTRIES.filter(country => country.continent === continent);
@@ -378,6 +388,16 @@ Object.assign(App.prototype, {
       event.stopPropagation();
     }, true);
     this.renderGeographyCountrySelection(selectedCountry);
+    document.getElementById('geography-country-search').addEventListener('input', event => {
+      const matches = new Set(filterGeographyCountries(event.currentTarget.value).map(country => country.id));
+      main.querySelectorAll('.geography-country-option').forEach(button => { button.hidden = !matches.has(button.dataset.countryId); });
+      main.querySelectorAll('.geography-country-group').forEach(group => {
+        group.hidden = !group.querySelector('.geography-country-option:not([hidden])');
+      });
+      document.getElementById('geography-country-search-status').textContent = matches.size
+        ? `${matches.size} ${matches.size === 1 ? 'country' : 'countries'} shown`
+        : 'No countries match. Try another country, capital or continent.';
+    });
   },
 
   renderGeographyCountrySelection(country) {
