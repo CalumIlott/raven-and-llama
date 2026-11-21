@@ -75,7 +75,7 @@ This document catalogues every subject hub, learning activity, question bank siz
   - **Virtual Laboratory** (`public/js/science/virtual-lab.js`):
     * 17 sourced outcomes cover state changes, dissolving, mixtures, reactions, filtration, magnetism, evaporation, and freezing point.
     * Material filters group materials, prepared mixtures, conditions, and tools; each result links to its science source.
-    * The guided bubbling investigation lets learners predict, pour virtual vinegar into a beaker, add baking soda, and compare the visible gas bubbles with their prediction in an observation notebook. It reuses the sourced reaction, has keyboard/tap controls and reduced-motion visuals, and treats predictions as exploration rather than graded answers.
+    * The guided bubbling investigation lets learners predict, pour virtual vinegar into a beaker, add baking soda, and compare the visible gas bubbles with their prediction in an observation notebook. Learners can select and place or drag the pictured materials into the beaker; direct buttons remain available. It reuses the sourced reaction, supports keyboard and touch, respects reduced motion, and treats predictions as exploration rather than graded answers.
   - **Pond Ecosystem Sandbox** (`public/js/science/ecosystem-sandbox.js`):
     * Learners adjust algae, tadpole, fish, and kingfisher populations, then advance a deterministic five-day food-web model.
     * The first model caps each population at 12 and explains its simplified feeding and growth rules; it is an exploration without score or progress rewards.
