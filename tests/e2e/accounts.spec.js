@@ -256,6 +256,7 @@ test('theme preference syncs to another browser context for the signed-in accoun
     input.dispatchEvent(new Event('change', { bubbles: true }));
   });
   await page.locator('#parent-dyslexia-friendly').check();
+  await page.locator('#parent-practice-timing').selectOption('relaxed');
   await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
   await expect(page.locator('#parent-speech-rate-value')).toHaveText('120% speed');
   await expect(page.locator('#parent-settings-status')).toContainText('saved to this account');
@@ -274,6 +275,7 @@ test('theme preference syncs to another browser context for the signed-in accoun
     await expect(otherPage.locator('#account-theme')).toHaveValue('light');
     await expect(otherPage.locator('#parent-speech-rate')).toHaveValue('120');
     await expect(otherPage.locator('#parent-dyslexia-friendly')).toBeChecked();
+    await expect(otherPage.locator('#parent-practice-timing')).toHaveValue('relaxed');
     await expect(otherPage.locator('#parent-speech-rate-value')).toHaveText('120% speed');
   } finally {
     await otherDevice.close();
@@ -394,6 +396,9 @@ test('guest dashboard clearly identifies its session-only preferences', async ({
   });
   await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
   expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().speechRate)).toBe(1.25);
+  await page.locator('#parent-practice-timing').selectOption('relaxed');
+  await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');
+  expect(await page.evaluate(() => window.ProfileManager.getActiveProfile().practiceTiming)).toBe('relaxed');
   await page.locator('#parent-dyslexia-friendly').check();
   await expect(page.locator('html')).toHaveClass(/dyslexia-friendly/);
   await expect(page.locator('#parent-settings-status')).toContainText('guest visit only');

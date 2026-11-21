@@ -138,6 +138,7 @@ test('accounts persist securely and progress stays private to the authenticated 
     theme: 'dark',
     soundEnabled: false,
     speechRate: 1.15,
+    practiceTiming: 'relaxed',
     dyslexiaFriendly: true,
     schoolYear: 6,
     subjectYears: { maths: 3, science: 2 },
@@ -280,6 +281,7 @@ test('accounts persist securely and progress stays private to the authenticated 
   assert.deepEqual(resetProfile.subjectYears, { maths: 3, science: 2 });
   assert.equal(resetProfile.soundEnabled, false);
   assert.equal(resetProfile.speechRate, 1.15);
+  assert.equal(resetProfile.practiceTiming, 'relaxed');
   assert.equal(resetProfile.dyslexiaFriendly, true);
 
   for (let attempt = 0; attempt < 3; attempt++) {

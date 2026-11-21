@@ -146,6 +146,16 @@ class GameEngine {
 
   startTimer(seconds) {
     this.stopTimer();
+    const relaxed = this.mode === 'training' && window.ProfileManager?.getActiveProfile?.()?.practiceTiming === 'relaxed';
+    const timerUI = document.querySelector?.('.play-timer');
+    if (timerUI) timerUI.hidden = relaxed;
+    if (relaxed) {
+      this.timeLeft = 0;
+      this.totalTime = 0;
+      this.resumeTimeLeft = null;
+      this.saveSession();
+      return;
+    }
     if (this.mode === 'endless') {
       seconds = this.getEndlessTimeLimit(this.endlessQuestionCount, this.endlessBaseTimeSeconds);
     } else {

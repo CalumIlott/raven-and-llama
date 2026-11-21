@@ -55,7 +55,8 @@ class ProfileManager {
       subjectYears: {},
       soundEnabled: true,
       speechRate: 1,
-      dyslexiaFriendly: false,
+      practiceTiming: 'standard',
+    dyslexiaFriendly: false,
       currentBelt: 'white',
       stage1PassedBelts: [],
       stage2PassedBelts: [],
@@ -127,6 +128,7 @@ class ProfileManager {
       speechRate: Number.isFinite(source.speechRate) && source.speechRate >= 0.75 && source.speechRate <= 1.25
         ? source.speechRate
         : 1,
+      practiceTiming: source.practiceTiming === 'relaxed' ? 'relaxed' : 'standard',
       dyslexiaFriendly: source.dyslexiaFriendly === true,
       lastModule: ProfileManager.LAST_MODULES.has(source.lastModule) ? source.lastModule : null,
       currentBelt: source.currentBelt || 'white',

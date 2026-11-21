@@ -138,6 +138,9 @@ class ActivityEngine {
 
   startTimer(onTimeout) {
     if (this.status !== 'active' || typeof onTimeout !== 'function') return false;
+    this.stopTimer();
+    this.timeLeft = 0;
+    if (this.definition.kind === 'quiz' && window.ProfileManager?.getActiveProfile?.()?.practiceTiming === 'relaxed') return false;
     const seconds = this.currentQuestion?.timeLimitSeconds ?? this.definition.settings.timeLimitSeconds;
     if (!Number.isFinite(seconds)) return false;
     this.stopTimer();
