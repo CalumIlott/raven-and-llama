@@ -39,5 +39,16 @@ test('Artifact Detective remains usable at narrow mobile width and supports keyb
   await page.getByRole('button', { name: 'Inspect clue 1' }).focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.artifact-clues li')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Inspect clue 2' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Inspect clue 3' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('input[name="artifact-period"]').first()).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(page.locator('input[name="artifact-period"]').first()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Submit identification' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'Next artifact' })).toBeFocused();
   expect(await page.locator('body').evaluate(element => element.scrollWidth <= window.innerWidth)).toBe(true);
 });
