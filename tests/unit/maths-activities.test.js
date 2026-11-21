@@ -135,6 +135,30 @@ test('Tens Frame Fill hides the selected-cell count', () => {
   assert.doesNotMatch(elements.get('ma-body').innerHTML, /ma-filled-count|of \d+ filled/);
 });
 
+test('Balance Scales undo restores removals and clears without crossing questions', () => {
+  const { context } = loadMathsActivities();
+  const engine = context.arcadeEngine;
+  engine.startMathsActivity('arena', 'blue', 'balance-scales');
+  const activity = engine.mathsActivity;
+  assert.equal(engine.undoBalanceScaleChange(), false);
+  engine.addBalanceScaleWeight(5);
+  engine.addBalanceScaleWeight(-2);
+  engine.removeBalanceScaleWeight(0);
+  engine.undoBalanceScaleChange();
+  assert.deepEqual(Array.from(activity.balanceWeights), [5, -2]);
+  engine.clearBalanceScaleWeights();
+  engine.undoBalanceScaleChange();
+  assert.deepEqual(Array.from(activity.balanceWeights), [5, -2]);
+  engine.undoBalanceScaleChange();
+  assert.deepEqual(Array.from(activity.balanceWeights), [5]);
+  engine.undoBalanceScaleChange();
+  assert.equal(activity.balanceWeights.length, 0);
+  engine.addBalanceScaleWeight(1);
+  engine.renderNextMathsQuestion();
+  assert.equal(activity.balanceHistory.length, 0);
+  assert.equal(engine.undoBalanceScaleChange(), false);
+});
+
 test('Balance Scales builds the missing side with reusable tactile weights', () => {
   const { context, elements } = loadMathsActivities();
   context.arcadeEngine.startMathsActivity('arena', 'blue', 'balance-scales');
