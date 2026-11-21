@@ -145,7 +145,7 @@ test('equal-operation questions remove the same weights from both pans before ch
   });
   engine.renderCurrentQuestion();
 
-  let panel = elements.get('game-balance-panel').outerHTML;
+  let panel = elements.get('game-arena').innerHTML;
   assert.match(panel, /x plus 15 shared units/);
   assert.match(panel, /aria-label="Remove 10 from both pans"/);
   assert.match(panel, /data-action="game-balance-check" disabled/);
