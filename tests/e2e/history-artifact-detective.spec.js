@@ -12,8 +12,8 @@ test('Artifact Detective gates answers on clues and completes the finite sourced
   await page.getByRole('button', { name: 'Inspect clue 2' }).click();
   await page.getByRole('button', { name: 'Inspect clue 3' }).click();
   await expect(page.getByRole('group')).toBeEnabled();
-  const choices = page.locator('input[name="artifact-period"]');
-  for (let caseIndex = 0; caseIndex < 4; caseIndex++) {
+  const totalCases = await page.evaluate(() => window.app.historyArtifactCases.length);
+  for (let caseIndex = 0; caseIndex < totalCases; caseIndex++) {
     if (caseIndex > 0) {
       await page.getByRole('button', { name: 'Next artifact' }).click();
       for (let clue = 1; clue <= 3; clue++) await page.getByRole('button', { name: `Inspect clue ${clue}` }).click();
@@ -25,7 +25,7 @@ test('Artifact Detective gates answers on clues and completes the finite sourced
     await page.locator(`input[name="artifact-period"][value="${correctAnswer}"]`).check();
     await page.getByRole('button', { name: 'Submit identification' }).click();
     await expect(page.getByRole('link', { name: /The British Museum|Metropolitan Museum/ })).toBeVisible();
-    if (caseIndex < 3) await expect(page.getByRole('button', { name: 'Next artifact' })).toBeVisible();
+    if (caseIndex < totalCases - 1) await expect(page.getByRole('button', { name: 'Next artifact' })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Finish investigation' }).click();
   await expect(page.getByRole('heading', { name: 'Investigation complete' })).toBeVisible();

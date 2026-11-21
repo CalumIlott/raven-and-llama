@@ -51,6 +51,39 @@ const HISTORY_ARTIFACT_CASES = [
     ],
     explanation: 'Cuneiform was impressed into clay with a stylus and used across Mesopotamia for many kinds of records and texts.',
     sourceName: 'The British Museum: Cuneiform tablet', sourceUrl: 'https://www.britishmuseum.org/collection/object/W_1881-0701-3157'
+  },
+  {
+    id: 'attic-kylix', name: 'Attic red-figure drinking cup', answer: 'classical-greece',
+    period: 'Classical Greece, about 460 BCE', material: 'Terracotta with red-figure decoration',
+    clues: [
+      ['Inspect the scene', 'The inside shows a hunter attacking a boar; athletes appear on the outside.'],
+      ['Analyze the material', 'This handled drinking cup is terracotta painted in the red-figure technique.'],
+      ['Read the collection record', 'The museum identifies it as Greek and Attic, from the Classical period around 460 BCE.']
+    ],
+    explanation: 'Attic artists used the red-figure technique to paint detailed scenes on pottery. This kylix links an interior hunting scene with athletic figures outside.',
+    sourceName: 'The Metropolitan Museum of Art: Terracotta kylix', sourceUrl: 'https://www.metmuseum.org/art/collection/search/254176'
+  },
+  {
+    id: 'yemeni-astrolabe', name: 'Yemeni astrolabe', answer: 'rasulid-yemen',
+    period: 'Rasulid Yemen, 1291 CE', material: 'Brass with silver inlay',
+    clues: [
+      ['Inspect the instrument', 'Moving plates and star pointers help measure the sky and work out time and direction.'],
+      ['Analyze the material', 'The instrument is made of brass, with silver inlay and carefully pierced and engraved details.'],
+      ['Read the inscription', 'The museum dates it to 1291 CE and attributes it to a Rasulid prince from Yemen.']
+    ],
+    explanation: 'This astrolabe was made by a Yemeni prince who also wrote scientific works. Astrolabes helped observers measure stars, tell time, and find the direction of Mecca. The Met identifies this unusually well-documented object by its maker and date.',
+    sourceName: 'The Metropolitan Museum of Art: Astrolabe of ‘Umar ibn Yusuf', sourceUrl: 'https://www.metmuseum.org/art/collection/search/444408'
+  },
+  {
+    id: 'piedras-negras-stela', name: 'Maya Stela 5 from Piedras Negras', answer: 'classic-maya',
+    period: 'Classic Maya, dedicated in 716 CE', material: 'Limestone with traces of pigment',
+    clues: [
+      ['Inspect the scene', 'A ruler sits on a throne and receives a noble visitor; a jaguar pelt covers the throne.'],
+      ['Analyze the material', 'This carved limestone monument still preserves traces of red pigment.'],
+      ['Read the dedication', 'The museum dates it to 716 CE and connects it with Piedras Negras, an ancient Maya city in present-day Guatemala.']
+    ],
+    explanation: 'Maya sculptors made this monument for a sequence of public records about a ruler and his family. The Met documents that it was looted and separated from its base, and that the stela is now on long-term loan from Guatemala.',
+    sourceName: 'The Metropolitan Museum of Art: Maya Stela 5', sourceUrl: 'https://www.metmuseum.org/art/collection/search/318413'
   }
 ];
 
@@ -58,7 +91,10 @@ const HISTORY_ARTIFACT_CHOICES = [
   { id: 'ptolemaic-egypt', label: 'Ptolemaic Egypt' },
   { id: 'mature-harappan', label: 'Mature Harappan (Indus Valley)' },
   { id: 'anglo-saxon-england', label: 'Anglo-Saxon England' },
-  { id: 'late-babylonian', label: 'Late Babylonian Mesopotamia' }
+  { id: 'late-babylonian', label: 'Late Babylonian Mesopotamia' },
+  { id: 'classical-greece', label: 'Classical Greece' },
+  { id: 'rasulid-yemen', label: 'Rasulid Yemen' },
+  { id: 'classic-maya', label: 'Classic Maya (Mesoamerica)' }
 ];
 
 function isValidHistoryArtifactCases(cases = HISTORY_ARTIFACT_CASES) {
