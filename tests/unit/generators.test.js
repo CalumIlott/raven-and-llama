@@ -110,6 +110,23 @@ test('Problem Solving Master specifies the required numeric answer format', () =
   assert.match(formats[2], /dollars and cents as a decimal, for example 8\.50/);
 });
 
+test('Blue Belt balanced equation training can generate an x mystery weight', () => {
+  const { context, generator } = loadGenerator();
+  const originalRandom = context.Math.random;
+
+  try {
+    context.Math.random = () => 0;
+    const question = generator.getQuestionForSkill('blue_balanced_equation', 'standard');
+    assert.equal(question.type, 'balance_scale');
+    assert.equal(question.balanceMode, 'mystery');
+    assert.equal(question.title, 'Mystery Weight Solver');
+    assert.ok(question.answer >= 4 && question.answer <= 50);
+    assert.ok(question.options.includes(question.answer));
+  } finally {
+    context.Math.random = originalRandom;
+  }
+});
+
 test('belt tests return the requested question count with answerable questions', () => {
   const { belts, generator } = loadGenerator();
 

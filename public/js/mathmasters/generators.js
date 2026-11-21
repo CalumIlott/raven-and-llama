@@ -647,6 +647,19 @@ class QuestionGenerator {
       options: QuestionGenerator.generateChoices(d, 4, 4)
     };
   }
+
+  static genBlueMysteryWeight(diff = 'standard') {
+    const mass = QuestionGenerator.randomInt(4, 50);
+    return {
+      type: 'balance_scale',
+      balanceMode: 'mystery',
+      title: 'Mystery Weight Solver',
+      prompt: 'Find the mass of the hidden x block using known weights.',
+      answer: mass,
+      timeLimitSeconds: diff === 'hard' ? 24 : 32,
+      options: QuestionGenerator.generateChoices(mass, 4, 4)
+    };
+  }
   // --- BROWN BELT ---
   static genBrownMultiplication(diff = 'standard') {
     const a = QuestionGenerator.randomInt(2, 12);
@@ -1508,7 +1521,10 @@ class QuestionGenerator {
       case 'blue_factor': return QuestionGenerator.genBlueFactor(diff);
       case 'blue_partitioning': return QuestionGenerator.genBluePartitionExpanded(diff);
       case 'blue_subtraction': return QuestionGenerator.genBlueSubtraction(diff);
-      case 'blue_balanced_equation': return QuestionGenerator.genBlueBalancedEquation(diff);
+      case 'blue_balanced_equation':
+        return Math.random() < 0.25
+          ? QuestionGenerator.genBlueMysteryWeight(diff)
+          : QuestionGenerator.genBlueBalancedEquation(diff);
 
       case 'brown_order': return QuestionGenerator.genBrownOrder(diff);
       case 'brown_multiplication': return QuestionGenerator.genBrownMultiplication(diff);

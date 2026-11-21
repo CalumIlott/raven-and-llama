@@ -105,6 +105,35 @@ test('Blue Belt balanced equations use the tactile scale in normal skill trainin
   assert.equal(engine.activitySession.questionOutcomes[0], true);
 });
 
+test('the mystery x block can be weighed without exposing its hidden mass', () => {
+  const { engine, elements } = loadGameEngine();
+  engine.startTraining('blue', 'blue_balanced_equation');
+  Object.assign(engine.questions[0], {
+    balanceMode: 'mystery',
+    prompt: 'Find the mass of the hidden x block using known weights.',
+    answer: 17
+  });
+  engine.renderCurrentQuestion();
+
+  let panel = elements.get('game-arena').innerHTML;
+  assert.match(panel, /balance-scale__weight--mystery[^>]*>x</);
+  assert.match(panel, /Add a known weight to the left pan/);
+  assert.doesNotMatch(panel, />17</);
+
+  engine.addBalanceTrainingWeight(10);
+  panel = elements.get('game-balance-panel').outerHTML;
+  assert.match(panel, /Left pan: 10 known units/);
+  assert.match(panel, /Right pan: hidden block x/);
+  assert.doesNotMatch(panel, /17/);
+
+  engine.addBalanceTrainingWeight(5);
+  engine.addBalanceTrainingWeight(2);
+  assert.match(elements.get('game-balance-panel').outerHTML, /The scale is balanced\./);
+  engine.checkBalanceTrainingAnswer();
+  assert.equal(engine.activitySession.score, 1);
+  assert.equal(engine.activitySession.questionOutcomes[0], true);
+});
+
 test('endless sessions keep generating validated questions without a fixed question count', () => {
   const { engine, elements, delayedCallbacks } = loadGameEngine();
   const makeQuestion = () => ({
