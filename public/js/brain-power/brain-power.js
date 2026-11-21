@@ -736,7 +736,8 @@ Object.assign(App.prototype, {
       positionIndex < 0 || positionIndex >= game.puzzle.length ||
       !game.colors.some(color => color.id === colorId)) return false;
     game.guess[positionIndex] = colorId;
-    this.renderBrainPowerCodeBreaker();
+    const control = document.querySelector?.(`[data-action="brain-code-color"][data-position-index="${positionIndex}"]`);
+    if (control) control.value = colorId;
     return true;
   },
 
