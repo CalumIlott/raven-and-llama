@@ -140,7 +140,8 @@ Object.assign(App.prototype, {
     const game = this.historyArtifactGame;
     if (!game || game.submitted || game.cluesSeen >= 3) return false;
     game.cluesSeen++;
-    this.renderHistoryArtifactDetective();
+    this.renderHistoryArtifactDetective(game.cluesSeen < 3
+      ? '[data-action="history-artifact-clue"]' : 'input[name="artifact-period"]');
     return true;
   },
 
@@ -148,7 +149,7 @@ Object.assign(App.prototype, {
     if (!this.historyArtifactGame || this.historyArtifactGame.submitted || this.historyArtifactGame.cluesSeen < 3) return false;
     if (!HISTORY_ARTIFACT_CHOICES.some(choice => choice.id === answer)) return false;
     this.historyArtifactGame.answer = answer;
-    this.renderHistoryArtifactDetective();
+    this.renderHistoryArtifactDetective(`input[name="artifact-period"][value="${answer}"]`);
     return true;
   },
 
@@ -159,7 +160,7 @@ Object.assign(App.prototype, {
     if (correct === null) return false;
     game.submitted = true;
     game.correct = correct;
-    this.renderHistoryArtifactDetective();
+    this.renderHistoryArtifactDetective('[data-action="history-artifact-next"]');
     return true;
   },
 
@@ -169,17 +170,17 @@ Object.assign(App.prototype, {
     const more = this.historyArtifactActivityEngine.nextQuestion();
     if (!more) {
       game.complete = true;
-      this.renderHistoryArtifactDetective();
+      this.renderHistoryArtifactDetective('[data-action="history-artifact-start"]');
       return true;
     }
     game.cluesSeen = 0;
     game.answer = null;
     game.submitted = false;
-    this.renderHistoryArtifactDetective();
+    this.renderHistoryArtifactDetective('[data-action="history-artifact-clue"]');
     return true;
   },
 
-  renderHistoryArtifactDetective() {
+  renderHistoryArtifactDetective(focusSelector = null) {
     const main = document.getElementById('app-main');
     const game = this.historyArtifactGame;
     if (!main || !game) return;
@@ -213,6 +214,7 @@ Object.assign(App.prototype, {
             <button type="button" data-action="history-artifact-submit" class="history-primary-button" ${!choice || game.cluesSeen < 3 || game.submitted ? 'disabled' : ''}>Submit identification</button>
             ${feedback}</section>`}
       </div>`;
+    if (focusSelector) main.querySelector?.(focusSelector)?.focus?.({ preventScroll: true });
   }
 });
 
