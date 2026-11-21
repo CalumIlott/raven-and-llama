@@ -2,6 +2,30 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { createBrowserContext, loadBrowserScripts, loadActivityEngine } = require('../helpers/load-browser-scripts');
 
+test('guided investigation enforces prediction and addition order without duplicate rewards', () => {
+  const context = createVirtualLabContext();
+  const app = context.app;
+  app.startVirtualLabActivity();
+  assert.equal(app.advanceVirtualLabInvestigation(), false);
+  app.startVirtualLabInvestigation();
+  assert.equal(app.advanceVirtualLabInvestigation(), false);
+  assert.equal(app.predictVirtualLabInvestigation('invalid'), false);
+  assert.equal(app.predictVirtualLabInvestigation('unchanged'), true);
+  assert.equal(app.advanceVirtualLabInvestigation(), true);
+  assert.deepEqual(Array.from(app.virtualLabGame.slots), ['vinegar', null]);
+  assert.equal(context.activityScores.length, 0);
+  assert.equal(app.advanceVirtualLabInvestigation(), true);
+  assert.equal(app.virtualLabGame.result.id, 'baking-soda-vinegar');
+  assert.equal(app.virtualLabGame.investigation.stage, 'observe');
+  assert.equal(context.activityScores.length, 1);
+  assert.equal(app.advanceVirtualLabInvestigation(), false);
+  app.startVirtualLabInvestigation();
+  app.predictVirtualLabInvestigation('bubbles');
+  app.advanceVirtualLabInvestigation();
+  app.advanceVirtualLabInvestigation();
+  assert.equal(context.activityScores.length, 1);
+});
+
 function createVirtualLabContext() {
   const context = createBrowserContext();
   context.main = { innerHTML: '', dataset: {}, querySelectorAll: () => [] };
