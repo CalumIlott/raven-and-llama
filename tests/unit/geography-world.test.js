@@ -155,3 +155,29 @@ test('geography data validation rejects duplicate identifiers and incomplete rec
     countries: [{ name: 'Only one country', path: 'M0 0Z' }]
   }), false);
 });
+
+test('Globe Trotter exploration does not check an answer until requested', () => {
+  const context = createGeographyContext();
+  loadBrowserScripts(context, 'public/js/geography/globe-trotter.js');
+  const app = context.eval('new App()');
+  app.renderGeographyGlobeTrail = () => {};
+  app.renderGeographyCountrySelection = () => {};
+  app.startGeographyGlobeTrail();
+  const answer = app.geographyGlobeTrail.case.answerCountryId;
+  const wrong = answer === 'canada' ? 'japan' : 'canada';
+  app.selectGeographyCountry(wrong);
+  assert.equal(app.geographyGlobeTrail.solved, false);
+  assert.equal(app.geographyGlobeTrail.candidateId, wrong);
+  app.checkGeographyGlobeDestination();
+  assert.match(app.geographyGlobeTrail.message, /Not this stop/);
+  app.toggleGeographyTrailShortlist(wrong);
+  assert.deepEqual(Array.from(app.geographyGlobeTrail.shortlist), [wrong]);
+  app.selectGeographyCountry(answer);
+  assert.equal(app.geographyGlobeTrail.solved, false);
+  app.checkGeographyGlobeDestination();
+  assert.equal(app.geographyGlobeTrail.solved, true);
+  assert.match(app.geographyGlobeTrail.message, /Passport stamp earned/);
+  app.startGeographyGlobeTrail();
+  assert.equal(app.geographyGlobeTrail.candidateId, null);
+  assert.equal(app.geographyGlobeTrail.shortlist.length, 0);
+});

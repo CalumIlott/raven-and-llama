@@ -42,3 +42,17 @@ test('Globe Trotter case choice avoids repeating the last mystery and validates 
     next.answerCountryId === previous.answerCountryId);
   assert.equal(context.GeographyGlobeTrail.isCorrectAnswer(null, next.answerCountryId), false);
 });
+
+test('shortlist toggles candidates, caps entries, and does not mutate the prior list', () => {
+  const context = createBrowserContext();
+  loadBrowserScripts(context, 'public/js/geography/globe-trotter.js');
+  const toggle = context.GeographyGlobeTrail.toggleCandidate;
+  const empty = [];
+  const one = toggle(empty, 'japan');
+  assert.deepEqual(Array.from(empty), []);
+  assert.deepEqual(Array.from(one), ['japan']);
+  const three = toggle(toggle(one, 'fiji'), 'brazil');
+  assert.deepEqual(Array.from(toggle(three, 'egypt')), ['japan', 'fiji', 'brazil']);
+  assert.deepEqual(Array.from(toggle(three, 'fiji')), ['japan', 'brazil']);
+  assert.deepEqual(Array.from(toggle(three, '')), ['japan', 'fiji', 'brazil']);
+});

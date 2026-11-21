@@ -155,7 +155,7 @@ Object.assign(App.prototype, {
   startGeographyGlobeTrail() {
     const previousCaseId = this.geographyGlobeTrail?.case?.id || null;
     const trailCase = window.GeographyGlobeTrail.chooseCase(Math.random, previousCaseId);
-    this.geographyGlobeTrail = { case: trailCase, clueIndex: 0, solved: false, message: '' };
+    this.geographyGlobeTrail = { case: trailCase, clueIndex: 0, solved: false, message: '', candidateId: null, shortlist: [] };
     this.renderGeographyGlobeTrail();
   },
 
@@ -167,10 +167,37 @@ Object.assign(App.prototype, {
     this.renderGeographyGlobeTrail();
   },
 
+  toggleGeographyTrailShortlist(countryId) {
+    const trail = this.geographyGlobeTrail;
+    if (!trail || trail.solved || !geographyCountryById(countryId)) return;
+    const before = trail.shortlist || [];
+    trail.shortlist = window.GeographyGlobeTrail.toggleCandidate(before, countryId);
+    trail.message = before.length === 3 && trail.shortlist.length === 3 && !before.includes(countryId)
+      ? 'Your shortlist is full. Remove a country before adding another.' : '';
+    this.renderGeographyGlobeTrail();
+  },
+
+  checkGeographyGlobeDestination() {
+    const trail = this.geographyGlobeTrail;
+    if (!trail || trail.solved || !trail.candidateId) return;
+    const country = geographyCountryById(trail.candidateId);
+    if (!country) return;
+    if (!window.GeographyGlobeTrail.isCorrectAnswer(trail.case, country.id)) {
+      trail.message = 'Not this stop. Read the clues and try another country.';
+    } else {
+      trail.solved = true;
+      trail.message = `Passport stamp earned! You found ${country.name}. Explore its flag and facts below.`;
+    }
+    this.renderGeographyGlobeTrail();
+  },
   renderGeographyGlobeTrail() {
     const panel = document.getElementById('geography-globe-trail-panel');
     const trail = this.geographyGlobeTrail;
     if (!panel || !trail) return;
+    const active = document.activeElement;
+    const focused = panel.contains(active) && active.dataset.action ? { ...active.dataset } : null;
+    const candidate = trail.candidateId ? geographyCountryById(trail.candidateId) : null;
+    const shortlist = (trail.shortlist || []).map(geographyCountryById).filter(Boolean);
     panel.classList.remove('hidden');
     panel.innerHTML = `
       <div class="flex flex-wrap items-start justify-between gap-4">
@@ -183,12 +210,26 @@ Object.assign(App.prototype, {
       <ol class="mt-4 grid gap-2 text-sm text-slate-200">
         ${trail.case.clues.slice(0, trail.clueIndex + 1).map((clue, index) => `<li class="flex gap-3 rounded-xl bg-slate-900/80 p-3"><span class="font-bold text-violet-300">${index + 1}.</span><span>${escapeGeographyHtml(clue)}</span></li>`).join('')}
       </ol>
+      <section class="mt-4 rounded-xl border border-violet-400/40 bg-slate-900/80 p-3" aria-label="Destination notebook">
+        <h4 class="font-bold text-white">Destination notebook</h4>
+        <p class="mt-1 text-sm text-slate-200">${candidate ? `Current destination: ${escapeGeographyHtml(candidate.name)}` : 'Explore countries on the map or list before choosing a destination.'}</p>
+        ${!trail.solved && candidate ? `<button type="button" data-action="geography-globe-shortlist" data-country-id="${candidate.id}" class="mt-2 rounded-lg border border-violet-300 px-3 py-2 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200">${shortlist.some(item => item.id === candidate.id) ? 'Remove from shortlist' : 'Add to shortlist'}</button>` : ''}
+        <p class="mt-3 text-sm text-slate-200">Shortlist (up to 3)</p>
+        ${shortlist.length ? `<ul class="mt-2 flex flex-wrap gap-2">${shortlist.map(item => `<li class="flex items-center gap-1 rounded-lg bg-slate-800 p-1"><button type="button" data-action="geography-globe-select" data-country-id="${item.id}" class="min-h-11 rounded px-2 py-1 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200" aria-label="Select ${escapeGeographyHtml(item.name)}">${escapeGeographyHtml(item.name)}</button>${!trail.solved ? `<button type="button" data-action="geography-globe-shortlist" data-country-id="${item.id}" class="min-h-11 min-w-11 rounded px-2 py-1 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200" aria-label="Remove ${escapeGeographyHtml(item.name)}">×</button>` : ''}</li>`).join('')}</ul>` : '<p class="text-sm text-slate-300">No countries saved yet.</p>'}
+      </section>
       ${trail.solved && trail.case.sourceUrl ? `<p class="mt-3 text-xs text-slate-300">Clue source: <a class="font-semibold text-violet-200 underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200" href="${escapeGeographyHtml(trail.case.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeGeographyHtml(trail.case.sourceName || 'Source')}</a></p>` : ''}
       <div class="mt-4 flex flex-wrap items-center gap-3">
         ${!trail.solved && trail.clueIndex < trail.case.clues.length - 1 ? '<button type="button" data-action="geography-globe-clue" class="rounded-xl bg-violet-500 px-4 py-2 font-bold text-white hover:bg-violet-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200">Reveal next clue</button>' : ''}
-        <p id="geography-globe-trail-status" class="min-h-6 text-sm font-semibold ${trail.solved ? 'text-emerald-300' : 'text-slate-300'}" role="status" aria-live="polite">${escapeGeographyHtml(trail.message || (trail.solved ? 'Passport stamp earned! Explore the country facts below.' : `Clue ${trail.clueIndex + 1} of ${trail.case.clues.length} revealed. Select your guess on the map or in the country list.`))}</p>
+        ${!trail.solved ? `<button type="button" data-action="geography-globe-check" ${candidate ? '' : 'disabled'} class="rounded-xl bg-violet-600 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200">Check destination</button>` : ''}
+        <p id="geography-globe-trail-status" class="min-h-6 text-sm font-semibold ${trail.solved ? 'text-emerald-300' : 'text-slate-300'}" role="status" aria-live="polite">${escapeGeographyHtml(trail.message || (trail.solved ? 'Passport stamp earned! Explore the country facts below.' : `Clue ${trail.clueIndex + 1} of ${trail.case.clues.length} revealed. Explore countries on the map or list, then check your destination.`))}</p>
       </div>
     `;
+    if (focused) {
+      const replacement = [...panel.querySelectorAll('button[data-action]')].find(button => !button.disabled &&
+        Object.entries(focused).every(([key, value]) => button.dataset[key] === value));
+      (replacement || panel.querySelector('[data-action="geography-globe-check"]:not(:disabled)') ||
+        panel.querySelector('[data-action="geography-globe-start"]'))?.focus({ preventScroll: true });
+    }
   },
 
   showGeographyWorld() {
@@ -712,13 +753,8 @@ Object.assign(App.prototype, {
     if (!country) throw new RangeError(`Unknown geography country: ${countryId}`);
     const trail = this.geographyGlobeTrail;
     if (trail && !trail.solved) {
-      if (!window.GeographyGlobeTrail.isCorrectAnswer(trail.case, country.id)) {
-        trail.message = 'Not this stop. Read the clues and try another country.';
-        this.renderGeographyGlobeTrail();
-        return false;
-      }
-      trail.solved = true;
-      trail.message = `Passport stamp earned! You found ${country.name}. Explore its flag and facts below.`;
+      trail.candidateId = country.id;
+      trail.message = `Exploring ${country.name}. Compare the clues, then check your destination.`;
       this.renderGeographyGlobeTrail();
     }
     this.geographySelectedCountryId = country.id;

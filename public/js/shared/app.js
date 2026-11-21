@@ -249,6 +249,9 @@ class App {
       case 'geography-world': this.showGeographyWorld(); break;
       case 'geography-globe-start': this.startGeographyGlobeTrail(); break;
       case 'geography-globe-clue': this.revealGeographyGlobeClue(); break;
+      case 'geography-globe-check': this.checkGeographyGlobeDestination(); break;
+      case 'geography-globe-shortlist': this.toggleGeographyTrailShortlist(target.dataset.countryId); break;
+      case 'geography-globe-select': this.selectGeographyCountry(target.dataset.countryId); break;
       case 'geography-flag-start': this.startGeographyFlagDetective(); break;
       case 'geography-capital-start': this.startGeographyCapitalCities(); break;
       case 'geography-country-answer': this.answerGeographyCountryQuestion(Number(target.dataset.answerIndex)); break;
