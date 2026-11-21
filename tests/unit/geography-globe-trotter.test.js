@@ -13,12 +13,19 @@ test('Globe Trotter cases point to selectable countries and provide progressive 
   const cases = Array.from(context.GeographyGlobeTrail.cases);
   const countryIds = new Set(context.GEOGRAPHY_COUNTRY_DATA.countries.map(country => country.id));
 
-  assert.ok(cases.length >= 5);
+  assert.ok(cases.length >= 10);
   assert.equal(new Set(cases.map(item => item.id)).size, cases.length);
+  for (const countryId of ["botswana","fiji","mongolia","norway","chile"]) {
+    assert.ok(cases.some(trailCase => trailCase.answerCountryId === countryId),
+      `Missing expanded mystery for ${countryId}`);
+  }
   for (const trailCase of cases) {
     assert.ok(countryIds.has(trailCase.answerCountryId), `Missing answer country: ${trailCase.answerCountryId}`);
     assert.equal(trailCase.clues.length, 3);
     assert.ok(trailCase.clues.every(clue => typeof clue === 'string' && clue.length >= 20));
+    assert.equal(typeof trailCase.sourceName, 'string');
+    assert.ok(trailCase.sourceName.length > 0);
+    assert.equal(new URL(trailCase.sourceUrl).protocol, 'https:');
   }
 });
 
