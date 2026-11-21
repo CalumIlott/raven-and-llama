@@ -6,7 +6,7 @@ This document serves as the master blueprint for transitioning **Raven & Llama L
 
 - **Stages 1–3: implemented.** Content-pool repairs, the core parent dashboard/settings, and deterministic recommendations are delivered.
 - **Stages 4–5: first versions implemented.** Tactile activities and discovery experiences are available, while several still augment existing quizzes or use deliberately finite/simplified models.
-- **Remaining tracked follow-ups:** reproduce the desktop Chrome flag problem in the affected profile if it persists; evaluate the learner pace proposal below. Balance Scales now supports Blue Belt training, mystery weights, and equal operations.
+- **Remaining tracked follow-ups:** reproduce the desktop Chrome flag problem in the affected profile if it persists. Relaxed practice is delivered; Balance Scales supports Blue Belt training, mystery weights, and equal operations.
 - **Stage 6: feasibility research documented.** Voice recognition, branching historical expeditions, and multiplayer implementation remain gated by the reviews described below.
 - No GitHub issues or pull requests were open when this status was reviewed. Create focused issues before starting the future work above.
 
@@ -80,16 +80,16 @@ flowchart TD
 * **Dyslexia-friendly typography — implemented**: Add a profile-synced toggle for a sans serif typeface with increased letter spacing and line height; guest selection stays in memory.
 * **Guest Safety**: In guest mode, display a clear advisory that settings and progress remain memory-only.
 * **Audio preference control — implemented**: Add a parent-managed spoken-audio speed slider from 0.75× to 1.25× and apply it to hints and spelling pronunciations; keep guest changes in memory.
-* **Status**: Parent PIN access, session-scoped progress reset, year/difficulty settings, theme/sound/speech/typography preferences, and guest privacy messaging are implemented. A separate learner pace control (for example, session length or activity pacing) is not implemented; keep it as optional follow-up rather than implying it shipped.
+* **Status**: Parent PIN access, session-scoped progress reset, year/difficulty settings, theme/sound/speech/typography preferences, Relaxed practice timing, and guest privacy messaging are implemented. Session-length controls remain outside the delivered scope.
 
-### 2.3 Proposed Next Slice: Relaxed Practice
+### 2.3 Relaxed Practice (Implemented)
 * **Problem**: The shared ActivityEngine and MathMasters training engine use question countdowns. Learners who need time to read or manipulate an answer can run out of time before demonstrating understanding.
 * **Proposed control**: Add a parent-managed “Practice timing” choice: “Standard” (current behavior) or “Relaxed” (no question countdown in ordinary practice). Explain the choice beside the control. Keep it separate from spoken-audio speed and subject difficulty.
 * **Initial scope**: Apply to ordinary shared-engine practice and MathMasters training, including retries. Explicitly timed exams and speed challenges retain their stated rules; show those rules before starting.
 * **Behavior**: Relaxed practice hides countdown UI, never schedules a timeout, and gives no speed bonus. Accuracy feedback and ordinary completion progress continue. Switching profiles or restarting an activity must apply the active profile's setting without leaving an old timer running.
 * **Storage**: Default existing profiles to Standard. Persist the setting through the existing authenticated profile contract, with matching local-server and Worker validation. Guest selection remains memory-only.
 * **Acceptance checks before release**: Cover standard timeout behavior, relaxed answers after the usual deadline, retries, profile switching, malformed settings, guest privacy, and the explicitly timed-mode exception. Include keyboard and mobile coverage for the parent control and practice flow.
-* **Status**: Proposal only; implementation has not started.
+* **Status**: Delivered in PR #214. Parent Dashboard offers Standard and Relaxed timing; the preference syncs for accounts and remains memory-only for guests. Unit, integration, browser, dependency-audit, and build checks passed in CI before merge.
 
 ---
 
