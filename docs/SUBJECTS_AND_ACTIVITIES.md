@@ -8,7 +8,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 
 | Subject | Hub Route | Key Activities | Pool Size | Target (100+) Status |
 | :--- | :--- | :--- | :---: | :--- |
-| **Maths Masters** | `/mathmasters` | 9 Belts, 46 Skills, 13 Arcades | $\infty$ (Procedural) | ✅ Compliant; Brown Belt Fractions now has 100+ tested visual problems |
+| **Maths Masters** | `/mathmasters` | 7 Belts, 46 Skills, 7 Belt Arcades | $\infty$ (Procedural) | ✅ Compliant; Brown Belt Fractions now has 100+ tested visual problems |
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble, Rhyme Ranger | **847** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
@@ -23,8 +23,8 @@ This document catalogues every subject hub, learning activity, question bank siz
 ## 1. Maths Masters & Maths World
 
 * **Curriculum & Belts** (`public/js/mathmasters/curriculum.js`):
-  - 9 Belt Ranks: White (Prep/Kindergarten), Yellow (Year 1), Orange (Year 2), Green (Year 3), Blue (Year 4), Purple (Year 5), Red (Year 6), Brown (Year 7), Black / Platinum (Advanced).
-  - 46 distinct mathematical skills mapped to the Australian Curriculum.
+  - 7 Belt Ranks: White, Yellow, Green, Blue, Brown, Black, and Platinum. Each belt has one arcade game alongside its training skills and activity shelf.
+  - 46 distinct mathematical skills. The parent report links selected skills to curated Australian Curriculum descriptions; belt ranks are progression levels, not blanket school-year equivalences.
 * **Question Generation** (`public/js/mathmasters/generators.js`):
   - Algorithmic generation providing thousands of distinct permutations for arithmetic, partitioning, skip counting, number lines, factors, decimals, and algebra.
   - **Identified Finite-Set Exceptions**:
@@ -94,7 +94,7 @@ This document catalogues every subject hub, learning activity, question bank siz
   - Both activities draw from the same 193-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
   - Coverage audit: the pool covers 193 UN member countries, including small states represented by selectable schematic markers.
   - Map-page facts follow-up: implemented in the selected-country panel, with at least five sourced options per country and a different fact on a return visit.
-  - Map flags: self-hosted SVGs are used across the map panel, country list, and geography activities. A later user report says they still fail in desktop Chrome while working on a phone; reproduce this before considering cross-browser rendering resolved.
+  - Map flags: self-hosted SVGs are used across the map panel, country list, and geography activities. A clean-profile desktop Chrome check rendered the map and Flag Detective flags successfully. The user's affected-profile failure has not been reproduced; inspect that profile before considering the original report resolved.
 
 ---
 
