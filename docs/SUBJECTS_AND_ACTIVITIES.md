@@ -130,4 +130,4 @@ This document catalogues every subject hub, learning activity, question bank siz
 * **Plan a Party** (`public/js/life-skills/party-planner.js`):
   - Budgeting activity where students allocate funds to meet required and optional event needs without overspending.
   - Four randomized scenarios use $50, $75, $100, or $150 budgets. Each round samples 10 items from a 24-item catalog grouped into Venue, Food & Drink, Entertainment, Gear, and Decorations.
-  - Two or three item targets are marked required per round; remaining choices are optional, and each scenario keeps one event-specific item in the round.
+  - Two or three item targets are marked required per round; remaining choices are optional, and each scenario keeps one event-specific item in the round. The plan preview itemizes selections and reserves the cost of unmet requirements before showing money available for extras.

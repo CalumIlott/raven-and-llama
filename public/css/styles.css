@@ -5273,3 +5273,8 @@ html.theme-light #app-main[data-page="science-virtual-lab"] .lab-investigation-a
   .lab-investigation-apparatus { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lab-investigation-apparatus button { overflow-wrap: normal; }
 }
+#app-main[data-page="life-skills-party"] .party-planner-preview { margin: 0 0 1rem; padding: 1rem; border: 1px solid var(--page-edge); border-radius: 1rem; background: var(--page-panel-raised); color: var(--page-ink); }
+#app-main[data-page="life-skills-party"] .party-planner-preview h2 { margin: 0; font-size: 1.05rem; font-weight: 900; }
+#app-main[data-page="life-skills-party"] .party-planner-preview p { margin-top: .6rem; line-height: 1.5; }
+#app-main[data-page="life-skills-party"] .party-planner-preview__list { display: grid; gap: .35rem; margin-top: .6rem; }
+#app-main[data-page="life-skills-party"] .party-planner-preview__list li { display: flex; justify-content: space-between; gap: 1rem; }

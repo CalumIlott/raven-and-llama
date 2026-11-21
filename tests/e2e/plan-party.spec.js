@@ -112,3 +112,25 @@ test('party planning gives over-budget feedback and accepts an exact-budget retr
   await page.getByRole('button', { name: 'Back to Life Skills', exact: true }).click();
   await expect(page).toHaveURL(/\/learning-centre$/);
 });
+
+test('party budget preview shows chosen items and reserves money for requirements', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/life-skills/party-planner');
+  await page.evaluate(() => window.app.startPartyPlanner(() => 0));
+  const preview = page.getByRole('region', { name: 'Plan preview' });
+  await expect(preview).toContainText('No items selected yet');
+  const choice = await page.evaluate(() => {
+    const item = window.app.partyPlannerGame.items.find(item => !item.requiredQuantity && item.maxQuantity > 1);
+    return { id: item.id, name: item.name, price: window.MoneyMasters.formatMoney(item.priceCents) };
+  });
+  const add = page.locator(`[data-action="party-plan-quantity"][data-item-id="${choice.id}"][data-delta="1"]`);
+  await add.focus();
+  await page.keyboard.press('Enter');
+  await expect(add).toBeFocused();
+  await expect(preview).toContainText(choice.name);
+  await expect(preview).toContainText(choice.price);
+  await expect(preview).toContainText('Set aside');
+  await page.locator('[data-action="party-plan-reset"]').click();
+  await expect(preview).toContainText('No items selected yet');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
