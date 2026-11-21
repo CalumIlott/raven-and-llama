@@ -96,6 +96,30 @@ function sessionCookie(response) {
   return response.headers.get('set-cookie').split(';', 1)[0];
 }
 
+test('legacy lab records preserve rewards and participation without assessed answers', async () => {
+  const store = new MemoryAccountStore();
+  const registered = await request(store, '/api/auth/register', 'POST', {
+    username: 'lab_explorer', password: 'a secure password 123'
+  });
+  const { user, profile } = await registered.json();
+  const legacy = { date: '2026-11-10', activityId: 'science-virtual-lab', title: 'Virtual Laboratory',
+    subject: 'Science Lab', skillId: 'science_virtual_lab', kind: 'quiz', score: 4, total: 4,
+    correctAnswers: 1, totalAnswers: 1 };
+  await store.saveProgress(user.id, { ...profile, stars: 17, activityHistory: [legacy], activityProgress: {
+    'science-virtual-lab': { ...legacy, scoreUnit: 'points', bestScore: 4, bestTotal: 4,
+      correct: 4, total: 4, timesPlayed: 2 }
+  } });
+  const read = await request(store, '/api/progress', 'GET', undefined, sessionCookie(registered));
+  const saved = (await read.json()).profile;
+  assert.equal(saved.stars, 17);
+  assert.equal(saved.activityProgress['science-virtual-lab'].kind, 'game');
+  assert.equal(saved.activityProgress['science-virtual-lab'].timesPlayed, 2);
+  assert.equal(saved.activityProgress['science-virtual-lab'].bestScore, 4);
+  assert.equal(saved.activityProgress['science-virtual-lab'].totalAnswers, 0);
+  assert.equal(saved.activityHistory[0].totalAnswers, null);
+  assert.equal(saved.activityHistory[0].score, 4);
+});
+
 test('registration validates input, creates a private account, and issues a secure session', async () => {
   const store = new MemoryAccountStore();
   const invalid = await request(store, '/api/auth/register', 'POST', {

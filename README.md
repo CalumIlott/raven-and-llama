@@ -116,6 +116,8 @@ Parent PINs are optional 4–6 digit values. The server stores only a PBKDF2-SHA
 
 The profile preference `practiceTiming` accepts `standard` (default) or `relaxed`. Relaxed practice removes question countdowns from shared quizzes and MathMasters training. Belt exams and speed challenges keep their timers. The Parent Dashboard controls this preference; guest choices remain in memory, and progress resets preserve the setting.
 
+Virtual Laboratory completion records exploration points and participation, not assessed answers. Legacy lab quiz records are normalized on account reads and writes: existing scores, plays, and stars remain, while synthetic answer totals and mastery claims are removed from reports.
+
 ## Contributing
 
 Follow the repository rules in [agents.md](agents.md). Each unit of work should be a separate, focused commit on a feature branch and merged into `main` through a pull request.

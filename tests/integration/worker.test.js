@@ -200,19 +200,20 @@ test('local Worker enforces account boundaries, rate limits, and security header
   ]);
   assert.equal(savedProgress.activeSpellingListId, 'week-one');
   assert.equal(savedProgress.activityProgress['science-virtual-lab'].skillId, 'science_virtual_lab');
-  assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 1);
-  assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 1);
+  assert.equal(savedProgress.activityProgress['science-virtual-lab'].kind, 'game');
+  assert.equal(savedProgress.activityProgress['science-virtual-lab'].correctAnswers, 0);
+  assert.equal(savedProgress.activityProgress['science-virtual-lab'].totalAnswers, 0);
   assert.deepEqual(savedProgress.activityHistory, [{
     date: dailyChallengeDayKey,
     activityId: 'science-virtual-lab',
     title: 'Virtual Laboratory',
     subject: 'Science Lab',
     skillId: 'science_virtual_lab',
-    kind: 'quiz',
+    kind: 'game',
     score: 2,
-    total: 2,
-    correctAnswers: 1,
-    totalAnswers: 1
+    total: null,
+    correctAnswers: null,
+    totalAnswers: null
   }]);
   assert.deepEqual(savedProgress.questProgress, {
     'brain-power-trail': { completedStepIds: ['pattern-recognition'] }

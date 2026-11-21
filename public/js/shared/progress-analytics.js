@@ -110,7 +110,10 @@
         ? Math.min(1000000000, Math.floor(sample.total * 100) / 100)
         : null,
       correctAnswers: Number.isSafeInteger(sample.correctAnswers) ? sample.correctAnswers : null,
-      totalAnswers: Number.isSafeInteger(sample.totalAnswers) ? sample.totalAnswers : null
+      totalAnswers: Number.isSafeInteger(sample.totalAnswers) ? sample.totalAnswers : null,
+      ...(sample.activityId === 'science-virtual-lab' ? {
+        kind: 'game', total: null, correctAnswers: null, totalAnswers: null
+      } : {})
     }));
   }
 

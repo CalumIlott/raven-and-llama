@@ -6,6 +6,20 @@ function response(data, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => data };
 }
 
+test('legacy lab progress keeps participation but does not imply assessed accuracy', () => {
+  const { context } = loadAccounts();
+  const progress = context.ProfileManager.normalizeActivityProgress({
+    'science-virtual-lab': { title: 'Virtual Laboratory', subject: 'Science Lab', kind: 'quiz',
+      scoreUnit: 'points', bestScore: 4, bestTotal: 4, correct: 4, total: 4,
+      correctAnswers: 1, totalAnswers: 1, timesPlayed: 3 }
+  })['science-virtual-lab'];
+  assert.equal(progress.kind, 'game');
+  assert.equal(progress.timesPlayed, 3);
+  assert.equal(progress.bestScore, 4);
+  assert.equal(progress.bestTotal, null);
+  assert.equal(progress.totalAnswers, 0);
+});
+
 function loadAccounts(fetchImplementation) {
   const context = createBrowserContext({ fetch: fetchImplementation || (async () => response({}, 401)) });
   context.App = function App() {};

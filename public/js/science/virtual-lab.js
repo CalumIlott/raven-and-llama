@@ -186,17 +186,14 @@ Object.assign(App.prototype, {
       message: 'Choose two different items, place them in the workspace, and run a simulation.'
     };
     this.virtualLabActivityEngine = new ActivityEngine();
-    this.virtualLabActivityEngine.startQuiz({
+    this.virtualLabActivityEngine.start({
+      version: 1,
+      kind: 'game',
       id: VIRTUAL_LAB_ACTIVITY_ID,
       title: 'Virtual Laboratory',
       subject: 'Science Lab',
       skillId: VIRTUAL_LAB_SKILL_ID,
-      questions: [{
-        id: `${VIRTUAL_LAB_ACTIVITY_ID}-simulation`,
-        type: 'simulation',
-        prompt: 'Run one authored virtual simulation.',
-        answer: true
-      }],
+      game: { adapter: 'science', gameId: 'virtual-lab', scoreUnit: 'points' },
       settings: {
         trackProgress: true,
         awardStars: true,
@@ -294,7 +291,7 @@ Object.assign(App.prototype, {
     game.result = { kind: 'supported', ...simulation };
     game.message = `Simulation result: ${simulation.title}.`;
     if (!game.completed) {
-      if (this.virtualLabActivityEngine.submitAnswer(true) !== true) {
+      if (this.virtualLabActivityEngine.addScore(VIRTUAL_LAB_POINTS) !== VIRTUAL_LAB_POINTS) {
         throw new Error('The virtual laboratory simulation could not be recorded by the activity engine.');
       }
       if (!this.virtualLabActivityEngine.complete()) {

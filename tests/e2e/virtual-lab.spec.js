@@ -65,8 +65,9 @@ test('virtual lab safely runs supported combinations and refuses unsupported one
   await page.evaluate(() => window.app.showParentOverview());
   const activityRows = page.locator('#parent-activity-stats-tbody');
   await expect(activityRows).toContainText('Virtual Laboratory');
-  await expect(activityRows).toContainText('1 / 1 (100%)');
-  await expect(activityRows).toContainText('Mastered');
+  await expect(activityRows).toContainText('Not measured');
+  await expect(activityRows).toContainText('Completed');
+  await expect(activityRows).not.toContainText('Mastered');
 });
 
 test('virtual lab scenes respect reduced motion preferences', async ({ page }) => {
