@@ -5233,3 +5233,17 @@ html.theme-light #app-main[data-page="history-artifact-detective"] .artifact-cho
   #app-main[data-page="science-virtual-lab"] .virtual-lab-scene *::after { animation: none !important; }
 }
 html.theme-light #app-main[data-page="science-virtual-lab"] .virtual-lab-scene figcaption { color: #334155; }
+.lab-investigation-bench {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #0f172a;
+  border: 2px solid #475569;
+  border-bottom: 12px solid #64748b;
+  border-radius: 1rem;
+}
+.lab-investigation-bench > svg { width: 100%; max-height: 320px; }
+.lab-investigation-liquid { transform-box: fill-box; transform-origin: center bottom; animation: lab-liquid-fill .6s ease-out; }
+@keyframes lab-liquid-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .lab-investigation-liquid { animation: none; }
+}

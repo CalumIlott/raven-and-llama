@@ -174,6 +174,100 @@ window.VirtualLab = Object.freeze({
 });
 
 Object.assign(App.prototype, {
+  startVirtualLabInvestigation() {
+    if (!this.virtualLabGame) return false;
+    this.resetVirtualLabWorkspace();
+    this.virtualLabGame.investigation = { stage: 'predict', prediction: null };
+    this.renderVirtualLabInvestigation();
+    return true;
+  },
+
+  predictVirtualLabInvestigation(prediction) {
+    const investigation = this.virtualLabGame?.investigation;
+    if (investigation?.stage !== 'predict' || !['bubbles', 'unchanged'].includes(prediction)) return false;
+    investigation.prediction = prediction;
+    investigation.stage = 'pour';
+    this.renderVirtualLabInvestigation();
+    return true;
+  },
+
+  exitVirtualLabInvestigation() {
+    if (!this.virtualLabGame?.investigation) return false;
+    this.virtualLabGame.investigation = null;
+    this.renderVirtualLabActivity();
+    document.getElementById('app-main')?.querySelector?.('[data-action="virtual-lab-investigate"]')?.focus?.({ preventScroll: true });
+    return true;
+  },
+
+  advanceVirtualLabInvestigation() {
+    const game = this.virtualLabGame;
+    const investigation = game?.investigation;
+    if (investigation?.stage === 'pour') {
+      game.slots = ['vinegar', null];
+      investigation.stage = 'add';
+    } else if (investigation?.stage === 'add') {
+      game.slots = ['vinegar', 'baking-soda'];
+      investigation.stage = 'observe';
+      return this.runVirtualLabSimulation();
+    } else return false;
+    this.renderVirtualLabInvestigation();
+    return true;
+  },
+
+  renderVirtualLabInvestigation() {
+    const main = document.getElementById('app-main');
+    const investigation = this.virtualLabGame?.investigation;
+    if (!main || !investigation) return;
+    main.dataset.page = 'science-virtual-lab';
+    const { stage, prediction } = investigation;
+    const reaction = getVirtualLabSimulation(['vinegar', 'baking-soda']);
+    const steps = ['predict', 'pour', 'add', 'observe'];
+    const instructions = {
+      predict: 'What do you predict when virtual vinegar and baking soda meet?',
+      pour: 'Add the virtual vinegar to the empty beaker. Watch the liquid level change.',
+      add: 'The beaker now contains vinegar. Add the virtual baking soda and observe what changes.',
+      observe: 'Compare your prediction with the bubbles in the beaker. What evidence shows a gas formed?'
+    };
+    main.innerHTML = `<div class="play-shell play-shell--science max-w-4xl mx-auto px-4 py-6">
+      <button type="button" data-action="virtual-lab-explore" class="play-hud__exit font-bold">← Back to free exploration</button>
+      <section class="play-question-card p-5 mt-4">
+        <h1 class="text-2xl font-bold text-white">What makes bubbles?</h1>
+        <p class="text-slate-300 mt-2">Guided virtual investigation · Step ${steps.indexOf(stage) + 1} of 4</p>
+        <p class="text-amber-100 mt-3">Computer simulation only, not real-world experiment instructions. Amounts, apparatus and reaction speed are illustrative.</p>
+        <p id="lab-investigation-instruction" role="status" class="text-white mt-4">${instructions[stage]}</p>
+        <div class="lab-investigation-bench" aria-label="Virtual laboratory bench">
+          ${stage === 'observe' ? renderVirtualLabScene(reaction) : `
+          <svg viewBox="0 0 400 240" role="img" aria-label="${stage === 'add' ? 'Beaker containing virtual vinegar' : 'Empty beaker beside a vinegar bottle and baking soda jar'}">
+            <path d="M10 215H390" stroke="#94a3b8" stroke-width="8"/>
+            <path d="M40 75V190Q40 200 50 200H105Q115 200 115 190V75Z" fill="#38bdf8" fill-opacity=".3" stroke="#bae6fd" stroke-width="3"/>
+            <path d="M60 75V35H95V75" fill="none" stroke="#bae6fd" stroke-width="3"/>
+            <text x="78" y="146" text-anchor="middle" fill="white" font-size="17">Vinegar</text>
+            <path d="M150 65V198H275V65" fill="#0f172a" stroke="#bae6fd" stroke-width="4"/>
+            ${stage === 'add' ? '<path class="lab-investigation-liquid" d="M153 145H272V195H153Z" fill="#38bdf8" fill-opacity=".6"/>' : ''}
+            <path d="M160 90H175M160 115H175M160 140H175M160 165H175" stroke="#bae6fd" stroke-width="2"/>
+            <rect x="310" y="120" width="70" height="80" rx="8" fill="#e2e8f0"/>
+            <rect x="308" y="108" width="74" height="15" rx="4" fill="#64748b"/>
+            <text x="345" y="154" text-anchor="middle" fill="#0f172a" font-size="16">Baking</text>
+            <text x="345" y="175" text-anchor="middle" fill="#0f172a" font-size="16">soda</text>
+          </svg>`}
+        </div>
+        <div class="flex flex-wrap gap-3 mt-4">
+          ${stage === 'predict' ? `<button type="button" data-action="virtual-lab-predict" data-prediction="bubbles" class="rounded-xl bg-sky-700 px-5 py-3 text-white font-bold">I predict bubbles</button>
+          <button type="button" data-action="virtual-lab-predict" data-prediction="unchanged" class="rounded-xl bg-slate-700 px-5 py-3 text-white font-bold">I predict no visible change</button>`
+          : stage === 'observe' ? `<button type="button" data-action="virtual-lab-investigate" class="rounded-xl bg-sky-700 px-5 py-3 text-white font-bold">Reset investigation</button>`
+          : `<button type="button" data-action="virtual-lab-investigation-step" class="rounded-xl bg-sky-700 px-5 py-3 text-white font-bold">${stage === 'pour' ? 'Pour virtual vinegar' : 'Add virtual baking soda'}</button>`}
+        </div>
+        ${stage === 'observe' ? `<section class="mt-4 text-white" aria-label="Investigation notebook">
+          <h2 class="font-bold">Your observation notebook</h2>
+          <p>You predicted ${prediction === 'bubbles' ? 'bubbles' : 'no visible change'}. The model shows bubbles forming.</p>
+          <p>${escapeVirtualLabHtml(reaction.explanation)}</p>
+          <p>Predictions help us investigate; they are not scored as right or wrong.</p>
+          <a href="${reaction.sourceUrl}" target="_blank" rel="noopener noreferrer" class="text-sky-300">${escapeVirtualLabHtml(reaction.sourceTitle)}</a>
+        </section>` : ''}
+      </section></div>`;
+    main.querySelector?.('[data-action="virtual-lab-predict"], [data-action="virtual-lab-investigation-step"], [data-action="virtual-lab-investigate"]')?.focus?.({ preventScroll: true });
+  },
+
   startVirtualLabActivity() {
     this.currentView = 'science-virtual-lab';
     this.virtualLabGame = {
@@ -323,6 +417,10 @@ Object.assign(App.prototype, {
     const main = document.getElementById('app-main');
     const game = this.virtualLabGame;
     if (!main || !game) return;
+    if (game.investigation) {
+      this.renderVirtualLabInvestigation();
+      return;
+    }
     const active = document.activeElement;
     const focusedControl = main.contains?.(active) && active?.dataset?.action?.startsWith('virtual-lab-')
       ? { ...active.dataset } : null;
@@ -404,6 +502,7 @@ Object.assign(App.prototype, {
             All outcomes are computer simulations, not real-world experiment instructions or safety guidance.
           </aside>
           <p id="virtual-lab-instructions" class="text-sm text-slate-300 mb-4">Select two different items and choose a workspace slot for each, or drag an item into a slot. On touch screens, tap an item and then tap its slot. Only authored combinations produce a simulated outcome.</p>
+          <button type="button" data-action="virtual-lab-investigate" class="rounded-xl bg-sky-700 px-5 py-3 text-white font-bold mb-4">Guided investigation: What makes bubbles?</button>
           <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] gap-5">
             <div class="min-w-0">
               <div class="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filter virtual lab items">

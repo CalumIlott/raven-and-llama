@@ -1,6 +1,32 @@
 const { expect, test } = require('@playwright/test');
 const { setupApp } = require('./support');
 
+test('guided bubbling investigation supports keyboard steps and a reversible notebook', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/science');
+  await page.locator('[data-action="virtual-lab-start"]').click();
+  await page.getByRole('button', { name: 'Guided investigation: What makes bubbles?' }).click();
+  await expect(page.getByRole('button', { name: 'I predict bubbles', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  const pour = page.getByRole('button', { name: 'Pour virtual vinegar' });
+  await expect(pour).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('img', { name: 'Beaker containing virtual vinegar' })).toBeVisible();
+  await expect(page.locator('.lab-investigation-liquid')).toBeVisible();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.lab-investigation-liquid')).toHaveCSS('animation-name', 'none');
+  await expect(page.getByRole('button', { name: 'Add virtual baking soda' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-virtual-lab-scene="bubbles"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Investigation notebook' })).toContainText('gas, not smoke');
+  await expect(page.getByRole('button', { name: 'Reset investigation' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', { name: 'I predict bubbles', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Back to free exploration' }).click();
+  await expect(page.getByRole('heading', { name: 'Virtual Laboratory', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Guided investigation: What makes bubbles?' })).toBeFocused();
+});
+
 async function addMaterialWithKeyboard(page, materialId, slotIndex) {
   const material = page.locator(`[data-virtual-lab-material-id="${materialId}"]`);
   await material.focus();
