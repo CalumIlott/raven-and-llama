@@ -12,7 +12,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 | **Maths World** | `/maths-world` | Number Builder, Fraction Pizza, Shopkeeper | $\infty$ (Procedural) | ✅ Compliant |
 | **Spelling & Words** | `/learning-centre/spelling` | Sprint, Phonics Trail, Word Explorer, Jungle Jumble, Rhyme Ranger | **847** questions | ✅ Compliant |
 | **Science Lab** | `/learning-centre/science` | 4 Explorer Missions, Solar System, Life Cycle, Food Chains, Virtual Lab | **400** questions + finite activities | ✅ Food Chains has 10 sourced habitats (5 sampled per round); Virtual Lab has 17 sourced outcomes and filtered material categories |
-| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, World Map | **193** countries | ✅ Compliant |
+| **Geography & World** | `/learning-centre/geography` | Flag Detective, Capital Cities, Globe Trotter, World Map | **193** countries + 10 mysteries | ✅ Compliant |
 | **History Hub** | `/learning-centre/history` | Timeline Builder, Artifact Detective | **104** sourced events; 7 finite artifact cases | Event icons repaired and tested; artifact set is intentionally finite |
 | **Brain Power** | `/learning-centre/brain-power` | Pattern Recognition, Memory Match, Code Breaker | 100+ per tier | ✅ Compliant |
 | **Life Skills** | `/learning-centre/life-skills` | Plan a Party | 4 scenarios; 24-item catalog | ✅ Compliant |
@@ -89,6 +89,7 @@ This document catalogues every subject hub, learning activity, question bank siz
 * **Activities** (`public/js/geography/country-activities.js`):
   - **Flag Detective**: Randomly samples 5 countries per round and presents 4 distinct country choices per question.
   - **Capital Cities**: Randomly samples 5 countries per round and presents 4 distinct capital choices per question.
+  - **Globe Trotter Clue Trail**: 10 three-clue country mysteries can be solved from the map or country list. Each mystery links its clues to a supporting source after the answer is found.
 * **Pool status**:
   - Both activities draw from the same 193-country dataset; IDs, names, flags, and capitals are unique so answers remain unambiguous.
   - Coverage audit: the pool covers 193 UN member countries, including small states represented by selectable schematic markers.
