@@ -326,6 +326,9 @@ Object.assign(App.prototype, {
     const main = document.getElementById('app-main');
     const game = this.virtualLabGame;
     if (!main || !game) return;
+    const active = document.activeElement;
+    const focusedControl = main.contains?.(active) && active?.dataset?.action?.startsWith('virtual-lab-')
+      ? { ...active.dataset } : null;
     main.dataset.page = 'science-virtual-lab';
     this.updateHeader();
 
@@ -441,6 +444,12 @@ Object.assign(App.prototype, {
         </section>
       </div>
     `;
+
+    if (focusedControl) {
+      const replacement = [...main.querySelectorAll('button[data-action]')].find(button =>
+        !button.disabled && Object.entries(focusedControl).every(([key, value]) => button.dataset[key] === value));
+      replacement?.focus({ preventScroll: true });
+    }
 
     main.querySelectorAll('[data-virtual-lab-filter]').forEach(button => {
       button.addEventListener('click', () => this.filterVirtualLabMaterials(button.dataset.virtualLabFilter));
