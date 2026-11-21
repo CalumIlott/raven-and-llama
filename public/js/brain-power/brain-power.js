@@ -639,6 +639,9 @@ Object.assign(App.prototype, {
     game.complete = game.matchedPairIds.length === game.pairCount;
     if (game.complete) engine.complete();
     this.renderBrainPowerMemory();
+    const selector = game.complete ? '[data-action="brain-memory-start"]'
+      : `[data-action="brain-memory-card"][data-card-id="${cardId}"]`;
+    document.getElementById('app-main')?.querySelector?.(selector)?.focus?.({ preventScroll: true });
     return true;
   },
 

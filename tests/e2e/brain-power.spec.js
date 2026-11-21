@@ -61,8 +61,10 @@ test('Memory Match shows card content without state labels and prevents matched 
   const word = page.locator(`[data-action="brain-memory-card"][data-card-id="${pairId}-word"]`);
   await symbol.focus();
   await symbol.press('Enter');
+  await expect(symbol).toBeFocused();
   await word.focus();
   await word.press('Enter');
+  await expect(word).toBeFocused();
   await expect(symbol).toHaveAttribute('aria-disabled', 'true');
   await expect(word).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('.brain-power-memory-card__state')).toHaveCount(0);
@@ -75,6 +77,7 @@ test('Memory Match shows card content without state labels and prevents matched 
     await page.locator(`[data-card-id="${pair}-word"]`).click();
   }
   await expect(page.getByRole('heading', { name: 'All pairs matched!' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play Again', exact: true })).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.app.brainPowerMemoryEngine.progressRecorded)).toBe(true);
   await page.getByRole('button', { name: 'Back to Brain Power', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Brain Power', exact: true })).toBeVisible();
