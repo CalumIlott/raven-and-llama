@@ -18,6 +18,17 @@ function createGeographyContext() {
   return context;
 }
 
+test('country list search matches names, capitals and continents without accent sensitivity', () => {
+  const context = createGeographyContext();
+  const search = query => context.eval(`filterGeographyCountries(${JSON.stringify(query)})`);
+  assert.equal(search('  MAURITIUS  ')[0].name, 'Mauritius');
+  assert.equal(search('port louis')[0].name, 'Mauritius');
+  assert.ok(search('africa').every(country => country.continent === 'Africa'));
+  assert.equal(search('not-a-country-xyz').length, 0);
+  assert.equal(search('').length, 193);
+  assert.ok(search('cote').some(country => country.name.includes('Ivoire')));
+});
+
 test('geography dataset has sourced, selectable countries across inhabited continents', () => {
   const context = createGeographyContext();
   const continents = Array.from(context.GeographyWorld.continents);

@@ -4542,7 +4542,8 @@ button.phonics-grapheme-tile:disabled { cursor: not-allowed; }
   font-weight: 800;
 }
 
-#app-main[data-page="geography-world"] .geography-country-picker select {
+#app-main[data-page="geography-world"] .geography-country-picker select,
+#app-main[data-page="geography-world"] .geography-country-picker input {
   width: 100%;
   min-height: 2.75rem;
   padding: 0.55rem 0.7rem;
@@ -4552,6 +4553,9 @@ button.phonics-grapheme-tile:disabled { cursor: not-allowed; }
   color: var(--page-ink);
   font: inherit;
 }
+
+#app-main[data-page="geography-world"] .geography-country-group[hidden],
+#app-main[data-page="geography-world"] .geography-country-option[hidden] { display: none !important; }
 
 #app-main[data-page="geography-world"] .geography-map-zoom-controls {
   display: flex;

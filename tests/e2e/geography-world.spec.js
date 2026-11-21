@@ -1,6 +1,28 @@
 const { expect, test } = require('@playwright/test');
 const { setupApp } = require('./support');
 
+test('country search filters the list and keeps the map selection available', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  const search = page.getByRole('searchbox', { name: 'Find a country' });
+  const options = page.locator('.geography-country-option:visible');
+  await search.fill('Port Louis');
+  await expect(search).toBeFocused();
+  await expect(options).toHaveCount(1);
+  await expect(options.first()).toContainText('Mauritius');
+  await expect(page.locator('#geography-country-search-status')).toHaveText('1 country shown');
+  await page.keyboard.press('Tab');
+  await expect(options.first()).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#geography-country-details')).toContainText('Mauritius');
+  await search.fill('no-such-country-xyz');
+  await expect(options).toHaveCount(0);
+  await expect(page.locator('#geography-country-search-status')).toContainText('No countries match');
+  await expect(page.locator('#geography-country-details')).toContainText('Mauritius');
+  await search.fill('');
+  await expect(options).toHaveCount(193);
+});
+
 test('Geography & The World route survives refresh and is linked from the subject card', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre');
