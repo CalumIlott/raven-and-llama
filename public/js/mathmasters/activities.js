@@ -267,6 +267,7 @@ Object.assign(ArcadeEngine.prototype, {
     if (!body) return;
     if (activity.activityId === 'balance-scales') {
       activity.balanceWeights = [];
+      activity.balanceHistory = [];
       this.renderBalanceScaleExercise(question);
       return;
     }
@@ -365,6 +366,7 @@ Object.assign(ArcadeEngine.prototype, {
         ${activity.balanceWeights.map((value, index) => `<button type="button" data-action="arcade-balance-remove" data-index="${index}" aria-label="${value < 0 ? `Remove balloon: subtract ${Math.abs(value)} unit${value === -1 ? '' : 's'}` : `Remove ${value} unit weight`}" class="balance-scale__weight balance-scale__weight--removable${value < 0 ? ' balance-scale__weight--balloon' : ''}">${value < 0 ? '🎈' : ''}${value}<span aria-hidden="true">×</span></button>`).join('') || '<span class="balance-scale-empty">No weights or balloons added yet</span>'}
       </div>
       <div class="balance-scale-actions">
+        <button type="button" data-action="arcade-balance-undo" ${activity.balanceHistory?.length ? '' : 'disabled'} class="btn-ninja rounded-xl px-5 py-3 font-bold disabled:opacity-50">Undo last change</button>
         <button type="button" data-action="arcade-balance-check" class="btn-ninja rounded-xl px-5 py-3 font-bold">Check balance</button>
         <button type="button" data-action="arcade-balance-clear" ${activity.balanceWeights.length ? '' : 'disabled'} class="btn-ninja rounded-xl bg-slate-700 px-5 py-3 font-bold text-white disabled:opacity-50">Clear all</button>
       </div>
@@ -375,6 +377,7 @@ Object.assign(ArcadeEngine.prototype, {
     const activity = this.mathsActivity;
     const denomination = Number(value);
     if (activity?.activityId !== 'balance-scales' || ![1, 2, 5, 10, 20, -1, -2, -5].includes(denomination) || activity.balanceWeights.length >= 20) return;
+    this.rememberBalanceScaleChange();
     activity.balanceWeights.push(denomination);
     this.renderBalanceScaleExercise(activity.question);
     document.querySelector?.(`[data-action="arcade-balance-add"][data-value="${denomination}"]:not(:disabled)`)?.focus?.({ preventScroll: true });
@@ -383,6 +386,7 @@ Object.assign(ArcadeEngine.prototype, {
   removeBalanceScaleWeight(index) {
     const activity = this.mathsActivity;
     if (activity?.activityId !== 'balance-scales' || !Number.isInteger(index) || index < 0 || index >= activity.balanceWeights.length) return;
+    this.rememberBalanceScaleChange();
     const removed = activity.balanceWeights[index];
     activity.balanceWeights.splice(index, 1);
     this.renderBalanceScaleExercise(activity.question);
@@ -391,10 +395,26 @@ Object.assign(ArcadeEngine.prototype, {
 
   clearBalanceScaleWeights() {
     const activity = this.mathsActivity;
-    if (activity?.activityId !== 'balance-scales') return;
+    if (activity?.activityId !== 'balance-scales' || !activity.balanceWeights.length) return;
+    this.rememberBalanceScaleChange();
     activity.balanceWeights = [];
     this.renderBalanceScaleExercise(activity.question);
     document.querySelector?.('[data-action="arcade-balance-add"][data-value="1"]')?.focus?.({ preventScroll: true });
+  },
+
+  rememberBalanceScaleChange() {
+    const activity = this.mathsActivity;
+    activity.balanceHistory = [...(activity.balanceHistory || []), [...activity.balanceWeights]].slice(-20);
+  },
+
+  undoBalanceScaleChange() {
+    const activity = this.mathsActivity;
+    if (activity?.activityId !== 'balance-scales' || !activity.balanceHistory?.length) return false;
+    activity.balanceWeights = activity.balanceHistory.pop();
+    this.renderBalanceScaleExercise(activity.question);
+    document.querySelector?.(activity.balanceHistory.length
+      ? '[data-action="arcade-balance-undo"]' : '[data-action="arcade-balance-add"][data-value="1"]')?.focus?.({ preventScroll: true });
+    return true;
   },
 
   checkBalanceScale() {
