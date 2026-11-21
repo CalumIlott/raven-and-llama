@@ -53,7 +53,7 @@ const GEOGRAPHY_GLOBE_TROTTER_CASES = Object.freeze([
       'Portuguese is its official language.',
       'A large part of the Amazon rainforest lies within its borders.'
     ]
-  }
+  },
   {
     id: 'okavango-waypoint',
     answerCountryId: 'botswana',
