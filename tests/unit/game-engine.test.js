@@ -226,6 +226,24 @@ test('finite quiz sessions resume their saved question after reload', () => {
   assert.equal(sessionValues.size, 0);
 });
 
+test('resuming relaxed practice in standard mode starts a fresh countdown', () => {
+  const sessionValues = new Map();
+  const first = loadGameEngine(sessionValues);
+  first.context.ProfileManager.getActiveProfile = () => ({ practiceTiming: 'relaxed' });
+  first.engine.startCustomQuiz('Practice', [{
+    type: 'standard_choice', prompt: '2 × 2 = ?', answer: 4,
+    options: [3, 4], timeLimitSeconds: 20
+  }], true);
+  const saved = JSON.parse([...sessionValues.values()][0]);
+  assert.equal(saved.timeLeft, null);
+
+  const resumed = loadGameEngine(sessionValues);
+  resumed.context.ProfileManager.getActiveProfile = () => ({ practiceTiming: 'standard' });
+  assert.equal(resumed.engine.restoreSession(), true);
+  assert.equal(resumed.engine.timeLeft, 14);
+  assert.equal(resumed.engine.timerInterval, 1);
+});
+
 test('saved quiz sessions are not restored under a different account', () => {
   const sessionValues = new Map();
   const questions = [{
