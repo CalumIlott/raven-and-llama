@@ -234,7 +234,8 @@ test('individual, mixed, and mastery Times Tables quizzes advance questions', as
   await expect(page.getByRole('heading', { name: 'Times Tables Dojo' })).toBeVisible();
 });
 
-test('a Times Tables quiz resumes at the same question after reloading', async ({ page }) => {
+test('a signed-in Times Tables quiz resumes at the same question after reloading', async ({ page }) => {
+  await registerAccount(page);
   await openTimesTables(page);
   await page.getByRole('button', { name: /Quick Mixed Quiz/ }).click();
   await chooseQuestionAnswer(page);
@@ -243,6 +244,16 @@ test('a Times Tables quiz resumes at the same question after reloading', async (
   await page.reload();
 
   await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible();
+});
+
+test('guest quiz progress stays out of session storage', async ({ page }) => {
+  await openTimesTables(page);
+  await page.getByRole('button', { name: /Quick Mixed Quiz/ }).click();
+  await chooseQuestionAnswer(page);
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem(window.gameEngine.sessionStorageKey))).toBeNull();
+  await page.reload();
+  await expect(page.getByText('Question 2 of 12', { exact: true })).toHaveCount(0);
 });
 
 test('signing in during a guest quiz discards the guest session', async ({ page }) => {
