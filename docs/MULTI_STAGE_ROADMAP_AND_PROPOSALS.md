@@ -172,7 +172,7 @@ Manipulative Mindset: "Drag pizza slices into the box until you have exactly one
   - Students collect 3 observational clues and select the civilization or historical period that produced it, unlocking the artifact for the museum collection.
 
 ### 5.4 Globe Trotter Clue Trail (Geography Hub)
-* **Status — first version implemented**: Five replayable, three-clue passport mysteries work with either map selection or the keyboard-friendly country list. A correct answer opens the existing flag and fact panel. Broader mystery content remains optional expansion.
+* **Status — expanded**: Ten replayable, three-clue passport mysteries span Africa, Asia, Europe, Oceania, and South America. Learners can answer from the map or keyboard-friendly country list; solving a mystery reveals the country detail panel and links the clue evidence to its source.
 
 ---
 
