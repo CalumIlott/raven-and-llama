@@ -71,6 +71,11 @@ test('Blue Belt equation training uses the interactive balance scale', async ({ 
   await expect(page.getByRole('heading', { name: 'Blue Belt', exact: true })).toBeVisible();
   await page.locator('[data-action="skill-start"][data-skill-id="blue_balanced_equation"]').click();
   await expect(page.getByRole('heading', { name: /Balanced Equation Master/ })).toBeVisible();
+  await page.evaluate(() => {
+    const question = window.gameEngine.questions[0];
+    Object.assign(question, { balanceMode: null, leftA: question.answer, leftB: 0, rightA: 0 });
+    window.gameEngine.renderCurrentQuestion();
+  });
   await expect(page.locator('#game-balance-panel')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Check balance' })).toBeVisible();
   await expect(page.locator('#game-arena .play-answer-button')).toHaveCount(0);

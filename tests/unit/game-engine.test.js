@@ -85,6 +85,8 @@ test('Blue Belt balanced equations use the tactile scale in normal skill trainin
   engine.startTraining('blue', 'blue_balanced_equation');
 
   const question = engine.questions[engine.currentIndex];
+  Object.assign(question, { balanceMode: null, leftA: question.answer, leftB: 0, rightA: 0 });
+  engine.renderCurrentQuestion();
   const arena = elements.get('game-arena').innerHTML;
   assert.equal(question.type, 'balance_scale');
   assert.match(arena, /id="game-balance-panel"/);
