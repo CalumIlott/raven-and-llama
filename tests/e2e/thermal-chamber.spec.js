@@ -17,6 +17,14 @@ test('thermal chamber shows phase changes and condensation without requiring dra
   const phase = page.locator('#thermal-chamber-phase');
   await expect(temperature).toHaveValue('20');
   await expect(phase).toHaveText('Liquid water');
+  expect(await page.locator('.thermal-particle').first().evaluate(element => element.style.getPropertyValue('--particle-x'))).toBe('19%');
+  const warm = page.getByRole('button', { name: 'Warm +10°C' });
+  await warm.focus();
+  await warm.press('Enter');
+  await expect(warm).toBeFocused();
+  await expect(temperature).toHaveValue('30');
+  await warm.press('Enter');
+  await expect(temperature).toHaveValue('40');
   await setTemperature(page, -10);
   await expect(phase).toHaveText('Solid ice');
   await expect(page.locator('.thermal-particle--solid')).toHaveCount(16);
@@ -27,6 +35,7 @@ test('thermal chamber shows phase changes and condensation without requiring dra
   await setTemperature(page, 130);
   await expect(phase).toHaveText('Water vapour');
   await page.getByRole('button', { name: 'Close cool lid' }).click();
+  await expect(page.getByRole('button', { name: 'Open cool lid' })).toBeFocused();
   await expect(page.locator('#thermal-chamber-lid-feedback')).toContainText('condenses into liquid droplets');
   await expect(page.locator('.thermal-condensation')).toContainText('💧');
 

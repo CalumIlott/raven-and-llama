@@ -2,6 +2,22 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const { createBrowserContext, loadBrowserScripts } = require('../helpers/load-browser-scripts');
 
+test('temperature and lid controls update the existing chamber instead of replacing controls', () => {
+  const context = createBrowserContext();
+  require('node:vm').runInContext('class App {}; window.app = new App();', context);
+  loadBrowserScripts(context, 'public/js/science/thermal-chamber.js');
+  const app = context.app;
+  app.thermalChamberGame = { temperatureC: 20, lidClosed: false };
+  let updates = 0;
+  app.updateThermalChamberDisplay = () => { updates++; return true; };
+  app.renderThermalChamber = () => assert.fail('Controls must survive adjustments');
+  assert.equal(app.adjustThermalChamberTemperature(10), true);
+  assert.equal(app.thermalChamberGame.temperatureC, 30);
+  assert.equal(app.toggleThermalChamberLid(), true);
+  assert.equal(app.thermalChamberGame.lidClosed, true);
+  assert.equal(updates, 2);
+});
+
 test('thermal chamber classifies water states at the modeled phase changes', () => {
   const context = createBrowserContext();
   context.eval = source => require('node:vm').runInContext(source, context);
