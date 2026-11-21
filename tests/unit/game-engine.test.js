@@ -206,7 +206,7 @@ test('finite quiz sessions resume their saved question after reload', () => {
     { type: 'standard_choice', prompt: '2 × 2 = ?', answer: 4, options: [3, 4], timeLimitSeconds: 20 },
     { type: 'standard_choice', prompt: '3 × 3 = ?', answer: 9, options: [8, 9], timeLimitSeconds: 20 }
   ];
-  const first = loadGameEngine(sessionValues);
+  const first = loadGameEngine(sessionValues, { id: 'account-1' });
 
   first.engine.startCustomQuiz('Mixed Timetables Sprint', questions, true);
   first.engine.currentIndex = 1;
@@ -214,7 +214,7 @@ test('finite quiz sessions resume their saved question after reload', () => {
   first.engine.timeLeft = 12;
   first.engine.saveSession();
 
-  const resumed = loadGameEngine(sessionValues);
+  const resumed = loadGameEngine(sessionValues, { id: 'account-1' });
   assert.equal(resumed.engine.restoreSession(), true);
   assert.equal(resumed.engine.currentIndex, 1);
   assert.equal(resumed.engine.score, 1);
@@ -228,7 +228,7 @@ test('finite quiz sessions resume their saved question after reload', () => {
 
 test('resuming relaxed practice in standard mode starts a fresh countdown', () => {
   const sessionValues = new Map();
-  const first = loadGameEngine(sessionValues);
+  const first = loadGameEngine(sessionValues, { id: 'account-1' });
   first.context.ProfileManager.getActiveProfile = () => ({ practiceTiming: 'relaxed' });
   first.engine.startCustomQuiz('Practice', [{
     type: 'standard_choice', prompt: '2 × 2 = ?', answer: 4,
@@ -237,7 +237,7 @@ test('resuming relaxed practice in standard mode starts a fresh countdown', () =
   const saved = JSON.parse([...sessionValues.values()][0]);
   assert.equal(saved.timeLeft, null);
 
-  const resumed = loadGameEngine(sessionValues);
+  const resumed = loadGameEngine(sessionValues, { id: 'account-1' });
   resumed.context.ProfileManager.getActiveProfile = () => ({ practiceTiming: 'standard' });
   assert.equal(resumed.engine.restoreSession(), true);
   assert.equal(resumed.engine.timeLeft, 14);
@@ -300,7 +300,7 @@ test('numeric-entry quiz questions accept equivalent number formats', () => {
 });
 
 test('ordinary quizzes let learners retry after an incorrect answer', () => {
-  const { engine, elements, delayedCallbacks, sessionValues } = loadGameEngine();
+  const { engine, elements, delayedCallbacks, sessionValues } = loadGameEngine(new Map(), { id: 'account-1' });
   engine.startCustomQuiz('Retry practice', [
     { type: 'standard_choice', prompt: '2 + 2 = ?', answer: 4, options: [3, 4], timeLimitSeconds: 20 },
     { type: 'standard_choice', prompt: '3 + 3 = ?', answer: 6, options: [5, 6], timeLimitSeconds: 20 }
@@ -320,4 +320,17 @@ test('ordinary quizzes let learners retry after an incorrect answer', () => {
 
   assert.equal(engine.currentIndex, 1);
   assert.equal(engine.score, 1);
+});
+
+test('guest quizzes never write progress and discard legacy saved sessions', () => {
+  const sessions = new Map();
+  const { engine } = loadGameEngine(sessions);
+  engine.startCustomQuiz('Guest practice', [{
+    type: 'standard_choice', prompt: '2 + 2 = ?', answer: 4,
+    options: [3, 4], timeLimitSeconds: 20
+  }]);
+  assert.equal(sessions.size, 0);
+  sessions.set(engine.sessionStorageKey, JSON.stringify({ accountId: 'guest' }));
+  assert.equal(engine.restoreSession(), false);
+  assert.equal(sessions.size, 0);
 });

@@ -55,6 +55,10 @@ class GameEngine {
   }
 
   saveSession() {
+    if (!window.ProfileManager?.account?.id) {
+      this.clearSavedSession();
+      return;
+    }
     if (this.mode === 'endless' || !this.questions.length || this.currentIndex >= this.totalQuestions) return;
     try {
       window.sessionStorage?.setItem(this.sessionStorageKey, JSON.stringify({
@@ -79,6 +83,10 @@ class GameEngine {
   }
 
   restoreSession() {
+    if (!window.ProfileManager?.account?.id) {
+      this.clearSavedSession();
+      return false;
+    }
     let saved;
     try {
       saved = JSON.parse(window.sessionStorage?.getItem(this.sessionStorageKey) || 'null');
