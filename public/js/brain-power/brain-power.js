@@ -534,6 +534,7 @@ Object.assign(App.prototype, {
     if (!isCorrect) {
       game.message = 'Not quite. Look at how the numbers change, then try again.';
       this.renderBrainPowerPattern();
+      document.getElementById('app-main')?.querySelector?.('[data-action="brain-pattern-retry"]')?.focus?.({ preventScroll: true });
       return false;
     }
 
@@ -548,6 +549,7 @@ Object.assign(App.prototype, {
     if (!this.brainPowerPatternEngine?.allowRetry()) return false;
     this.brainPowerPatternGame.message = 'Try another choice. What is the step between the numbers?';
     this.renderBrainPowerPattern();
+    document.getElementById('app-main')?.querySelector?.('[data-action="brain-pattern-answer"]')?.focus?.({ preventScroll: true });
     return true;
   },
 
