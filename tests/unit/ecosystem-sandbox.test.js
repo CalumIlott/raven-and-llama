@@ -66,3 +66,28 @@ test('five stable days reach the challenge goal while a collapsed group blocks i
   assert.equal(context.EcosystemSandbox.isGoalReached(app.ecosystemSandboxGame), false);
   assert.match(context.main.innerHTML, /At least one group disappeared/);
 });
+
+test('population timeline records day changes and replaces a point after same-day adjustments', () => {
+  const context = createEcosystemContext();
+  const app = context.app;
+  app.showScienceEcosystemSandbox();
+
+  assert.equal(app.ecosystemSandboxGame.timeline.length, 1);
+  assert.equal(app.ecosystemSandboxGame.timeline[0].populations.algae, 12);
+  app.adjustScienceEcosystemPopulation('algae', -1);
+  assert.equal(app.ecosystemSandboxGame.timeline.length, 1);
+  assert.equal(app.ecosystemSandboxGame.timeline[0].populations.algae, 11);
+
+  app.advanceScienceEcosystemDay();
+  assert.equal(app.ecosystemSandboxGame.timeline.length, 2);
+  assert.equal(app.ecosystemSandboxGame.timeline[1].day, 1);
+  assert.equal(app.ecosystemSandboxGame.timeline[1].populations.algae, 10);
+  app.adjustScienceEcosystemPopulation('fish', 1);
+  assert.equal(app.ecosystemSandboxGame.timeline.length, 2);
+  assert.equal(app.ecosystemSandboxGame.timeline[1].populations.fish, 3);
+  assert.match(context.main.innerHTML, /ecosystem-timeline__point--fish[^>]*data-day="1" data-population="3"/);
+
+  app.resetScienceEcosystemSandbox();
+  assert.equal(app.ecosystemSandboxGame.timeline.length, 1);
+  assert.equal(app.ecosystemSandboxGame.timeline[0].day, 0);
+});

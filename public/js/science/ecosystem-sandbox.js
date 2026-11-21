@@ -9,12 +9,70 @@ const ECOSYSTEM_SANDBOX_SPECIES = Object.freeze([
 ]);
 
 function createEcosystemSandboxState() {
+  const populations = { algae: 12, tadpoles: 3, fish: 2, kingfishers: 1 };
   return {
-    populations: { algae: 12, tadpoles: 3, fish: 2, kingfishers: 1 },
+    populations,
+    timeline: [{ day: 0, populations: { ...populations } }],
     day: 0,
     challengeFailed: false,
     message: 'Adjust the pond, then advance one day. Keep every group present for five days.'
   };
+}
+
+function recordEcosystemSandboxTimeline(game) {
+  const populations = { ...game.populations };
+  const currentIndex = game.timeline.findIndex(entry => entry.day === game.day);
+  if (currentIndex === -1) game.timeline.push({ day: game.day, populations });
+  else game.timeline[currentIndex] = { day: game.day, populations };
+}
+
+function renderEcosystemSandboxTimeline(game) {
+  const plot = { left: 54, right: 610, top: 24, bottom: 174 };
+  const xForDay = day => plot.left + (plot.right - plot.left) * day / ECOSYSTEM_SANDBOX_DAYS;
+  const yForPopulation = population => plot.bottom - (plot.bottom - plot.top) * population / ECOSYSTEM_SANDBOX_MAX_POPULATION;
+  const days = game.timeline;
+  const gridLines = [0, 3, 6, 9, 12].map(population => {
+    const y = yForPopulation(population);
+    return `<g class="ecosystem-timeline__grid"><line x1="${plot.left}" y1="${y}" x2="${plot.right}" y2="${y}"/><text x="${plot.left - 12}" y="${y + 4}" text-anchor="end">${population}</text></g>`;
+  }).join('');
+  const dayLabels = Array.from({ length: ECOSYSTEM_SANDBOX_DAYS + 1 }, (_, day) =>
+    `<text class="ecosystem-timeline__day" x="${xForDay(day)}" y="${plot.bottom + 22}" text-anchor="middle">${day}</text>`
+  ).join('');
+  const series = ECOSYSTEM_SANDBOX_SPECIES.map(species => {
+    const points = days.map(entry => ({
+      day: entry.day,
+      population: entry.populations[species.id],
+      x: xForDay(entry.day),
+      y: yForPopulation(entry.populations[species.id])
+    }));
+    const path = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ');
+    const markers = points.map(point => `<circle class="ecosystem-timeline__point ecosystem-timeline__point--${species.id}" data-day="${point.day}" data-population="${point.population}" cx="${point.x}" cy="${point.y}" r="5"><title>Day ${point.day}: ${species.name}, ${point.population}</title></circle>`).join('');
+    return `<path class="ecosystem-timeline__line ecosystem-timeline__line--${species.id}" d="${path}"/>${markers}`;
+  }).join('');
+  const legend = ECOSYSTEM_SANDBOX_SPECIES.map(species =>
+    `<span class="ecosystem-timeline__legend-item ecosystem-timeline__legend-item--${species.id}"><span aria-hidden="true"></span>${species.icon} ${species.name}</span>`
+  ).join('');
+
+  return `
+    <figure class="ecosystem-timeline" aria-labelledby="ecosystem-timeline-title">
+      <figcaption>
+        <h2 id="ecosystem-timeline-title">Population over time</h2>
+        <p>Each line follows one group from day 0 to day 5. Adjustments change the current day; advancing adds the next point.</p>
+      </figcaption>
+      <svg class="ecosystem-timeline__chart" viewBox="0 0 640 214" role="img" aria-labelledby="ecosystem-timeline-svg-title ecosystem-timeline-svg-desc">
+        <title id="ecosystem-timeline-svg-title">Pond population timeline</title>
+        <desc id="ecosystem-timeline-svg-desc">A line chart of algae, tadpole, fish, and kingfisher populations. The vertical axis ranges from zero to twelve groups; the horizontal axis shows days zero through five.</desc>
+        ${gridLines}
+        <line class="ecosystem-timeline__axis" x1="${plot.left}" y1="${plot.top}" x2="${plot.left}" y2="${plot.bottom}"/>
+        <line class="ecosystem-timeline__axis" x1="${plot.left}" y1="${plot.bottom}" x2="${plot.right}" y2="${plot.bottom}"/>
+        <text class="ecosystem-timeline__axis-label" x="14" y="${plot.top + (plot.bottom - plot.top) / 2}" text-anchor="middle" transform="rotate(-90 14 ${plot.top + (plot.bottom - plot.top) / 2})">Groups</text>
+        ${series}
+        ${dayLabels}
+        <text class="ecosystem-timeline__axis-label" x="${(plot.left + plot.right) / 2}" y="210" text-anchor="middle">Day</text>
+      </svg>
+      <div class="ecosystem-timeline__legend" aria-label="Chart legend">${legend}</div>
+    </figure>
+  `;
 }
 
 function adjustEcosystemSandboxPopulation(populations, speciesId, delta) {
@@ -78,6 +136,7 @@ Object.assign(App.prototype, {
     const populations = adjustEcosystemSandboxPopulation(game.populations, speciesId, delta);
     if (!populations) return false;
     game.populations = populations;
+    recordEcosystemSandboxTimeline(game);
     game.message = `${ECOSYSTEM_SANDBOX_SPECIES.find(species => species.id === speciesId).name}: ${populations[speciesId]} groups.`;
     this.renderScienceEcosystemSandbox(`[data-action="ecosystem-sandbox-adjust"][data-species-id="${speciesId}"][data-delta="${delta}"]`);
     return true;
@@ -91,6 +150,7 @@ Object.assign(App.prototype, {
     if (!after) return false;
     game.day += 1;
     game.populations = after;
+    recordEcosystemSandboxTimeline(game);
     game.challengeFailed = game.challengeFailed || ECOSYSTEM_SANDBOX_SPECIES.some(species => after[species.id] === 0);
     const declined = ECOSYSTEM_SANDBOX_SPECIES.filter(species => after[species.id] < before[species.id]);
     const increased = ECOSYSTEM_SANDBOX_SPECIES.filter(species => after[species.id] > before[species.id]);
@@ -172,6 +232,8 @@ Object.assign(App.prototype, {
         <section class="ecosystem-populations" aria-label="Pond populations">
           ${groupCards}
         </section>
+
+        ${renderEcosystemSandboxTimeline(game)}
 
         <section class="ecosystem-actions" aria-label="Simulation controls">
           <button type="button" data-action="ecosystem-sandbox-next-day" ${finished ? 'disabled' : ''}>Advance one day</button>

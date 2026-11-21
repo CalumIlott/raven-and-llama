@@ -368,6 +368,39 @@ html.theme-light .fraction-pizza-eyebrow { color: #92400e; }
 .ecosystem-species__controls button:hover:not(:disabled),
 .ecosystem-species__controls button:focus-visible { background: #047857; outline: 3px solid #fcd34d; outline-offset: 2px; }
 .ecosystem-species__controls button:disabled { cursor: not-allowed; opacity: 0.5; }
+.ecosystem-timeline {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #475569;
+  border-radius: 1rem;
+  background: #0f1f1b;
+  color: #f8fafc;
+}
+.ecosystem-timeline h2 { margin: 0; font-size: 1.1rem; font-weight: 900; }
+.ecosystem-timeline figcaption p { margin: 0.25rem 0 0.5rem; color: #cbd5e1; font-size: 0.85rem; }
+.ecosystem-timeline__chart { display: block; width: 100%; height: auto; overflow: visible; }
+.ecosystem-timeline__grid line { stroke: #334155; stroke-width: 1; }
+.ecosystem-timeline__grid text,
+.ecosystem-timeline__day,
+.ecosystem-timeline__axis-label { fill: #cbd5e1; font-family: inherit; font-size: 12px; }
+.ecosystem-timeline__axis { stroke: #94a3b8; stroke-width: 1.5; }
+.ecosystem-timeline__line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ecosystem-timeline__point { stroke: #0f172a; stroke-width: 2; }
+.ecosystem-timeline__line--algae { stroke: #34d399; }
+.ecosystem-timeline__point--algae { fill: #34d399; }
+.ecosystem-timeline__line--tadpoles { stroke: #a3e635; }
+.ecosystem-timeline__point--tadpoles { fill: #a3e635; }
+.ecosystem-timeline__line--fish { stroke: #38bdf8; }
+.ecosystem-timeline__point--fish { fill: #38bdf8; }
+.ecosystem-timeline__line--kingfishers { stroke: #c4b5fd; }
+.ecosystem-timeline__point--kingfishers { fill: #c4b5fd; }
+.ecosystem-timeline__legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.35rem; }
+.ecosystem-timeline__legend-item { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 800; }
+.ecosystem-timeline__legend-item > span { width: 0.65rem; height: 0.65rem; border-radius: 50%; }
+.ecosystem-timeline__legend-item--algae > span { background: #34d399; }
+.ecosystem-timeline__legend-item--tadpoles > span { background: #a3e635; }
+.ecosystem-timeline__legend-item--fish > span { background: #38bdf8; }
+.ecosystem-timeline__legend-item--kingfishers > span { background: #c4b5fd; }
 .ecosystem-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; margin: 1rem 0; }
 .ecosystem-actions button { min-height: 3rem; padding: 0.65rem 1.2rem; border: 1px solid #34d399; border-radius: 0.8rem; background: #065f46; color: #fff; font-weight: 900; }
 .ecosystem-actions button:hover:not(:disabled),
@@ -399,6 +432,13 @@ html.theme-light .ecosystem-challenge p { color: #065f46; }
 html.theme-light .ecosystem-day-count { color: #064e3b; }
 html.theme-light .ecosystem-day-count output { color: #92400e; }
 html.theme-light .ecosystem-species { border-color: #94a3b8; background: #f8fafc; color: #0f172a; }
+html.theme-light .ecosystem-timeline { border-color: #94a3b8; background: #f8fafc; color: #0f172a; }
+html.theme-light .ecosystem-timeline figcaption p { color: #475569; }
+html.theme-light .ecosystem-timeline__grid line { stroke: #cbd5e1; }
+html.theme-light .ecosystem-timeline__grid text,
+html.theme-light .ecosystem-timeline__day,
+html.theme-light .ecosystem-timeline__axis-label { fill: #475569; }
+html.theme-light .ecosystem-timeline__axis { stroke: #64748b; }
 html.theme-light .ecosystem-species__title p { color: #065f46; }
 html.theme-light .ecosystem-species__food,
 html.theme-light .ecosystem-species__count { color: #1e293b; }
