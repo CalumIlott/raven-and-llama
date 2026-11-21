@@ -86,6 +86,12 @@ test('Code Breaker applies clue feedback, accepts a correct code, and returns to
   await page.locator('[data-action="brain-code-start"][data-difficulty="easy"]').click();
   await expect(page.getByRole('heading', { name: 'Crack the 3-position code' })).toBeVisible();
   await expect(page.locator('[data-action="brain-code-color"]').first().locator('option')).toHaveCount(3);
+  const firstColor = page.locator('[data-action="brain-code-color"]').first();
+  await firstColor.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(firstColor).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('[data-action="brain-code-color"]').nth(1)).toBeFocused();
 
   const guesses = await page.evaluate(() => {
     const game = window.app.brainPowerCodeGame;
