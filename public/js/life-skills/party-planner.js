@@ -219,7 +219,7 @@ Object.assign(App.prototype, {
     if (!quantities) return false;
     game.quantities = quantities;
     game.message = '';
-    this.renderPartyPlanner();
+    this.renderPartyPlanner(itemId, delta);
     return true;
   },
 
@@ -264,7 +264,7 @@ Object.assign(App.prototype, {
     return true;
   },
 
-  renderPartyPlanner() {
+  renderPartyPlanner(focusItemId = null, focusDelta = null) {
     const main = document.getElementById('app-main');
     const game = this.partyPlannerGame;
     if (!main || !game) return;
@@ -350,5 +350,12 @@ Object.assign(App.prototype, {
           </div>
         </section>
       </div>`;
+    if (focusItemId && game.items.some(item => item.id === focusItemId)) {
+      const selector = `[data-action="party-plan-quantity"][data-item-id="${focusItemId}"]`;
+      const preferred = main.querySelector?.(`${selector}[data-delta="${focusDelta}"]`);
+      const target = preferred && !preferred.disabled ? preferred
+        : main.querySelector?.(`${selector}:not(:disabled)`);
+      target?.focus?.({ preventScroll: true });
+    }
   }
 });

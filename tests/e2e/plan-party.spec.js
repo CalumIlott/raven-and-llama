@@ -10,6 +10,22 @@ async function applyPartyQuantities(page, items, quantities) {
   }
 }
 
+test('party quantities retain keyboard focus through both limits', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/life-skills/party-planner');
+  const item = await page.evaluate(() => window.app.partyPlannerGame.items.find(item => item.maxQuantity > 1));
+  const control = delta => page.locator(`[data-action="party-plan-quantity"][data-item-id="${item.id}"][data-delta="${delta}"]`);
+  await control(1).focus();
+  for (let quantity = 1; quantity <= item.maxQuantity; quantity++) {
+    await page.keyboard.press('Enter');
+    await expect(control(quantity === item.maxQuantity ? -1 : 1)).toBeFocused();
+  }
+  for (let quantity = item.maxQuantity - 1; quantity >= 0; quantity--) {
+    await page.keyboard.press('Enter');
+    await expect(control(quantity === 0 ? 1 : -1)).toBeFocused();
+  }
+});
+
 test('Plan a Party has a refresh-safe Life Skills route and preserves existing activities', async ({ page }) => {
   await setupApp(page);
   await page.goto('/learning-centre');
