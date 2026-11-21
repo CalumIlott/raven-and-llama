@@ -64,7 +64,7 @@ test('Globe Trotter reveals clues and lets learners solve a country mystery from
   const panel = page.locator('#geography-globe-trail-panel');
   await expect(panel).toBeVisible();
   await expect(panel.locator('ol li')).toHaveCount(1);
-  await expect(panel.locator('[role="status"]')).toContainText('Select your guess');
+  await expect(panel.locator('[role="status"]')).toContainText('Explore countries');
   const { answerCountryId, wrongCountryId, sourceName, sourceUrl } = await page.evaluate(() => {
     const trailCase = window.app.geographyGlobeTrail.case;
     const answerCountryId = trailCase.answerCountryId;
@@ -73,13 +73,14 @@ test('Globe Trotter reveals clues and lets learners solve a country mystery from
   });
 
   await page.locator(`.geography-country-option[data-country-id="${wrongCountryId}"]`).click();
+  await panel.getByRole('button', { name: 'Check destination' }).click();
   await expect(panel.locator('[role="status"]')).toContainText('Not this stop');
-  await expect(page.getByRole('heading', { name: 'Canada', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: 'Reveal next clue' }).click();
   await page.getByRole('button', { name: 'Reveal next clue' }).click();
   await expect(panel.locator('ol li')).toHaveCount(3);
   await page.locator(`.geography-country-option[data-country-id="${answerCountryId}"]`).click();
+  await panel.getByRole('button', { name: 'Check destination' }).click();
 
   await expect(panel.locator('[role="status"]')).toContainText('Passport stamp earned');
   const sourceLink = panel.getByRole('link', { name: sourceName, exact: true });
@@ -108,6 +109,7 @@ test('Globe Trotter accepts the enlarged Mauritius island marker as a clue answe
     return { x: point.x, y: point.y };
   });
   await page.mouse.click(hitPoint.x, hitPoint.y);
+  await page.getByRole('button', { name: 'Check destination' }).click();
 
   await expect(page.locator('#geography-globe-trail-status')).toContainText('Passport stamp earned');
   await expect(page.getByRole('heading', { name: 'Mauritius', exact: true })).toBeVisible();
@@ -433,4 +435,76 @@ test('crowded small countries can be selected by map and country list on mobile'
   await expect(page.getByRole('heading', { name: 'Italy', exact: true })).toBeVisible();
   await page.locator('.geography-country-option[data-country-id="singapore"]').click();
   await expect(page.getByRole('heading', { name: 'Singapore', exact: true })).toBeVisible();
+});
+
+test('Globe Trotter lets learners compare countries before checking a destination', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+  const panel = page.locator('#geography-globe-trail-panel');
+  await page.locator('.geography-country-option[data-country-id="canada"]').click();
+  await expect(page.getByRole('heading', { name: 'Canada', exact: true })).toBeVisible();
+  await expect(panel.locator('[role="status"]')).not.toContainText('Passport stamp');
+  await panel.getByRole('button', { name: 'Add to shortlist' }).click();
+  await page.locator('.geography-country-option[data-country-id="japan"]').click();
+  await panel.getByRole('button', { name: 'Add to shortlist' }).click();
+  await expect(panel.getByRole('button', { name: 'Select Canada' })).toBeVisible();
+  await panel.getByRole('button', { name: 'Select Canada' }).click();
+  await expect(panel.getByText('Current destination: Canada')).toBeVisible();
+  await panel.getByRole('button', { name: 'Remove Canada' }).click();
+  await expect(panel.getByRole('button', { name: 'Select Canada' })).toHaveCount(0);
+  await panel.getByRole('button', { name: 'New mystery' }).click();
+  await expect(panel.getByRole('button', { name: 'Select Japan' })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Check destination' })).toBeDisabled();
+});
+
+test('Globe Trotter notebook retains keyboard focus and fits a narrow screen', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+  const panel = page.locator('#geography-globe-trail-panel');
+  await page.locator('.geography-country-option[data-country-id="canada"]').focus();
+  await page.keyboard.press('Enter');
+  await panel.getByRole('button', { name: 'Add to shortlist' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.getByRole('button', { name: 'Remove from shortlist' })).toBeFocused();
+  await panel.getByRole('button', { name: 'Reveal next clue' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.getByRole('button', { name: 'Reveal next clue' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(panel.getByRole('button', { name: 'Check destination' })).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test('Globe Trotter explains when its three-country shortlist is full', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+  const panel = page.locator('#geography-globe-trail-panel');
+  for (const id of ['canada', 'japan', 'fiji', 'brazil']) {
+    await page.locator(`.geography-country-option[data-country-id="${id}"]`).click();
+    await panel.getByRole('button', { name: 'Add to shortlist' }).click();
+  }
+  await expect(panel.locator('[role="status"]')).toContainText('shortlist is full');
+  await expect(panel.getByRole('button', { name: 'Select Brazil' })).toHaveCount(0);
+  await expect(panel.getByRole('button', { name: 'Select Canada' })).toBeVisible();
+});
+
+test('Globe Trotter shortlist works while the country list is filtered', async ({ page }) => {
+  await setupApp(page);
+  await page.goto('/learning-centre/geography');
+  await page.getByRole('button', { name: 'Launch Globe Trotter' }).click();
+  const panel = page.locator('#geography-globe-trail-panel');
+  const search = page.getByRole('searchbox', { name: 'Search country list' });
+  await search.fill('Japan');
+  await page.locator('.geography-country-option[data-country-id="japan"]:visible').click();
+  await panel.getByRole('button', { name: 'Add to shortlist' }).click();
+  await search.fill('Canada');
+  await page.locator('.geography-country-option[data-country-id="canada"]:visible').click();
+  await panel.getByRole('button', { name: 'Select Japan' }).click();
+  await expect(page.locator('#geography-country-details')).toContainText('Japan');
+  await expect(search).toHaveValue('Canada');
+  await expect(panel.getByText('Current destination: Japan')).toBeVisible();
+  await expect(panel.locator('[role="status"]')).not.toContainText('Passport stamp');
 });

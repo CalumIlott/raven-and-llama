@@ -123,8 +123,16 @@ function isGeographyGlobeTrailAnswer(trailCase, countryId) {
     trailCase.answerCountryId === countryId);
 }
 
+function toggleGeographyTrailCandidate(candidates, countryId) {
+  const current = Array.isArray(candidates) ? candidates : [];
+  if (typeof countryId !== 'string' || !/^[a-z0-9-]+$/.test(countryId)) return [...current];
+  if (current.includes(countryId)) return current.filter(id => id !== countryId);
+  return current.length < 3 ? [...current, countryId] : [...current];
+}
+
 window.GeographyGlobeTrail = Object.freeze({
   cases: GEOGRAPHY_GLOBE_TROTTER_CASES,
   chooseCase: chooseGeographyGlobeTrailCase,
+  toggleCandidate: toggleGeographyTrailCandidate,
   isCorrectAnswer: isGeographyGlobeTrailAnswer
 });
