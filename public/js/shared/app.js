@@ -227,6 +227,7 @@ class App {
       case 'history-timeline-start': this.startHistoryTimelineActivity(); break;
       case 'history-artifact-start': this.startHistoryArtifactDetective(); break;
       case 'history-artifact-clue': this.revealHistoryArtifactClue(); break;
+      case 'history-artifact-evidence': this.selectHistoryArtifactEvidence(Number(target.dataset.clueIndex)); break;
       case 'history-artifact-answer': this.chooseHistoryArtifactAnswer(target.value); break;
       case 'history-artifact-submit': this.submitHistoryArtifactAnswer(); break;
       case 'history-artifact-next': this.advanceHistoryArtifactCase(); break;

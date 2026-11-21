@@ -120,7 +120,7 @@ Object.assign(App.prototype, {
   startHistoryArtifactDetective(random = Math.random) {
     this.currentView = 'history-artifact-detective';
     this.historyArtifactCases = shuffleHistoryArtifactCases(HISTORY_ARTIFACT_CASES, random);
-    this.historyArtifactGame = { cluesSeen: 0, answer: null, submitted: false };
+    this.historyArtifactGame = { cluesSeen: 0, answer: null, evidenceIndex: null, submitted: false };
     this.rememberModule('history-artifact-detective', '/learning-centre/history/artifact-detective');
     this.historyArtifactActivityEngine = new ActivityEngine();
     this.historyArtifactActivityEngine.startQuiz({
@@ -153,6 +153,14 @@ Object.assign(App.prototype, {
     return true;
   },
 
+  selectHistoryArtifactEvidence(index) {
+    const game = this.historyArtifactGame;
+    if (!game || game.submitted || !Number.isInteger(index) || index < 0 || index >= game.cluesSeen) return false;
+    game.evidenceIndex = game.evidenceIndex === index ? null : index;
+    this.renderHistoryArtifactDetective(`[data-action="history-artifact-evidence"][data-clue-index="${index}"]`);
+    return true;
+  },
+
   submitHistoryArtifactAnswer() {
     const game = this.historyArtifactGame;
     if (!game || game.submitted || game.cluesSeen < 3 || !game.answer) return false;
@@ -174,6 +182,7 @@ Object.assign(App.prototype, {
       return true;
     }
     game.cluesSeen = 0;
+    game.evidenceIndex = null;
     game.answer = null;
     game.submitted = false;
     this.renderHistoryArtifactDetective('[data-action="history-artifact-clue"]');
@@ -189,13 +198,18 @@ Object.assign(App.prototype, {
     const index = this.historyArtifactActivityEngine.currentIndex;
     const item = this.historyArtifactCases[index] || this.historyArtifactCases.at(-1);
     const choice = HISTORY_ARTIFACT_CHOICES.find(entry => entry.id === game.answer);
+    const selectedEvidence = Number.isInteger(game.evidenceIndex) ? item.clues[game.evidenceIndex] : null;
     const clues = item.clues.slice(0, game.cluesSeen).map(([label, clue], clueIndex) =>
-      `<li><strong>${escapeArtifactHtml(label)}:</strong> ${escapeArtifactHtml(clue)}</li>`).join('');
+      `<li><strong>${escapeArtifactHtml(label)}:</strong> ${escapeArtifactHtml(clue)}
+      <button type="button" data-action="history-artifact-evidence" data-clue-index="${clueIndex}"
+        class="history-secondary-button" aria-pressed="${game.evidenceIndex === clueIndex}" ${game.submitted ? 'disabled' : ''}>
+        ${game.evidenceIndex === clueIndex ? 'Evidence noted' : `Note clue ${clueIndex + 1} as evidence`}</button></li>`).join('');
     const feedback = game.submitted ? `
       <section class="artifact-result" role="status" aria-live="polite">
         <h2>${game.correct ? 'Evidence matched!' : 'Case revealed'}</h2>
         <p><strong>${escapeArtifactHtml(item.name)}</strong> — ${escapeArtifactHtml(item.period)}. ${escapeArtifactHtml(item.explanation)}</p>
         <p>Material: ${escapeArtifactHtml(item.material)}</p>
+        ${selectedEvidence ? `<p><strong>Your supporting observation:</strong> ${escapeArtifactHtml(selectedEvidence[0])}: ${escapeArtifactHtml(selectedEvidence[1])}</p>` : ''}
         <p>Source: <a href="${escapeArtifactHtml(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeArtifactHtml(item.sourceName)}</a></p>
         <button type="button" data-action="history-artifact-next" class="history-primary-button">${index === this.historyArtifactCases.length - 1 ? 'Finish investigation' : 'Next artifact'}</button>
       </section>` : '';
@@ -207,6 +221,9 @@ Object.assign(App.prototype, {
         ${game.complete ? `<section class="artifact-result" role="status"><h2>Investigation complete</h2><p>You examined all ${this.historyArtifactCases.length} artifacts in this finite collection.</p><button type="button" data-action="history-artifact-start" class="history-primary-button">Investigate again</button></section>` : `
           <section class="artifact-case" aria-labelledby="artifact-case-title"><p class="history-eyebrow">Case ${index + 1}</p><h2 id="artifact-case-title">Unknown artifact</h2><p>Material and period are hidden until you submit your conclusion.</p>
             <ol class="artifact-clues" aria-live="polite">${clues}</ol>
+            <p class="artifact-notebook" role="status">${selectedEvidence
+              ? `Notebook: you marked ${escapeArtifactHtml(selectedEvidence[0])} as supporting evidence.`
+              : 'Which observation most helps your conclusion? Mark a revealed clue in your notebook. This optional reflection is not graded.'}</p>
             <button type="button" data-action="history-artifact-clue" class="history-secondary-button" ${game.cluesSeen >= 3 ? 'disabled' : ''}>${game.cluesSeen >= 3 ? 'All clues inspected' : `Inspect clue ${game.cluesSeen + 1}`}</button>
             <fieldset class="artifact-choices" ${game.cluesSeen < 3 || game.submitted ? 'disabled' : ''}><legend>Which period does the evidence support?</legend>
               ${HISTORY_ARTIFACT_CHOICES.map(entry => `<label><input type="radio" name="artifact-period" value="${entry.id}" data-action="history-artifact-answer" ${game.answer === entry.id ? 'checked' : ''}><span>${escapeArtifactHtml(entry.label)}</span></label>`).join('')}

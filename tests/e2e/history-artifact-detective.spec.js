@@ -40,6 +40,15 @@ test('Artifact Detective remains usable at narrow mobile width and supports keyb
   await page.keyboard.press('Enter');
   await expect(page.locator('.artifact-clues li')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Inspect clue 2' })).toBeFocused();
+  const evidence = page.getByRole('button', { name: 'Note clue 1 as evidence' });
+  await page.keyboard.press('Shift+Tab');
+  await expect(evidence).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-action="history-artifact-evidence"]').first()).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-action="history-artifact-evidence"]').first()).toBeFocused();
+  await expect(page.locator('.artifact-notebook')).toContainText('you marked');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Inspect clue 2' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Inspect clue 3' })).toBeFocused();
   await page.keyboard.press('Enter');
@@ -50,5 +59,6 @@ test('Artifact Detective remains usable at narrow mobile width and supports keyb
   await expect(page.getByRole('button', { name: 'Submit identification' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Next artifact' })).toBeFocused();
+  await expect(page.locator('.artifact-result')).toContainText('Your supporting observation');
   expect(await page.locator('body').evaluate(element => element.scrollWidth <= window.innerWidth)).toBe(true);
 });

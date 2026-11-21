@@ -14,6 +14,27 @@ function makeContext() {
   return context;
 }
 
+test('artifact notebook accepts only revealed observations and resets for the next case', () => {
+  const { app } = makeContext();
+  app.startHistoryArtifactDetective(() => 0);
+  assert.equal(app.selectHistoryArtifactEvidence(0), false);
+  app.revealHistoryArtifactClue();
+  assert.equal(app.selectHistoryArtifactEvidence(1), false);
+  assert.equal(app.selectHistoryArtifactEvidence(0), true);
+  assert.equal(app.historyArtifactGame.evidenceIndex, 0);
+  assert.equal(app.selectHistoryArtifactEvidence(0), true);
+  assert.equal(app.historyArtifactGame.evidenceIndex, null);
+  app.selectHistoryArtifactEvidence(0);
+  app.revealHistoryArtifactClue();
+  app.revealHistoryArtifactClue();
+  app.chooseHistoryArtifactAnswer(app.historyArtifactCases[0].answer);
+  app.submitHistoryArtifactAnswer();
+  assert.equal(app.selectHistoryArtifactEvidence(1), false);
+  assert.equal(app.historyArtifactActivityEngine.score, 1);
+  app.advanceHistoryArtifactCase();
+  assert.equal(app.historyArtifactGame.evidenceIndex, null);
+});
+
 test('artifact cases form a small finite, sourced set with three grounded clues each', () => {
   const context = makeContext();
   const cases = Array.from(context.HistoryArtifactDetective.cases);
