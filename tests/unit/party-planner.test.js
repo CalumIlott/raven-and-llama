@@ -151,3 +151,21 @@ function PARTY_PLANNER_CATEGORY_COUNTS(items) {
   return ['Venue', 'Food & Drink', 'Entertainment', 'Gear', 'Decorations']
     .map(category => items.filter(item => item.category === category).length);
 }
+
+test('budget preview reserves the cost of unmet required items', () => {
+  const context = createPartyPlannerContext();
+  const items = [
+    { id: 'venue', name: 'Venue', category: 'Venue', description: 'A space', priceCents: 2000, maxQuantity: 1, requiredQuantity: 1 },
+    { id: 'snack', name: 'Snack', category: 'Food & Drink', description: 'A snack', priceCents: 300, maxQuantity: 3, requiredQuantity: 2 },
+    { id: 'game', name: 'Game', category: 'Entertainment', description: 'A game', priceCents: 1200, maxQuantity: 1, requiredQuantity: 0 }
+  ];
+  const preview = context.eval('previewPartyPlan');
+  const before = preview({ venue: 0, snack: 1, game: 1 }, 4000, items);
+  assert.equal(before.requiredCostCents, 2300);
+  assert.equal(before.afterRequiredCents, 200);
+  assert.equal(before.selected.length, 2);
+  assert.equal(before.selected[0].subtotalCents, 300);
+  const over = preview({ venue: 0, snack: 0, game: 1 }, 3000, items);
+  assert.equal(over.afterRequiredCents, -800);
+  assert.equal(preview({ venue: -1, snack: 0, game: 0 }, 3000, items), null);
+});

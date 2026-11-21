@@ -175,6 +175,21 @@ function evaluatePartyPlan(quantities, budgetCents = PARTY_PLANNER_BUDGET_CENTS,
   };
 }
 
+function previewPartyPlan(quantities, budgetCents, items) {
+  const evaluation = evaluatePartyPlan(quantities, budgetCents, items);
+  if (evaluation.invalidQuantities) return null;
+  const requiredCostCents = items.reduce((total, item) =>
+    total + Math.max(0, (item.requiredQuantity ?? 0) - quantities[item.id]) * item.priceCents, 0);
+  return {
+    requiredCostCents,
+    afterRequiredCents: evaluation.remainingCents - requiredCostCents,
+    selected: items.filter(item => quantities[item.id] > 0).map(item => ({
+      name: item.name,
+      quantity: quantities[item.id],
+      subtotalCents: quantities[item.id] * item.priceCents
+    }))
+  };
+}
 function createPartyPlannerActivityEngine(budgetCents = PARTY_PLANNER_BUDGET_CENTS) {
   const engine = new ActivityEngine();
   engine.start({
@@ -298,6 +313,15 @@ Object.assign(App.prototype, {
       return;
     }
 
+    const preview = previewPartyPlan(game.quantities, game.scenario.budgetCents, game.items);
+    const previewMessage = preview.afterRequiredCents < 0
+      ? `Reduce your plan by ${MoneyMasters.formatMoney(-preview.afterRequiredCents)} to fit the budget and remaining required items.`
+      : preview.requiredCostCents > 0
+        ? `Set aside ${MoneyMasters.formatMoney(preview.requiredCostCents)} for remaining required items. ${MoneyMasters.formatMoney(preview.afterRequiredCents)} would remain for extras.`
+        : `All required items are included. ${MoneyMasters.formatMoney(preview.afterRequiredCents)} remains for extras.`;
+    const basket = preview.selected.length
+      ? `<ul class="party-planner-preview__list">${preview.selected.map(item => `<li><span>${item.name} × ${item.quantity}</span><strong>${MoneyMasters.formatMoney(item.subtotalCents)}</strong></li>`).join('')}</ul>`
+      : '<p>No items selected yet.</p>';
     const renderItem = item => {
       const quantity = game.quantities[item.id];
       return `
@@ -342,6 +366,11 @@ Object.assign(App.prototype, {
             <div><dt>Plan total</dt><dd id="party-plan-total">${total}</dd></div>
             <div><dt>Budget left</dt><dd id="party-plan-remaining">${remaining}</dd></div>
           </dl>
+          <section class="party-planner-preview" aria-labelledby="party-plan-preview-title">
+            <h2 id="party-plan-preview-title">Plan preview</h2>
+            ${basket}
+            <p>${previewMessage}</p>
+          </section>
           <div class="party-planner-items">${items}</div>
           <p class="party-planner-status" role="status" aria-live="polite" aria-atomic="true">${game.message}</p>
           <div class="party-planner-actions">
