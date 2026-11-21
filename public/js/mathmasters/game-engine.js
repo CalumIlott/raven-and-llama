@@ -70,7 +70,8 @@ class GameEngine {
         maxStreak: this.maxStreak,
         lives: this.lives,
         totalQuestions: this.totalQuestions,
-        timeLeft: this.timeLeft,
+        timeLeft: this.mode === 'training' && window.ProfileManager?.getActiveProfile?.()?.practiceTiming === 'relaxed'
+          ? null : this.timeLeft,
         pendingAnswer: this.pendingAnswer,
         customExit: Boolean(this.customExit)
       }));
